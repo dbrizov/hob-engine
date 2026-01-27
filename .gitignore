@@ -1,0 +1,90 @@
+# === Build System: CMake ===
+build/
+[Cc]MakeCache.txt
+[Cc]MakeFiles/
+CMakeScripts/
+cmake_install.cmake
+*.cmake
+Makefile
+CTestTestfile.cmake
+install_manifest.txt
+
+# === vcpkg ===
+vcpkg_installed/
+vcpkg/buildtrees/
+vcpkg/downloads/
+vcpkg/packages/
+.vcpkg-root
+vcpkg.lock.json
+vcpkg.json.lock
+
+# === IDE: Visual Studio Code ===
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+*.vsix
+
+# === IDE: JetBrains Rider & CLion ===
+.idea/
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+!.idea/misc.xml
+!.idea/modules.xml
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+*.sln.iml
+*.sln.DotSettings
+*.sln.DotSettings.user
+
+# === IDE: Visual Studio ===
+.vs/
+*.suo
+*.user
+*.ncb
+*.sdf
+*.ipch
+*.VC.db
+*.VC.opendb
+*.ilk
+*.pdb
+*.exp
+*.obj
+*.idb
+*.tlog
+*.cache
+*.pch
+*.res
+*.rsp
+*.map
+
+# === Compiled Artifacts (Executables, Libs, Objects) ===
+*.exe
+*.dll
+*.so
+*.so.*
+*.dylib
+*.a
+*.lib
+*.obj
+*.o
+*.out
+*.elf
+*.bin
+*.hex
+
+# === Temporary / Backup Files ===
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# === OS Generated Files ===
+.DS_Store
+Thumbs.db
