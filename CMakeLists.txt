@@ -51,6 +51,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>, SDL2_ttf::SDL2_ttf, SDL2_ttf::SDL2_ttf-static>
 )
 
-# RapidJSON is header only, no linking needed.
-find_package(RapidJSON CONFIG REQUIRED)
-target_include_directories(${PROJECT_NAME} PRIVATE ${RapidJSON_INCLUDE_DIRS})
+# nlohmann-json is header only, no linking needed.
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
