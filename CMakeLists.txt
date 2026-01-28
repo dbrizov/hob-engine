@@ -9,7 +9,7 @@ project(cpp_platformer)
 # Use vcpkg to find packages.
 if (CMAKE_TOOLCHAIN_FILE)
     message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
-endif()
+endif ()
 
 # Find all C++ source files recursively.
 file(GLOB_RECURSE CPP_FILES ${CMAKE_SOURCE_DIR}/src/*.cpp)
@@ -18,7 +18,7 @@ file(GLOB_RECURSE CPP_FILES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/src/*.h)
 
 # Set the executable.
-add_executable(${PROJECT_NAME} ${CPP_FILES} ${HEADER_FILES}) 
+add_executable(${PROJECT_NAME} ${CPP_FILES} ${HEADER_FILES})
 
 # Since the headers are also in /src we are adding it as an include directory.
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
@@ -35,22 +35,26 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 # Find and link SDL2.
 find_package(SDL2 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
-    $<IF:$<TARGET_EXISTS:SDL2::SDL2>, SDL2::SDL2, SDL2::SDL2-static>
+        $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+        $<IF:$<TARGET_EXISTS:SDL2::SDL2>, SDL2::SDL2, SDL2::SDL2-static>
 )
 
 # Find and link SDL2_image.
 find_package(SDL2_image CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-    $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>, SDL2_image::SDL2_image, SDL2_image::SDL2_image-static>
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>, SDL2_image::SDL2_image, SDL2_image::SDL2_image-static>
 )
 
 # Find and link SDL2_ttf.
 find_package(SDL2_ttf CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-    $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>, SDL2_ttf::SDL2_ttf, SDL2_ttf::SDL2_ttf-static>
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>, SDL2_ttf::SDL2_ttf, SDL2_ttf::SDL2_ttf-static>
 )
 
-# nlohmann-json is header only, no linking needed.
+# Find nlohmann-json. It is header only, no linking needed.
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
+# Find and link fmt
+find_package(fmt CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)

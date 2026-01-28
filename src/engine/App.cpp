@@ -1,17 +1,16 @@
 #include "App.h"
 
-#include <iostream>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <fmt/printf.h>
 
-App::App(int fps, int screen_width, int screen_height, const char* window_title) {
-    m_fps = fps;
-    m_screen_width = screen_width;
-    m_screen_height = screen_height;
-    m_window_title = window_title;
-    m_sdl_window = nullptr;
-    m_sdl_renderer = nullptr;
-}
+#include "Timer.h"
+
+App::App(AppConfig config)
+    : m_config(config)
+    , m_timer(config.fps)
+    , m_sdl_window(nullptr)
+    , m_sdl_renderer(nullptr) {}
 
 App::~App() {
     if (m_sdl_renderer) {
@@ -27,29 +26,29 @@ App::~App() {
 }
 
 bool App::init() {
-    // Init SDL subsystems
+    // Init SDL sub-systems
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
+        fmt::println("SDL_Init Error: {}", SDL_GetError());
         return false;
     }
 
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        std::cerr << "IMG_Init Error: " << IMG_GetError() << "\n";
+        fmt::println("IMG_Init Error: {}", SDL_GetError());
         SDL_Quit();
         return false;
     }
 
     // Create window
     m_sdl_window = SDL_CreateWindow(
-        m_window_title,
+        m_config.window_title,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        m_screen_width,
-        m_screen_height,
+        static_cast<int>(m_config.screen_width),
+        static_cast<int>(m_config.screen_height),
         SDL_WINDOW_SHOWN);
 
     if (!m_sdl_window) {
-        std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << "\n";
+        fmt::println("SDL_CreateWindow Error: {}", SDL_GetError());
         IMG_Quit();
         SDL_Quit();
         return false;
@@ -58,7 +57,7 @@ bool App::init() {
     // Create renderer
     m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, -1, SDL_RENDERER_ACCELERATED);
     if (!m_sdl_renderer) {
-        std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << "\n";
+        fmt::println("SDL_CreateRenderer Error: {}", SDL_GetError());
         SDL_DestroyWindow(m_sdl_window);
         IMG_Quit();
         SDL_Quit();
@@ -70,12 +69,9 @@ bool App::init() {
 
 void App::run() {
     bool is_running = true;
-    const int frame_delay = 1000 / m_fps;
     SDL_Event event;
 
     while (is_running) {
-        Uint32 frame_start = SDL_GetTicks();
-
         // --- Event handling ---
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -87,6 +83,11 @@ void App::run() {
                 }
             }
         }
+
+        m_timer.tick();
+
+        const float delta_time = m_timer.get_delta_time();
+        const float scaled_delta_time = delta_time * m_timer.get_time_scale();
 
         // --- Rendering ---
         SDL_SetRenderDrawColor(m_sdl_renderer, 30, 30, 60, 255); // dark blue background
@@ -102,11 +103,5 @@ void App::run() {
         SDL_RenderFillRect(m_sdl_renderer, &playerRect);
 
         SDL_RenderPresent(m_sdl_renderer);
-
-        // --- Frame limiter ---
-        Uint32 frame_time = SDL_GetTicks() - frame_start;
-        if (frame_delay > frame_time) {
-            SDL_Delay(frame_delay - frame_time);
-        }
     }
 }
