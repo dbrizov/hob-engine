@@ -1,15 +1,3 @@
-#ifdef NDEBUG // If in release mode
-
-#ifdef _WIN32 // If on Windows
-#include <windows.h>
-#else // In on Linux/Unix
-#include <unistd.h>
-#include <limits.h>
-#endif
-
-#endif
-
-
 #include <filesystem>
 #include <fmt/base.h>
 
@@ -23,26 +11,15 @@ const char* const WINDOW_TITLE = "SDL2 Window";
 std::filesystem::path get_root_path() {
 #ifndef NDEBUG
     // (IN DEBUG MODE)
-    // Return the root directory of Main.cpp
-    std::filesystem::path source_file = __FILE__;
-    std::filesystem::path project_root = source_file.parent_path().parent_path();
-    return project_root;
+    // Return the root directory of the project
+    std::filesystem::path source_file_path = __FILE__;
+    std::filesystem::path project_root_path = source_file_path.parent_path().parent_path();
+    return project_root_path;
 #else
     // (IN RELEASE MODE)
-    // Return the root directory of the executable
-#ifdef _WIN32
-    // We are on Windows
-    char path[MAX_PATH];
-    GetModuleFileNameA(NULL, path, MAX_PATH);
-    std::filesystem::path executable_root = std::filesystem::path(path).parent_path();
-    return executable_root;
-#else
-    // We are on Linux/Unix
-    char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    std::filesystem::path executable_root = std::filesystem::path(std::string(result, (count > 0) ? count : 0)).parent_path();
-    return executable_root;
-#endif
+    // Return the current directory of the executable
+    std::filesystem::path current_path = std::filesystem::current_path();
+    return current_path;
 #endif
 }
 
