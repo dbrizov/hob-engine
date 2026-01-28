@@ -1,68 +1,90 @@
 {
-    "version": 3,
-    "cmakeMinimumRequired": {
-        "major": 3,
-        "minor": 20,
-        "patch": 0
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug-gcc",
+      "hidden": false,
+      "description": "Linux debug configure preset using GCC.",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/debug/linux-gcc",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     },
-    "configurePresets": [
-        {
-            "name": "debug-gcc",
-            "hidden": false,
-            "description": "Linux debug configure preset using GCC.",
-            "generator": "Unix Makefiles",
-            "binaryDir": "${sourceDir}/build/debug/linux-gcc",
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-linux",
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "debug-mingw",
-            "hidden": false,
-            "description": "Windows debug configure preset using MinGW.",
-            "generator": "MinGW Makefiles",
-            "binaryDir": "${sourceDir}/build/debug/windows-mingw",
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "debug-msvc",
-            "hidden": false,
-            "description": "Windows debug configure preset using MSVC.",
-            "architecture": "x64",
-            "binaryDir": "${sourceDir}/build/debug/windows-msvc",
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-windows",
-                "CMAKE_BUILD_TYPE": "Debug"
-            },
-            "vendor": {
-                "jetbrains.com/clion": {
-                    "toolchain": "Visual Studio"
-                }
-            }
+    {
+      "name": "debug-mingw",
+      "hidden": false,
+      "description": "Windows debug configure preset using MinGW.",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build/debug/windows-mingw",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "debug-msvc",
+      "hidden": false,
+      "description": "Windows debug configure preset using MSVC.",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/debug/windows-msvc",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Visual Studio"
         }
-    ],
-    "buildPresets": [
-        {
-            "name": "linux-debug-gcc-x64",
-            "configurePreset": "debug-gcc",
-            "description": "Linux debug build using GCC."
-        },
-        {
-            "name": "windows-debug-mingw-x64",
-            "configurePreset": "debug-mingw",
-            "description": "Windows debug build using MinGW."
-        },
-        {
-            "name": "windows-debug-msvc-x64",
-            "configurePreset": "debug-msvc",
-            "description": "Windows debug build using MSVC."
+      }
+    },
+    {
+      "name": "release-msvc",
+      "hidden": false,
+      "description": "Windows release configure preset using MSVC.",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/release/windows-msvc",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Visual Studio"
         }
-    ]
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "linux-debug-gcc-x64",
+      "configurePreset": "debug-gcc",
+      "description": "Linux debug build using GCC."
+    },
+    {
+      "name": "windows-debug-mingw-x64",
+      "configurePreset": "debug-mingw",
+      "description": "Windows debug build using MinGW."
+    },
+    {
+      "name": "windows-debug-msvc-x64",
+      "configurePreset": "debug-msvc",
+      "description": "Windows debug build using MSVC."
+    },
+    {
+      "name": "windows-release-msvc-x64",
+      "configurePreset": "release-msvc",
+      "description": "Windows release build using MSVC."
+    }
+  ]
 }

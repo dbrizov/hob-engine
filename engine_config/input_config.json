@@ -1,0 +1,55 @@
+{
+  "action_mappings": {
+    "left": [
+      "Left",
+      "A"
+    ],
+    "right": [
+      "Right",
+      "D"
+    ],
+    "up": [
+      "Up",
+      "W"
+    ],
+    "down": [
+      "Down",
+      "S"
+    ],
+    "submit": [
+      "Return"
+    ],
+    "cancel": [
+      "Escape"
+    ],
+    "slow_motion": [
+      "Tab"
+    ]
+  },
+  "axis_mappings": {
+    "horizontal": {
+      "acceleration": 10,
+      "deceleration": 10,
+      "positive": [
+        "Right",
+        "D"
+      ],
+      "negative": [
+        "Left",
+        "A"
+      ]
+    },
+    "vertical": {
+      "acceleration": 10,
+      "deceleration": 10,
+      "positive": [
+        "Up",
+        "W"
+      ],
+      "negative": [
+        "Down",
+        "S"
+      ]
+    }
+  }
+}

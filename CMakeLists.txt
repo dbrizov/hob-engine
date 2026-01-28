@@ -32,6 +32,15 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         "Copied assets to $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
 )
 
+# Copy the engine_config folder next to the executable after every build.
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/engine_config"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/engine_config"
+        COMMAND ${CMAKE_COMMAND} -E echo
+        "Copied engine_config to $<TARGET_FILE_DIR:${PROJECT_NAME}>/engine_config"
+)
+
 # Find and link SDL2.
 find_package(SDL2 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -55,6 +64,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
-# Find and link fmt
+# Find and link fmt.
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
