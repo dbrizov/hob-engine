@@ -63,8 +63,10 @@ public:
     EntityRange get_entities();
     ConstEntityRange get_entities_const() const;
 
-    EntityId spawn_entity();
+    Entity* spawn_entity();
     void destroy_entity(EntityId id);
+
+    Entity* get_entity(EntityId id) const;
 
     void resolve_requests();
 

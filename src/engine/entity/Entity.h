@@ -1,21 +1,30 @@
 #ifndef CPP_PLATFORMER_ENTITY_H
 #define CPP_PLATFORMER_ENTITY_H
+#include <algorithm>
+#include <cassert>
 #include <cstdint>
+#include <memory>
+#include <vector>
+
+#include "engine/components/Component.h"
 
 
 using EntityId = uint32_t;
+
+template<typename T>
+concept ComponentType = std::derived_from<T, Component>;
 
 
 class Entity {
 private:
     EntityId m_id = 0;
-    // TODO  m_components
+    std::vector<std::unique_ptr<Component>> m_components;
     bool m_is_in_play = false;
     bool m_is_ticking = true;
 
 private:
+    // Only the EntitySpawner can instantiate entities
     friend class EntitySpawner;
-
     Entity() = default;
 
 public:
@@ -39,8 +48,45 @@ public:
     bool is_ticking() const;
     void set_is_ticking(bool is_ticking);
 
-    // TODO manage components
+    template<ComponentType T>
+    T* add_component();
+
+    template<ComponentType T>
+    T* get_component();
 };
+
+template<ComponentType T>
+T* Entity::add_component() {
+    assert(get_component<T>() == nullptr && "Component of this type already exists");
+
+    std::unique_ptr<T> component = std::make_unique<T>();
+    component->set_entity(this);
+
+    if (is_in_play()) {
+        component->enter_play();
+    }
+
+    T* component_ptr = component.get();
+
+    m_components.push_back(std::move(component));
+    std::sort(m_components.begin(), m_components.end(),
+              [](const auto& a, const auto& b) {
+                  return static_cast<int>(a->priority()) < static_cast<int>(b->priority());
+              });
+
+    return component_ptr;
+}
+
+template<ComponentType T>
+T* Entity::get_component() {
+    for (auto& c : m_components) {
+        if (T* casted = dynamic_cast<T*>(c.get())) {
+            return casted;
+        }
+    }
+
+    return nullptr;
+}
 
 
 #endif //CPP_PLATFORMER_ENTITY_H

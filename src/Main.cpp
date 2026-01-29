@@ -2,6 +2,7 @@
 #include <fmt/base.h>
 
 #include "engine/App.h"
+#include "engine/components/TransformComponent.h"
 
 constexpr uint32_t FPS = 60;
 constexpr uint32_t SCREEN_WIDTH = 640;
@@ -43,10 +44,12 @@ int main(int argc, char* argv[]) {
 
     App app = App(config);
     if (app.init()) {
-        EntityId id = app.entity_spawner()->spawn_entity();
-        app.entity_spawner()->destroy_entity(id);
+        Entity* e1 = app.entity_spawner()->spawn_entity();
+        e1->add_component<TransformComponent>();
+        app.entity_spawner()->destroy_entity(e1->id());
 
-        app.entity_spawner()->spawn_entity();
+        Entity* e2 = app.entity_spawner()->spawn_entity();
+        e2->add_component<TransformComponent>();
 
         app.run();
     }

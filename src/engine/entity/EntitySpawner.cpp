@@ -10,19 +10,29 @@ EntitySpawner::ConstEntityRange EntitySpawner::get_entities_const() const {
     return ConstEntityRange(m_entities);
 }
 
-EntityId EntitySpawner::spawn_entity() {
+Entity* EntitySpawner::spawn_entity() {
     std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity());
     EntityId entity_id = m_next_entity_id;
     entity->set_id(entity_id);
     m_next_entity_id += 1;
 
+    Entity* entity_ptr = entity.get();
     m_entity_spawn_requests.push_back(std::move(entity));
 
-    return entity_id;
+    return entity_ptr;
 }
 
 void EntitySpawner::destroy_entity(EntityId id) {
     m_entity_destroy_requests.insert(id);
+}
+
+Entity* EntitySpawner::get_entity(EntityId id) const {
+    auto it = m_entities.find(id);
+    if (it != m_entities.end()) {
+        return it->second.get();
+    }
+
+    return nullptr;
 }
 
 void EntitySpawner::resolve_requests() {

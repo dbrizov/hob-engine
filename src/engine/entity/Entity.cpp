@@ -4,26 +4,34 @@
 
 void Entity::enter_play() {
     m_is_in_play = true;
-    fmt::println("enter_play (id: {})", id());
-    // TODO m_components.enter_play()
+    for (auto& component : m_components) {
+        component->enter_play();
+    }
 }
 
 void Entity::exit_play() {
     m_is_in_play = false;
-    fmt::println("exit_play (id: {})", id());
-    // TODO m_components.exit_play()
+    for (auto& component : m_components) {
+        component->exit_play();
+    }
 }
 
 void Entity::tick(float delta_time) {
-    // TODO m_components.tick()
+    for (auto& component : m_components) {
+        component->tick(delta_time);
+    }
 }
 
 void Entity::physics_tick(float fixed_delta_time) {
-    // TODO m_components.physics_tick()
+    for (auto& component : m_components) {
+        component->physics_tick(fixed_delta_time);
+    }
 }
 
 void Entity::render_tick(float delta_time) {
-    // TODO m_components.render_tick()
+    for (auto& component : m_components) {
+        component->render_tick(delta_time);
+    }
 }
 
 EntityId Entity::id() const {
