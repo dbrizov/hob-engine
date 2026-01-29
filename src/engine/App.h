@@ -2,6 +2,7 @@
 #define CPP_PLATFORMER_APP_H
 #include "Input.h"
 #include "Timer.h"
+#include "entity/EntitySpawner.h"
 
 
 struct SDL_Window;
@@ -46,15 +47,18 @@ private:
     AppConfig m_config;
     Timer m_timer;
     Input m_input;
+    EntitySpawner m_entity_spawner;
     SDL_Window* m_sdl_window;
     SDL_Renderer* m_sdl_renderer;
 
 public:
-    App(const AppConfig& config);
+    explicit App(const AppConfig& config);
     ~App();
 
     bool init();
     void run();
+
+    EntitySpawner* entity_spawner();
 };
 
 

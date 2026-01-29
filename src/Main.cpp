@@ -43,6 +43,11 @@ int main(int argc, char* argv[]) {
 
     App app = App(config);
     if (app.init()) {
+        EntityId id = app.entity_spawner()->spawn_entity();
+        app.entity_spawner()->destroy_entity(id);
+
+        app.entity_spawner()->spawn_entity();
+
         app.run();
     }
 

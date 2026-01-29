@@ -11,6 +11,7 @@ App::App(const AppConfig& config)
     : m_config(config)
     , m_timer(config.fps)
     , m_input(config.input_config_path)
+    , m_entity_spawner()
     , m_sdl_window(nullptr)
     , m_sdl_renderer(nullptr) {
 }
@@ -89,7 +90,6 @@ void App::run() {
     SDL_Event event;
 
     while (is_running) {
-        // --- Event handling ---
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 is_running = false;
@@ -98,25 +98,34 @@ void App::run() {
 
         m_timer.tick();
 
+        m_entity_spawner.resolve_requests();
+
         const float delta_time = m_timer.get_delta_time();
         const float scaled_delta_time = delta_time * m_timer.get_time_scale();
 
+        // input.tick()
         const uint8_t* keyboard_state = SDL_GetKeyboardState(nullptr);
         m_input.tick(delta_time, keyboard_state);
 
+        // entities.tick()
+        for (auto& entity : m_entity_spawner.get_entities()) {
+            if (entity.is_ticking()) {
+                entity.tick(scaled_delta_time);
+            }
+        }
+
+        // entities.physics_tick()
+
         // --- Rendering ---
-        SDL_SetRenderDrawColor(m_sdl_renderer, 30, 30, 60, 255); // dark blue background
+        SDL_SetRenderDrawColor(m_sdl_renderer, 14, 219, 248, 255);
         SDL_RenderClear(m_sdl_renderer);
 
-        // Example: draw a simple white square for the player
-        SDL_Rect playerRect;
-        playerRect.x = 50;
-        playerRect.y = 50;
-        playerRect.w = 50;
-        playerRect.h = 50;
-        SDL_SetRenderDrawColor(m_sdl_renderer, 255, 255, 255, 255);
-        SDL_RenderFillRect(m_sdl_renderer, &playerRect);
+        // entities.render_tick()
 
         SDL_RenderPresent(m_sdl_renderer);
     }
+}
+
+EntitySpawner* App::entity_spawner() {
+    return &m_entity_spawner;
 }
