@@ -126,6 +126,6 @@ void App::run() {
     }
 }
 
-EntitySpawner* App::entity_spawner() {
+EntitySpawner* App::get_entity_spawner() {
     return &m_entity_spawner;
 }

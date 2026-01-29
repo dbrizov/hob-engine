@@ -59,7 +59,7 @@ public:
     bool init();
     void run();
 
-    EntitySpawner* entity_spawner();
+    EntitySpawner* get_entity_spawner();
 };
 
 

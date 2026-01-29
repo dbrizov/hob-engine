@@ -44,11 +44,11 @@ int main(int argc, char* argv[]) {
 
     App app = App(config);
     if (app.init()) {
-        Entity* e1 = app.entity_spawner()->spawn_entity();
+        Entity* e1 = app.get_entity_spawner()->spawn_entity();
         e1->add_component<TransformComponent>();
-        app.entity_spawner()->destroy_entity(e1->get_id());
+        app.get_entity_spawner()->destroy_entity(e1->get_id());
 
-        Entity* e2 = app.entity_spawner()->spawn_entity();
+        Entity* e2 = app.get_entity_spawner()->spawn_entity();
         e2->add_component<TransformComponent>();
 
         app.run();
