@@ -1,0 +1,23 @@
+#include "Component.h"
+
+Entity* Component::get_entity() const {
+    return m_entity;
+}
+
+void Component::set_entity(Entity* entity) {
+    m_entity = entity;
+}
+
+ComponentPriority Component::priority() const {
+    return ComponentPriority::DEFAULT;
+}
+
+void Component::enter_play() {}
+
+void Component::exit_play() {}
+
+void Component::tick(float delta_time) {}
+
+void Component::physics_tick(float delta_time) {}
+
+void Component::render_tick(float delta_time) {}

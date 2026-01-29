@@ -42,6 +42,7 @@ struct AppConfig {
     }
 };
 
+
 class App {
 private:
     AppConfig m_config;

@@ -11,6 +11,7 @@ enum class InputEventType {
     RELEASED,
 };
 
+
 struct InputEvent {
     const char* name;
     InputEventType type;
@@ -19,8 +20,10 @@ struct InputEvent {
     InputEvent(const char* ev_name, InputEventType ev_type, float ev_axis_value);
 };
 
+
 using SubscriberId = uint32_t;
 using InputEventHandler = std::function<void(const InputEvent&)>;
+
 
 struct AxisMapping {
     float acceleration;
@@ -29,12 +32,14 @@ struct AxisMapping {
     std::vector<SDL_Scancode> negative;
 };
 
+
 struct InputMappings {
     std::unordered_map<std::string, std::vector<SDL_Scancode>> actions;
     std::unordered_map<std::string, AxisMapping> axes;
 
     std::vector<SDL_Scancode> relevant_keys() const;
 };
+
 
 class Input {
 private:

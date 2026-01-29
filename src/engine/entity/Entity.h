@@ -8,14 +8,15 @@ using EntityId = uint32_t;
 
 class Entity {
 private:
-    friend class EntitySpawner;
-
-    Entity() = default;
-
     EntityId m_id = 0;
     // TODO  m_components
     bool m_is_in_play = false;
     bool m_is_ticking = true;
+
+private:
+    friend class EntitySpawner;
+
+    Entity() = default;
 
 public:
     Entity(const Entity&) = delete;
