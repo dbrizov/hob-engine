@@ -1,6 +1,6 @@
 #include "TransformComponent.h"
 
-ComponentPriority TransformComponent::priority() const {
+ComponentPriority TransformComponent::get_priority() const {
     return ComponentPriority::TRANSFORM;
 }
 

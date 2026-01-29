@@ -26,7 +26,7 @@ public:
     Entity* get_entity() const;
     void set_entity(Entity* entity);
 
-    virtual ComponentPriority priority() const;
+    virtual ComponentPriority get_priority() const;
 
     virtual void enter_play();
     virtual void exit_play();

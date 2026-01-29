@@ -40,7 +40,7 @@ public:
     void physics_tick(float fixed_delta_time);
     void render_tick(float delta_time);
 
-    EntityId id() const;
+    EntityId get_id() const;
     void set_id(EntityId id);
 
     bool is_in_play() const;
@@ -71,7 +71,7 @@ T* Entity::add_component() {
     m_components.push_back(std::move(component));
     std::sort(m_components.begin(), m_components.end(),
               [](const auto& a, const auto& b) {
-                  return static_cast<int>(a->priority()) < static_cast<int>(b->priority());
+                  return static_cast<int>(a->get_priority()) < static_cast<int>(b->get_priority());
               });
 
     return component_ptr;

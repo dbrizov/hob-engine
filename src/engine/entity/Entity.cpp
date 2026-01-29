@@ -34,7 +34,7 @@ void Entity::render_tick(float delta_time) {
     }
 }
 
-EntityId Entity::id() const {
+EntityId Entity::get_id() const {
     return m_id;
 }
 

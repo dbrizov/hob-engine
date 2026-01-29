@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     if (app.init()) {
         Entity* e1 = app.entity_spawner()->spawn_entity();
         e1->add_component<TransformComponent>();
-        app.entity_spawner()->destroy_entity(e1->id());
+        app.entity_spawner()->destroy_entity(e1->get_id());
 
         Entity* e2 = app.entity_spawner()->spawn_entity();
         e2->add_component<TransformComponent>();

@@ -8,7 +8,7 @@ void Component::set_entity(Entity* entity) {
     m_entity = entity;
 }
 
-ComponentPriority Component::priority() const {
+ComponentPriority Component::get_priority() const {
     return ComponentPriority::DEFAULT;
 }
 

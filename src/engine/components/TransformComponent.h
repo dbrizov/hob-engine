@@ -11,7 +11,7 @@ private:
     Vector2 m_scale;
 
 public:
-    virtual ComponentPriority priority() const override;
+    virtual ComponentPriority get_priority() const override;
 
     Vector2 get_position() const;
     void set_position(const Vector2& position);

@@ -46,7 +46,7 @@ void EntitySpawner::resolve_spawn_requests() {
     spawn_requests.swap(m_entity_spawn_requests);
 
     for (auto& entity : spawn_requests) {
-        EntityId entity_id = entity->id();
+        EntityId entity_id = entity->get_id();
         entity->enter_play();
         auto [it, inserted] = m_entities.emplace(entity_id, std::move(entity));
         assert(inserted && "Duplicate EntityId while trying to spawn an Entity");
