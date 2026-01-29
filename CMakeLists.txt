@@ -32,13 +32,13 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         "Copied assets to $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
 )
 
-# Copy the engine_config folder next to the executable after every build.
+# Copy the config folder next to the executable after every build.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/engine_config"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/engine_config"
+        "${CMAKE_SOURCE_DIR}/config"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
         COMMAND ${CMAKE_COMMAND} -E echo
-        "Copied engine_config to $<TARGET_FILE_DIR:${PROJECT_NAME}>/engine_config"
+        "Copied config to $<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
 )
 
 # Find and link SDL2.

@@ -25,7 +25,7 @@ std::filesystem::path get_root_path() {
 
 std::filesystem::path get_input_config_path() {
     std::filesystem::path root_path = get_root_path();
-    std::filesystem::path input_config_path = root_path / "engine_config" / "input_config.json";
+    std::filesystem::path input_config_path = root_path / "config" / "input_config.json";
     return input_config_path;
 }
 
