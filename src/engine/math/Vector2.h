@@ -17,7 +17,7 @@ struct Vector2 {
     static constexpr Vector2 zero() { return Vector2(); }
     static constexpr Vector2 one() { return Vector2(1.0f, 1.0f); }
     static constexpr Vector2 left() { return Vector2(-1.0f, 0.0f); }
-    static constexpr Vector2 right(){ return Vector2(1.0f, 0.0f); }
+    static constexpr Vector2 right() { return Vector2(1.0f, 0.0f); }
     static constexpr Vector2 up() { return Vector2(0.0f, -1.0f); }
     static constexpr Vector2 down() { return Vector2(0.0f, 1.0f); }
 
@@ -69,35 +69,37 @@ struct Vector2 {
 };
 
 
-inline constexpr Vector2 operator+(Vector2 a, Vector2 b) {
+constexpr Vector2 operator+(Vector2 a, Vector2 b) {
     return a += b;
 }
 
-inline constexpr Vector2 operator-(Vector2 a, Vector2 b) {
+constexpr Vector2 operator-(Vector2 a, Vector2 b) {
     return a -= b;
 }
 
-inline constexpr Vector2 operator*(Vector2 v, float s) {
+constexpr Vector2 operator*(Vector2 v, float s) {
     return v *= s;
 }
 
-inline constexpr Vector2 operator*(float s, Vector2 v) {
+constexpr Vector2 operator*(float s, Vector2 v) {
     return v *= s;
 }
 
-inline constexpr Vector2 operator/(Vector2 v, float s) {
+constexpr Vector2 operator/(Vector2 v, float s) {
     return v /= s;
 }
 
-inline constexpr Vector2 operator-(Vector2 v) {
+constexpr Vector2 operator-(Vector2 v) {
     return Vector2(-v.x, -v.y);
 }
 
-inline constexpr bool operator==(Vector2 a, Vector2 b) {
-    return a.x == b.x && a.y == b.y;
+inline bool operator==(Vector2 a, Vector2 b) {
+    return
+        std::abs(a.x - b.x) < EPSILON &&
+        std::abs(a.y - b.y) < EPSILON;
 }
 
-inline constexpr bool operator!=(Vector2 a, Vector2 b) {
+inline bool operator!=(Vector2 a, Vector2 b) {
     return !(a == b);
 }
 

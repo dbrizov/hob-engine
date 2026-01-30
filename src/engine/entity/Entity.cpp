@@ -42,14 +42,14 @@ void Entity::set_id(EntityId id) {
     m_id = id;
 }
 
+bool Entity::is_in_play() const {
+    return m_is_in_play;
+}
+
 bool Entity::is_ticking() const {
     return m_is_ticking;
 }
 
 void Entity::set_is_ticking(bool is_ticking) {
     m_is_ticking = is_ticking;
-}
-
-bool Entity::is_in_play() const {
-    return m_is_in_play;
 }

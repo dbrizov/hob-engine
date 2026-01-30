@@ -16,7 +16,7 @@ private:
     std::unordered_set<EntityId> m_entity_destroy_requests;
 
 public:
-    // Iterators
+#pragma region Iterators
     struct EntityRange {
         std::unordered_map<EntityId, std::unique_ptr<Entity>>& map;
 
@@ -58,6 +58,7 @@ public:
         It begin() const { return {map.begin()}; }
         It end() const { return {map.end()}; }
     };
+#pragma endregion
 
 public:
     EntityRange get_entities();
