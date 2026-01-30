@@ -9,16 +9,16 @@
 static SDL_Scancode scancode_from_name(const std::string& name) {
     SDL_Scancode sc = SDL_GetScancodeFromName(name.c_str());
     if (sc == SDL_SCANCODE_UNKNOWN) {
-        throw std::runtime_error("Unknown key: " + name);
+        throw std::runtime_error(std::format("Unknown key: {}", name));
     }
 
     return sc;
 }
 
-static InputMappings load_input_mappings(const std::string& path) {
+static InputMappings load_input_mappings(const std::filesystem::path& path) {
     std::ifstream file(path);
     if (!file.is_open()) {
-        throw std::runtime_error("Cannot open file: " + path);
+        throw std::runtime_error(std::format("Cannot open file: {}", path.string()));
     }
 
     nlohmann::json json = nlohmann::json::parse(file);
@@ -90,7 +90,7 @@ std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
 }
 
 // ---------------- Input ----------------
-Input::Input(const std::string& input_config_path) {
+Input::Input(const std::filesystem::path& input_config_path) {
     m_input_mappings = load_input_mappings(input_config_path);
     m_relevant_keys = m_input_mappings.relevant_keys();
 

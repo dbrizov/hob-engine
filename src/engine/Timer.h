@@ -12,7 +12,7 @@ private:
     uint32_t m_last_ticks;
 
 public:
-    Timer(uint32_t fps);
+    explicit Timer(uint32_t fps);
 
     void tick();
 

@@ -1,5 +1,6 @@
 #ifndef CPP_PLATFORMER_INPUT_H
 #define CPP_PLATFORMER_INPUT_H
+#include <filesystem>
 #include <functional>
 #include <SDL_scancode.h>
 #include <string>
@@ -53,7 +54,7 @@ private:
     std::vector<SDL_Scancode> m_pressed_keys_last_frame;
 
 public:
-    Input(const std::string& input_config_path);
+    explicit Input(const std::filesystem::path& input_config_path);
 
     void tick(float delta_time, const Uint8* keyboard_state);
 

@@ -12,7 +12,7 @@ EntitySpawner::ConstEntityRange EntitySpawner::get_entities_const() const {
 
 Entity* EntitySpawner::spawn_entity() {
     std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity());
-    EntityId entity_id = m_next_entity_id;
+    const EntityId entity_id = m_next_entity_id;
     entity->set_id(entity_id);
     m_next_entity_id += 1;
 

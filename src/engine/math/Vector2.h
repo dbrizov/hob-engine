@@ -21,7 +21,7 @@ struct Vector2 {
     static constexpr Vector2 up() { return Vector2(0.0f, -1.0f); }
     static constexpr Vector2 down() { return Vector2(0.0f, 1.0f); }
 
-    inline float length() const {
+    float length() const {
         return std::sqrt(x * x + y * y);
     }
 
@@ -29,14 +29,13 @@ struct Vector2 {
         return x * x + y * y;
     }
 
-    inline Vector2 normalized() const {
+    Vector2 normalized() const {
         const float len = length();
         if (len < EPSILON) {
             return Vector2::zero();
         }
-        else {
-            return Vector2(x / len, y / len);
-        }
+
+        return Vector2(x / len, y / len);
     }
 
     static constexpr float dot(Vector2 a, Vector2 b) {

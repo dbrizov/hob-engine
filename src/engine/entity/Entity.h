@@ -15,7 +15,7 @@ template<typename T>
 concept ComponentType = std::derived_from<T, Component>;
 
 
-class Entity {
+class Entity final {
 private:
     EntityId m_id = 0;
     std::vector<std::unique_ptr<Component>> m_components;
