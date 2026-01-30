@@ -13,34 +13,34 @@ std::filesystem::path get_root_path() {
 #ifndef NDEBUG
     // (IN DEBUG MODE)
     // Return the root directory of the project
-    const std::filesystem::path source_file_path = __FILE__;
-    const std::filesystem::path project_root_path = source_file_path.parent_path().parent_path();
+    std::filesystem::path source_file_path = __FILE__;
+    std::filesystem::path project_root_path = source_file_path.parent_path().parent_path();
     return project_root_path;
 #else
     // (IN RELEASE MODE)
     // Return the current directory of the executable
-    const std::filesystem::path current_path = std::filesystem::current_path();
+    std::filesystem::path current_path = std::filesystem::current_path();
     return current_path;
 #endif
 }
 
 std::filesystem::path get_input_config_path() {
-    const std::filesystem::path root_path = get_root_path();
-    const std::filesystem::path input_config_path = root_path / "config" / "input_config.json";
+    std::filesystem::path root_path = get_root_path();
+    std::filesystem::path input_config_path = root_path / "config" / "input_config.json";
     return input_config_path;
 }
 
 std::filesystem::path get_assets_root_path() {
-    const std::filesystem::path root_path = get_root_path();
-    const std::filesystem::path assets_root_path = root_path / "assets";
+    std::filesystem::path root_path = get_root_path();
+    std::filesystem::path assets_root_path = root_path / "assets";
     return assets_root_path;
 }
 
 int main(int argc, char* argv[]) {
-    const std::filesystem::path input_config_path = get_input_config_path();
+    std::filesystem::path input_config_path = get_input_config_path();
     fmt::println("input_config_path: '{}'", input_config_path.string());
 
-    const std::filesystem::path assets_root_path = get_assets_root_path();
+    std::filesystem::path assets_root_path = get_assets_root_path();
     fmt::println("assets_root_path: '{}'", assets_root_path.string());
 
     App app(
@@ -50,6 +50,10 @@ int main(int argc, char* argv[]) {
         WINDOW_TITLE,
         input_config_path,
         assets_root_path);
+
+    if (!app.is_initialized()) {
+        return 1;
+    }
 
     Entity* e1 = app.get_entity_spawner()->spawn_entity();
     e1->add_component<TransformComponent>();

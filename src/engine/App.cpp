@@ -1,8 +1,6 @@
 #include "App.h"
 
-#include <iostream>
 #include <SDL.h>
-#include <SDL_image.h>
 #include <fmt/base.h>
 
 #include "Timer.h"
@@ -81,6 +79,10 @@ void App::run() {
 
         SDL_RenderPresent(m_sdl_context.get_renderer());
     }
+}
+
+bool App::is_initialized() const {
+    return m_sdl_context.is_initialized();
 }
 
 EntitySpawner* App::get_entity_spawner() {

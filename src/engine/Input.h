@@ -4,6 +4,8 @@
 #include <functional>
 #include <SDL_scancode.h>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 
 enum class InputEventType {
@@ -56,14 +58,14 @@ private:
 public:
     explicit Input(const std::filesystem::path& input_config_path);
 
-    void tick(float delta_time, const Uint8* keyboard_state);
+    void tick(float delta_time, const uint8_t* keyboard_state);
 
     SubscriberId subscribe(InputEventHandler handler);
     void unsubscribe(SubscriberId id);
 
 private:
     void dispatch_event(const InputEvent& event);
-    void update_pressed_keys(const Uint8* keyboard_state);
+    void update_pressed_keys(const uint8_t* keyboard_state);
 };
 
 

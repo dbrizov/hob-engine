@@ -5,13 +5,15 @@
 #include <fmt/base.h>
 
 SdlContext::SdlContext(uint32_t screen_width, uint32_t screen_height, const std::string& window_title)
-    : m_window(nullptr)
+    : m_is_initialized(false)
+    , m_window(nullptr)
     , m_renderer(nullptr)
     , m_screen_width(screen_width)
     , m_screen_height(screen_height)
     , m_window_title(window_title) {
     // SDL_Init
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    int sld_init_flags = SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
+    if (SDL_Init(sld_init_flags) != 0) {
         fmt::println(stderr, "SDL_Init Error: {}", SDL_GetError());
         return;
     }
@@ -19,9 +21,9 @@ SdlContext::SdlContext(uint32_t screen_width, uint32_t screen_height, const std:
     fmt::println("SDL_Init");
 
     // IMG_Init
-    const int img_flags = IMG_INIT_PNG;
-    if ((IMG_Init(img_flags) & img_flags) != img_flags) {
-        fmt::println(stderr, "IMG_Init Error: {}", SDL_GetError());
+    int img_init_flags = IMG_INIT_PNG;
+    if ((IMG_Init(img_init_flags) & img_init_flags) != img_init_flags) {
+        fmt::println(stderr, "IMG_Init Error: {}", IMG_GetError());
         SDL_Quit();
         return;
     }
@@ -57,6 +59,8 @@ SdlContext::SdlContext(uint32_t screen_width, uint32_t screen_height, const std:
     }
 
     fmt::println("SDL_CreateRenderer");
+
+    m_is_initialized = true;
 }
 
 SdlContext::~SdlContext() {
@@ -75,6 +79,10 @@ SdlContext::~SdlContext() {
 
     SDL_Quit();
     fmt::println("SDL_Quit");
+}
+
+bool SdlContext::is_initialized() const {
+    return m_is_initialized;
 }
 
 SDL_Window* SdlContext::get_window() const {

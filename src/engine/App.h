@@ -13,7 +13,8 @@ struct SDL_Renderer;
 
 class App {
 private:
-    // Order matters. Some objects use SDL resources, and must be destroyed before the SdlContext
+    // SDL context must be declared first so it is destroyed last.
+    // Objects below depend on SDL resources.
     SdlContext m_sdl_context;
     Timer m_timer;
     Input m_input;
@@ -29,7 +30,7 @@ public:
         const std::filesystem::path& assets_root_path);
 
     void run();
-
+    bool is_initialized() const;
     EntitySpawner* get_entity_spawner();
 };
 
