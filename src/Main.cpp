@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     const std::filesystem::path assets_root_path = get_assets_root_path();
     fmt::println("assets_root_path: '{}'", assets_root_path.string());
 
-    const AppConfig config(
+    App app(
         FPS,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
@@ -51,17 +51,14 @@ int main(int argc, char* argv[]) {
         input_config_path,
         assets_root_path);
 
-    App app = App(config);
-    if (app.init()) {
-        Entity* e1 = app.get_entity_spawner()->spawn_entity();
-        e1->add_component<TransformComponent>();
-        app.get_entity_spawner()->destroy_entity(e1->get_id());
+    Entity* e1 = app.get_entity_spawner()->spawn_entity();
+    e1->add_component<TransformComponent>();
+    app.get_entity_spawner()->destroy_entity(e1->get_id());
 
-        Entity* e2 = app.get_entity_spawner()->spawn_entity();
-        e2->add_component<TransformComponent>();
+    Entity* e2 = app.get_entity_spawner()->spawn_entity();
+    e2->add_component<TransformComponent>();
 
-        app.run();
-    }
+    app.run();
 
     return 0;
 }

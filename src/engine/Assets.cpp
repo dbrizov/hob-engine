@@ -61,4 +61,5 @@ void Assets::unload_all_textures() {
     }
 
     m_textures.clear();
+    fmt::println("Assets::unload_all_textures()");
 }
