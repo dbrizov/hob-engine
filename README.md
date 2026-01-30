@@ -3,7 +3,7 @@ A hobby game project writen in C++ using the SDL2 libraries.
 
 # Requirements
 Dependencies are downloaded automatically via `vcpkg` and `CMake`.<br>
-Currently only Windows is suppored, so you will need the `MSVC` compiler.<br>
+Currently only Windows is suppored, so you also need the `MSVC` compiler.<br>
 I plan to make it multi-platform at some point.
 
 ## vcpkg
