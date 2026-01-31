@@ -3,7 +3,7 @@ A hobby game project writen in C++ using the SDL2 libraries.
 
 # Requirements
 Project dependencies are downloaded and linked automatically via `vcpkg` and `CMake`.<br>
-Per platform build essentials (C/C++ compiler) - `MSVC`, `g++`, `clang`
+Per platform build essentials (C/C++ compiler) - `MSVC`, `g++`, `Clang`
 
 ## Windows
 ### vcpkg
