@@ -37,23 +37,30 @@ The `cmake` environment variable will be configured automatically.
 1. Install prerequisites.
 ```
 sudo apt update
-sudo apt install -y build-essential cmake ninja-build curl zip unzip tar
+sudo apt install -y build-essential cmake ninja-build pkg-config curl zip unzip tar
 ```
-2. Clone the `vcpkg` git repository.
+2. Install `vcpkg` dependencies for building SDL from source.
+
+On Linux SDL requires additional features for integration with the desktop stack - `sdl2[core,dbus,ibus,wayland,x11]`.<br>
+In order for `vcpkg` to build them from source you need to install additional dependencies.
+```
+sudo apt install -y gperf meson python3-jinja2 libltdl-dev
+```
+3. Clone the `vcpkg` git repository.
 ```
 git clone https://github.com/microsoft/vcpkg.git ~/.vcpkg
 ```
-3. Run the `vcpkg` boostrap script.
+4. Run the `vcpkg` boostrap script.
 ```
 cd ~/.vcpkg
 ./bootstrap-vcpkg.sh
 ```
-4. Set the `VCPKG_ROOT` environment variable and add it to `PATH`.
+5. Set the `VCPKG_ROOT` environment variable and add it to `PATH`.
 ```
 echo 'export VCPKG_ROOT="$HOME/.vcpkg"' >> ~/.bashrc
 echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.bashrc
 ```
-5. Reload and verify.
+6. Reload and verify.
 ```
 source ~/.bashrc
 vcpkg --version
@@ -63,7 +70,7 @@ vcpkg --version
 1. Install prerequisites.
 ```
 xcode-select --install
-brew install ninja cmake pkg-config
+brew install cmake ninja pkg-config
 ```
 2. Clone the `vcpkg` git repository.
 ```
