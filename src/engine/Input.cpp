@@ -3,33 +3,37 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <SDL_keyboard.h>
-#include <stdexcept>
+#include <fmt/base.h>
 
 // ---------------- InputMappings ----------------
 static SDL_Scancode scancode_from_name(const std::string& name) {
-    SDL_Scancode sc = SDL_GetScancodeFromName(name.c_str());
-    if (sc == SDL_SCANCODE_UNKNOWN) {
-        throw std::runtime_error(std::format("Unknown key: {}", name));
+    SDL_Scancode scancode = SDL_GetScancodeFromName(name.c_str());
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
+        fmt::println(stderr, "Unknown key: {}", name);
     }
 
-    return sc;
+    return scancode;
 }
 
 static InputMappings load_input_mappings(const std::filesystem::path& path) {
+    InputMappings input_mappings;
+
     std::ifstream file(path);
     if (!file.is_open()) {
-        throw std::runtime_error(std::format("Cannot open file: {}", path.string()));
+        fmt::println(stderr, "Cannot open input config file: {}", path.string());
+        return input_mappings;
     }
 
     nlohmann::json json = nlohmann::json::parse(file);
-    InputMappings input_mappings;
 
     // Actions
     for (auto& [action, keys] : json["action_mappings"].items()) {
         std::vector<SDL_Scancode> scancodes;
         for (auto& key : keys) {
-            SDL_Scancode sc = scancode_from_name(key.get<std::string>());
-            scancodes.push_back(sc);
+            SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
+            if (scancode != SDL_SCANCODE_UNKNOWN) {
+                scancodes.push_back(scancode);
+            }
         }
 
         input_mappings.actions[action] = scancodes;
@@ -43,12 +47,16 @@ static InputMappings load_input_mappings(const std::filesystem::path& path) {
 
         for (auto& key : cfg["positive"]) {
             SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-            axis_mappings.positive.push_back(scancode);
+            if (scancode != SDL_SCANCODE_UNKNOWN) {
+                axis_mappings.positive.push_back(scancode);
+            }
         }
 
         for (auto& key : cfg["negative"]) {
             SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-            axis_mappings.negative.push_back(scancode);
+            if (scancode != SDL_SCANCODE_UNKNOWN) {
+                axis_mappings.negative.push_back(scancode);
+            }
         }
 
         input_mappings.axes[axis] = axis_mappings;

@@ -22,7 +22,6 @@ private:
     bool m_is_in_play = false;
     bool m_is_ticking = true;
 
-private:
     // Only the EntitySpawner can instantiate entities
     friend class EntitySpawner;
     Entity() = default;
