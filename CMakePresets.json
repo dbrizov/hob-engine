@@ -10,23 +10,11 @@
       "name": "debug-gcc",
       "hidden": false,
       "description": "Linux debug configure preset using GCC.",
-      "generator": "Unix Makefiles",
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/debug/linux-gcc",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-linux",
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "debug-mingw",
-      "hidden": false,
-      "description": "Windows debug configure preset using MinGW.",
-      "generator": "MinGW Makefiles",
-      "binaryDir": "${sourceDir}/build/debug/windows-mingw",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
@@ -70,11 +58,6 @@
       "name": "linux-debug-gcc-x64",
       "configurePreset": "debug-gcc",
       "description": "Linux debug build using GCC."
-    },
-    {
-      "name": "windows-debug-mingw-x64",
-      "configurePreset": "debug-mingw",
-      "description": "Windows debug build using MinGW."
     },
     {
       "name": "windows-debug-msvc-x64",
