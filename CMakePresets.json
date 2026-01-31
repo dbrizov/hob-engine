@@ -10,8 +10,8 @@
       "name": "debug-gcc",
       "hidden": false,
       "description": "Linux debug configure preset using GCC.",
-      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/debug/linux-gcc",
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-linux",
@@ -19,11 +19,23 @@
       }
     },
     {
+      "name": "debug-clang",
+      "hidden": false,
+      "description": "macOS debug configure preset using Clang.",
+      "binaryDir": "${sourceDir}/build/debug/macos-clang",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
       "name": "debug-msvc",
       "hidden": false,
       "description": "Windows debug configure preset using MSVC.",
-      "architecture": "x64",
       "binaryDir": "${sourceDir}/build/debug/windows-msvc",
+      "architecture": "x64",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows",
@@ -39,8 +51,8 @@
       "name": "release-msvc",
       "hidden": false,
       "description": "Windows release configure preset using MSVC.",
-      "architecture": "x64",
       "binaryDir": "${sourceDir}/build/release/windows-msvc",
+      "architecture": "x64",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows",
@@ -58,6 +70,11 @@
       "name": "linux-debug-gcc-x64",
       "configurePreset": "debug-gcc",
       "description": "Linux debug build using GCC."
+    },
+    {
+      "name": "macos-debug-clang-arm64-osx",
+      "configurePreset": "debug-clang",
+      "description": "macOS debug build using Clang."
     },
     {
       "name": "windows-debug-msvc-x64",
