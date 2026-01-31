@@ -3,7 +3,7 @@ A hobby game project writen in C++ using the SDL2 libraries.
 
 # Requirements
 Project dependencies are downloaded and linked automatically via `vcpkg` and `CMake`.<br>
-Per platform build essentials (C/C++ compiler) - `MSVC`, `g++`, `Clang`
+A C/C++ compiler with C++20 support (e.g. MSVC, GCC, or Clang)
 
 ## Windows
 ### vcpkg
@@ -18,7 +18,7 @@ cd vcpkg
 ```
 3. Set the `VCPKG_ROOT` environment variable and add it to `PATH`.
 ```
-$env:VCPKG_ROOT = "C:\path\to\vcpkg"
+$env:VCPKG_ROOT = "C:/path/to/vcpkg"
 $env:PATH = "$env:VCPKG_ROOT;$env:PATH"
 ```
 > [!NOTE]
@@ -32,6 +32,32 @@ vcpkg --version
 ### CMake
 Go to [cmake.org](https://cmake.org/) and download the `x86-x64` Windows installer.<br>
 The `cmake` environment variable will be configured automatically.
+
+## macOS
+1. Install prerequisites.
+```
+xcode-select --install
+brew install cmake ninja pkg-config
+```
+2. Clone the `vcpkg` git repository.
+```
+git clone https://github.com/microsoft/vcpkg.git ~/.vcpkg
+```
+3. Run the `vcpkg` boostrap script.
+```
+cd ~/.vcpkg
+./bootstrap-vcpkg.sh
+```
+4. Set the `VCPKG_ROOT` environment variable and add it to `PATH`.
+```
+echo 'export VCPKG_ROOT="$HOME/.vcpkg"' >> ~/.zshrc
+echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.zshrc
+```
+5. Reload and verify.
+```
+source ~/.zshrc
+vcpkg --version
+```
 
 ## GNU/Linux
 1. Install prerequisites.
@@ -63,31 +89,5 @@ echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.bashrc
 6. Reload and verify.
 ```
 source ~/.bashrc
-vcpkg --version
-```
-
-## macOS
-1. Install prerequisites.
-```
-xcode-select --install
-brew install cmake ninja pkg-config
-```
-2. Clone the `vcpkg` git repository.
-```
-git clone https://github.com/microsoft/vcpkg.git ~/.vcpkg
-```
-3. Run the `vcpkg` boostrap script.
-```
-cd ~/.vcpkg
-./bootstrap-vcpkg.sh
-```
-4. Set the `VCPKG_ROOT` environment variable and add it to `PATH`.
-```
-echo 'export VCPKG_ROOT="$HOME/.vcpkg"' >> ~/.zshrc
-echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.zshrc
-```
-5. Reload and verify.
-```
-source ~/.zshrc
 vcpkg --version
 ```
