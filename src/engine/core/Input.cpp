@@ -118,11 +118,11 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
     for (auto& [action, keys] : m_input_mappings.actions) {
         for (auto key : keys) {
             bool pressed_now =
-                    std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), key) !=
-                    m_pressed_keys_this_frame.end();
+                std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), key) !=
+                m_pressed_keys_this_frame.end();
             bool pressed_before =
-                    std::find(m_pressed_keys_last_frame.begin(), m_pressed_keys_last_frame.end(), key) !=
-                    m_pressed_keys_last_frame.end();
+                std::find(m_pressed_keys_last_frame.begin(), m_pressed_keys_last_frame.end(), key) !=
+                m_pressed_keys_last_frame.end();
 
             if (pressed_now && !pressed_before) {
                 const char* ev_name = action.c_str();
