@@ -14,11 +14,11 @@ git clone https://github.com/microsoft/vcpkg.git vcpkg
 2. Run the `vcpkg` boostrap script.
 ```
 cd vcpkg
-./bootstrap-vcpkg.bat
+.\bootstrap-vcpkg.bat
 ```
 3. Set the `VCPKG_ROOT` environment variable and add it to `PATH`.
 ```
-$env:VCPKG_ROOT = "C:/path/to/vcpkg"
+$env:VCPKG_ROOT = "C:\path\to\vcpkg"
 $env:PATH = "$env:VCPKG_ROOT;$env:PATH"
 ```
 > [!NOTE]
