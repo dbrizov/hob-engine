@@ -14,7 +14,7 @@ App::App(uint32_t fps,
     : m_sdl_context(screen_width, screen_height, window_title)
     , m_timer(fps)
     , m_input(input_config_path)
-    , m_assets(assets_root_path)
+    , m_assets(assets_root_path, m_sdl_context.get_renderer())
     , m_render_queue()
     , m_entity_spawner() {}
 
@@ -28,18 +28,6 @@ void App::run() {
 
     bool is_running = true;
     SDL_Event event;
-
-    // TODO Remove Debug load_texture
-    const std::filesystem::path path = m_assets.get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
-    const TextureId texture_id = m_assets.load_texture(m_sdl_context.get_renderer(), path.c_str());
-    SDL_Texture* texture = m_assets.get_texture(texture_id);
-
-    RenderData data{
-        texture_id,
-        Vector2::one() * 50.0f,
-        Vector2::one() * 50.0f,
-        Vector2::one() * 2.0f
-    };
 
     while (is_running) {
         while (SDL_PollEvent(&event)) {
@@ -69,7 +57,9 @@ void App::run() {
         // entities.physics_tick()
 
         // entities.render_tick()
-        m_render_queue.enqueue(data);
+        for (auto& entity : m_entity_spawner.get_entities()) {
+            entity.render_tick(delta_time, m_render_queue);
+        }
 
         // --- Rendering ---
         SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
@@ -99,6 +89,10 @@ bool App::is_initialized() const {
     return m_sdl_context.is_initialized();
 }
 
-EntitySpawner* App::get_entity_spawner() {
-    return &m_entity_spawner;
+Assets& App::get_assets() {
+    return m_assets;
+}
+
+EntitySpawner& App::get_entity_spawner() {
+    return m_entity_spawner;
 }

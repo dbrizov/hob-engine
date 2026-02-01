@@ -32,7 +32,9 @@ public:
 
     void run();
     bool is_initialized() const;
-    EntitySpawner* get_entity_spawner();
+
+    Assets& get_assets();
+    EntitySpawner& get_entity_spawner();
 };
 
 

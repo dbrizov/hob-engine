@@ -2,6 +2,7 @@
 #define CPP_PLATFORMER_COMPONENT_H
 
 
+class RenderQueue;
 class Entity;
 
 
@@ -31,7 +32,7 @@ public:
     virtual void exit_play();
     virtual void tick(float delta_time);
     virtual void physics_tick(float delta_time);
-    virtual void render_tick(float delta_time);
+    virtual void render_tick(float delta_time, RenderQueue& render_queue);
 };
 
 

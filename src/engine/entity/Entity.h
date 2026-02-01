@@ -35,7 +35,7 @@ public:
     void exit_play();
     void tick(float delta_time);
     void physics_tick(float fixed_delta_time);
-    void render_tick(float delta_time);
+    void render_tick(float delta_time, RenderQueue& render_queue);
 
     EntityId get_id() const;
     void set_id(EntityId id);

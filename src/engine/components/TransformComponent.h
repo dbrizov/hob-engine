@@ -7,7 +7,7 @@
 class TransformComponent : public Component {
     Vector2 m_position;
     Vector2 m_prev_position;
-    Vector2 m_scale;
+    Vector2 m_scale = Vector2(1.0f, 1.0f);
 
 public:
     virtual ComponentPriority get_priority() const override;

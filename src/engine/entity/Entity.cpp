@@ -26,9 +26,9 @@ void Entity::physics_tick(float fixed_delta_time) {
     }
 }
 
-void Entity::render_tick(float delta_time) {
+void Entity::render_tick(float delta_time, RenderQueue& render_queue) {
     for (auto& component : m_components) {
-        component->render_tick(delta_time);
+        component->render_tick(delta_time, render_queue);
     }
 }
 

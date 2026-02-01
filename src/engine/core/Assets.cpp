@@ -4,8 +4,9 @@
 #include <SDL_render.h>
 #include <fmt/base.h>
 
-Assets::Assets(const std::filesystem::path& assets_root_path)
+Assets::Assets(const std::filesystem::path& assets_root_path, SDL_Renderer* renderer)
     : m_assets_root_path(assets_root_path)
+    , m_renderer(renderer)
     , m_textures()
     , m_next_texture_id(INVALID_TEXTURE_ID) {}
 
@@ -27,8 +28,8 @@ SDL_Texture* Assets::get_texture(TextureId id) const {
     return nullptr;
 }
 
-TextureId Assets::load_texture(SDL_Renderer* renderer, const std::filesystem::path& path) {
-    SDL_Texture* texture = IMG_LoadTexture(renderer, path.string().c_str());
+TextureId Assets::load_texture(const std::filesystem::path& path) {
+    SDL_Texture* texture = IMG_LoadTexture(m_renderer, path.string().c_str());
     if (!texture) {
         fmt::println(stderr, "IMG_LoadTexture failed: {}", IMG_GetError());
         return INVALID_TEXTURE_ID;

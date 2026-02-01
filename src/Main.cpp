@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <fmt/base.h>
 
+#include "engine/components/ImageComponent.h"
 #include "engine/core/App.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
@@ -56,12 +57,15 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Entity* e1 = app.get_entity_spawner()->spawn_entity();
-    e1->add_component<TransformComponent>();
-    app.get_entity_spawner()->destroy_entity(e1->get_id());
+    Entity* entity = app.get_entity_spawner().spawn_entity();
+    TransformComponent* transform_component = entity->add_component<TransformComponent>();
+    transform_component->set_position(Vector2(50.0f, 50.0f));
+    transform_component->set_scale(Vector2(2.0f, 2.0f));
 
-    Entity* e2 = app.get_entity_spawner()->spawn_entity();
-    e2->add_component<TransformComponent>();
+    ImageComponent* image_component = entity->add_component<ImageComponent>();
+    const std::filesystem::path path = app.get_assets().get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
+    const TextureId texture_id = app.get_assets().load_texture(path.c_str());
+    image_component->set_texture_id(texture_id);
 
     app.run();
 
