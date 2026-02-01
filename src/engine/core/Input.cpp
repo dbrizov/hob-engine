@@ -72,6 +72,8 @@ InputEvent::InputEvent(const char* ev_name, InputEventType ev_type, float ev_axi
 
 std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
     std::vector<SDL_Scancode> keys;
+    keys.reserve(32);
+
     auto add_key = [&keys](SDL_Scancode key) {
         if (std::find(keys.begin(), keys.end(), key) == keys.end()) {
             keys.push_back(key);
@@ -176,22 +178,37 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
     }
 }
 
-SubscriberId Input::subscribe(InputEventHandler handler) {
-    SubscriberId subscriber_id = m_next_subscriber_id;
-    m_next_subscriber_id += 1;
+InputEventHandlerId Input::add_input_event_handler(InputEventHandler handler) {
+    InputEventHandlerId handler_id = m_next_handler_id;
+    m_next_handler_id += 1;
 
-    m_subscribers.emplace(subscriber_id, std::move(handler));
+    m_handler_index_by_id[handler_id] = m_handlers.size();
+    m_handlers.emplace_back(handler_id, std::move(handler));
 
-    return subscriber_id;
+    return handler_id;
 }
 
-void Input::unsubscribe(SubscriberId id) {
-    m_subscribers.erase(id);
+bool Input::remove_input_event_handler(InputEventHandlerId id) {
+    auto it = m_handler_index_by_id.find(id);
+    if (it == m_handler_index_by_id.end()) {
+        return false;
+    }
+
+    uint32_t index = it->second;
+    uint32_t last_index = m_handlers.size() - 1;
+
+    if (index != last_index) {
+        m_handlers[index] = std::move(m_handlers[last_index]); // move last into hole
+        m_handler_index_by_id[m_handlers[index].handler_id] = index; // fix moved id's index
+    }
+
+    m_handlers.pop_back();
+    return true;
 }
 
-void Input::dispatch_event(const InputEvent& event) {
-    for (auto& [id, handler] : m_subscribers) {
-        handler(event);
+void Input::dispatch_event(const InputEvent& event) const {
+    for (auto& entry : m_handlers) {
+        entry.handler(event);
     }
 }
 

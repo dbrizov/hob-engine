@@ -24,7 +24,7 @@ void handle_event(const InputEvent& event) {
 }
 
 void App::run() {
-    m_input.subscribe(handle_event);
+    m_input.add_input_event_handler(handle_event);
 
     bool is_running = true;
     SDL_Event event;

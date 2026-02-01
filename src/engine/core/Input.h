@@ -24,7 +24,7 @@ struct InputEvent {
 };
 
 
-using SubscriberId = uint32_t;
+using InputEventHandlerId = uint32_t;
 using InputEventHandler = std::function<void(const InputEvent&)>;
 
 
@@ -45,8 +45,14 @@ struct InputMappings {
 
 
 class Input {
-    SubscriberId m_next_subscriber_id = 0;
-    std::unordered_map<SubscriberId, InputEventHandler> m_subscribers;
+    struct HandlerEntry {
+        InputEventHandlerId handler_id;
+        InputEventHandler handler;
+    };
+
+    InputEventHandlerId m_next_handler_id = 0;
+    std::vector<HandlerEntry> m_handlers;
+    std::unordered_map<InputEventHandlerId, uint32_t> m_handler_index_by_id;
 
     InputMappings m_input_mappings;
     std::unordered_map<std::string, float> m_axis_values;
@@ -59,11 +65,11 @@ public:
 
     void tick(float delta_time, const uint8_t* keyboard_state);
 
-    SubscriberId subscribe(InputEventHandler handler);
-    void unsubscribe(SubscriberId id);
+    InputEventHandlerId add_input_event_handler(InputEventHandler handler);
+    bool remove_input_event_handler(InputEventHandlerId id);
 
 private:
-    void dispatch_event(const InputEvent& event);
+    void dispatch_event(const InputEvent& event) const;
     void update_pressed_keys(const uint8_t* keyboard_state);
 };
 
