@@ -23,9 +23,12 @@ class Entity final {
     bool m_is_in_play = false;
     bool m_is_ticking = true;
 
-    // Only the EntitySpawner can instantiate entities
+    // EntitySpawner is a friend of Entity for 2 reasons.
+    // 1. Only the EntitySpawner can create entities.
+    // 2. Only the EntitySpawner should be able to set the App address when an entity is spawned.
     friend class EntitySpawner;
     Entity() = default;
+    void set_app(App* app);
 
 public:
     Entity(const Entity&) = delete;
@@ -34,14 +37,13 @@ public:
     Entity(Entity&&) = delete;
     Entity& operator=(Entity&&) = delete;
 
-    App* get_app() const;
-    void set_app(App* app);
-
     void enter_play();
     void exit_play();
     void tick(float delta_time);
     void physics_tick(float fixed_delta_time);
     void render_tick(float delta_time, RenderQueue& render_queue);
+
+    App* get_app() const;
 
     EntityId get_id() const;
     void set_id(EntityId id);

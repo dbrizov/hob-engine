@@ -63,9 +63,12 @@ class EntitySpawner {
     std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
     std::unordered_set<EntityId> m_entity_destroy_requests;
 
-public:
+    // App is a friend of EntitySpawner.
+    // Only the App should be able to set its address at initialization.
+    friend class App;
     void set_app(App* app);
 
+public:
     EntityRange get_entities();
     ConstEntityRange get_entities_const() const;
 
