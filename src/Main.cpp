@@ -64,7 +64,8 @@ int main(int argc, char* argv[]) {
     transform_component->set_scale(Vector2(2.0f, 2.0f));
 
     ImageComponent* image_component = entity->add_component<ImageComponent>();
-    const std::filesystem::path path = app.get_assets()->get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
+    const std::filesystem::path path =
+        app.get_assets()->get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
     const TextureId texture_id = app.get_assets()->load_texture(path.c_str());
     image_component->set_texture_id(texture_id);
 
