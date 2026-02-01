@@ -19,8 +19,7 @@ void ImageComponent::render_tick(float delta_time, RenderQueue& render_queue) {
         m_texture_id,
         position,
         prev_position,
-        scale
-    ));
+        scale));
 }
 
 TextureId ImageComponent::get_texture_id() const {
