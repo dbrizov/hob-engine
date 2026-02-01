@@ -1,7 +1,5 @@
 #include "Entity.h"
 
-#include <fmt/base.h>
-
 void Entity::enter_play() {
     m_is_in_play = true;
     for (auto& component : m_components) {

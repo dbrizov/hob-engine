@@ -3,6 +3,7 @@
 
 #include "engine/core/App.h"
 #include "engine/components/TransformComponent.h"
+#include "engine/entity/Entity.h"
 
 constexpr uint32_t FPS = 60;
 constexpr uint32_t SCREEN_WIDTH = 640;

@@ -2,11 +2,13 @@
 
 #include <cassert>
 
-EntitySpawner::EntityRange EntitySpawner::get_entities() {
+#include "Entity.h"
+
+EntityRange EntitySpawner::get_entities() {
     return EntityRange(m_entities);
 }
 
-EntitySpawner::ConstEntityRange EntitySpawner::get_entities_const() const {
+ConstEntityRange EntitySpawner::get_entities_const() const {
     return ConstEntityRange(m_entities);
 }
 

@@ -5,7 +5,6 @@
 
 
 class TransformComponent : public Component {
-private:
     Vector2 m_position;
     Vector2 m_prev_position;
     Vector2 m_scale;

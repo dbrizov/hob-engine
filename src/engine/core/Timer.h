@@ -4,7 +4,6 @@
 
 
 class Timer {
-private:
     uint32_t m_fps;
     float m_time_scale;
     float m_play_time;

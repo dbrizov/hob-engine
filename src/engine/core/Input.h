@@ -45,7 +45,6 @@ struct InputMappings {
 
 
 class Input {
-private:
     SubscriberId m_next_subscriber_id = 0;
     std::unordered_map<SubscriberId, InputEventHandler> m_subscribers;
 

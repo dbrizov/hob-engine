@@ -4,7 +4,7 @@
 #include "Input.h"
 #include "SdlContext.h"
 #include "Timer.h"
-#include "../entity/EntitySpawner.h"
+#include "engine/entity/EntitySpawner.h"
 
 
 struct SDL_Window;
@@ -12,7 +12,6 @@ struct SDL_Renderer;
 
 
 class App {
-private:
     // SDL context must be declared first so it is destroyed last.
     // Objects below depend on SDL resources.
     SdlContext m_sdl_context;

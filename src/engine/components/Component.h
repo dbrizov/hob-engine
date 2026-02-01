@@ -14,7 +14,6 @@ enum class ComponentPriority {
 
 
 class Component {
-private:
     Entity* m_entity = nullptr;
 
 protected:

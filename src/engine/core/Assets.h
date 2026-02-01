@@ -3,17 +3,14 @@
 #include <filesystem>
 #include <unordered_map>
 
+#include "AssetHandles.h"
+
 
 struct SDL_Renderer;
 struct SDL_Texture;
 
 
-using TextureId = int32_t;
-constexpr TextureId INVALID_TEXTURE_ID = -1;
-
-
 class Assets {
-private:
     std::filesystem::path m_assets_root_path;
     std::unordered_map<TextureId, SDL_Texture*> m_textures;
     TextureId m_next_texture_id;

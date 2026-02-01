@@ -2,21 +2,18 @@
 #define CPP_PLATFORMER_ENTITY_H
 #include <algorithm>
 #include <cassert>
-#include <cstdint>
 #include <memory>
 #include <vector>
 
+#include "EntityHandle.h"
 #include "engine/components/Component.h"
 
-
-using EntityId = uint32_t;
 
 template<typename T>
 concept ComponentType = std::derived_from<T, Component>;
 
 
 class Entity final {
-private:
     EntityId m_id = 0;
     std::vector<std::unique_ptr<Component>> m_components;
     bool m_is_in_play = false;
