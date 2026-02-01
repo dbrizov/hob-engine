@@ -2,7 +2,7 @@
 
 
 void RenderQueue::enqueue(RenderData data) {
-    m_render_data.emplace_back(data);
+    m_render_data.push_back(data);
 }
 
 void RenderQueue::clear() {
