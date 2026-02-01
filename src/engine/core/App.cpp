@@ -12,11 +12,11 @@ App::App(uint32_t fps,
          const std::filesystem::path& input_config_path,
          const std::filesystem::path& assets_root_path)
     : m_sdl_context(screen_width, screen_height, window_title)
-    , m_timer(fps)
-    , m_input(input_config_path)
-    , m_assets(assets_root_path, m_sdl_context.get_renderer())
-    , m_render_queue()
-    , m_entity_spawner() {
+      , m_timer(fps)
+      , m_input(input_config_path)
+      , m_assets(assets_root_path, m_sdl_context.get_renderer())
+      , m_render_queue()
+      , m_entity_spawner() {
     m_entity_spawner.set_app(this);
 }
 

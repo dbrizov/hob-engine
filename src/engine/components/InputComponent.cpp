@@ -8,9 +8,10 @@ ComponentPriority InputComponent::get_priority() const {
 }
 
 void InputComponent::enter_play() {
-    m_input_event_handler_id = get_entity()->get_app()->get_input()->add_input_event_handler([this](const InputEvent& event) {
-        this->on_input_event(event);
-    });
+    m_input_event_handler_id = get_entity()->get_app()->get_input()->add_input_event_handler(
+        [this](const InputEvent& event) {
+            this->on_input_event(event);
+        });
 }
 
 void InputComponent::exit_play() {
@@ -94,8 +95,7 @@ void InputComponent::clear_all_bindings() {
 
 void InputComponent::on_input_event(const InputEvent& event) {
     switch (event.type) {
-        case InputEventType::AXIS:
-        {
+        case InputEventType::AXIS: {
             auto it = m_axis_bindings.find(event.name);
             if (it == m_axis_bindings.end()) {
                 return;
@@ -108,8 +108,7 @@ void InputComponent::on_input_event(const InputEvent& event) {
             break;
         }
 
-        case InputEventType::PRESSED:
-        {
+        case InputEventType::PRESSED: {
             auto it = m_action_pressed_bindings.find(event.name);
             if (it == m_action_pressed_bindings.end()) {
                 return;
@@ -122,8 +121,7 @@ void InputComponent::on_input_event(const InputEvent& event) {
             break;
         }
 
-        case InputEventType::RELEASED:
-        {
+        case InputEventType::RELEASED: {
             auto it = m_action_released_bindings.find(event.name);
             if (it == m_action_released_bindings.end()) {
                 return;

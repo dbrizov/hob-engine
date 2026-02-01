@@ -15,9 +15,10 @@ struct RenderData {
 
     RenderData(TextureId texture_id_, Vector2 position_, Vector2 prev_position_, Vector2 scale_)
         : texture_id(texture_id_)
-        , position(position_)
-        , prev_position(prev_position_)
-        , scale(scale_) {}
+          , position(position_)
+          , prev_position(prev_position_)
+          , scale(scale_) {
+    }
 };
 
 

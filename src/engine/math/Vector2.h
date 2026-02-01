@@ -12,7 +12,8 @@ struct Vector2 {
     constexpr Vector2() = default;
 
     constexpr Vector2(float x_, float y_) : x(x_)
-                                          , y(y_) {}
+                                            , y(y_) {
+    }
 
     static constexpr Vector2 zero() { return Vector2(); }
     static constexpr Vector2 one() { return Vector2(1.0f, 1.0f); }

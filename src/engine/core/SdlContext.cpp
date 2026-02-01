@@ -6,11 +6,11 @@
 
 SdlContext::SdlContext(uint32_t screen_width, uint32_t screen_height, const std::string& window_title)
     : m_is_initialized(false)
-    , m_window(nullptr)
-    , m_renderer(nullptr)
-    , m_screen_width(screen_width)
-    , m_screen_height(screen_height)
-    , m_window_title(window_title) {
+      , m_window(nullptr)
+      , m_renderer(nullptr)
+      , m_screen_width(screen_width)
+      , m_screen_height(screen_height)
+      , m_window_title(window_title) {
     // SDL_Init
     int sld_init_flags = SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
     if (SDL_Init(sld_init_flags) != 0) {

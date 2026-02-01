@@ -12,12 +12,17 @@ ComponentPriority Component::get_priority() const {
     return ComponentPriority::DEFAULT;
 }
 
-void Component::enter_play() {}
+void Component::enter_play() {
+}
 
-void Component::exit_play() {}
+void Component::exit_play() {
+}
 
-void Component::tick(float delta_time) {}
+void Component::tick(float delta_time) {
+}
 
-void Component::physics_tick(float delta_time) {}
+void Component::physics_tick(float delta_time) {
+}
 
-void Component::render_tick(float delta_time, RenderQueue& render_queue) {}
+void Component::render_tick(float delta_time, RenderQueue& render_queue) {
+}

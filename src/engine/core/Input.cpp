@@ -67,8 +67,9 @@ static InputMappings load_input_mappings(const std::filesystem::path& path) {
 
 InputEvent::InputEvent(const char* ev_name, InputEventType ev_type, float ev_axis_value)
     : name(ev_name)
-    , type(ev_type)
-    , axis_value(ev_axis_value) {}
+      , type(ev_type)
+      , axis_value(ev_axis_value) {
+}
 
 std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
     std::vector<SDL_Scancode> keys;
@@ -116,8 +117,12 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
     // Dispatch action events
     for (auto& [action, keys] : m_input_mappings.actions) {
         for (auto key : keys) {
-            bool pressed_now = std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), key) != m_pressed_keys_this_frame.end();
-            bool pressed_before = std::find(m_pressed_keys_last_frame.begin(), m_pressed_keys_last_frame.end(), key) != m_pressed_keys_last_frame.end();
+            bool pressed_now =
+                    std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), key) !=
+                    m_pressed_keys_this_frame.end();
+            bool pressed_before =
+                    std::find(m_pressed_keys_last_frame.begin(), m_pressed_keys_last_frame.end(), key) !=
+                    m_pressed_keys_last_frame.end();
 
             if (pressed_now && !pressed_before) {
                 const char* ev_name = action.c_str();
@@ -142,12 +147,14 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
     for (auto& [axis, mapping] : m_input_mappings.axes) {
         bool any_positive = std::any_of(
             mapping.positive.begin(), mapping.positive.end(), [&](SDL_Scancode k) {
-                return std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), k) != m_pressed_keys_this_frame.end();
+                return std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), k) !=
+                       m_pressed_keys_this_frame.end();
             });
 
         bool any_negative = std::any_of(
             mapping.negative.begin(), mapping.negative.end(), [&](SDL_Scancode k) {
-                return std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), k) != m_pressed_keys_this_frame.end();
+                return std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), k) !=
+                       m_pressed_keys_this_frame.end();
             });
 
         float& axis_value = m_axis_values[axis];

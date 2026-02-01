@@ -4,10 +4,11 @@
 
 Timer::Timer(uint32_t fps)
     : m_fps(fps)
-    , m_time_scale(1.0f)
-    , m_play_time(0.0f)
-    , m_delta_time(0.0f)
-    , m_last_ticks(0) {}
+      , m_time_scale(1.0f)
+      , m_play_time(0.0f)
+      , m_delta_time(0.0f)
+      , m_last_ticks(0) {
+}
 
 void Timer::tick() {
     uint32_t current_ticks = SDL_GetTicks();

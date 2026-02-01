@@ -6,9 +6,10 @@
 
 Assets::Assets(const std::filesystem::path& assets_root_path, SDL_Renderer* renderer)
     : m_assets_root_path(assets_root_path)
-    , m_renderer(renderer)
-    , m_textures()
-    , m_next_texture_id(INVALID_TEXTURE_ID) {}
+      , m_renderer(renderer)
+      , m_textures()
+      , m_next_texture_id(INVALID_TEXTURE_ID) {
+}
 
 Assets::~Assets() {
     unload_all_textures();
