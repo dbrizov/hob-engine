@@ -11,8 +11,9 @@ struct Vector2 {
 
     constexpr Vector2() = default;
 
-    constexpr Vector2(float x_, float y_) : x(x_)
-                                            , y(y_) {
+    constexpr Vector2(float x_, float y_)
+        : x(x_)
+          , y(y_) {
     }
 
     static constexpr Vector2 zero() { return Vector2(); }
