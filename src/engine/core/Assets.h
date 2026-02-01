@@ -3,11 +3,12 @@
 #include <filesystem>
 #include <unordered_map>
 
-#include "AssetHandles.h"
-
 
 struct SDL_Renderer;
 struct SDL_Texture;
+
+using TextureId = int32_t;
+constexpr TextureId INVALID_TEXTURE_ID = -1;
 
 
 class Assets {

@@ -5,9 +5,10 @@
 #include <memory>
 #include <vector>
 
-#include "EntityHandle.h"
 #include "engine/components/Component.h"
 
+
+using EntityId = uint32_t;
 
 template<typename T>
 concept ComponentType = std::derived_from<T, Component>;
