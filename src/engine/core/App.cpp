@@ -15,6 +15,7 @@ App::App(uint32_t fps,
     , m_timer(fps)
     , m_input(input_config_path)
     , m_assets(assets_root_path)
+    , m_render_queue()
     , m_entity_spawner() {}
 
 // TODO Remove debug input events
@@ -33,8 +34,12 @@ void App::run() {
     const TextureId texture_id = m_assets.load_texture(m_sdl_context.get_renderer(), path.c_str());
     SDL_Texture* texture = m_assets.get_texture(texture_id);
 
-    int tex_w = 0, tex_h = 0;
-    SDL_QueryTexture(texture, nullptr, nullptr, &tex_w, &tex_h);
+    RenderData data{
+        texture_id,
+        Vector2::one() * 50.0f,
+        Vector2::one() * 50.0f,
+        Vector2::one() * 2.0f
+    };
 
     while (is_running) {
         while (SDL_PollEvent(&event)) {
@@ -63,19 +68,28 @@ void App::run() {
 
         // entities.physics_tick()
 
+        // entities.render_tick()
+        m_render_queue.enqueue(data);
+
         // --- Rendering ---
         SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
         SDL_RenderClear(m_sdl_context.get_renderer());
+        for (const RenderData& render_data : m_render_queue.get_render_data()) {
+            SDL_Texture* tex = m_assets.get_texture(render_data.texture_id);
+            int tex_w = 0, tex_h = 0;
+            SDL_QueryTexture(tex, nullptr, nullptr, &tex_w, &tex_h);
 
-        SDL_Rect destination;
-        destination.w = tex_w * 2;
-        destination.h = tex_h * 2;
-        destination.x = (m_sdl_context.get_screen_width() - destination.w) / 2;
-        destination.y = (m_sdl_context.get_screen_height() - destination.h) / 2;
+            SDL_Rect dst{
+                static_cast<int>(render_data.position.x),
+                static_cast<int>(render_data.position.y),
+                tex_w * static_cast<int>(render_data.scale.x),
+                tex_h * static_cast<int>(render_data.scale.y),
+            };
 
-        SDL_RenderCopy(m_sdl_context.get_renderer(), texture, nullptr, &destination);
+            SDL_RenderCopy(m_sdl_context.get_renderer(), tex, nullptr, &dst);
+        }
 
-        // entities.render_tick()
+        m_render_queue.clear();
 
         SDL_RenderPresent(m_sdl_context.get_renderer());
     }

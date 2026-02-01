@@ -2,6 +2,7 @@
 #define CPP_PLATFORMER_APP_H
 #include "Assets.h"
 #include "Input.h"
+#include "Render.h"
 #include "SdlContext.h"
 #include "Timer.h"
 #include "engine/entity/EntitySpawner.h"
@@ -18,6 +19,7 @@ class App {
     Timer m_timer;
     Input m_input;
     Assets m_assets;
+    RenderQueue m_render_queue;
     EntitySpawner m_entity_spawner;
 
 public:
