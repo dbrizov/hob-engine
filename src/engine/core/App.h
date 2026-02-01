@@ -4,7 +4,7 @@
 #include "Input.h"
 #include "SdlContext.h"
 #include "Timer.h"
-#include "entity/EntitySpawner.h"
+#include "../entity/EntitySpawner.h"
 
 
 struct SDL_Window;

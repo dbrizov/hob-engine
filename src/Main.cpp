@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <fmt/base.h>
 
-#include "engine/App.h"
+#include "engine/core/App.h"
 #include "engine/components/TransformComponent.h"
 
 constexpr uint32_t FPS = 60;
