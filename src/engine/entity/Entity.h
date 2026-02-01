@@ -8,6 +8,8 @@
 #include "engine/components/Component.h"
 
 
+class App;
+
 using EntityId = uint32_t;
 
 template<typename T>
@@ -15,6 +17,7 @@ concept ComponentType = std::derived_from<T, Component>;
 
 
 class Entity final {
+    App* m_app = nullptr;
     EntityId m_id = 0;
     std::vector<std::unique_ptr<Component>> m_components;
     bool m_is_in_play = false;
@@ -30,6 +33,9 @@ public:
 
     Entity(Entity&&) = delete;
     Entity& operator=(Entity&&) = delete;
+
+    App* get_app() const;
+    void set_app(App* app);
 
     void enter_play();
     void exit_play();

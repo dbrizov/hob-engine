@@ -16,16 +16,11 @@ App::App(uint32_t fps,
     , m_input(input_config_path)
     , m_assets(assets_root_path, m_sdl_context.get_renderer())
     , m_render_queue()
-    , m_entity_spawner() {}
-
-// TODO Remove debug input events
-void handle_event(const InputEvent& event) {
-    fmt::println("InputEvent (name: {}, type: {}, axis_value: {})", event.name, static_cast<int>(event.type), event.axis_value);
+    , m_entity_spawner() {
+    m_entity_spawner.set_app(this);
 }
 
 void App::run() {
-    m_input.add_input_event_handler(handle_event);
-
     bool is_running = true;
     SDL_Event event;
 
@@ -89,10 +84,14 @@ bool App::is_initialized() const {
     return m_sdl_context.is_initialized();
 }
 
-Assets& App::get_assets() {
-    return m_assets;
+Input* App::get_input() {
+    return &m_input;
 }
 
-EntitySpawner& App::get_entity_spawner() {
-    return m_entity_spawner;
+Assets* App::get_assets() {
+    return &m_assets;
+}
+
+EntitySpawner* App::get_entity_spawner() {
+    return &m_entity_spawner;
 }

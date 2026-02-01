@@ -110,6 +110,7 @@ Input::Input(const std::filesystem::path& input_config_path) {
 }
 
 void Input::tick(float delta_time, const Uint8* keyboard_state) {
+    // TODO Optimize - have a map of pressed keys similar to SDL's keyboard_state
     update_pressed_keys(keyboard_state);
 
     // Dispatch action events
@@ -203,11 +204,12 @@ bool Input::remove_input_event_handler(InputEventHandlerId id) {
     }
 
     m_handlers.pop_back();
+    m_handler_index_by_id.erase(it);
     return true;
 }
 
 void Input::dispatch_event(const InputEvent& event) const {
-    for (auto& entry : m_handlers) {
+    for (const auto& entry : m_handlers) {
         entry.handler(event);
     }
 }

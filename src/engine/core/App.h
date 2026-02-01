@@ -33,8 +33,9 @@ public:
     void run();
     bool is_initialized() const;
 
-    Assets& get_assets();
-    EntitySpawner& get_entity_spawner();
+    Input* get_input();
+    Assets* get_assets();
+    EntitySpawner* get_entity_spawner();
 };
 
 

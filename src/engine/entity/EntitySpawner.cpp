@@ -4,6 +4,10 @@
 
 #include "Entity.h"
 
+void EntitySpawner::set_app(App* app) {
+    m_app = app;
+}
+
 EntityRange EntitySpawner::get_entities() {
     return EntityRange(m_entities);
 }
@@ -14,9 +18,10 @@ ConstEntityRange EntitySpawner::get_entities_const() const {
 
 Entity* EntitySpawner::spawn_entity() {
     std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity());
-    const EntityId entity_id = m_next_entity_id;
-    entity->set_id(entity_id);
+    EntityId entity_id = m_next_entity_id;
     m_next_entity_id += 1;
+    entity->set_id(entity_id);
+    entity->set_app(m_app);
 
     Entity* entity_ptr = entity.get();
     m_entity_spawn_requests.push_back(std::move(entity));

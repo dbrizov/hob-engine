@@ -2,8 +2,9 @@
 #include <fmt/base.h>
 
 #include "engine/components/ImageComponent.h"
-#include "engine/core/App.h"
+#include "engine/components/InputComponent.h"
 #include "engine/components/TransformComponent.h"
+#include "engine/core/App.h"
 #include "engine/entity/Entity.h"
 
 constexpr uint32_t FPS = 60;
@@ -57,15 +58,32 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Entity* entity = app.get_entity_spawner().spawn_entity();
+    Entity* entity = app.get_entity_spawner()->spawn_entity();
     TransformComponent* transform_component = entity->add_component<TransformComponent>();
     transform_component->set_position(Vector2(50.0f, 50.0f));
     transform_component->set_scale(Vector2(2.0f, 2.0f));
 
     ImageComponent* image_component = entity->add_component<ImageComponent>();
-    const std::filesystem::path path = app.get_assets().get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
-    const TextureId texture_id = app.get_assets().load_texture(path.c_str());
+    const std::filesystem::path path = app.get_assets()->get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
+    const TextureId texture_id = app.get_assets()->load_texture(path.c_str());
     image_component->set_texture_id(texture_id);
+
+    InputComponent* input_component = entity->add_component<InputComponent>();
+    input_component->bind_axis("horizontal", [](float axis) {
+        fmt::println("horizontal: {}", axis);
+    });
+
+    input_component->bind_axis("vertical", [](float axis) {
+        fmt::println("vertical: {}", axis);
+    });
+
+    input_component->bind_action("submit", InputEventType::PRESSED, []() {
+        fmt::println("submit_pressed");
+    });
+
+    input_component->bind_action("submit", InputEventType::RELEASED, []() {
+        fmt::println("submit_released");
+    });
 
     app.run();
 

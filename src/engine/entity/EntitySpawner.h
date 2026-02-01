@@ -8,6 +8,9 @@
 #include "Entity.h"
 
 
+class App;
+
+
 #pragma region Iterators
 struct EntityRange {
     std::unordered_map<EntityId, std::unique_ptr<Entity>>& map;
@@ -54,12 +57,15 @@ struct ConstEntityRange {
 
 
 class EntitySpawner {
+    App* m_app = nullptr;
     EntityId m_next_entity_id = 0;
     std::unordered_map<EntityId, std::unique_ptr<Entity>> m_entities;
     std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
     std::unordered_set<EntityId> m_entity_destroy_requests;
 
 public:
+    void set_app(App* app);
+
     EntityRange get_entities();
     ConstEntityRange get_entities_const() const;
 
