@@ -1,7 +1,6 @@
 #include "App.h"
 
 #include <SDL.h>
-#include <fmt/base.h>
 
 #include "Timer.h"
 
