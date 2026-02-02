@@ -8,7 +8,10 @@ class Timer {
     float m_time_scale;
     float m_play_time;
     float m_delta_time;
-    uint32_t m_last_ticks;
+
+    // Used for limiting FPS
+    double m_frequency;
+    uint64_t m_last_counter;
 
 public:
     explicit Timer(uint32_t fps);

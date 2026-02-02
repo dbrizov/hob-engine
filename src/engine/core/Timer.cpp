@@ -2,28 +2,45 @@
 
 #include <SDL_timer.h>
 
+
 Timer::Timer(uint32_t fps)
     : m_fps(fps)
       , m_time_scale(1.0f)
       , m_play_time(0.0f)
-      , m_delta_time(0.0f)
-      , m_last_ticks(0) {
+      , m_delta_time(0.0f) {
+    m_frequency = static_cast<double>(SDL_GetPerformanceFrequency());
+    m_last_counter = SDL_GetPerformanceCounter();
 }
 
 void Timer::tick() {
-    uint32_t current_ticks = SDL_GetTicks();
-    uint32_t delta_ms = current_ticks - m_last_ticks;
-    uint32_t target_ms = 1000 / m_fps;
+    const double target_sec = 1.0 / static_cast<double>(m_fps);
 
-    if (delta_ms < target_ms) {
-        SDL_Delay(target_ms - delta_ms);
+    uint64_t now_ms = SDL_GetPerformanceCounter();
+    double dt_sec = static_cast<double>(now_ms - m_last_counter) / m_frequency;
 
-        uint32_t after_delay_ticks = SDL_GetTicks();
-        delta_ms = after_delay_ticks - m_last_ticks;
+    // Wait until we reach target frame time
+    while (dt_sec < target_sec) {
+        double remaining = target_sec - dt_sec;
+
+        // Sleep if we have a decent chunk left (avoid oversleeping too much)
+        if (remaining > 0.002) {
+            // 2ms
+            SDL_Delay(static_cast<uint32_t>((remaining - 0.001) * 1000.0));
+        }
+
+        now_ms = SDL_GetPerformanceCounter();
+        dt_sec = static_cast<double>(now_ms - m_last_counter) / m_frequency;
     }
 
-    m_last_ticks = SDL_GetTicks();
-    m_delta_time = static_cast<float>(delta_ms) / 1000.0f;
+    // After stalls (debugger, window focus loss, OS scheduling),
+    // dt can become very large. Clamp it to avoid excessive physics
+    // catch-up and the "spiral of death".
+    m_last_counter = now_ms;
+    if (dt_sec > 0.25) {
+        dt_sec = 0.25;
+    }
+
+    m_delta_time = static_cast<float>(dt_sec);
     m_play_time += m_delta_time;
 }
 
