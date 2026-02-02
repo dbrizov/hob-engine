@@ -56,6 +56,9 @@ void Timer::frame_end() {
         // Sleep most of the remaining time (avoid oversleep, because SDL_Delay tends to oversleep)
         double remaining_seconds = target_frame_seconds - elapsed_seconds;
         if (remaining_seconds > 0.002 /* ~2ms */) {
+            // We subtract 1ms from the remaining time to prevent oversleep.
+            // 1ms is usually larger than the OS wake-up jitter.
+            // It gives us a safety margin so we don’t overshoot.
             uint32_t milliseconds = static_cast<uint32_t>((remaining_seconds - 0.001) * 1000.0);
             SDL_Delay(milliseconds);
         }
