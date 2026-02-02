@@ -18,8 +18,8 @@ void InputComponent::exit_play() {
     get_entity()->get_app()->get_input()->remove_input_event_handler(m_input_event_handler_id);
 }
 
-uint32_t InputComponent::bind_axis(const char* axis_name, AxisBindingFunc function) {
-    uint32_t binding_id = m_next_binding_id;
+BindingId InputComponent::bind_axis(const char* axis_name, AxisBindingFunc function) {
+    BindingId binding_id = m_next_binding_id;
     m_next_binding_id += 1;
 
     auto& axis_bindings = m_axis_bindings[axis_name];
@@ -28,7 +28,7 @@ uint32_t InputComponent::bind_axis(const char* axis_name, AxisBindingFunc functi
     return binding_id;
 }
 
-void InputComponent::unbind_axis(const char* axis_name, uint32_t axis_binding_id) {
+void InputComponent::unbind_axis(const char* axis_name, BindingId axis_binding_id) {
     auto it = m_axis_bindings.find(axis_name);
     if (it == m_axis_bindings.end()) {
         return;
@@ -47,8 +47,8 @@ void InputComponent::unbind_axis(const char* axis_name, uint32_t axis_binding_id
     }
 }
 
-uint32_t InputComponent::bind_action(const char* action_name, InputEventType event_type, ActionBindingFunc function) {
-    uint32_t binding_id = m_next_binding_id;
+BindingId InputComponent::bind_action(const char* action_name, InputEventType event_type, ActionBindingFunc function) {
+    BindingId binding_id = m_next_binding_id;
     m_next_binding_id += 1;
 
     if (event_type == InputEventType::PRESSED) {
@@ -63,7 +63,7 @@ uint32_t InputComponent::bind_action(const char* action_name, InputEventType eve
     return binding_id;
 }
 
-void InputComponent::unbind_action(const char* action_name, uint32_t action_binding_id) {
+void InputComponent::unbind_action(const char* action_name, BindingId action_binding_id) {
     auto erase_from = [&](auto& map) {
         auto it = map.find(action_name);
         if (it == map.end()) {

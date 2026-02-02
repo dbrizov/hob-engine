@@ -60,18 +60,19 @@ void App::run() {
         SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
         SDL_RenderClear(m_sdl_context.get_renderer());
         for (const RenderData& render_data : m_render_queue.get_render_data()) {
-            SDL_Texture* tex = m_assets.get_texture(render_data.texture_id);
-            int tex_w = 0, tex_h = 0;
-            SDL_QueryTexture(tex, nullptr, nullptr, &tex_w, &tex_h);
+            SDL_Texture* texture = m_assets.get_texture(render_data.texture_id);
+            int texture_width = 0;
+            int texture_height = 0;
+            SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
 
-            SDL_Rect dst{
-                static_cast<int>(render_data.position.x),
-                static_cast<int>(render_data.position.y),
-                tex_w * static_cast<int>(render_data.scale.x),
-                tex_h * static_cast<int>(render_data.scale.y),
+            SDL_FRect dst{
+                render_data.position.x,
+                render_data.position.y,
+                static_cast<float>(texture_width) * render_data.scale.x,
+                static_cast<float>(texture_height) * render_data.scale.y,
             };
 
-            SDL_RenderCopy(m_sdl_context.get_renderer(), tex, nullptr, &dst);
+            SDL_RenderCopyF(m_sdl_context.get_renderer(), texture, nullptr, &dst);
         }
 
         m_render_queue.clear();

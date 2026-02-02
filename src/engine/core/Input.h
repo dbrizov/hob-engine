@@ -24,7 +24,7 @@ struct InputEvent {
 };
 
 
-using InputEventHandlerId = uint32_t;
+using InputEventHandlerId = int;
 using InputEventHandler = std::function<void(const InputEvent&)>;
 
 

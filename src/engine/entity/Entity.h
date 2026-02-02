@@ -10,7 +10,7 @@
 
 class App;
 
-using EntityId = uint32_t;
+using EntityId = int;
 
 template<typename T>
 concept ComponentType = std::derived_from<T, Component>;
@@ -19,9 +19,9 @@ concept ComponentType = std::derived_from<T, Component>;
 class Entity final {
     App* m_app = nullptr;
     EntityId m_id = 0;
-    std::vector<std::unique_ptr<Component>> m_components;
     bool m_is_in_play = false;
     bool m_is_ticking = true;
+    std::vector<std::unique_ptr<Component>> m_components;
 
     // EntitySpawner is a friend of Entity for 2 reasons.
     // 1. Only the EntitySpawner can create entities.

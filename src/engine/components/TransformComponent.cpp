@@ -9,6 +9,7 @@ Vector2 TransformComponent::get_position() const {
 }
 
 void TransformComponent::set_position(const Vector2& position) {
+    m_prev_position = m_position;
     m_position = position;
 }
 

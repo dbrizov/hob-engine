@@ -6,8 +6,9 @@
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 #include "engine/entity/Entity.h"
+#include "game/PlayerComponent.h"
 
-constexpr uint32_t FPS = 60;
+constexpr uint32_t FPS = 30;
 constexpr uint32_t SCREEN_WIDTH = 640;
 constexpr uint32_t SCREEN_HEIGHT = 480;
 const std::string WINDOW_TITLE = "SDL2 Window";
@@ -39,25 +40,7 @@ std::filesystem::path get_assets_root_path() {
     return assets_root_path;
 }
 
-int main(int argc, char* argv[]) {
-    std::filesystem::path input_config_path = get_input_config_path();
-    fmt::println("input_config_path: '{}'", input_config_path.string());
-
-    std::filesystem::path assets_root_path = get_assets_root_path();
-    fmt::println("assets_root_path: '{}'", assets_root_path.string());
-
-    App app(
-        FPS,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT,
-        WINDOW_TITLE,
-        input_config_path,
-        assets_root_path);
-
-    if (!app.is_initialized()) {
-        return 1;
-    }
-
+Entity* spawn_player_entity(App& app) {
     Entity* entity = app.get_entity_spawner()->spawn_entity();
     TransformComponent* transform_component = entity->add_component<TransformComponent>();
     transform_component->set_position(Vector2(50.0f, 50.0f));
@@ -85,6 +68,32 @@ int main(int argc, char* argv[]) {
     input_component->bind_action("submit", InputEventType::RELEASED, []() {
         fmt::println("submit_released");
     });
+
+    entity->add_component<PlayerComponent>();
+
+    return entity;
+}
+
+int main(int argc, char* argv[]) {
+    std::filesystem::path input_config_path = get_input_config_path();
+    fmt::println("input_config_path: '{}'", input_config_path.string());
+
+    std::filesystem::path assets_root_path = get_assets_root_path();
+    fmt::println("assets_root_path: '{}'", assets_root_path.string());
+
+    App app(
+        FPS,
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        WINDOW_TITLE,
+        input_config_path,
+        assets_root_path);
+
+    if (!app.is_initialized()) {
+        return 1;
+    }
+
+    spawn_player_entity(app);
 
     app.run();
 
