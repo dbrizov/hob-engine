@@ -26,8 +26,8 @@ void PlayerComponent::tick(float delta_time) {
     TransformComponent* transform = get_entity()->get_component<TransformComponent>();
 
     Vector2 movement_input = m_movement_input;
-    if (m_movement_input.length_sqr() > 1.0f) {
-        movement_input = m_movement_input.normalized();
+    if (movement_input.length_sqr() > 1.0f) {
+        movement_input = movement_input.normalized();
     }
 
     Vector2 pos_delta_x = Vector2::right() * movement_input.x;
