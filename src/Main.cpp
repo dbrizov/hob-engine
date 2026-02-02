@@ -8,7 +8,8 @@
 #include "engine/entity/Entity.h"
 #include "game/PlayerComponent.h"
 
-constexpr uint32_t FPS = 30;
+constexpr uint32_t TARGET_FPS = 30;
+constexpr bool VSYNC_ENABLED = true;
 constexpr uint32_t SCREEN_WIDTH = 640;
 constexpr uint32_t SCREEN_HEIGHT = 480;
 const std::string WINDOW_TITLE = "SDL2 Window";
@@ -82,7 +83,8 @@ int main(int argc, char* argv[]) {
     fmt::println("assets_root_path: '{}'", assets_root_path.string());
 
     App app(
-        FPS,
+        TARGET_FPS,
+        VSYNC_ENABLED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
         WINDOW_TITLE,

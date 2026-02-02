@@ -3,53 +3,72 @@
 #include <SDL_timer.h>
 
 
-Timer::Timer(uint32_t fps)
-    : m_fps(fps)
+Timer::Timer(uint32_t fps, bool vsync_enabled)
+    : m_target_fps(fps)
+      , m_vsync_enabled(vsync_enabled)
       , m_time_scale(1.0f)
       , m_play_time(0.0f)
-      , m_delta_time(0.0f) {
+      , m_delta_time(0.0f)
+      , m_frequency(0.0f)
+      , m_frame_start_counter(0)
+      , m_last_counter(0) {
     m_frequency = static_cast<double>(SDL_GetPerformanceFrequency());
     m_last_counter = SDL_GetPerformanceCounter();
 }
 
-void Timer::tick() {
-    const double target_sec = 1.0 / static_cast<double>(m_fps);
+void Timer::frame_start() {
+    uint64_t now = SDL_GetPerformanceCounter();
 
-    uint64_t now_ms = SDL_GetPerformanceCounter();
-    double dt_sec = static_cast<double>(now_ms - m_last_counter) / m_frequency;
+    uint64_t diff = now - m_last_counter;
+    m_last_counter = now;
 
-    // Wait until we reach target frame time
-    while (dt_sec < target_sec) {
-        double remaining = target_sec - dt_sec;
-
-        // Sleep if we have a decent chunk left (avoid oversleeping too much)
-        if (remaining > 0.002) {
-            // 2ms
-            SDL_Delay(static_cast<uint32_t>((remaining - 0.001) * 1000.0));
-        }
-
-        now_ms = SDL_GetPerformanceCounter();
-        dt_sec = static_cast<double>(now_ms - m_last_counter) / m_frequency;
-    }
+    double dt_sec = static_cast<double>(diff) / m_frequency;
 
     // After stalls (debugger, window focus loss, OS scheduling),
     // dt can become very large. Clamp it to avoid excessive physics
     // catch-up and the "spiral of death".
-    m_last_counter = now_ms;
     if (dt_sec > 0.25) {
         dt_sec = 0.25;
     }
 
     m_delta_time = static_cast<float>(dt_sec);
     m_play_time += m_delta_time;
+
+    // Remember when this frame started (for frame_end)
+    m_frame_start_counter = now;
+}
+
+void Timer::frame_end() {
+    if (m_vsync_enabled || m_target_fps == 0) {
+        return;
+    }
+
+    const double target_frame_sec = 1.0 / static_cast<double>(m_target_fps);
+
+    while (true) {
+        uint64_t now = SDL_GetPerformanceCounter();
+        double elapsed_sec = static_cast<double>(now - m_frame_start_counter) / m_frequency;
+
+        if (elapsed_sec >= target_frame_sec) {
+            break;
+        }
+
+        double remaining_sec = target_frame_sec - elapsed_sec;
+
+        // Sleep most of the remaining time (avoid oversleep)
+        if (remaining_sec > 0.002) {
+            // ~2ms
+            SDL_Delay(static_cast<uint32_t>((remaining_sec - 0.001) * 1000.0));
+        }
+    }
 }
 
 uint32_t Timer::get_fps() const {
-    return m_fps;
+    return m_target_fps;
 }
 
 void Timer::set_fps(uint32_t fps) {
-    m_fps = fps;
+    m_target_fps = fps;
 }
 
 float Timer::get_time_scale() const {

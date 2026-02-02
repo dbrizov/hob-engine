@@ -23,7 +23,8 @@ class App {
     EntitySpawner m_entity_spawner;
 
 public:
-    App(uint32_t fps,
+    App(uint32_t target_fps,
+        bool vsync_enabled,
         uint32_t screen_width,
         uint32_t screen_height,
         const std::string& window_title,

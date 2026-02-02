@@ -12,12 +12,13 @@ class SdlContext {
     bool m_is_initialized;
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
-    uint32_t m_screen_width = 0;
-    uint32_t m_screen_height = 0;
+    bool m_vsync_enabled;
+    uint32_t m_screen_width;
+    uint32_t m_screen_height;
     std::string m_window_title;
 
 public:
-    SdlContext(uint32_t screen_width, uint32_t screen_height, const std::string& window_title);
+    SdlContext(bool vsync_enabled, uint32_t screen_width, uint32_t screen_height, const std::string& window_title);
     ~SdlContext();
 
     SdlContext(const SdlContext&) = delete;

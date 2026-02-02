@@ -4,10 +4,12 @@
 #include <SDL_image.h>
 #include <fmt/base.h>
 
-SdlContext::SdlContext(uint32_t screen_width, uint32_t screen_height, const std::string& window_title)
+SdlContext::SdlContext(bool vsync_enabled, uint32_t screen_width, uint32_t screen_height,
+                       const std::string& window_title)
     : m_is_initialized(false)
       , m_window(nullptr)
       , m_renderer(nullptr)
+      , m_vsync_enabled(vsync_enabled)
       , m_screen_width(screen_width)
       , m_screen_height(screen_height)
       , m_window_title(window_title) {
@@ -49,7 +51,12 @@ SdlContext::SdlContext(uint32_t screen_width, uint32_t screen_height, const std:
     fmt::println("SDL_CreateWindow");
 
     // Create renderer
-    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
+    uint32_t renderer_flags = SDL_RENDERER_ACCELERATED;
+    if (m_vsync_enabled) {
+        renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
+
+    m_renderer = SDL_CreateRenderer(m_window, -1, renderer_flags);
     if (!m_renderer) {
         fmt::println(stderr, "SDL_CreateRenderer Error: {}", SDL_GetError());
         SDL_DestroyWindow(m_window);

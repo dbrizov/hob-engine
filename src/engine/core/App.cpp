@@ -5,14 +5,15 @@
 
 #include "Timer.h"
 
-App::App(uint32_t fps,
+App::App(uint32_t target_fps,
+         bool vsync_enabled,
          uint32_t screen_width,
          uint32_t screen_height,
          const std::string& window_title,
          const std::filesystem::path& input_config_path,
          const std::filesystem::path& assets_root_path)
-    : m_sdl_context(screen_width, screen_height, window_title)
-      , m_timer(fps)
+    : m_sdl_context(vsync_enabled, screen_width, screen_height, window_title)
+      , m_timer(target_fps, vsync_enabled)
       , m_input(input_config_path)
       , m_assets(assets_root_path, m_sdl_context.get_renderer())
       , m_render_queue()
@@ -25,13 +26,14 @@ void App::run() {
     SDL_Event event;
 
     while (is_running) {
+        m_timer.frame_start();
+
+        // Check for quit
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 is_running = false;
             }
         }
-
-        m_timer.tick();
 
         m_entity_spawner.resolve_requests();
 
@@ -59,6 +61,7 @@ void App::run() {
         // --- Rendering ---
         SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
         SDL_RenderClear(m_sdl_context.get_renderer());
+
         for (const RenderData& render_data : m_render_queue.get_render_data()) {
             SDL_Texture* texture = m_assets.get_texture(render_data.texture_id);
             int texture_width = 0;
@@ -78,6 +81,8 @@ void App::run() {
         m_render_queue.clear();
 
         SDL_RenderPresent(m_sdl_context.get_renderer());
+
+        m_timer.frame_end();
     }
 }
 
