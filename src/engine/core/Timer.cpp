@@ -10,32 +10,32 @@ Timer::Timer(uint32_t fps, bool vsync_enabled)
       , m_play_time(0.0f)
       , m_delta_time(0.0f)
       , m_frequency(0.0f)
-      , m_frame_start_counter(0)
-      , m_last_counter(0) {
+      , m_frame_start_ticks(0)
+      , m_last_ticks(0) {
     m_frequency = static_cast<double>(SDL_GetPerformanceFrequency());
-    m_last_counter = SDL_GetPerformanceCounter();
+    m_last_ticks = SDL_GetPerformanceCounter();
 }
 
 void Timer::frame_start() {
-    uint64_t now = SDL_GetPerformanceCounter();
+    uint64_t now_ticks = SDL_GetPerformanceCounter();
 
-    uint64_t diff = now - m_last_counter;
-    m_last_counter = now;
+    uint64_t diff_ticks = now_ticks - m_last_ticks;
+    m_last_ticks = now_ticks;
 
-    double dt_sec = static_cast<double>(diff) / m_frequency;
+    double dt_seconds = static_cast<double>(diff_ticks) / m_frequency;
 
     // After stalls (debugger, window focus loss, OS scheduling),
     // dt can become very large. Clamp it to avoid excessive physics
     // catch-up and the "spiral of death".
-    if (dt_sec > 0.25) {
-        dt_sec = 0.25;
+    if (dt_seconds > 0.25) {
+        dt_seconds = 0.25;
     }
 
-    m_delta_time = static_cast<float>(dt_sec);
+    m_delta_time = static_cast<float>(dt_seconds);
     m_play_time += m_delta_time;
 
     // Remember when this frame started (for frame_end)
-    m_frame_start_counter = now;
+    m_frame_start_ticks = now_ticks;
 }
 
 void Timer::frame_end() {
@@ -43,22 +43,21 @@ void Timer::frame_end() {
         return;
     }
 
-    const double target_frame_sec = 1.0 / static_cast<double>(m_target_fps);
+    const double target_frame_seconds = 1.0 / static_cast<double>(m_target_fps);
 
     while (true) {
-        uint64_t now = SDL_GetPerformanceCounter();
-        double elapsed_sec = static_cast<double>(now - m_frame_start_counter) / m_frequency;
+        uint64_t now_ticks = SDL_GetPerformanceCounter();
+        double elapsed_seconds = static_cast<double>(now_ticks - m_frame_start_ticks) / m_frequency;
 
-        if (elapsed_sec >= target_frame_sec) {
+        if (elapsed_seconds >= target_frame_seconds) {
             break;
         }
 
-        double remaining_sec = target_frame_sec - elapsed_sec;
-
-        // Sleep most of the remaining time (avoid oversleep)
-        if (remaining_sec > 0.002) {
-            // ~2ms
-            SDL_Delay(static_cast<uint32_t>((remaining_sec - 0.001) * 1000.0));
+        // Sleep most of the remaining time (avoid oversleep, because SDL_Delay tends to oversleep)
+        double remaining_seconds = target_frame_seconds - elapsed_seconds;
+        if (remaining_seconds > 0.002 /* ~2ms */) {
+            uint32_t milliseconds = static_cast<uint32_t>((remaining_seconds - 0.001) * 1000.0);
+            SDL_Delay(milliseconds);
         }
     }
 }
