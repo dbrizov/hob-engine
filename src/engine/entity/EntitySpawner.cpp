@@ -22,6 +22,12 @@ Entity* EntitySpawner::spawn_entity() {
 }
 
 void EntitySpawner::destroy_entity(EntityId id) {
+    // Remove from pending spawns if present
+    std::erase_if(m_entity_spawn_requests, [&](const std::unique_ptr<Entity>& e) {
+        return e->get_id() == id;
+    });
+
+    // Mark for destroy if already in play
     m_entity_destroy_requests.insert(id);
 }
 
@@ -29,6 +35,7 @@ Entity* EntitySpawner::get_entity(EntityId id) const {
     auto it = m_entity_index_by_id.find(id);
     if (it != m_entity_index_by_id.end()) {
         int index = it->second;
+        assert(index >= 0 && index < m_entities.size());
         return m_entities[index].get();
     }
 
