@@ -25,9 +25,9 @@ class App {
 public:
     App(uint32_t target_fps,
         bool vsync_enabled,
-        uint32_t screen_width,
-        uint32_t screen_height,
         const std::string& window_title,
+        uint32_t window_width,
+        uint32_t window_height,
         const std::filesystem::path& input_config_path,
         const std::filesystem::path& assets_root_path);
 

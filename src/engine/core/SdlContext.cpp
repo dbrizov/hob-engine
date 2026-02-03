@@ -4,15 +4,17 @@
 #include <SDL_image.h>
 #include <fmt/base.h>
 
-SdlContext::SdlContext(bool vsync_enabled, uint32_t screen_width, uint32_t screen_height,
-                       const std::string& window_title)
+SdlContext::SdlContext(bool vsync_enabled,
+                       const std::string& window_title,
+                       uint32_t window_width,
+                       uint32_t window_height)
     : m_is_initialized(false)
-      , m_window(nullptr)
-      , m_renderer(nullptr)
       , m_vsync_enabled(vsync_enabled)
-      , m_screen_width(screen_width)
-      , m_screen_height(screen_height)
-      , m_window_title(window_title) {
+      , m_window_title(window_title)
+      , m_window_width(window_width)
+      , m_window_height(window_height)
+      , m_window(nullptr)
+      , m_renderer(nullptr) {
     // SDL_Init
     int sld_init_flags = SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
     if (SDL_Init(sld_init_flags) != 0) {
@@ -37,8 +39,8 @@ SdlContext::SdlContext(bool vsync_enabled, uint32_t screen_width, uint32_t scree
         m_window_title.c_str(),
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        static_cast<int>(m_screen_width),
-        static_cast<int>(m_screen_height),
+        static_cast<int>(m_window_width),
+        static_cast<int>(m_window_height),
         SDL_WINDOW_SHOWN);
 
     if (!m_window) {
@@ -98,12 +100,4 @@ SDL_Window* SdlContext::get_window() const {
 
 SDL_Renderer* SdlContext::get_renderer() const {
     return m_renderer;
-}
-
-uint32_t SdlContext::get_screen_width() const {
-    return m_screen_width;
-}
-
-uint32_t SdlContext::get_screen_height() const {
-    return m_screen_height;
 }

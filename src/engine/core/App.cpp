@@ -6,12 +6,12 @@
 
 App::App(uint32_t target_fps,
          bool vsync_enabled,
-         uint32_t screen_width,
-         uint32_t screen_height,
          const std::string& window_title,
+         uint32_t window_width,
+         uint32_t window_height,
          const std::filesystem::path& input_config_path,
          const std::filesystem::path& assets_root_path)
-    : m_sdl_context(vsync_enabled, screen_width, screen_height, window_title)
+    : m_sdl_context(vsync_enabled, window_title, window_width, window_height)
       , m_timer(target_fps, vsync_enabled)
       , m_input(input_config_path)
       , m_assets(assets_root_path, m_sdl_context.get_renderer())

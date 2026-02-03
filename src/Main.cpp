@@ -10,9 +10,9 @@
 
 constexpr uint32_t TARGET_FPS = 30;
 constexpr bool VSYNC_ENABLED = true;
-constexpr uint32_t SCREEN_WIDTH = 640;
-constexpr uint32_t SCREEN_HEIGHT = 480;
 const std::string WINDOW_TITLE = "SDL2 Window";
+constexpr uint32_t WINDOW_WIDTH = 640;
+constexpr uint32_t WINDOW_HEIGHT = 480;
 
 std::filesystem::path get_root_path() {
 #ifndef NDEBUG
@@ -85,9 +85,9 @@ int main(int argc, char* argv[]) {
     App app(
         TARGET_FPS,
         VSYNC_ENABLED,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT,
         WINDOW_TITLE,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
         input_config_path,
         assets_root_path);
 
