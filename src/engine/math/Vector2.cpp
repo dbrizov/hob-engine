@@ -56,13 +56,13 @@ Vector2& Vector2::operator-=(const Vector2& right) {
     return *this;
 }
 
-Vector2 Vector2::operator*(float a) const {
-    return Vector2(x * a, y * a);
+Vector2 Vector2::operator*(float scalar) const {
+    return Vector2(x * scalar, y * scalar);
 }
 
-Vector2 Vector2::operator/(float a) const {
-    assert(a == 0.0f);
-    return Vector2(x / a, y / a);
+Vector2 Vector2::operator/(float scalar) const {
+    assert(scalar != 0.0f && "Division by zero");
+    return Vector2(x / scalar, y / scalar);
 }
 
 bool Vector2::operator==(const Vector2& right) const {
@@ -71,8 +71,8 @@ bool Vector2::operator==(const Vector2& right) const {
         (std::abs(y - right.y) < EPSILON);
 }
 
-bool Vector2::operator!=(const Vector2& target) const {
-    return !operator==(target);
+bool Vector2::operator!=(const Vector2& right) const {
+    return !operator==(right);
 }
 
 Vector2 Vector2::zero() {

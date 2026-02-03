@@ -21,11 +21,11 @@ struct Vector2 {
     Vector2 operator-(const Vector2& right) const;
     Vector2& operator-=(const Vector2& right);
 
-    Vector2 operator*(float a) const;
-    Vector2 operator/(float a) const;
+    Vector2 operator*(float scalar) const;
+    Vector2 operator/(float scalar) const;
 
     bool operator==(const Vector2& right) const;
-    bool operator!=(const Vector2& target) const;
+    bool operator!=(const Vector2& right) const;
 
     static Vector2 zero();
     static Vector2 one();
