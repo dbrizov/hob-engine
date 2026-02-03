@@ -185,8 +185,8 @@ bool Input::remove_input_event_handler(InputEventHandlerId id) {
         return false;
     }
 
-    uint32_t index = it->second;
-    uint32_t last_index = m_handlers.size() - 1;
+    int index = it->second;
+    int last_index = m_handlers.size() - 1;
 
     if (index != last_index) {
         m_handlers[index] = std::move(m_handlers[last_index]); // move last into hole

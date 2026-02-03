@@ -53,7 +53,7 @@ class Input {
 
     InputEventHandlerId m_next_handler_id = 0;
     std::vector<HandlerEntry> m_handlers;
-    std::unordered_map<InputEventHandlerId, uint32_t> m_handler_index_by_id;
+    std::unordered_map<InputEventHandlerId, int> m_handler_index_by_id;
 
     InputMappings m_input_mappings;
     std::unordered_map<std::string, float> m_axis_values;
