@@ -106,8 +106,6 @@ std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
 Input::Input(const std::filesystem::path& input_config_path) {
     m_input_mappings = load_input_mappings(input_config_path);
     m_relevant_keys = m_input_mappings.relevant_keys();
-    m_pressed_keys_this_frame.resize(SDL_NUM_SCANCODES);
-    m_pressed_keys_last_frame.resize(SDL_NUM_SCANCODES);
 
     for (const auto& [axis, _] : m_input_mappings.axes) {
         m_axis_values[axis] = 0.0f;
@@ -120,8 +118,8 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
     // Dispatch action events
     for (auto& [action, keys] : m_input_mappings.actions) {
         for (auto key : keys) {
-            bool pressed_now = m_pressed_keys_this_frame[key];
-            bool pressed_before = m_pressed_keys_last_frame[key];
+            bool pressed_now = m_pressed_keys_this_frame.test(key);
+            bool pressed_before = m_pressed_keys_last_frame.test(key);
 
             if (pressed_now && !pressed_before) {
                 dispatch_event(InputEvent(action.c_str(), InputEventType::PRESSED, 0.0f));
@@ -135,7 +133,7 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
     // Dispatch axis events
     auto any_pressed = [&](const auto& keys) {
         for (SDL_Scancode key : keys) {
-            if (m_pressed_keys_this_frame[key]) {
+            if (m_pressed_keys_this_frame.test(key)) {
                 return true;
             }
         }
@@ -208,7 +206,7 @@ void Input::dispatch_event(const InputEvent& event) const {
 
 void Input::update_pressed_keys(const Uint8* keyboard_state) {
     for (SDL_Scancode key : m_relevant_keys) {
-        m_pressed_keys_last_frame[key] = m_pressed_keys_this_frame[key];
-        m_pressed_keys_this_frame[key] = keyboard_state[key] != 0;
+        m_pressed_keys_last_frame.set(key, m_pressed_keys_this_frame.test(key));
+        m_pressed_keys_this_frame.set(key, keyboard_state[key] != 0);
     }
 }
