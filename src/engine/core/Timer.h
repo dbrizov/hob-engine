@@ -11,9 +11,9 @@ class Timer {
     float m_delta_time;
 
     // Used for limiting FPS
-    double m_frequency;
+    uint64_t m_frequency;
     uint64_t m_frame_start_ticks;
-    uint64_t m_last_ticks;
+    uint64_t m_last_frame_start_ticks;
 
 public:
     Timer(uint32_t fps, bool vsync_enabled);

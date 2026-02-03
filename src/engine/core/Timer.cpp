@@ -9,20 +9,22 @@ Timer::Timer(uint32_t fps, bool vsync_enabled)
       , m_time_scale(1.0f)
       , m_play_time(0.0f)
       , m_delta_time(0.0f)
-      , m_frequency(0.0f)
+      , m_frequency(0)
       , m_frame_start_ticks(0)
-      , m_last_ticks(0) {
-    m_frequency = static_cast<double>(SDL_GetPerformanceFrequency());
-    m_last_ticks = SDL_GetPerformanceCounter();
+      , m_last_frame_start_ticks(0) {
+    m_frequency = SDL_GetPerformanceFrequency();
+    m_frame_start_ticks = SDL_GetPerformanceCounter();
+    m_last_frame_start_ticks = SDL_GetPerformanceCounter();
 }
 
 void Timer::frame_start() {
     uint64_t now_ticks = SDL_GetPerformanceCounter();
+    uint64_t diff_ticks = now_ticks - m_last_frame_start_ticks;
 
-    uint64_t diff_ticks = now_ticks - m_last_ticks;
-    m_last_ticks = now_ticks;
+    m_frame_start_ticks = now_ticks; // Remember (for frame_end)
+    m_last_frame_start_ticks = now_ticks; // Remember (for next frame_start)
 
-    double dt_seconds = static_cast<double>(diff_ticks) / m_frequency;
+    double dt_seconds = static_cast<double>(diff_ticks) / static_cast<double>(m_frequency);
 
     // After stalls (debugger, window focus loss, OS scheduling),
     // dt can become very large. Clamp it to avoid excessive physics
@@ -33,9 +35,6 @@ void Timer::frame_start() {
 
     m_delta_time = static_cast<float>(dt_seconds);
     m_play_time += m_delta_time;
-
-    // Remember when this frame started (for frame_end)
-    m_frame_start_ticks = now_ticks;
 }
 
 void Timer::frame_end() {
