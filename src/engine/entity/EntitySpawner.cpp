@@ -53,9 +53,10 @@ void EntitySpawner::resolve_spawn_requests() {
     spawn_requests.swap(m_entity_spawn_requests);
 
     for (auto& entity : spawn_requests) {
-        entity->enter_play();
-        m_entity_index_by_id[entity->get_id()] = m_entities.size();
+        EntityId entity_id = entity->get_id();
+        m_entity_index_by_id[entity_id] = m_entities.size();
         m_entities.emplace_back(std::move(entity));
+        m_entities.back()->enter_play();
     }
 }
 
