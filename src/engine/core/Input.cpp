@@ -5,6 +5,8 @@
 #include <SDL_keyboard.h>
 #include <fmt/base.h>
 
+#include "engine/math/Math.h"
+
 // ---------------- InputMappings ----------------
 static SDL_Scancode scancode_from_name(const std::string& name) {
     SDL_Scancode scancode = SDL_GetScancodeFromName(name.c_str());
@@ -104,6 +106,8 @@ std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
 Input::Input(const std::filesystem::path& input_config_path) {
     m_input_mappings = load_input_mappings(input_config_path);
     m_relevant_keys = m_input_mappings.relevant_keys();
+    m_pressed_keys_this_frame.resize(SDL_NUM_SCANCODES);
+    m_pressed_keys_last_frame.resize(SDL_NUM_SCANCODES);
 
     for (const auto& [axis, _] : m_input_mappings.axes) {
         m_axis_values[axis] = 0.0f;
@@ -111,51 +115,37 @@ Input::Input(const std::filesystem::path& input_config_path) {
 }
 
 void Input::tick(float delta_time, const Uint8* keyboard_state) {
-    // TODO Optimize - have a map of pressed keys similar to SDL's keyboard_state
     update_pressed_keys(keyboard_state);
 
     // Dispatch action events
     for (auto& [action, keys] : m_input_mappings.actions) {
         for (auto key : keys) {
-            bool pressed_now =
-                std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), key) !=
-                m_pressed_keys_this_frame.end();
-            bool pressed_before =
-                std::find(m_pressed_keys_last_frame.begin(), m_pressed_keys_last_frame.end(), key) !=
-                m_pressed_keys_last_frame.end();
+            bool pressed_now = m_pressed_keys_this_frame[key];
+            bool pressed_before = m_pressed_keys_last_frame[key];
 
             if (pressed_now && !pressed_before) {
-                const char* ev_name = action.c_str();
-                InputEventType ev_type = InputEventType::PRESSED;
-                float ev_axis_value = 0.0f;
-                InputEvent event = InputEvent(ev_name, ev_type, ev_axis_value);
-
-                dispatch_event(event);
+                dispatch_event(InputEvent(action.c_str(), InputEventType::PRESSED, 0.0f));
             }
             else if (!pressed_now && pressed_before) {
-                const char* ev_name = action.c_str();
-                InputEventType ev_type = InputEventType::RELEASED;
-                float ev_axis_value = 0.0f;
-                InputEvent event = InputEvent(ev_name, ev_type, ev_axis_value);
-
-                dispatch_event(event);
+                dispatch_event(InputEvent(action.c_str(), InputEventType::RELEASED, 0.0f));
             }
         }
     }
 
     // Dispatch axis events
-    for (auto& [axis, mapping] : m_input_mappings.axes) {
-        bool any_positive = std::any_of(
-            mapping.positive.begin(), mapping.positive.end(), [&](SDL_Scancode k) {
-                return std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), k) !=
-                       m_pressed_keys_this_frame.end();
-            });
+    auto any_pressed = [&](const auto& keys) {
+        for (SDL_Scancode key : keys) {
+            if (m_pressed_keys_this_frame[key]) {
+                return true;
+            }
+        }
 
-        bool any_negative = std::any_of(
-            mapping.negative.begin(), mapping.negative.end(), [&](SDL_Scancode k) {
-                return std::find(m_pressed_keys_this_frame.begin(), m_pressed_keys_this_frame.end(), k) !=
-                       m_pressed_keys_this_frame.end();
-            });
+        return false;
+    };
+
+    for (auto& [axis, mapping] : m_input_mappings.axes) {
+        bool any_positive = any_pressed(mapping.positive);
+        bool any_negative = any_pressed(mapping.negative);
 
         float& axis_value = m_axis_values[axis];
         float old_axis_value = axis_value;
@@ -175,13 +165,8 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
             axis_value = std::max(axis_value - mapping.acceleration * delta_time, -1.0f);
         }
 
-        if (old_axis_value != axis_value) {
-            const char* ev_name = axis.c_str();
-            InputEventType ev_type = InputEventType::AXIS;
-            float ev_axis_value = axis_value;
-            InputEvent event = InputEvent(ev_name, ev_type, ev_axis_value);
-
-            dispatch_event(event);
+        if (std::abs(axis_value - old_axis_value) > EPSILON) {
+            dispatch_event(InputEvent(axis.c_str(), InputEventType::AXIS, axis_value));
         }
     }
 }
@@ -222,15 +207,8 @@ void Input::dispatch_event(const InputEvent& event) const {
 }
 
 void Input::update_pressed_keys(const Uint8* keyboard_state) {
-    m_pressed_keys_last_frame.clear();
-    for (SDL_Scancode key : m_pressed_keys_this_frame) {
-        m_pressed_keys_last_frame.push_back(key);
-    }
-
-    m_pressed_keys_this_frame.clear();
     for (SDL_Scancode key : m_relevant_keys) {
-        if (keyboard_state[key]) {
-            m_pressed_keys_this_frame.push_back(key);
-        }
+        m_pressed_keys_last_frame[key] = m_pressed_keys_this_frame[key];
+        m_pressed_keys_this_frame[key] = keyboard_state[key] != 0;
     }
 }

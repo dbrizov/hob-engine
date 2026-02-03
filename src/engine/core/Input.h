@@ -57,8 +57,8 @@ class Input {
     InputMappings m_input_mappings;
     std::unordered_map<std::string, float> m_axis_values;
     std::vector<SDL_Scancode> m_relevant_keys;
-    std::vector<SDL_Scancode> m_pressed_keys_this_frame;
-    std::vector<SDL_Scancode> m_pressed_keys_last_frame;
+    std::vector<bool> m_pressed_keys_this_frame;
+    std::vector<bool> m_pressed_keys_last_frame;
 
 public:
     explicit Input(const std::filesystem::path& input_config_path);

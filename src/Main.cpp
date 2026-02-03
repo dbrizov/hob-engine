@@ -53,23 +53,7 @@ Entity* spawn_player_entity(App& app) {
     const TextureId texture_id = app.get_assets()->load_texture(path.c_str());
     image_component->set_texture_id(texture_id);
 
-    InputComponent* input_component = entity->add_component<InputComponent>();
-    input_component->bind_axis("horizontal", [](float axis) {
-        fmt::println("horizontal: {}", axis);
-    });
-
-    input_component->bind_axis("vertical", [](float axis) {
-        fmt::println("vertical: {}", axis);
-    });
-
-    input_component->bind_action("submit", InputEventType::PRESSED, []() {
-        fmt::println("submit_pressed");
-    });
-
-    input_component->bind_action("submit", InputEventType::RELEASED, []() {
-        fmt::println("submit_released");
-    });
-
+    entity->add_component<InputComponent>();
     entity->add_component<PlayerComponent>();
 
     return entity;
