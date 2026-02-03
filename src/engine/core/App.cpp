@@ -44,17 +44,17 @@ void App::run() {
         m_input.tick(delta_time, keyboard_state);
 
         // entities.tick()
-        for (auto& entity : m_entity_spawner.get_entities()) {
-            if (entity.is_ticking()) {
-                entity.tick(scaled_delta_time);
+        for (Entity* entity : m_entity_spawner.get_entities()) {
+            if (entity->is_ticking()) {
+                entity->tick(scaled_delta_time);
             }
         }
 
         // entities.physics_tick()
 
         // entities.render_tick()
-        for (auto& entity : m_entity_spawner.get_entities()) {
-            entity.render_tick(delta_time, m_render_queue);
+        for (Entity* entity : m_entity_spawner.get_entities()) {
+            entity->render_tick(delta_time, m_render_queue);
         }
 
         // --- Rendering ---

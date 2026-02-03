@@ -8,14 +8,6 @@ void EntitySpawner::set_app(App* app) {
     m_app = app;
 }
 
-EntityRange EntitySpawner::get_entities() {
-    return EntityRange(m_entities);
-}
-
-ConstEntityRange EntitySpawner::get_entities_const() const {
-    return ConstEntityRange(m_entities);
-}
-
 Entity* EntitySpawner::spawn_entity() {
     std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity());
     EntityId entity_id = m_next_entity_id;
@@ -34,9 +26,10 @@ void EntitySpawner::destroy_entity(EntityId id) {
 }
 
 Entity* EntitySpawner::get_entity(EntityId id) const {
-    auto it = m_entities.find(id);
-    if (it != m_entities.end()) {
-        return it->second.get();
+    auto it = m_entity_index_by_id.find(id);
+    if (it != m_entity_index_by_id.end()) {
+        int index = it->second;
+        return m_entities[index].get();
     }
 
     return nullptr;
@@ -53,10 +46,9 @@ void EntitySpawner::resolve_spawn_requests() {
     spawn_requests.swap(m_entity_spawn_requests);
 
     for (auto& entity : spawn_requests) {
-        EntityId entity_id = entity->get_id();
         entity->enter_play();
-        auto [it, inserted] = m_entities.emplace(entity_id, std::move(entity));
-        assert(inserted && "Duplicate EntityId while trying to spawn an Entity");
+        m_entity_index_by_id[entity->get_id()] = m_entities.size();
+        m_entities.emplace_back(std::move(entity));
     }
 }
 
@@ -67,14 +59,28 @@ void EntitySpawner::resolve_destroy_requests() {
 
     // exit_play() while entities are still present in the map
     for (EntityId id : destroy_requests) {
-        auto it = m_entities.find(id);
-        if (it != m_entities.end()) {
-            it->second->exit_play();
+        Entity* entity = get_entity(id);
+        if (entity != nullptr) {
+            entity->exit_play();
         }
     }
 
     // Erase the entities
     for (EntityId id : destroy_requests) {
-        m_entities.erase(id);
+        auto it = m_entity_index_by_id.find(id);
+        if (it == m_entity_index_by_id.end()) {
+            continue;
+        }
+
+        int index = it->second;
+        int last_index = m_entities.size() - 1;
+
+        if (index != last_index) {
+            m_entities[index] = std::move(m_entities[last_index]); // move last into hole
+            m_entity_index_by_id[m_entities[index]->get_id()] = index; // fix moved id's index
+        }
+
+        m_entities.pop_back();
+        m_entity_index_by_id.erase(it);
     }
 }

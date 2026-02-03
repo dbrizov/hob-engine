@@ -1,7 +1,5 @@
 #include "PlayerComponent.h"
 
-#include <fmt/base.h>
-
 #include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
 

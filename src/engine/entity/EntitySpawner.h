@@ -1,6 +1,7 @@
 #ifndef CPP_PLATFORMER_ENTITYSPAWNER_H
 #define CPP_PLATFORMER_ENTITYSPAWNER_H
 #include <memory>
+#include <ranges>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -11,55 +12,13 @@
 class App;
 
 
-#pragma region Iterators
-struct EntityRange {
-    std::unordered_map<EntityId, std::unique_ptr<Entity>>& map;
-
-    struct It {
-        std::unordered_map<EntityId, std::unique_ptr<Entity>>::iterator it;
-
-        Entity& operator*() const { return *it->second; }
-        Entity* operator->() const { return it->second.get(); }
-
-        It& operator++() {
-            ++it;
-            return *this;
-        }
-
-        bool operator!=(const It& other) const { return it != other.it; }
-    };
-
-    It begin() { return {map.begin()}; }
-    It end() { return {map.end()}; }
-};
-
-struct ConstEntityRange {
-    const std::unordered_map<EntityId, std::unique_ptr<Entity>>& map;
-
-    struct It {
-        std::unordered_map<EntityId, std::unique_ptr<Entity>>::const_iterator it;
-
-        const Entity& operator*() const { return *it->second; }
-        const Entity* operator->() const { return it->second.get(); }
-
-        It& operator++() {
-            ++it;
-            return *this;
-        }
-
-        bool operator!=(const It& other) const { return it != other.it; }
-    };
-
-    It begin() const { return {map.begin()}; }
-    It end() const { return {map.end()}; }
-};
-#pragma endregion
-
-
 class EntitySpawner {
     App* m_app = nullptr;
+
     EntityId m_next_entity_id = 0;
-    std::unordered_map<EntityId, std::unique_ptr<Entity>> m_entities;
+    std::vector<std::unique_ptr<Entity>> m_entities;
+    std::unordered_map<EntityId, int> m_entity_index_by_id;
+
     std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
     std::unordered_set<EntityId> m_entity_destroy_requests;
 
@@ -69,13 +28,16 @@ class EntitySpawner {
     void set_app(App* app);
 
 public:
-    EntityRange get_entities();
-    ConstEntityRange get_entities_const() const;
-
     Entity* spawn_entity();
     void destroy_entity(EntityId id);
 
     Entity* get_entity(EntityId id) const;
+
+    auto get_entities() const {
+        return m_entities | std::ranges::views::transform([](const std::unique_ptr<Entity>& ptr) {
+            return ptr.get();
+        });
+    }
 
     void resolve_requests();
 
