@@ -1,5 +1,5 @@
 # cpp-platformer
-A hobby game project writen in C++ using the SDL2 libraries.
+A hobby game project written in C++ using the SDL2 libraries.
 
 # Requirements
 Project dependencies are downloaded and linked automatically via `vcpkg` and `CMake`.<br>
