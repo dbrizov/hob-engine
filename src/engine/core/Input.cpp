@@ -5,6 +5,7 @@
 #include <SDL_keyboard.h>
 #include <fmt/base.h>
 
+#include "PathUtils.h"
 #include "engine/math/Math.h"
 
 // ---------------- InputMappings ----------------
@@ -103,8 +104,8 @@ std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
 }
 
 // ---------------- Input ----------------
-Input::Input(const std::filesystem::path& input_config_path) {
-    m_input_mappings = load_input_mappings(input_config_path);
+Input::Input() {
+    m_input_mappings = load_input_mappings(PathUtils::get_input_config_path());
     m_relevant_keys = m_input_mappings.relevant_keys();
 
     for (const auto& [axis, _] : m_input_mappings.axes) {

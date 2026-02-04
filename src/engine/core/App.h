@@ -27,9 +27,7 @@ public:
         bool vsync_enabled,
         const std::string& window_title,
         uint32_t window_width,
-        uint32_t window_height,
-        const std::filesystem::path& input_config_path,
-        const std::filesystem::path& assets_root_path);
+        uint32_t window_height);
 
     void run();
     bool is_initialized() const;

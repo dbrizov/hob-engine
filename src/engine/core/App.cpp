@@ -8,13 +8,11 @@ App::App(uint32_t target_fps,
          bool vsync_enabled,
          const std::string& window_title,
          uint32_t window_width,
-         uint32_t window_height,
-         const std::filesystem::path& input_config_path,
-         const std::filesystem::path& assets_root_path)
+         uint32_t window_height)
     : m_sdl_context(vsync_enabled, window_title, window_width, window_height)
       , m_timer(target_fps, vsync_enabled)
-      , m_input(input_config_path)
-      , m_assets(assets_root_path, m_sdl_context.get_renderer())
+      , m_input()
+      , m_assets(m_sdl_context.get_renderer())
       , m_render_queue()
       , m_entity_spawner() {
     m_entity_spawner.set_app(this);

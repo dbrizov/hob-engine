@@ -62,7 +62,7 @@ class Input {
     std::bitset<SDL_NUM_SCANCODES> m_pressed_keys_last_frame{};
 
 public:
-    explicit Input(const std::filesystem::path& input_config_path);
+    Input();
 
     void tick(float delta_time, const uint8_t* keyboard_state);
 
