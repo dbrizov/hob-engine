@@ -35,6 +35,13 @@ public:
     Input* get_input();
     Assets* get_assets();
     EntitySpawner* get_entity_spawner();
+
+private:
+    void input_tick(float delta_time);
+    void entities_tick(float scaled_delta_time);
+    void entities_physics_tick(float scaled_delta_time);
+    void entities_render_tick(float delta_time);
+    void render_frame();
 };
 
 

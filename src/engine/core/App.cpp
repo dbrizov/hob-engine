@@ -37,47 +37,11 @@ void App::run() {
         const float delta_time = m_timer.get_delta_time();
         const float scaled_delta_time = delta_time * m_timer.get_time_scale();
 
-        // input.tick()
-        const uint8_t* keyboard_state = SDL_GetKeyboardState(nullptr);
-        m_input.tick(delta_time, keyboard_state);
-
-        // entities.tick()
-        for (Entity* entity : m_entity_spawner.get_entities()) {
-            if (entity->is_ticking()) {
-                entity->tick(scaled_delta_time);
-            }
-        }
-
-        // entities.physics_tick()
-
-        // entities.render_tick()
-        for (Entity* entity : m_entity_spawner.get_entities()) {
-            entity->render_tick(delta_time, m_render_queue);
-        }
-
-        // --- Rendering ---
-        SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
-        SDL_RenderClear(m_sdl_context.get_renderer());
-
-        for (const RenderData& render_data : m_render_queue.get_render_data()) {
-            SDL_Texture* texture = m_assets.get_texture(render_data.texture_id);
-            int texture_width = 0;
-            int texture_height = 0;
-            SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
-
-            SDL_FRect dst{
-                render_data.position.x,
-                render_data.position.y,
-                static_cast<float>(texture_width) * render_data.scale.x,
-                static_cast<float>(texture_height) * render_data.scale.y,
-            };
-
-            SDL_RenderCopyF(m_sdl_context.get_renderer(), texture, nullptr, &dst);
-        }
-
-        m_render_queue.clear();
-
-        SDL_RenderPresent(m_sdl_context.get_renderer());
+        input_tick(delta_time);
+        entities_tick(scaled_delta_time);
+        entities_physics_tick(scaled_delta_time);
+        entities_render_tick(delta_time);
+        render_frame();
 
         m_timer.frame_end();
     }
@@ -97,4 +61,52 @@ Assets* App::get_assets() {
 
 EntitySpawner* App::get_entity_spawner() {
     return &m_entity_spawner;
+}
+
+void App::input_tick(float delta_time) {
+    const uint8_t* keyboard_state = SDL_GetKeyboardState(nullptr);
+    m_input.tick(delta_time, keyboard_state);
+}
+
+void App::entities_tick(float scaled_delta_time) {
+    for (Entity* entity : m_entity_spawner.get_entities()) {
+        if (entity->is_ticking()) {
+            entity->tick(scaled_delta_time);
+        }
+    }
+}
+
+void App::entities_physics_tick(float scaled_delta_time) {
+    // TODO Implement physics tick with accumulator
+}
+
+void App::entities_render_tick(float delta_time) {
+    for (Entity* entity : m_entity_spawner.get_entities()) {
+        entity->render_tick(delta_time, m_render_queue);
+    }
+}
+
+void App::render_frame() {
+    SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
+    SDL_RenderClear(m_sdl_context.get_renderer());
+
+    for (const RenderData& render_data : m_render_queue.get_render_data()) {
+        SDL_Texture* texture = m_assets.get_texture(render_data.texture_id);
+        int texture_width = 0;
+        int texture_height = 0;
+        SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
+
+        SDL_FRect dst{
+            render_data.position.x,
+            render_data.position.y,
+            static_cast<float>(texture_width) * render_data.scale.x,
+            static_cast<float>(texture_height) * render_data.scale.y,
+        };
+
+        SDL_RenderCopyF(m_sdl_context.get_renderer(), texture, nullptr, &dst);
+    }
+
+    m_render_queue.clear();
+
+    SDL_RenderPresent(m_sdl_context.get_renderer());
 }
