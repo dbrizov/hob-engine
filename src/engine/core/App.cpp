@@ -20,12 +20,12 @@ App::App(uint32_t target_fps,
 
 void App::run() {
     bool is_running = true;
-    SDL_Event event;
 
     while (is_running) {
         m_timer.frame_start();
 
         // Check for quit
+        SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 is_running = false;
