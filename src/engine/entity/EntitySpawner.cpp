@@ -4,21 +4,18 @@
 
 #include "Entity.h"
 
-void EntitySpawner::set_app(App* app) {
-    m_app = app;
-}
 
 Entity* EntitySpawner::spawn_entity() {
     std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity());
+
     EntityId entity_id = m_next_entity_id;
     m_next_entity_id += 1;
     entity->set_id(entity_id);
     entity->set_app(m_app);
 
-    Entity* entity_ptr = entity.get();
     m_entity_spawn_requests.push_back(std::move(entity));
 
-    return entity_ptr;
+    return m_entity_spawn_requests.back().get();
 }
 
 void EntitySpawner::destroy_entity(EntityId id) {
@@ -40,6 +37,10 @@ Entity* EntitySpawner::get_entity(EntityId id) const {
     }
 
     return nullptr;
+}
+
+void EntitySpawner::set_app(App* app) {
+    m_app = app;
 }
 
 void EntitySpawner::resolve_requests() {
