@@ -99,10 +99,10 @@ Vector2 Vector2::down() {
     return Vector2(0.0f, 1.0f);
 }
 
-float Vector2::dot(Vector2 a, Vector2 b) {
+float Vector2::dot(const Vector2& a, const Vector2& b) {
     return a.x * b.x + a.y * b.y;
 }
 
-std::string Vector2::to_string() {
+std::string Vector2::to_string() const {
     return fmt::format("({:.2f}, {:.2f})", x, y);
 }

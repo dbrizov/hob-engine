@@ -34,9 +34,9 @@ struct Vector2 {
     static Vector2 up();
     static Vector2 down();
 
-    static float dot(Vector2 a, Vector2 b);
+    static float dot(const Vector2& a, const Vector2& b);
 
-    std::string to_string();
+    std::string to_string() const;
 };
 
 

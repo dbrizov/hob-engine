@@ -5,11 +5,11 @@
 
 void PlayerComponent::enter_play() {
     InputComponent* input_component = get_entity()->get_component<InputComponent>();
-    m_x_axis_id =  input_component->bind_axis("horizontal", [this](float axis) {
+    m_x_axis_id = input_component->bind_axis("horizontal", [this](float axis) {
         set_movement_input_x(axis);
     });
 
-    m_y_axis_id =  input_component->bind_axis("vertical", [this](float axis) {
+    m_y_axis_id = input_component->bind_axis("vertical", [this](float axis) {
         set_movement_input_y(axis);
     });
 }

@@ -26,10 +26,10 @@ class RenderQueue {
     std::vector<RenderData> m_render_data;
 
 public:
-    void enqueue(RenderData data);
+    void enqueue(const RenderData& data);
     void clear();
 
-    std::span<const RenderData> get_render_data();
+    std::span<const RenderData> get_render_data() const;
 };
 
 
