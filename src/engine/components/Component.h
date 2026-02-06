@@ -2,6 +2,7 @@
 #define CPP_PLATFORMER_COMPONENT_H
 
 
+class App;
 class RenderQueue;
 class Entity;
 
@@ -23,6 +24,8 @@ protected:
 public:
     virtual ~Component() = default;
 
+    App* get_app() const;
+
     Entity* get_entity() const;
     void set_entity(Entity* entity);
 
@@ -31,7 +34,7 @@ public:
     virtual void enter_play();
     virtual void exit_play();
     virtual void tick(float delta_time);
-    virtual void physics_tick(float delta_time);
+    virtual void physics_tick(float fixed_delta_time);
     virtual void render_tick(float delta_time, RenderQueue& render_queue);
 };
 

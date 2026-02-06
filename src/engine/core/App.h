@@ -2,6 +2,7 @@
 #define CPP_PLATFORMER_APP_H
 #include "Assets.h"
 #include "Input.h"
+#include "Physics.h"
 #include "Render.h"
 #include "SdlContext.h"
 #include "Timer.h"
@@ -19,6 +20,7 @@ class App {
     Timer m_timer;
     Input m_input;
     Assets m_assets;
+    Physics m_physics;
     RenderQueue m_render_queue;
     EntitySpawner m_entity_spawner;
 
@@ -27,20 +29,19 @@ public:
         bool vsync_enabled,
         const std::string& window_title,
         uint32_t window_width,
-        uint32_t window_height);
+        uint32_t window_height,
+        uint32_t physics_ticks_per_second,
+        bool physics_interpolation);
 
     void run();
     bool is_initialized() const;
 
+    Timer* get_timer();
     Input* get_input();
     Assets* get_assets();
     EntitySpawner* get_entity_spawner();
 
 private:
-    void input_tick(float delta_time);
-    void entities_tick(float scaled_delta_time, const std::vector<Entity*>& entities);
-    void entities_physics_tick(float scaled_delta_time, const std::vector<Entity*>& entities);
-    void entities_render_tick(float scaled_delta_time, const std::vector<Entity*>& entities);
     void render_frame();
 };
 

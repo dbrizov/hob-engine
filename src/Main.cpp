@@ -13,7 +13,7 @@ constexpr bool VSYNC_ENABLED = true;
 const std::string WINDOW_TITLE = "SDL2 Window";
 constexpr uint32_t WINDOW_WIDTH = 640;
 constexpr uint32_t WINDOW_HEIGHT = 480;
-constexpr uint32_t PHYSICS_STEPS_PER_SECOND = 60;
+constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr bool PHYSICS_INTERPOLATION = true;
 
 Entity* spawn_player_entity(App& app) {
@@ -42,7 +42,9 @@ int main(int argc, char* argv[]) {
         VSYNC_ENABLED,
         WINDOW_TITLE,
         WINDOW_WIDTH,
-        WINDOW_HEIGHT);
+        WINDOW_HEIGHT,
+        PHYSICS_TICKS_PER_SECOND,
+        PHYSICS_INTERPOLATION);
 
     if (!app.is_initialized()) {
         return 1;

@@ -8,14 +8,14 @@ ComponentPriority InputComponent::get_priority() const {
 }
 
 void InputComponent::enter_play() {
-    m_input_event_handler_id = get_entity()->get_app()->get_input()->add_input_event_handler(
+    m_input_event_handler_id = get_app()->get_input()->add_input_event_handler(
         [this](const InputEvent& event) {
             this->on_input_event(event);
         });
 }
 
 void InputComponent::exit_play() {
-    get_entity()->get_app()->get_input()->remove_input_event_handler(m_input_event_handler_id);
+    get_app()->get_input()->remove_input_event_handler(m_input_event_handler_id);
 }
 
 BindingId InputComponent::bind_axis(const char* axis_name, AxisBindingFunc function) {

@@ -103,6 +103,10 @@ float Vector2::dot(const Vector2& a, const Vector2& b) {
     return a.x * b.x + a.y * b.y;
 }
 
+Vector2 Vector2::lerp(const Vector2& a, const Vector2& b, float t) {
+    return a + (b - a) * t;
+}
+
 std::string Vector2::to_string() const {
     return fmt::format("({:.2f}, {:.2f})", x, y);
 }
