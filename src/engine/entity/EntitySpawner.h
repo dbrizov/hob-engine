@@ -32,12 +32,8 @@ public:
     void destroy_entity(EntityId id);
 
     Entity* get_entity(EntityId id) const;
-
-    auto get_entities() const {
-        return m_entities | std::ranges::views::transform([](const std::unique_ptr<Entity>& ptr) {
-            return ptr.get();
-        });
-    }
+    void get_entities(std::vector<Entity*>& out_entities) const;
+    void get_ticking_entities(std::vector<Entity*>& out_entities) const;
 
 private:
     void set_app(App* app);

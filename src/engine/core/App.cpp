@@ -20,6 +20,8 @@ App::App(uint32_t target_fps,
 
 void App::run() {
     bool is_running = true;
+    std::vector<Entity*> entities;
+    std::vector<Entity*> ticking_entities;
 
     while (is_running) {
         m_timer.frame_start();
@@ -33,14 +35,16 @@ void App::run() {
         }
 
         m_entity_spawner.resolve_requests();
+        m_entity_spawner.get_entities(entities);
+        m_entity_spawner.get_ticking_entities(ticking_entities);
 
         const float delta_time = m_timer.get_delta_time();
         const float scaled_delta_time = delta_time * m_timer.get_time_scale();
 
         input_tick(delta_time);
-        entities_tick(scaled_delta_time);
-        entities_physics_tick(scaled_delta_time);
-        entities_render_tick(delta_time);
+        entities_tick(scaled_delta_time, ticking_entities);
+        entities_physics_tick(scaled_delta_time, ticking_entities);
+        entities_render_tick(scaled_delta_time, entities);
         render_frame();
 
         m_timer.frame_end();
@@ -68,20 +72,20 @@ void App::input_tick(float delta_time) {
     m_input.tick(delta_time, keyboard_state);
 }
 
-void App::entities_tick(float scaled_delta_time) {
-    for (Entity* entity : m_entity_spawner.get_entities()) {
+void App::entities_tick(float scaled_delta_time, const std::vector<Entity*>& entities) {
+    for (Entity* entity : entities) {
         if (entity->is_ticking()) {
             entity->tick(scaled_delta_time);
         }
     }
 }
 
-void App::entities_physics_tick(float scaled_delta_time) {
+void App::entities_physics_tick(float scaled_delta_time, const std::vector<Entity*>& entities) {
     // TODO Implement physics tick with accumulator
 }
 
-void App::entities_render_tick(float delta_time) {
-    for (Entity* entity : m_entity_spawner.get_entities()) {
+void App::entities_render_tick(float delta_time, const std::vector<Entity*>& entities) {
+    for (Entity* entity : entities) {
         entity->render_tick(delta_time, m_render_queue);
     }
 }

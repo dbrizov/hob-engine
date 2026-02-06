@@ -39,6 +39,24 @@ Entity* EntitySpawner::get_entity(EntityId id) const {
     return nullptr;
 }
 
+void EntitySpawner::get_entities(std::vector<Entity*>& out_entities) const {
+    out_entities.clear();
+    out_entities.reserve(m_entities.size());
+    for (const auto& entity : m_entities) {
+        out_entities.push_back(entity.get());
+    }
+}
+
+void EntitySpawner::get_ticking_entities(std::vector<Entity*>& out_entities) const {
+    out_entities.clear();
+    out_entities.reserve(m_entities.size());
+    for (const auto& entity : m_entities) {
+        if (entity->is_ticking()) {
+            out_entities.push_back(entity.get());
+        }
+    }
+}
+
 void EntitySpawner::set_app(App* app) {
     m_app = app;
 }

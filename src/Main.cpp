@@ -13,9 +13,13 @@ constexpr bool VSYNC_ENABLED = true;
 const std::string WINDOW_TITLE = "SDL2 Window";
 constexpr uint32_t WINDOW_WIDTH = 640;
 constexpr uint32_t WINDOW_HEIGHT = 480;
+constexpr uint32_t PHYSICS_STEPS_PER_SECOND = 60;
+constexpr bool PHYSICS_INTERPOLATION = true;
 
 Entity* spawn_player_entity(App& app) {
     Entity* entity = app.get_entity_spawner()->spawn_entity();
+    entity->set_is_ticking(true);
+
     TransformComponent* transform_component = entity->add_component<TransformComponent>();
     transform_component->set_position(Vector2(50.0f, 50.0f));
     transform_component->set_scale(Vector2(2.0f, 2.0f));

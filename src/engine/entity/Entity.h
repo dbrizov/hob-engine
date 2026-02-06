@@ -20,7 +20,7 @@ class Entity final {
     App* m_app = nullptr;
     EntityId m_id = 0;
     bool m_is_in_play = false;
-    bool m_is_ticking = true;
+    bool m_is_ticking = false;
     std::vector<std::unique_ptr<Component>> m_components;
 
     // EntitySpawner is a friend of Entity for 2 reasons.

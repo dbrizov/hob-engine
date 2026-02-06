@@ -38,9 +38,9 @@ public:
 
 private:
     void input_tick(float delta_time);
-    void entities_tick(float scaled_delta_time);
-    void entities_physics_tick(float scaled_delta_time);
-    void entities_render_tick(float delta_time);
+    void entities_tick(float scaled_delta_time, const std::vector<Entity*>& entities);
+    void entities_physics_tick(float scaled_delta_time, const std::vector<Entity*>& entities);
+    void entities_render_tick(float scaled_delta_time, const std::vector<Entity*>& entities);
     void render_frame();
 };
 
