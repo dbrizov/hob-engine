@@ -70,7 +70,7 @@ vcpkg --version
 1. Install prerequisites.
 ```
 xcode-select --install
-brew install cmake ninja pkg-config
+brew install cmake ninja pkgconf
 ```
 2. Clone the `vcpkg` git repository.
 ```
