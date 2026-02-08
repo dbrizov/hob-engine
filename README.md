@@ -37,7 +37,7 @@ The `cmake` environment variable will be configured automatically.
 1. Install prerequisites.
 ```
 sudo apt update
-sudo apt install -y build-essential cmake ninja-build pkg-config curl zip unzip tar
+sudo apt install -y build-essential cmake ninja-build pkgconf curl zip unzip tar
 ```
 2. Install `vcpkg` dependencies for building SDL from source.
 
