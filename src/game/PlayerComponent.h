@@ -6,7 +6,7 @@
 
 
 class PlayerComponent : public Component {
-    float m_speed = 300.0f;
+    float m_speed = 150.0f;
     Vector2 m_movement_input;
     BindingId m_x_axis_id = 0;
     BindingId m_y_axis_id = 0;

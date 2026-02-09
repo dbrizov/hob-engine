@@ -14,11 +14,19 @@ class SdlContext {
     std::string m_window_title;
     uint32_t m_window_width;
     uint32_t m_window_height;
+    uint32_t m_logical_resolution_width;
+    uint32_t m_logical_resolution_height;
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
 
 public:
-    SdlContext(bool vsync_enabled, const std::string& window_title, uint32_t window_width, uint32_t window_height);
+    SdlContext(bool vsync_enabled,
+               const std::string& window_title,
+               uint32_t window_width,
+               uint32_t window_height,
+               uint32_t logical_resolution_width,
+               uint32_t logical_resolution_height);
+
     ~SdlContext();
 
     SdlContext(const SdlContext&) = delete;

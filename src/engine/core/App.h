@@ -30,6 +30,8 @@ public:
         const std::string& window_title,
         uint32_t window_width,
         uint32_t window_height,
+        uint32_t logical_resolution_width,
+        uint32_t logical_resolution_height,
         uint32_t physics_ticks_per_second,
         bool physics_interpolation);
 

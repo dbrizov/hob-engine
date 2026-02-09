@@ -9,9 +9,16 @@ App::App(uint32_t target_fps,
          const std::string& window_title,
          uint32_t window_width,
          uint32_t window_height,
+         uint32_t logical_resolution_width,
+         uint32_t logical_resolution_height,
          uint32_t physics_ticks_per_second,
          bool physics_interpolation)
-    : m_sdl_context(vsync_enabled, window_title, window_width, window_height)
+    : m_sdl_context(vsync_enabled,
+                    window_title,
+                    window_width,
+                    window_height,
+                    logical_resolution_width,
+                    logical_resolution_height)
       , m_timer(target_fps, vsync_enabled)
       , m_input()
       , m_assets(m_sdl_context.get_renderer())
