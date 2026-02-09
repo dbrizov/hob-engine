@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "Entity.h"
+#include "engine/components/TransformComponent.h"
 
 
 Entity* EntitySpawner::spawn_entity() {
@@ -12,6 +13,7 @@ Entity* EntitySpawner::spawn_entity() {
     m_next_entity_id += 1;
     entity->set_id(entity_id);
     entity->set_app(m_app);
+    entity->add_component<TransformComponent>();
 
     m_entity_spawn_requests.push_back(std::move(entity));
 

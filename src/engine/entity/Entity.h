@@ -9,6 +9,7 @@
 
 
 class App;
+class TransformComponent;
 
 using EntityId = int;
 
@@ -22,6 +23,7 @@ class Entity final {
     bool m_is_in_play = false;
     bool m_is_ticking = false;
     std::vector<std::unique_ptr<Component>> m_components;
+    mutable TransformComponent* m_transform = nullptr;
 
     // EntitySpawner is a friend of Entity for 2 reasons.
     // 1. Only the EntitySpawner can create entities.
@@ -53,11 +55,13 @@ public:
     bool is_ticking() const;
     void set_is_ticking(bool is_ticking);
 
+    TransformComponent* get_transform() const;
+
     template<ComponentType T>
     T* add_component();
 
     template<ComponentType T>
-    T* get_component();
+    T* get_component() const;
 };
 
 template<ComponentType T>
@@ -83,7 +87,7 @@ T* Entity::add_component() {
 }
 
 template<ComponentType T>
-T* Entity::get_component() {
+T* Entity::get_component() const {
     for (auto& c : m_components) {
         if (T* casted = dynamic_cast<T*>(c.get())) {
             return casted;

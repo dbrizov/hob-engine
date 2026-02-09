@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
 
 Physics::Physics(uint32_t ticks_per_second, bool interpolation)
@@ -23,6 +24,9 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
     m_accumulator += frame_delta_time;
     while (m_accumulator >= m_fixed_delta_time) {
         for (Entity* entity : entities) {
+            TransformComponent* transform = entity->get_transform();
+            transform->set_prev_position(transform->get_position());
+
             entity->physics_tick(m_fixed_delta_time);
         }
 

@@ -22,8 +22,8 @@ Entity* spawn_player_entity(App& app) {
     Entity* entity = app.get_entity_spawner()->spawn_entity();
     entity->set_is_ticking(true);
 
-    TransformComponent* transform_component = entity->add_component<TransformComponent>();
-    transform_component->set_position(Vector2(50.0f, 50.0f));
+    entity->add_component<InputComponent>();
+    entity->add_component<PlayerComponent>();
 
     ImageComponent* image_component = entity->add_component<ImageComponent>();
     const std::filesystem::path path =
@@ -31,8 +31,20 @@ Entity* spawn_player_entity(App& app) {
     const TextureId texture_id = app.get_assets()->load_texture(path.c_str());
     image_component->set_texture_id(texture_id);
 
-    entity->add_component<InputComponent>();
-    entity->add_component<PlayerComponent>();
+    return entity;
+}
+
+Entity* spawn_enemy_entity(App& app) {
+    Entity* entity = app.get_entity_spawner()->spawn_entity();
+
+    TransformComponent* transform = entity->get_transform();
+    transform->set_position(Vector2(100.0f, 100.0f));
+
+    ImageComponent* image_component = entity->add_component<ImageComponent>();
+    const std::filesystem::path path =
+        PathUtils::get_assets_root_path() / "images" / "entities" / "enemy" / "idle" / "00.png";
+    const TextureId texture_id = app.get_assets()->load_texture(path.c_str());
+    image_component->set_texture_id(texture_id);
 
     return entity;
 }
@@ -54,6 +66,7 @@ int main(int argc, char* argv[]) {
     }
 
     spawn_player_entity(app);
+    spawn_enemy_entity(app);
 
     app.run();
 

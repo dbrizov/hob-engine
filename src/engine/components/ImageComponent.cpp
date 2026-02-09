@@ -9,7 +9,7 @@ ComponentPriority ImageComponent::get_priority() const {
 }
 
 void ImageComponent::render_tick(float delta_time, RenderQueue& render_queue) {
-    const TransformComponent* transform = get_entity()->get_component<TransformComponent>();
+    const TransformComponent* transform = get_entity()->get_transform();
     Vector2 position = transform->get_position();
     Vector2 prev_position = transform->get_prev_position();
     Vector2 t_scale = transform->get_scale();

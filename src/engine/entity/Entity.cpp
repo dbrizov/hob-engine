@@ -1,5 +1,7 @@
 #include "Entity.h"
 
+#include "engine/components/TransformComponent.h"
+
 void Entity::enter_play() {
     m_is_in_play = true;
     for (auto& component : m_components) {
@@ -58,4 +60,12 @@ bool Entity::is_ticking() const {
 
 void Entity::set_is_ticking(bool is_ticking) {
     m_is_ticking = is_ticking;
+}
+
+TransformComponent* Entity::get_transform() const {
+    if (m_transform == nullptr) {
+        m_transform = get_component<TransformComponent>();
+    }
+
+    return m_transform;
 }
