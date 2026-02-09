@@ -28,6 +28,8 @@ struct InputEvent {
 using InputEventHandlerId = int;
 using InputEventHandler = std::function<void(const InputEvent&)>;
 
+constexpr InputEventHandlerId INVALID_INPUT_EVENT_HANDLER_ID = -1;
+
 
 struct AxisMapping {
     float acceleration;
@@ -53,7 +55,7 @@ class Input {
 
     InputEventHandlerId m_next_handler_id = 0;
     std::vector<HandlerEntry> m_handlers;
-    std::unordered_map<InputEventHandlerId, int> m_handler_index_by_id;
+    std::unordered_map<InputEventHandlerId, size_t> m_handler_index_by_id;
 
     InputMappings m_input_mappings;
     std::unordered_map<std::string, float> m_axis_values;

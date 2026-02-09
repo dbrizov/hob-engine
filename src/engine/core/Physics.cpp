@@ -5,11 +5,11 @@
 #include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
 
-Physics::Physics(uint32_t ticks_per_second, bool interpolation)
-    : m_fixed_delta_time(fixed_delta_time_from_ticks_per_second(ticks_per_second))
-      , m_interpolation(interpolation)
+Physics::Physics(uint32_t ticks_per_second, bool use_interpolation)
+    : m_accumulator(0.0f)
+      , m_fixed_delta_time(delta_time_from_ticks(ticks_per_second))
       , m_interpolation_fraction(0.0f)
-      , m_accumulator(0.0f) {
+      , m_use_interpolation(use_interpolation) {
 }
 
 float Physics::get_fixed_delta_time() const {
@@ -33,10 +33,10 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
         m_accumulator -= m_fixed_delta_time;
     }
 
-    m_interpolation_fraction = m_interpolation ? (m_accumulator / m_fixed_delta_time) : 1.0f;
+    m_interpolation_fraction = m_use_interpolation ? (m_accumulator / m_fixed_delta_time) : 1.0f;
 }
 
-float Physics::fixed_delta_time_from_ticks_per_second(uint32_t ticks_per_second) {
+float Physics::delta_time_from_ticks(uint32_t ticks_per_second) {
     assert(ticks_per_second > 0);
     return 1.0f / static_cast<float>(ticks_per_second);
 }

@@ -1,7 +1,6 @@
 #ifndef CPP_PLATFORMER_ENTITYSPAWNER_H
 #define CPP_PLATFORMER_ENTITYSPAWNER_H
 #include <memory>
-#include <ranges>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -17,7 +16,7 @@ class EntitySpawner {
 
     EntityId m_next_entity_id = 0;
     std::vector<std::unique_ptr<Entity>> m_entities;
-    std::unordered_map<EntityId, int> m_entity_index_by_id;
+    std::unordered_map<EntityId, size_t> m_entity_index_by_id;
 
     std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
     std::unordered_set<EntityId> m_entity_destroy_requests;

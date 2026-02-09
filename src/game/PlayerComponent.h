@@ -8,9 +8,9 @@
 class PlayerComponent : public Component {
     float m_speed = 150.0f;
     Vector2 m_movement_input;
-    BindingId m_x_axis_id = 0;
-    BindingId m_y_axis_id = 0;
-    BindingId m_slow_motion_action_id = 0;
+    BindingId m_x_axis_id = INVALID_BINDING_ID;
+    BindingId m_y_axis_id = INVALID_BINDING_ID;
+    BindingId m_slow_motion_action_id = INVALID_BINDING_ID;
 
 public:
     virtual void enter_play() override;

@@ -8,6 +8,8 @@ using BindingId = int;
 using AxisBindingFunc = std::function<void(float)>;
 using ActionBindingFunc = std::function<void()>;
 
+constexpr BindingId INVALID_BINDING_ID = -1;
+
 
 class InputComponent : public Component {
     struct AxisBindingEntry {
@@ -20,7 +22,7 @@ class InputComponent : public Component {
         ActionBindingFunc function;
     };
 
-    InputEventHandlerId m_input_event_handler_id = 0;
+    InputEventHandlerId m_input_event_handler_id = INVALID_INPUT_EVENT_HANDLER_ID;
 
     BindingId m_next_binding_id = 0;
     std::unordered_map<std::string, std::vector<AxisBindingEntry>> m_axis_bindings;

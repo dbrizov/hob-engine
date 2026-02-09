@@ -33,8 +33,8 @@ void EntitySpawner::destroy_entity(EntityId id) {
 Entity* EntitySpawner::get_entity(EntityId id) const {
     auto it = m_entity_index_by_id.find(id);
     if (it != m_entity_index_by_id.end()) {
-        int index = it->second;
-        assert(index >= 0 && index < m_entities.size());
+        size_t index = it->second;
+        assert(index < m_entities.size() && "Index out of range");
         return m_entities[index].get();
     }
 
@@ -101,8 +101,8 @@ void EntitySpawner::resolve_destroy_requests() {
             continue;
         }
 
-        int index = it->second;
-        int last_index = m_entities.size() - 1;
+        size_t index = it->second;
+        size_t last_index = m_entities.size() - 1;
 
         if (index != last_index) {
             m_entities[index] = std::move(m_entities[last_index]); // move last into hole
