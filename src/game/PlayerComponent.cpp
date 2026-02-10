@@ -1,5 +1,6 @@
 #include "PlayerComponent.h"
 
+#include "engine/components/CameraComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 #include "engine/entity/Entity.h"
@@ -39,6 +40,14 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
     Vector2 pos_delta = (pos_delta_x + pos_delta_y) * m_speed * fixed_delta_time;
     Vector2 new_pos = transform->get_position() + pos_delta;
     transform->set_position(new_pos);
+    set_camera_position(new_pos);
+}
+
+void PlayerComponent::set_camera_position(const Vector2& new_position) {
+    Entity* camera_entity = get_app()->get_entity_spawner()->get_camera_entity();
+    TransformComponent* camera_transform = camera_entity->get_transform();
+
+    camera_transform->set_position(new_position);
 }
 
 void PlayerComponent::set_movement_input_x(float x_axis) {

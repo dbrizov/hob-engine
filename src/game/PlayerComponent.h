@@ -18,6 +18,7 @@ public:
     virtual void physics_tick(float fixed_delta_time) override;
 
 private:
+    void set_camera_position(const Vector2& new_position);
     void set_movement_input_x(float x_axis);
     void set_movement_input_y(float y_axis);
     void toggle_slow_motion();

@@ -20,6 +20,7 @@ public:
     uint32_t get_logical_resolution_height() const;
 
     Vector2 world_to_screen(const Vector2& world_position) const;
+    Vector2 world_to_screen(const Vector2& world_position, const Vector2& camera_position) const;
 };
 
 

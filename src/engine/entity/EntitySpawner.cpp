@@ -58,6 +58,11 @@ void EntitySpawner::get_ticking_entities(std::vector<Entity*>& out_entities) con
             out_entities.push_back(entity.get());
         }
     }
+
+    std::sort(out_entities.begin(), out_entities.end(),
+              [](const auto& a, const auto& b) {
+                  return static_cast<int>(a->get_priority()) < static_cast<int>(b->get_priority());
+              });
 }
 
 Entity* EntitySpawner::get_camera_entity() const {
@@ -67,20 +72,15 @@ Entity* EntitySpawner::get_camera_entity() const {
     return camera_entity;
 }
 
-CameraComponent* EntitySpawner::get_camera_component() const {
-    Entity* camera_entity = get_camera_entity();
-    CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
-
-    return camera_component;
-}
-
 Entity* EntitySpawner::spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height) {
     Entity* camera_entity = spawn_entity();
     camera_entity->set_is_ticking(true);
-    m_camera_entity_id = camera_entity->get_id();
+    camera_entity->set_priority(EntityPriority::CAMERA);
 
     CameraComponent* camera_component = camera_entity->add_component<CameraComponent>();
     camera_component->init(logical_resolution_width, logical_resolution_height);
+
+    m_camera_entity_id = camera_entity->get_id();
 
     return camera_entity;
 }

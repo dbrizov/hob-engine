@@ -4,6 +4,7 @@
 
 #include "Timer.h"
 #include "engine/components/CameraComponent.h"
+#include "engine/components/TransformComponent.h"
 
 App::App(uint32_t target_fps,
          bool vsync_enabled,
@@ -109,7 +110,15 @@ void App::render_frame() {
         Vector2 world_position = Vector2::lerp(
             render_data.prev_position, render_data.position, m_physics.get_interpolation_fraction());
 
-        Vector2 screen_position = m_entity_spawner.get_camera_component()->world_to_screen(world_position);
+        Entity* camera_entity = m_entity_spawner.get_camera_entity();
+        TransformComponent* camera_transform = camera_entity->get_transform();
+        Vector2 camera_position = Vector2::lerp(
+            camera_transform->get_prev_position(),
+            camera_transform->get_position(),
+            m_physics.get_interpolation_fraction());
+
+        CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
+        Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
 
         SDL_FRect dst{
             screen_position.x,

@@ -50,6 +50,14 @@ void Entity::set_id(EntityId id) {
     m_id = id;
 }
 
+EntityPriority Entity::get_priority() const {
+    return m_priority;
+}
+
+void Entity::set_priority(EntityPriority priority) {
+    m_priority = priority;
+}
+
 bool Entity::is_in_play() const {
     return m_is_in_play;
 }

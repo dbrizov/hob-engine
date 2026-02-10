@@ -9,7 +9,6 @@
 
 
 class App;
-class CameraComponent;
 
 
 class EntitySpawner {
@@ -38,7 +37,6 @@ public:
     void get_ticking_entities(std::vector<Entity*>& out_entities) const;
 
     Entity* get_camera_entity() const;
-    CameraComponent* get_camera_component() const;
 
 private:
     Entity* spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height);
