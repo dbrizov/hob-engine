@@ -101,6 +101,12 @@ void App::render_frame() {
     SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
     SDL_RenderClear(m_sdl_context.get_renderer());
 
+    Entity* camera_entity = m_entity_spawner.get_camera_entity();
+    CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
+    TransformComponent* camera_transform = camera_entity->get_transform();
+    Vector2 camera_position = Vector2::lerp(camera_transform->get_prev_position(), camera_transform->get_position(),
+                                            m_physics.get_interpolation_fraction());
+
     for (const RenderData& render_data : m_render_queue.get_render_data()) {
         SDL_Texture* texture = m_assets.get_texture(render_data.texture_id);
         int texture_width = 0;
@@ -110,14 +116,6 @@ void App::render_frame() {
         Vector2 world_position = Vector2::lerp(
             render_data.prev_position, render_data.position, m_physics.get_interpolation_fraction());
 
-        Entity* camera_entity = m_entity_spawner.get_camera_entity();
-        TransformComponent* camera_transform = camera_entity->get_transform();
-        Vector2 camera_position = Vector2::lerp(
-            camera_transform->get_prev_position(),
-            camera_transform->get_position(),
-            m_physics.get_interpolation_fraction());
-
-        CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
         Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
 
         SDL_FRect dst{
