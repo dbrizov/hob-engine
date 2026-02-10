@@ -8,7 +8,7 @@
 #include "engine/entity/Entity.h"
 #include "game/PlayerComponent.h"
 
-constexpr uint32_t TARGET_FPS = 30;
+constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
 const std::string WINDOW_TITLE = "SDL2 Window";
 constexpr uint32_t WINDOW_WIDTH = 1152;

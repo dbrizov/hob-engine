@@ -2,7 +2,6 @@
 
 #include <SDL_timer.h>
 
-
 Timer::Timer(uint32_t fps, bool vsync_enabled)
     : m_target_fps(fps)
       , m_vsync_enabled(vsync_enabled)

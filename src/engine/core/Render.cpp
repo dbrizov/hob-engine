@@ -1,6 +1,5 @@
 #include "Render.h"
 
-
 void RenderQueue::enqueue(const RenderData& data) {
     m_render_data.push_back(data);
 }
