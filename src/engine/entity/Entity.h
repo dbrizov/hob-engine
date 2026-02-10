@@ -12,6 +12,7 @@ class App;
 class TransformComponent;
 
 using EntityId = int;
+constexpr EntityId INVALID_ENTITY_ID = -1;
 
 template<typename T>
 concept ComponentType = std::derived_from<T, Component>;

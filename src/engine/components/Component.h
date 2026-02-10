@@ -8,7 +8,7 @@ class Entity;
 
 
 enum class ComponentPriority {
-    INPUT = -150,
+    INPUT = -200,
     TRANSFORM = -100,
     DEFAULT = 0,
     RENDER = 100

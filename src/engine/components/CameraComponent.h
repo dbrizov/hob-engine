@@ -1,0 +1,26 @@
+#ifndef CPP_PLATFORMER_CAMERACOMPONENT_H
+#define CPP_PLATFORMER_CAMERACOMPONENT_H
+#include <cstdint>
+
+#include "Component.h"
+#include "engine/math/Vector2.h"
+
+
+class CameraComponent : public Component {
+    uint32_t m_logical_resolution_width = 0;
+    uint32_t m_logical_resolution_height = 0;
+
+    // EntitySpawner is a friend class.
+    // There is only one camera, and it is spawned when the app is initialized
+    friend class EntitySpawner;
+    void init(uint32_t logical_resolution_width, uint32_t logical_resolution_height);
+
+public:
+    uint32_t get_logical_resolution_width() const;
+    uint32_t get_logical_resolution_height() const;
+
+    Vector2 world_to_screen(const Vector2& world_position) const;
+};
+
+
+#endif //CPP_PLATFORMER_CAMERACOMPONENT_H

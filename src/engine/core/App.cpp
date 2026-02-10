@@ -3,6 +3,7 @@
 #include <SDL.h>
 
 #include "Timer.h"
+#include "engine/components/CameraComponent.h"
 
 App::App(uint32_t target_fps,
          bool vsync_enabled,
@@ -26,6 +27,7 @@ App::App(uint32_t target_fps,
       , m_render_queue()
       , m_entity_spawner() {
     m_entity_spawner.set_app(this);
+    m_entity_spawner.spawn_camera_entity(logical_resolution_width, logical_resolution_height);
 }
 
 void App::run() {
@@ -104,12 +106,14 @@ void App::render_frame() {
         int texture_height = 0;
         SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
 
-        Vector2 position = Vector2::lerp(
+        Vector2 world_position = Vector2::lerp(
             render_data.prev_position, render_data.position, m_physics.get_interpolation_fraction());
 
+        Vector2 screen_position = m_entity_spawner.get_camera_component()->world_to_screen(world_position);
+
         SDL_FRect dst{
-            position.x,
-            position.y,
+            screen_position.x,
+            screen_position.y,
             static_cast<float>(texture_width) * render_data.scale.x,
             static_cast<float>(texture_height) * render_data.scale.y,
         };

@@ -13,8 +13,8 @@ constexpr bool VSYNC_ENABLED = true;
 const std::string WINDOW_TITLE = "SDL2 Window";
 constexpr uint32_t WINDOW_WIDTH = 1152;
 constexpr uint32_t WINDOW_HEIGHT = 648;
-constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = 576;
-constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = 324;
+constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH / 2;
+constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT / 2;
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr bool PHYSICS_INTERPOLATION = true;
 

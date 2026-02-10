@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "Entity.h"
+#include "engine/components/CameraComponent.h"
 #include "engine/components/TransformComponent.h"
 
 
@@ -57,6 +58,31 @@ void EntitySpawner::get_ticking_entities(std::vector<Entity*>& out_entities) con
             out_entities.push_back(entity.get());
         }
     }
+}
+
+Entity* EntitySpawner::get_camera_entity() const {
+    Entity* camera_entity = get_entity(m_camera_entity_id);
+    assert(camera_entity != nullptr && "There is no camera");
+
+    return camera_entity;
+}
+
+CameraComponent* EntitySpawner::get_camera_component() const {
+    Entity* camera_entity = get_camera_entity();
+    CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
+
+    return camera_component;
+}
+
+Entity* EntitySpawner::spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height) {
+    Entity* camera_entity = spawn_entity();
+    camera_entity->set_is_ticking(true);
+    m_camera_entity_id = camera_entity->get_id();
+
+    CameraComponent* camera_component = camera_entity->add_component<CameraComponent>();
+    camera_component->init(logical_resolution_width, logical_resolution_height);
+
+    return camera_entity;
 }
 
 void EntitySpawner::set_app(App* app) {
