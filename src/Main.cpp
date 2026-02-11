@@ -28,7 +28,7 @@ Entity* spawn_player_entity(App& app) {
     ImageComponent* image_component = entity->add_component<ImageComponent>();
     const std::filesystem::path path =
         PathUtils::get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
-    const TextureId texture_id = app.get_assets()->load_texture(path.c_str());
+    const TextureId texture_id = app.get_assets()->load_texture(path);
     image_component->set_texture_id(texture_id);
 
     return entity;
@@ -43,7 +43,7 @@ Entity* spawn_enemy_entity(App& app) {
     ImageComponent* image_component = entity->add_component<ImageComponent>();
     const std::filesystem::path path =
         PathUtils::get_assets_root_path() / "images" / "entities" / "enemy" / "idle" / "00.png";
-    const TextureId texture_id = app.get_assets()->load_texture(path.c_str());
+    const TextureId texture_id = app.get_assets()->load_texture(path);
     image_component->set_texture_id(texture_id);
 
     return entity;

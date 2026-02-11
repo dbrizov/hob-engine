@@ -40,12 +40,16 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
     Vector2 pos_delta = (pos_delta_x + pos_delta_y) * m_speed * fixed_delta_time;
     Vector2 new_pos = transform->get_position() + pos_delta;
     transform->set_position(new_pos);
-    set_camera_position(new_pos);
+
+    update_camera_position(new_pos, fixed_delta_time);
 }
 
-void PlayerComponent::set_camera_position(const Vector2& new_position) {
+void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {
     Entity* camera_entity = get_app()->get_entity_spawner()->get_camera_entity();
     TransformComponent* camera_transform = camera_entity->get_transform();
+
+    Vector2 new_position = Vector2::lerp(
+        camera_transform->get_position(), target_position, fixed_delta_time * m_camera_follow_speed);
 
     camera_transform->set_position(new_position);
 }
