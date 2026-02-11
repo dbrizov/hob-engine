@@ -104,7 +104,7 @@ float Vector2::dot(const Vector2& a, const Vector2& b) {
 }
 
 Vector2 Vector2::lerp(const Vector2& a, const Vector2& b, float t) {
-    return a + (b - a) * t;
+    return a * (1.0f - t) + b * t;
 }
 
 std::string Vector2::to_string() const {
