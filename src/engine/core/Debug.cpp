@@ -21,7 +21,7 @@ namespace debug {
         clear();
     }
 
-    void draw_line(const Vector2& start, const Vector2& end, const Color& color, int thickness/* = 1*/) {
+    void draw_line(const Vector2& start, const Vector2& end, const Color& color, int thickness/* = 1 */) {
         lines.emplace_back(start, end, color, thickness);
     }
 

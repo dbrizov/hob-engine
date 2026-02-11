@@ -15,8 +15,7 @@ struct Color {
     uint8_t a;
 
     Color();
-    Color(uint8_t r_, uint8_t g_, uint8_t b_);
-    Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_);
+    Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 255);
 
     static Color black();
     static Color white();

@@ -7,11 +7,7 @@ Color::Color()
     : Color(0, 0, 0, 0) {
 }
 
-Color::Color(uint8_t r_, uint8_t g_, uint8_t b_)
-    : Color(r_, g_, b_, 255) {
-}
-
-Color::Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_)
+Color::Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_/* = 255 */)
     : r(r_), g(g_), b(b_), a(a_) {
 }
 
