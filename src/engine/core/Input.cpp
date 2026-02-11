@@ -164,9 +164,7 @@ void Input::tick(float delta_time, const Uint8* keyboard_state) {
             axis_value = std::max(axis_value - mapping.acceleration * delta_time, -1.0f);
         }
 
-        if (std::abs(axis_value - old_axis_value) > EPSILON) {
-            dispatch_event(InputEvent(axis.c_str(), InputEventType::AXIS, axis_value));
-        }
+        dispatch_event(InputEvent(axis.c_str(), InputEventType::AXIS, axis_value));
     }
 }
 

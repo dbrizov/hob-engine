@@ -3,6 +3,7 @@
 #include "engine/components/CameraComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
+#include "engine/core/Debug.h"
 #include "engine/entity/Entity.h"
 
 void PlayerComponent::enter_play() {
@@ -42,6 +43,13 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
     transform->set_position(new_pos);
 
     update_camera_position(new_pos, fixed_delta_time);
+}
+
+void PlayerComponent::render_tick(float delta_time, RenderQueue& render_queue) {
+    TransformComponent* trasnform = get_entity()->get_transform();
+    TransformComponent* camera_transform = get_app()->get_entity_spawner()->get_camera_entity()->get_transform();
+
+    debug::draw_line(camera_transform->get_position(), trasnform->get_position(), Color::red());
 }
 
 void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {

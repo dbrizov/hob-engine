@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 
+#include "Debug.h"
 #include "Timer.h"
 #include "engine/components/CameraComponent.h"
 #include "engine/components/TransformComponent.h"
@@ -98,9 +99,11 @@ EntitySpawner* App::get_entity_spawner() {
 }
 
 void App::render_frame() {
+    SDL_SetRenderDrawBlendMode(m_sdl_context.get_renderer(), SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
     SDL_RenderClear(m_sdl_context.get_renderer());
 
+    // Render entities
     Entity* camera_entity = m_entity_spawner.get_camera_entity();
     CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
     TransformComponent* camera_transform = camera_entity->get_transform();
@@ -129,6 +132,9 @@ void App::render_frame() {
     }
 
     m_render_queue.clear();
+
+    // Render debug draws
+    debug::render_debug_draws(m_sdl_context.get_renderer(), camera_component);
 
     SDL_RenderPresent(m_sdl_context.get_renderer());
 }

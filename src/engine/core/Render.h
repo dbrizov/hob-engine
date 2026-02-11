@@ -7,6 +7,34 @@
 #include "engine/math/Vector2.h"
 
 
+#pragma region Color
+struct Color {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+
+    Color();
+    Color(uint8_t r_, uint8_t g_, uint8_t b_);
+    Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_);
+
+    static Color black();
+    static Color white();
+    static Color gray();
+    static Color red();
+    static Color green();
+    static Color blue();
+    static Color yellow();
+    static Color magenta();
+    static Color cyan();
+    static Color orange();
+
+    std::string to_string() const;
+};
+#pragma endregion Color
+
+
+#pragma region RenderQueue
 struct RenderData {
     TextureId texture_id = INVALID_TEXTURE_ID;
     Vector2 position;
@@ -31,6 +59,7 @@ public:
 
     std::span<const RenderData> get_render_data() const;
 };
+#pragma endregion RenderQueue
 
 
 #endif //CPP_PLATFORMER_RENDER_H

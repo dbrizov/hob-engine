@@ -17,6 +17,7 @@ public:
     virtual void enter_play() override;
     virtual void exit_play() override;
     virtual void physics_tick(float fixed_delta_time) override;
+    virtual void render_tick(float delta_time, RenderQueue& render_queue) override;
 
 private:
     void update_camera_position(const Vector2& target_position, float fixed_delta_time);
@@ -24,7 +25,6 @@ private:
     void set_movement_input_x(float x_axis);
     void set_movement_input_y(float y_axis);
     void toggle_slow_motion();
-
 };
 
 
