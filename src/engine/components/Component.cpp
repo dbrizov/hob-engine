@@ -3,7 +3,6 @@
 #include "engine/entity/Entity.h"
 
 App* Component::get_app() const {
-    assert(m_entity != nullptr);
     return m_entity->get_app();
 }
 

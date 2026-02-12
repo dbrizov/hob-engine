@@ -1,6 +1,5 @@
 #ifndef CPP_PLATFORMER_DEBUG_H
 #define CPP_PLATFORMER_DEBUG_H
-
 #include "Render.h"
 #include "engine/math/Vector2.h"
 
