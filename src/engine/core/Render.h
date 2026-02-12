@@ -35,17 +35,12 @@ struct Color {
 
 #pragma region RenderQueue
 struct RenderData {
-    TextureId texture_id = INVALID_TEXTURE_ID;
+    TextureId texture_id;
     Vector2 position;
     Vector2 prev_position;
     Vector2 scale;
 
-    RenderData(TextureId texture_id_, Vector2 position_, Vector2 prev_position_, Vector2 scale_)
-        : texture_id(texture_id_)
-          , position(position_)
-          , prev_position(prev_position_)
-          , scale(scale_) {
-    }
+    RenderData(TextureId texture_id_, const Vector2& position_, const Vector2& prev_position_, const Vector2& scale_);
 };
 
 

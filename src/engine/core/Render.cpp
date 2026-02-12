@@ -58,6 +58,16 @@ std::string Color::to_string() const {
 
 
 #pragma region RenderQueue
+RenderData::RenderData(TextureId texture_id_,
+                       const Vector2& position_,
+                       const Vector2& prev_position_,
+                       const Vector2& scale_)
+    : texture_id(texture_id_)
+      , position(position_)
+      , prev_position(prev_position_)
+      , scale(scale_) {
+}
+
 void RenderQueue::enqueue(const RenderData& data) {
     m_render_data.push_back(data);
 }

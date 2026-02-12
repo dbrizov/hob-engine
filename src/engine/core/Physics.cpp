@@ -37,6 +37,6 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
 }
 
 float Physics::delta_time_from_ticks(uint32_t ticks_per_second) {
-    assert(ticks_per_second > 0);
+    assert(ticks_per_second > 0 && "Division by zero");
     return 1.0f / static_cast<float>(ticks_per_second);
 }
