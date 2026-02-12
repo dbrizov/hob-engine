@@ -14,6 +14,8 @@ class PlayerComponent : public Component {
     BindingId m_slow_motion_action_id = INVALID_BINDING_ID;
 
 public:
+    explicit PlayerComponent(Entity& entity);
+
     virtual void enter_play() override;
     virtual void exit_play() override;
     virtual void physics_tick(float fixed_delta_time) override;

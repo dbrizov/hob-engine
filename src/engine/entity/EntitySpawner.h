@@ -12,7 +12,7 @@ class App;
 
 
 class EntitySpawner {
-    App* m_app = nullptr;
+    App& m_app;
     EntityId m_camera_entity_id = INVALID_ENTITY_ID;
 
     EntityId m_next_entity_id = 0;
@@ -23,13 +23,14 @@ class EntitySpawner {
     std::unordered_set<EntityId> m_entity_destroy_requests;
 
     // App is a friend of EntitySpawner so that:
-    // 1. It can set itself with set_app().
-    // 2. Initialize a camera entity.
-    // 3. Resolve spawn requests via resolve_requests().
+    // - It can initialize a camera entity.
+    // - Resolve spawn requests via resolve_requests().
     friend class App;
 
 public:
-    Entity* spawn_entity();
+    explicit EntitySpawner(App& app);
+
+    Entity& spawn_entity();
     void destroy_entity(EntityId id);
 
     Entity* get_entity(EntityId id) const;
@@ -39,9 +40,7 @@ public:
     Entity* get_camera_entity() const;
 
 private:
-    Entity* spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height);
-
-    void set_app(App* app);
+    void spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height);
 
     void resolve_requests();
     void resolve_spawn_requests();

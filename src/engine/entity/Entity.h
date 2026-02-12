@@ -25,7 +25,7 @@ enum class EntityPriority {
 
 
 class Entity final {
-    App* m_app = nullptr;
+    App& m_app;
     EntityId m_id = 0;
     EntityPriority m_priority = EntityPriority::DEFAULT;
     bool m_is_in_play = false;
@@ -33,12 +33,10 @@ class Entity final {
     std::vector<std::unique_ptr<Component>> m_components;
     mutable TransformComponent* m_transform = nullptr;
 
-    // EntitySpawner is a friend of Entity for 2 reasons.
-    // 1. Only the EntitySpawner can create entities.
-    // 2. Only the EntitySpawner should be able to set the App address when an entity is spawned.
+    // EntitySpawner is a friend of Entity.
+    // - Only the EntitySpawner can create entities.
     friend class EntitySpawner;
-    Entity() = default;
-    void set_app(App* app);
+    explicit Entity(App& app);
 
 public:
     Entity(const Entity&) = delete;
@@ -53,7 +51,7 @@ public:
     void physics_tick(float fixed_delta_time);
     void render_tick(float delta_time, RenderQueue& render_queue);
 
-    App* get_app() const;
+    App& get_app() const;
 
     EntityId get_id() const;
     void set_id(EntityId id);
@@ -79,8 +77,7 @@ template<ComponentType T>
 T* Entity::add_component() {
     assert(get_component<T>() == nullptr && "Component of this type already exists");
 
-    std::unique_ptr<T> component = std::make_unique<T>();
-    component->set_entity(this);
+    std::unique_ptr<T> component = std::make_unique<T>(*this);
 
     if (is_in_play()) {
         component->enter_play();

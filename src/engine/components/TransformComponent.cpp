@@ -2,6 +2,10 @@
 
 #include "engine/entity/Entity.h"
 
+TransformComponent::TransformComponent(Entity& entity)
+    : Component(entity) {
+}
+
 ComponentPriority TransformComponent::get_priority() const {
     return ComponentPriority::TRANSFORM;
 }
@@ -13,7 +17,7 @@ Vector2 TransformComponent::get_position() const {
 void TransformComponent::set_position(const Vector2& position) {
     m_position = position;
 
-    if (!get_entity()->is_in_play()) {
+    if (!get_entity().is_in_play()) {
         // The entity isn't spawned yet. Match positions to prevent initial Physics interpolation
         m_prev_position = m_position;
     }

@@ -9,6 +9,10 @@ void CameraComponent::init(uint32_t logical_resolution_width, uint32_t logical_r
     m_logical_resolution_height = logical_resolution_height;
 }
 
+CameraComponent::CameraComponent(Entity& entity)
+    : Component(entity) {
+}
+
 uint32_t CameraComponent::get_logical_resolution_width() const {
     return m_logical_resolution_width;
 }
@@ -18,7 +22,7 @@ uint32_t CameraComponent::get_logical_resolution_height() const {
 }
 
 Vector2 CameraComponent::world_to_screen(const Vector2& world_position) const {
-    TransformComponent* transform = get_entity()->get_transform();
+    TransformComponent* transform = get_entity().get_transform();
     Vector2 camera_position = transform->get_position();
     Vector2 screen_position = world_to_screen(world_position, camera_position);
 

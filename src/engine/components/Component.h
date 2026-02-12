@@ -16,18 +16,16 @@ enum class ComponentPriority {
 
 
 class Component {
-    Entity* m_entity = nullptr;
+    Entity& m_entity;
 
 protected:
-    Component() = default; // Prevent the base Component from being instantiated on its own
+    explicit Component(Entity& entity); // Prevent the base Component from being instantiated on its own
 
 public:
     virtual ~Component() = default;
 
-    App* get_app() const;
-
-    Entity* get_entity() const;
-    void set_entity(Entity* entity);
+    App& get_app() const;
+    Entity& get_entity() const;
 
     virtual ComponentPriority get_priority() const;
 

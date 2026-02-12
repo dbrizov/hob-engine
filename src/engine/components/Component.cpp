@@ -2,16 +2,16 @@
 
 #include "engine/entity/Entity.h"
 
-App* Component::get_app() const {
-    return m_entity->get_app();
+Component::Component(Entity& entity)
+    : m_entity(entity) {
 }
 
-Entity* Component::get_entity() const {
+App& Component::get_app() const {
+    return m_entity.get_app();
+}
+
+Entity& Component::get_entity() const {
     return m_entity;
-}
-
-void Component::set_entity(Entity* entity) {
-    m_entity = entity;
 }
 
 ComponentPriority Component::get_priority() const {

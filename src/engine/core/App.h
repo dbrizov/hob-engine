@@ -38,10 +38,10 @@ public:
     void run();
     bool is_initialized() const;
 
-    Timer* get_timer();
-    Input* get_input();
-    Assets* get_assets();
-    EntitySpawner* get_entity_spawner();
+    Timer& get_timer();
+    Input& get_input();
+    Assets& get_assets();
+    EntitySpawner& get_entity_spawner();
 
 private:
     void render_frame();

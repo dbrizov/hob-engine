@@ -16,6 +16,8 @@ class CameraComponent : public Component {
     void init(uint32_t logical_resolution_width, uint32_t logical_resolution_height);
 
 public:
+    explicit CameraComponent(Entity& entity);
+
     uint32_t get_logical_resolution_width() const;
     uint32_t get_logical_resolution_height() const;
 

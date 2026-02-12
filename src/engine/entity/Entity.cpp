@@ -2,6 +2,10 @@
 
 #include "engine/components/TransformComponent.h"
 
+Entity::Entity(App& app)
+    : m_app(app) {
+}
+
 void Entity::enter_play() {
     m_is_in_play = true;
     for (auto& component : m_components) {
@@ -34,12 +38,8 @@ void Entity::render_tick(float delta_time, RenderQueue& render_queue) {
     }
 }
 
-App* Entity::get_app() const {
+App& Entity::get_app() const {
     return m_app;
-}
-
-void Entity::set_app(App* app) {
-    m_app = app;
 }
 
 EntityId Entity::get_id() const {

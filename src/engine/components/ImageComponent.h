@@ -10,6 +10,8 @@ class ImageComponent : public Component {
     Vector2 m_scale = Vector2(1.0f, 1.0f);
 
 public:
+    explicit ImageComponent(Entity& entity);
+
     virtual ComponentPriority get_priority() const override;
 
     virtual void render_tick(float delta_time, RenderQueue& render_queue) override;

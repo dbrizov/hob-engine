@@ -14,6 +14,8 @@ class TransformComponent : public Component {
     friend class Physics;
 
 public:
+    explicit TransformComponent(Entity& entity);
+
     virtual ComponentPriority get_priority() const override;
 
     Vector2 get_position() const;

@@ -18,32 +18,32 @@ constexpr bool VSYNC_ENABLED = true;
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr bool PHYSICS_INTERPOLATION = true;
 
-Entity* spawn_player_entity(App& app) {
-    Entity* entity = app.get_entity_spawner()->spawn_entity();
-    entity->set_is_ticking(true);
+Entity& spawn_player_entity(App& app) {
+    Entity& entity = app.get_entity_spawner().spawn_entity();
+    entity.set_is_ticking(true);
 
-    entity->add_component<InputComponent>();
-    entity->add_component<PlayerComponent>();
+    entity.add_component<InputComponent>();
+    entity.add_component<PlayerComponent>();
 
-    ImageComponent* image_component = entity->add_component<ImageComponent>();
+    ImageComponent* image_component = entity.add_component<ImageComponent>();
     const std::filesystem::path path =
         PathUtils::get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
-    const TextureId texture_id = app.get_assets()->load_texture(path);
+    const TextureId texture_id = app.get_assets().load_texture(path);
     image_component->set_texture_id(texture_id);
 
     return entity;
 }
 
-Entity* spawn_enemy_entity(App& app) {
-    Entity* entity = app.get_entity_spawner()->spawn_entity();
+Entity& spawn_enemy_entity(App& app) {
+    Entity& entity = app.get_entity_spawner().spawn_entity();
 
-    TransformComponent* transform = entity->get_transform();
+    TransformComponent* transform = entity.get_transform();
     transform->set_position(Vector2(100.0f, 100.0f));
 
-    ImageComponent* image_component = entity->add_component<ImageComponent>();
+    ImageComponent* image_component = entity.add_component<ImageComponent>();
     const std::filesystem::path path =
         PathUtils::get_assets_root_path() / "images" / "entities" / "enemy" / "idle" / "00.png";
-    const TextureId texture_id = app.get_assets()->load_texture(path);
+    const TextureId texture_id = app.get_assets().load_texture(path);
     image_component->set_texture_id(texture_id);
 
     return entity;

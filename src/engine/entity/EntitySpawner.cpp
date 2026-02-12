@@ -7,18 +7,21 @@
 #include "engine/components/TransformComponent.h"
 
 
-Entity* EntitySpawner::spawn_entity() {
-    std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity());
+EntitySpawner::EntitySpawner(App& app)
+    : m_app(app) {
+}
+
+Entity& EntitySpawner::spawn_entity() {
+    std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity(m_app));
 
     EntityId entity_id = m_next_entity_id;
     m_next_entity_id += 1;
     entity->set_id(entity_id);
-    entity->set_app(m_app);
     entity->add_component<TransformComponent>();
 
     m_entity_spawn_requests.push_back(std::move(entity));
 
-    return m_entity_spawn_requests.back().get();
+    return *m_entity_spawn_requests.back();
 }
 
 void EntitySpawner::destroy_entity(EntityId id) {
@@ -72,21 +75,15 @@ Entity* EntitySpawner::get_camera_entity() const {
     return camera_entity;
 }
 
-Entity* EntitySpawner::spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height) {
-    Entity* camera_entity = spawn_entity();
-    camera_entity->set_is_ticking(true);
-    camera_entity->set_priority(EntityPriority::CAMERA);
+void EntitySpawner::spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height) {
+    Entity& camera_entity = spawn_entity();
+    camera_entity.set_is_ticking(true);
+    camera_entity.set_priority(EntityPriority::CAMERA);
 
-    CameraComponent* camera_component = camera_entity->add_component<CameraComponent>();
+    CameraComponent* camera_component = camera_entity.add_component<CameraComponent>();
     camera_component->init(logical_resolution_width, logical_resolution_height);
 
-    m_camera_entity_id = camera_entity->get_id();
-
-    return camera_entity;
-}
-
-void EntitySpawner::set_app(App* app) {
-    m_app = app;
+    m_camera_entity_id = camera_entity.get_id();
 }
 
 void EntitySpawner::resolve_requests() {

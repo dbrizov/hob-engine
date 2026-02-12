@@ -6,8 +6,12 @@
 #include "engine/core/Debug.h"
 #include "engine/entity/Entity.h"
 
+PlayerComponent::PlayerComponent(Entity& entity)
+    : Component(entity) {
+}
+
 void PlayerComponent::enter_play() {
-    InputComponent* input_component = get_entity()->get_component<InputComponent>();
+    InputComponent* input_component = get_entity().get_component<InputComponent>();
     m_x_axis_id = input_component->bind_axis("horizontal", [this](float axis) {
         set_movement_input_x(axis);
     });
@@ -22,14 +26,14 @@ void PlayerComponent::enter_play() {
 }
 
 void PlayerComponent::exit_play() {
-    InputComponent* input_component = get_entity()->get_component<InputComponent>();
+    InputComponent* input_component = get_entity().get_component<InputComponent>();
     input_component->unbind_axis("horizontal", m_x_axis_id);
     input_component->unbind_axis("vertical", m_y_axis_id);
     input_component->unbind_action("slow_motion", m_slow_motion_action_id);
 }
 
 void PlayerComponent::physics_tick(float fixed_delta_time) {
-    TransformComponent* transform = get_entity()->get_component<TransformComponent>();
+    TransformComponent* transform = get_entity().get_component<TransformComponent>();
 
     Vector2 movement_input = m_movement_input;
     if (movement_input.length_sqr() > 1.0f) {
@@ -46,14 +50,14 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
 }
 
 void PlayerComponent::render_tick(float delta_time, RenderQueue& render_queue) {
-    TransformComponent* trasnform = get_entity()->get_transform();
-    TransformComponent* camera_transform = get_app()->get_entity_spawner()->get_camera_entity()->get_transform();
+    TransformComponent* trasnform = get_entity().get_transform();
+    TransformComponent* camera_transform = get_app().get_entity_spawner().get_camera_entity()->get_transform();
 
     debug::draw_line(camera_transform->get_position(), trasnform->get_position(), Color::red());
 }
 
 void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {
-    Entity* camera_entity = get_app()->get_entity_spawner()->get_camera_entity();
+    Entity* camera_entity = get_app().get_entity_spawner().get_camera_entity();
     TransformComponent* camera_transform = camera_entity->get_transform();
 
     Vector2 new_position = Vector2::lerp(
@@ -71,6 +75,6 @@ void PlayerComponent::set_movement_input_y(float y_axis) {
 }
 
 void PlayerComponent::toggle_slow_motion() {
-    float new_time_scale = get_app()->get_timer()->get_time_scale() < 1.0f ? 1.0f : 0.2f;
-    get_app()->get_timer()->set_time_scale(new_time_scale);
+    float new_time_scale = get_app().get_timer().get_time_scale() < 1.0f ? 1.0f : 0.2f;
+    get_app().get_timer().set_time_scale(new_time_scale);
 }

@@ -30,6 +30,8 @@ class InputComponent : public Component {
     std::unordered_map<std::string, std::vector<ActionBindingEntry>> m_action_released_bindings;
 
 public:
+    explicit InputComponent(Entity& entity);
+
     virtual ComponentPriority get_priority() const override;
 
     virtual void enter_play() override;

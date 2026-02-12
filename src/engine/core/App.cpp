@@ -27,8 +27,7 @@ App::App(const std::string& window_title,
       , m_assets(m_sdl_context.get_renderer())
       , m_physics(physics_ticks_per_second, physics_interpolation)
       , m_render_queue()
-      , m_entity_spawner() {
-    m_entity_spawner.set_app(this);
+      , m_entity_spawner(*this) {
     m_entity_spawner.spawn_camera_entity(logical_resolution_width, logical_resolution_height);
 }
 
@@ -82,20 +81,20 @@ bool App::is_initialized() const {
     return m_sdl_context.is_initialized();
 }
 
-Timer* App::get_timer() {
-    return &m_timer;
+Timer& App::get_timer() {
+    return m_timer;
 }
 
-Input* App::get_input() {
-    return &m_input;
+Input& App::get_input() {
+    return m_input;
 }
 
-Assets* App::get_assets() {
-    return &m_assets;
+Assets& App::get_assets() {
+    return m_assets;
 }
 
-EntitySpawner* App::get_entity_spawner() {
-    return &m_entity_spawner;
+EntitySpawner& App::get_entity_spawner() {
+    return m_entity_spawner;
 }
 
 void App::render_frame() {
