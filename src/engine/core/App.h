@@ -25,13 +25,13 @@ class App {
     EntitySpawner m_entity_spawner;
 
 public:
-    App(uint32_t target_fps,
-        bool vsync_enabled,
-        const std::string& window_title,
+    App(const std::string& window_title,
         uint32_t window_width,
         uint32_t window_height,
         uint32_t logical_resolution_width,
         uint32_t logical_resolution_height,
+        uint32_t target_fps,
+        bool vsync_enabled,
         uint32_t physics_ticks_per_second,
         bool physics_interpolation);
 

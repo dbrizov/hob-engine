@@ -4,19 +4,19 @@
 #include <SDL_image.h>
 #include <fmt/base.h>
 
-SdlContext::SdlContext(bool vsync_enabled,
-                       const std::string& window_title,
+SdlContext::SdlContext(const std::string& window_title,
                        uint32_t window_width,
                        uint32_t window_height,
                        uint32_t logical_resolution_width,
-                       uint32_t logical_resolution_height)
+                       uint32_t logical_resolution_height,
+                       bool vsync_enabled)
     : m_is_initialized(false)
-      , m_vsync_enabled(vsync_enabled)
       , m_window_title(window_title)
       , m_window_width(window_width)
       , m_window_height(window_height)
       , m_logical_resolution_width(logical_resolution_width)
       , m_logical_resolution_height(logical_resolution_height)
+      , m_vsync_enabled(vsync_enabled)
       , m_window(nullptr)
       , m_renderer(nullptr) {
     // SDL_Init

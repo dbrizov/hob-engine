@@ -14,10 +14,10 @@ namespace debug {
         Vector2 start;
         Vector2 end;
         Color color;
-        int thickness;
+        int thickness = 1;
     };
 
-    void render_debug_draws(SDL_Renderer* renderer, const CameraComponent* camera_component);
+    void render_debug_draws(SDL_Renderer* renderer, const CameraComponent* camera);
 
     void draw_line(const Vector2& start, const Vector2& end, const Color& color, int thickness = 1);
 }

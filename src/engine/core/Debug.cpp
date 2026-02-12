@@ -13,9 +13,9 @@ namespace debug {
     static void sdl_draw_line(SDL_Renderer* renderer, const CameraComponent* camera, const DebugLine& line);
 
     // Public
-    void render_debug_draws(SDL_Renderer* renderer, const CameraComponent* camera_component) {
+    void render_debug_draws(SDL_Renderer* renderer, const CameraComponent* camera) {
         for (const auto& line : lines) {
-            sdl_draw_line(renderer, camera_component, line);
+            sdl_draw_line(renderer, camera, line);
         }
 
         clear();

@@ -7,21 +7,21 @@
 #include "engine/components/CameraComponent.h"
 #include "engine/components/TransformComponent.h"
 
-App::App(uint32_t target_fps,
-         bool vsync_enabled,
-         const std::string& window_title,
+App::App(const std::string& window_title,
          uint32_t window_width,
          uint32_t window_height,
          uint32_t logical_resolution_width,
          uint32_t logical_resolution_height,
+         uint32_t target_fps,
+         bool vsync_enabled,
          uint32_t physics_ticks_per_second,
          bool physics_interpolation)
-    : m_sdl_context(vsync_enabled,
-                    window_title,
+    : m_sdl_context(window_title,
                     window_width,
                     window_height,
                     logical_resolution_width,
-                    logical_resolution_height)
+                    logical_resolution_height,
+                    vsync_enabled)
       , m_timer(target_fps, vsync_enabled)
       , m_input()
       , m_assets(m_sdl_context.get_renderer())

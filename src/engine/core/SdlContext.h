@@ -10,22 +10,22 @@ struct SDL_Renderer;
 
 class SdlContext {
     bool m_is_initialized;
-    bool m_vsync_enabled;
     std::string m_window_title;
     uint32_t m_window_width;
     uint32_t m_window_height;
     uint32_t m_logical_resolution_width;
     uint32_t m_logical_resolution_height;
+    bool m_vsync_enabled;
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
 
 public:
-    SdlContext(bool vsync_enabled,
-               const std::string& window_title,
+    SdlContext(const std::string& window_title,
                uint32_t window_width,
                uint32_t window_height,
                uint32_t logical_resolution_width,
-               uint32_t logical_resolution_height);
+               uint32_t logical_resolution_height,
+               bool vsync_enabled);
 
     ~SdlContext();
 
