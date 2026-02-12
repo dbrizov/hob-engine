@@ -6,7 +6,6 @@
 #include <fmt/base.h>
 
 #include "PathUtils.h"
-#include "engine/math/Math.h"
 
 // ---------------- InputMappings ----------------
 static SDL_Scancode scancode_from_name(const std::string& name) {
