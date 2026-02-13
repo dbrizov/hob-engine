@@ -1,5 +1,5 @@
-# cpp-platformer
-A hobby game project written in C++ using the SDL2 libraries.
+# hob-engine
+A hobby 2D game engine written in C++.
 
 # Requirements
 Project dependencies are downloaded and linked automatically via `vcpkg` and `CMake`.<br>
