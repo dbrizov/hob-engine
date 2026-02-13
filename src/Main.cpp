@@ -50,16 +50,18 @@ Entity& spawn_enemy_entity(App& app) {
 }
 
 int main(int argc, char* argv[]) {
-    App app(
-        WINDOW_TITLE,
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        LOGICAL_RESOLUTION_WIDTH,
-        LOGICAL_RESOLUTION_HEIGHT,
-        TARGET_FPS,
-        VSYNC_ENABLED,
-        PHYSICS_TICKS_PER_SECOND,
-        PHYSICS_INTERPOLATION);
+    AppConfig app_config;
+    app_config.window_title = WINDOW_TITLE;
+    app_config.window_width = WINDOW_WIDTH;
+    app_config.window_height = WINDOW_HEIGHT;
+    app_config.logical_resolution_width = LOGICAL_RESOLUTION_WIDTH;
+    app_config.logical_resolution_height = LOGICAL_RESOLUTION_HEIGHT;
+    app_config.target_fps = TARGET_FPS;
+    app_config.vsync_enabled = VSYNC_ENABLED;
+    app_config.physics_ticks_per_second = PHYSICS_TICKS_PER_SECOND;
+    app_config.physics_interpolation = PHYSICS_INTERPOLATION;
+
+    App app(app_config);
 
     if (!app.is_initialized()) {
         return 1;

@@ -5,10 +5,13 @@
 #include "Entity.h"
 #include "engine/components/CameraComponent.h"
 #include "engine/components/TransformComponent.h"
+#include "engine/core/App.h"
 
 
 EntitySpawner::EntitySpawner(App& app)
     : m_app(app) {
+    const AppConfig& app_config = app.get_config();
+    spawn_camera_entity(app_config.logical_resolution_width, app_config.logical_resolution_height);
 }
 
 Entity& EntitySpawner::spawn_entity() {

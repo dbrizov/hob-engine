@@ -13,7 +13,22 @@ struct SDL_Window;
 struct SDL_Renderer;
 
 
+struct AppConfig {
+    std::string window_title = "SDL2 Window";
+    uint32_t window_width = 1152;
+    uint32_t window_height = 648;
+    uint32_t logical_resolution_width = 1152;
+    uint32_t logical_resolution_height = 648;
+    uint32_t target_fps = 60;
+    bool vsync_enabled = true;
+    uint32_t physics_ticks_per_second = 60;
+    bool physics_interpolation = true;
+};
+
+
 class App {
+    AppConfig m_config;
+
     // SDL context must be declared first so it is destroyed last.
     // Objects below depend on SDL resources.
     SdlContext m_sdl_context;
@@ -25,18 +40,13 @@ class App {
     EntitySpawner m_entity_spawner;
 
 public:
-    App(const std::string& window_title,
-        uint32_t window_width,
-        uint32_t window_height,
-        uint32_t logical_resolution_width,
-        uint32_t logical_resolution_height,
-        uint32_t target_fps,
-        bool vsync_enabled,
-        uint32_t physics_ticks_per_second,
-        bool physics_interpolation);
+    explicit App(const AppConfig& config);
 
     void run();
+
     bool is_initialized() const;
+
+    const AppConfig& get_config() const;
 
     Timer& get_timer();
     Input& get_input();

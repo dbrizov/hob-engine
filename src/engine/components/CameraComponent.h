@@ -11,7 +11,7 @@ class CameraComponent : public Component {
     uint32_t m_logical_resolution_height = 0;
 
     // EntitySpawner is a friend class.
-    // There is only one camera, and it is spawned when the app is initialized
+    // There is only one camera, and it is spawned when the EntitySpawner is initialized
     friend class EntitySpawner;
     void init(uint32_t logical_resolution_width, uint32_t logical_resolution_height);
 

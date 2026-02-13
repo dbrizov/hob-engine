@@ -23,8 +23,7 @@ class EntitySpawner {
     std::unordered_set<EntityId> m_entity_destroy_requests;
 
     // App is a friend of EntitySpawner so that:
-    // - It can initialize a camera entity.
-    // - Resolve spawn requests via resolve_requests().
+    // - It can resolve spawn requests via resolve_requests()
     friend class App;
 
 public:

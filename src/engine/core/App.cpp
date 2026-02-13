@@ -7,28 +7,20 @@
 #include "engine/components/CameraComponent.h"
 #include "engine/components/TransformComponent.h"
 
-App::App(const std::string& window_title,
-         uint32_t window_width,
-         uint32_t window_height,
-         uint32_t logical_resolution_width,
-         uint32_t logical_resolution_height,
-         uint32_t target_fps,
-         bool vsync_enabled,
-         uint32_t physics_ticks_per_second,
-         bool physics_interpolation)
-    : m_sdl_context(window_title,
-                    window_width,
-                    window_height,
-                    logical_resolution_width,
-                    logical_resolution_height,
-                    vsync_enabled)
-      , m_timer(target_fps, vsync_enabled)
+App::App(const AppConfig& config)
+    : m_config(config),
+      m_sdl_context(config.window_title,
+                    config.window_width,
+                    config.window_height,
+                    config.logical_resolution_width,
+                    config.logical_resolution_height,
+                    config.vsync_enabled)
+      , m_timer(config.target_fps, config.vsync_enabled)
       , m_input()
       , m_assets(m_sdl_context.get_renderer())
-      , m_physics(physics_ticks_per_second, physics_interpolation)
+      , m_physics(config.physics_ticks_per_second, config.physics_interpolation)
       , m_render_queue()
       , m_entity_spawner(*this) {
-    m_entity_spawner.spawn_camera_entity(logical_resolution_width, logical_resolution_height);
 }
 
 void App::run() {
@@ -79,6 +71,10 @@ void App::run() {
 
 bool App::is_initialized() const {
     return m_sdl_context.is_initialized();
+}
+
+const AppConfig& App::get_config() const {
+    return m_config;
 }
 
 Timer& App::get_timer() {
