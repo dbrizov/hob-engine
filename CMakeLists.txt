@@ -60,6 +60,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>, SDL2_ttf::SDL2_ttf, SDL2_ttf::SDL2_ttf-static>
 )
 
+# Find and link box2d.
+find_package(box2d CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE box2d::box2d)
+
 # Find nlohmann-json. It is header only, no linking needed.
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)

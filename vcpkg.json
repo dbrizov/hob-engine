@@ -1,10 +1,11 @@
 {
-  "name": "cpp-platformer",
+  "name": "hob-engine",
   "version": "1.0",
   "dependencies": [
     "sdl2",
     "sdl2-image",
     "sdl2-ttf",
+    "box2d",
     "nlohmann-json",
     "fmt"
   ]
