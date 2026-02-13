@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_PLAYERCOMPONENT_H
-#define CPP_PLATFORMER_PLAYERCOMPONENT_H
+#ifndef HOB_ENGINE_PLAYERCOMPONENT_H
+#define HOB_ENGINE_PLAYERCOMPONENT_H
 #include "engine/components/Component.h"
 #include "engine/components/InputComponent.h"
 #include "engine/math/Vector2.h"
@@ -30,4 +30,4 @@ private:
 };
 
 
-#endif //CPP_PLATFORMER_PLAYERCOMPONENT_H
+#endif //HOB_ENGINE_PLAYERCOMPONENT_H

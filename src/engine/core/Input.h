@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_INPUT_H
-#define CPP_PLATFORMER_INPUT_H
+#ifndef HOB_ENGINE_INPUT_H
+#define HOB_ENGINE_INPUT_H
 #include <filesystem>
 #include <functional>
 #include <SDL_scancode.h>
@@ -77,4 +77,4 @@ private:
 };
 
 
-#endif //CPP_PLATFORMER_INPUT_H
+#endif //HOB_ENGINE_INPUT_H

@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_ENTITYSPAWNER_H
-#define CPP_PLATFORMER_ENTITYSPAWNER_H
+#ifndef HOB_ENGINE_ENTITYSPAWNER_H
+#define HOB_ENGINE_ENTITYSPAWNER_H
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -47,4 +47,4 @@ private:
 };
 
 
-#endif //CPP_PLATFORMER_ENTITYSPAWNER_H
+#endif //HOB_ENGINE_ENTITYSPAWNER_H

@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set project name.
-project(cpp_platformer)
+project(hob_engine)
 
 # Use vcpkg to find packages.
 if (CMAKE_TOOLCHAIN_FILE)

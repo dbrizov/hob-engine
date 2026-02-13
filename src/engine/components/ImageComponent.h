@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_IMAGECOMPONENT_H
-#define CPP_PLATFORMER_IMAGECOMPONENT_H
+#ifndef HOB_ENGINE_IMAGECOMPONENT_H
+#define HOB_ENGINE_IMAGECOMPONENT_H
 #include "Component.h"
 #include "engine/core/Assets.h"
 #include "engine/math/Vector2.h"
@@ -24,4 +24,4 @@ public:
 };
 
 
-#endif //CPP_PLATFORMER_IMAGECOMPONENT_H
+#endif //HOB_ENGINE_IMAGECOMPONENT_H

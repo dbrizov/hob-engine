@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_IOUTILS_H
-#define CPP_PLATFORMER_IOUTILS_H
+#ifndef HOB_ENGINE_IOUTILS_H
+#define HOB_ENGINE_IOUTILS_H
 #include <filesystem>
 
 
@@ -11,4 +11,4 @@ public:
 };
 
 
-#endif //CPP_PLATFORMER_IOUTILS_H
+#endif //HOB_ENGINE_IOUTILS_H

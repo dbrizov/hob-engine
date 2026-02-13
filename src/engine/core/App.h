@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_APP_H
-#define CPP_PLATFORMER_APP_H
+#ifndef HOB_ENGINE_APP_H
+#define HOB_ENGINE_APP_H
 #include "Assets.h"
 #include "Input.h"
 #include "Physics.h"
@@ -58,4 +58,4 @@ private:
 };
 
 
-#endif //CPP_PLATFORMER_APP_H
+#endif //HOB_ENGINE_APP_H

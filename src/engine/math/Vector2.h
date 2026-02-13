@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_VECTOR2_H
-#define CPP_PLATFORMER_VECTOR2_H
+#ifndef HOB_ENGINE_VECTOR2_H
+#define HOB_ENGINE_VECTOR2_H
 #include <string>
 
 
@@ -41,4 +41,4 @@ struct Vector2 {
 };
 
 
-#endif //CPP_PLATFORMER_VECTOR2_H
+#endif //HOB_ENGINE_VECTOR2_H

@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_ENTITY_H
-#define CPP_PLATFORMER_ENTITY_H
+#ifndef HOB_ENGINE_ENTITY_H
+#define HOB_ENGINE_ENTITY_H
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -106,4 +106,4 @@ T* Entity::get_component() const {
 }
 
 
-#endif //CPP_PLATFORMER_ENTITY_H
+#endif //HOB_ENGINE_ENTITY_H

@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_PHYSICS_H
-#define CPP_PLATFORMER_PHYSICS_H
+#ifndef HOB_ENGINE_PHYSICS_H
+#define HOB_ENGINE_PHYSICS_H
 #include <cstdint>
 #include <vector>
 
@@ -26,4 +26,4 @@ private:
 };
 
 
-#endif //CPP_PLATFORMER_PHYSICS_H
+#endif //HOB_ENGINE_PHYSICS_H

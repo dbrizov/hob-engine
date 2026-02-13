@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_INPUTCOMPONENT_H
-#define CPP_PLATFORMER_INPUTCOMPONENT_H
+#ifndef HOB_ENGINE_INPUTCOMPONENT_H
+#define HOB_ENGINE_INPUTCOMPONENT_H
 #include "Component.h"
 #include "engine/core/Input.h"
 
@@ -50,4 +50,4 @@ private:
 };
 
 
-#endif //CPP_PLATFORMER_INPUTCOMPONENT_H
+#endif //HOB_ENGINE_INPUTCOMPONENT_H

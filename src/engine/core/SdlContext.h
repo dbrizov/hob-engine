@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_SDLCONTEXT_H
-#define CPP_PLATFORMER_SDLCONTEXT_H
+#ifndef HOB_ENGINE_SDLCONTEXT_H
+#define HOB_ENGINE_SDLCONTEXT_H
 #include <cstdint>
 #include <string>
 
@@ -41,4 +41,4 @@ public:
 };
 
 
-#endif //CPP_PLATFORMER_SDLCONTEXT_H
+#endif //HOB_ENGINE_SDLCONTEXT_H

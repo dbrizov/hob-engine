@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_RENDER_H
-#define CPP_PLATFORMER_RENDER_H
+#ifndef HOB_ENGINE_RENDER_H
+#define HOB_ENGINE_RENDER_H
 #include <span>
 #include <vector>
 
@@ -56,4 +56,4 @@ public:
 #pragma endregion RenderQueue
 
 
-#endif //CPP_PLATFORMER_RENDER_H
+#endif //HOB_ENGINE_RENDER_H

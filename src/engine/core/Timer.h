@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_TIME_H
-#define CPP_PLATFORMER_TIME_H
+#ifndef HOB_ENGINE_TIME_H
+#define HOB_ENGINE_TIME_H
 #include <cstdint>
 
 
@@ -34,4 +34,4 @@ public:
 };
 
 
-#endif //CPP_PLATFORMER_TIME_H
+#endif //HOB_ENGINE_TIME_H

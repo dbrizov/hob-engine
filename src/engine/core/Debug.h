@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_DEBUG_H
-#define CPP_PLATFORMER_DEBUG_H
+#ifndef HOB_ENGINE_DEBUG_H
+#define HOB_ENGINE_DEBUG_H
 #include "Render.h"
 #include "engine/math/Vector2.h"
 
@@ -22,4 +22,4 @@ namespace debug {
 }
 
 
-#endif //CPP_PLATFORMER_DEBUG_H
+#endif //HOB_ENGINE_DEBUG_H

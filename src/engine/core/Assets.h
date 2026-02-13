@@ -1,5 +1,5 @@
-#ifndef CPP_PLATFORMER_ASSETS_H
-#define CPP_PLATFORMER_ASSETS_H
+#ifndef HOB_ENGINE_ASSETS_H
+#define HOB_ENGINE_ASSETS_H
 #include <filesystem>
 #include <unordered_map>
 
@@ -29,4 +29,4 @@ private:
 };
 
 
-#endif //CPP_PLATFORMER_ASSETS_H
+#endif //HOB_ENGINE_ASSETS_H
