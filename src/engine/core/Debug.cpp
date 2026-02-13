@@ -11,22 +11,6 @@ namespace debug {
         std::vector<DebugLine> lines;
         SDL_Texture* white_pixel = nullptr;
 
-        void sdl_draw_line(SDL_Renderer* renderer, const CameraComponent* camera, const DebugLine& line);
-    }
-
-    void render_debug_draws(SDL_Renderer* renderer, const CameraComponent* camera) {
-        for (const auto& line : lines) {
-            sdl_draw_line(renderer, camera, line);
-        }
-
-        lines.clear();
-    }
-
-    void draw_line(const Vector2& start, const Vector2& end, const Color& color, float thickness/* = 1.0f */) {
-        lines.emplace_back(start, end, color, thickness);
-    }
-
-    namespace {
         SDL_Texture* get_white_pixel(SDL_Renderer* renderer) {
             if (white_pixel == nullptr) {
                 white_pixel = SDL_CreateTexture(
@@ -79,5 +63,17 @@ namespace debug {
 
             SDL_RenderCopyExF(renderer, pixel, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
         }
+    }
+
+    void render_debug_draws(SDL_Renderer* renderer, const CameraComponent* camera) {
+        for (const auto& line : lines) {
+            sdl_draw_line(renderer, camera, line);
+        }
+
+        lines.clear();
+    }
+
+    void draw_line(const Vector2& start, const Vector2& end, const Color& color, float thickness/* = 1.0f */) {
+        lines.emplace_back(start, end, color, thickness);
     }
 }
