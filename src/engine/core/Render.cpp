@@ -2,7 +2,6 @@
 
 #include <fmt/format.h>
 
-#pragma region Color
 Color::Color()
     : Color(0, 0, 0, 0) {
 }
@@ -54,10 +53,8 @@ Color Color::orange() {
 std::string Color::to_string() const {
     return fmt::format("({}, {}, {}, {})", r, g, b, a);
 }
-#pragma endregion Color
 
 
-#pragma region RenderQueue
 RenderData::RenderData(TextureId texture_id_,
                        const Vector2& position_,
                        const Vector2& prev_position_,
@@ -79,4 +76,3 @@ void RenderQueue::clear() {
 std::span<RenderData const> RenderQueue::get_render_data() const {
     return m_render_data;
 }
-#pragma endregion RenderQueue

@@ -7,7 +7,6 @@
 #include "engine/math/Vector2.h"
 
 
-#pragma region Color
 struct Color {
     uint8_t r;
     uint8_t g;
@@ -30,10 +29,8 @@ struct Color {
 
     std::string to_string() const;
 };
-#pragma endregion Color
 
 
-#pragma region RenderQueue
 struct RenderData {
     TextureId texture_id;
     Vector2 position;
@@ -53,7 +50,6 @@ public:
 
     std::span<const RenderData> get_render_data() const;
 };
-#pragma endregion RenderQueue
 
 
 #endif //HOB_ENGINE_RENDER_H
