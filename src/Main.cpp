@@ -38,9 +38,10 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
     return entity;
 }
 
-Entity& spawn_static_box(App& app, const Vector2& position) {
+Entity& spawn_static_box(App& app, const Vector2& position, float rotation) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.get_transform()->set_position(position);
+    entity.get_transform()->set_rotation(rotation);
 
     RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
     rigidbody->set_body_type(BodyType::STATIC);
@@ -50,10 +51,11 @@ Entity& spawn_static_box(App& app, const Vector2& position) {
     return entity;
 }
 
-Entity& spawn_dynamic_box(App& app, const Vector2& position) {
+Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_is_ticking(true);
     entity.get_transform()->set_position(position);
+    entity.get_transform()->set_rotation(rotation);
 
     RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
     rigidbody->set_body_type(BodyType::DYNAMIC);
@@ -84,17 +86,15 @@ int main(int argc, char* argv[]) {
 
     spawn_player_entity(app, Vector2(0.0f, 0.0f));
 
-    spawn_static_box(app, Vector2(-100.0f, 50.0f));
-    spawn_static_box(app, Vector2(-75.0f, 50.0f));
-    spawn_static_box(app, Vector2(-50.0f, 50.0f));
-    spawn_static_box(app, Vector2(-25.0f, 50.0f));
-    spawn_static_box(app, Vector2(0.0f, 50.0f));
-    spawn_static_box(app, Vector2(25.0f, 50.0f));
-    spawn_static_box(app, Vector2(50.0f, 50.0f));
-    spawn_static_box(app, Vector2(75.0f, 50.0f));
-    spawn_static_box(app, Vector2(100.0f, 50.0f));
+    spawn_static_box(app, Vector2(-3.0f, -1.0f), 0.0f);
+    spawn_static_box(app, Vector2(-2.0f, -1.0f), 0.0f);
+    spawn_static_box(app, Vector2(-1.0f, -1.0f), 0.0f);
+    spawn_static_box(app, Vector2(0.0f, -1.0f), 0.0f);
+    spawn_static_box(app, Vector2(1.0f, -1.0f), 0.0f);
+    spawn_static_box(app, Vector2(2.0f, -1.0f), 0.0f);
+    spawn_static_box(app, Vector2(3.0f, -1.0f), 0.0f);
 
-    spawn_dynamic_box(app, Vector2(0.0f, -50.0f));
+    spawn_dynamic_box(app, Vector2(0.0f, 2.0f), 0.0f);
 
     app.run();
 

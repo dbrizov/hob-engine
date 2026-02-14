@@ -10,8 +10,8 @@ class BoxColliderComponent : public Component {
     b2ShapeId m_shape_id = b2_nullShapeId;
 
     // Local box
-    float m_half_width = 12.5f;
-    float m_half_height = 12.5f;
+    float m_half_width = 0.5f;
+    float m_half_height = 0.5f;
     Vector2 m_center = Vector2(0.0f, 0.0f);
 
     // Physics properties

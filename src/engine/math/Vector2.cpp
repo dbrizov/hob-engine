@@ -107,6 +107,20 @@ Vector2 Vector2::lerp(const Vector2& a, const Vector2& b, float t) {
     return a * (1.0f - t) + b * t;
 }
 
+Vector2 Vector2::rotate_around(const Vector2& point, const Vector2& center, float degrees) {
+    float rad = degrees * DEG_TO_RAD;
+    float cos = std::cos(rad);
+    float sin = std::sin(rad);
+
+    Vector2 vec = point - center; // translate to origin
+
+    Vector2 vec_r;
+    vec_r.x = vec.x * cos - vec.y * sin;
+    vec_r.y = vec.x * sin + vec.y * cos;
+
+    return center + vec_r; // translate back
+}
+
 std::string Vector2::to_string() const {
     return fmt::format("({:.2f}, {:.2f})", x, y);
 }
