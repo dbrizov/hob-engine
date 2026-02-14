@@ -15,11 +15,12 @@ class Timer {
     uint64_t m_frame_start_ticks;
     uint64_t m_last_frame_start_ticks;
 
+    // App is a friend class of Timer.
+    // - App uses frame_start() and frame_end() to limit FPS
+    friend class App;
+
 public:
     Timer(uint32_t fps, bool vsync_enabled);
-
-    void frame_start();
-    void frame_end();
 
     uint32_t get_fps() const;
     void set_fps(uint32_t fps);
@@ -31,6 +32,10 @@ public:
     void set_play_time(float play_time);
 
     float get_delta_time() const;
+
+private:
+    void frame_start();
+    void frame_end();
 };
 
 

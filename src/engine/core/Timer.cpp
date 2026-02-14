@@ -16,6 +16,34 @@ Timer::Timer(uint32_t fps, bool vsync_enabled)
     m_last_frame_start_ticks = SDL_GetPerformanceCounter();
 }
 
+uint32_t Timer::get_fps() const {
+    return m_target_fps;
+}
+
+void Timer::set_fps(uint32_t fps) {
+    m_target_fps = fps;
+}
+
+float Timer::get_time_scale() const {
+    return m_time_scale;
+}
+
+void Timer::set_time_scale(float time_scale) {
+    m_time_scale = time_scale;
+}
+
+float Timer::get_play_time() const {
+    return m_play_time;
+}
+
+void Timer::set_play_time(float play_time) {
+    m_play_time = play_time;
+}
+
+float Timer::get_delta_time() const {
+    return m_delta_time;
+}
+
 void Timer::frame_start() {
     uint64_t now_ticks = SDL_GetPerformanceCounter();
     uint64_t diff_ticks = now_ticks - m_last_frame_start_ticks;
@@ -61,32 +89,4 @@ void Timer::frame_end() {
             SDL_Delay(milliseconds);
         }
     }
-}
-
-uint32_t Timer::get_fps() const {
-    return m_target_fps;
-}
-
-void Timer::set_fps(uint32_t fps) {
-    m_target_fps = fps;
-}
-
-float Timer::get_time_scale() const {
-    return m_time_scale;
-}
-
-void Timer::set_time_scale(float time_scale) {
-    m_time_scale = time_scale;
-}
-
-float Timer::get_play_time() const {
-    return m_play_time;
-}
-
-void Timer::set_play_time(float play_time) {
-    m_play_time = play_time;
-}
-
-float Timer::get_delta_time() const {
-    return m_delta_time;
 }
