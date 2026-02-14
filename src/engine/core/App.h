@@ -24,6 +24,7 @@ struct AppConfig {
     uint32_t physics_ticks_per_second = 60;
     uint32_t physics_sub_steps_per_tick = 4;
     bool physics_interpolation = true;
+    float pixels_per_meter = 100.0f;
 };
 
 

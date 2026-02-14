@@ -20,6 +20,7 @@ constexpr bool VSYNC_ENABLED = true;
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr uint32_t PHYSICS_SUB_STEPS_PER_TICK = 4;
 constexpr bool PHYSICS_INTERPOLATION = true;
+constexpr float PIXELS_PER_METER = 25.0f;
 
 Entity& spawn_player_entity(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
@@ -38,10 +39,10 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
     return entity;
 }
 
-Entity& spawn_static_box(App& app, const Vector2& position, float rotation) {
+Entity& spawn_static_box(App& app, const Vector2& position, float rotation_degrees) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.get_transform()->set_position(position);
-    entity.get_transform()->set_rotation(rotation);
+    entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
     RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
     rigidbody->set_body_type(BodyType::STATIC);
@@ -51,11 +52,11 @@ Entity& spawn_static_box(App& app, const Vector2& position, float rotation) {
     return entity;
 }
 
-Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation) {
+Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degrees) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_is_ticking(true);
     entity.get_transform()->set_position(position);
-    entity.get_transform()->set_rotation(rotation);
+    entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
     RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
     rigidbody->set_body_type(BodyType::DYNAMIC);
@@ -77,6 +78,7 @@ int main(int argc, char* argv[]) {
     app_config.physics_ticks_per_second = PHYSICS_TICKS_PER_SECOND;
     app_config.physics_sub_steps_per_tick = PHYSICS_SUB_STEPS_PER_TICK;
     app_config.physics_interpolation = PHYSICS_INTERPOLATION;
+    app_config.pixels_per_meter = PIXELS_PER_METER;
 
     App app(app_config);
 
@@ -94,7 +96,7 @@ int main(int argc, char* argv[]) {
     spawn_static_box(app, Vector2(2.0f, -1.0f), 0.0f);
     spawn_static_box(app, Vector2(3.0f, -1.0f), 0.0f);
 
-    spawn_dynamic_box(app, Vector2(0.0f, 2.0f), 0.0f);
+    spawn_dynamic_box(app, Vector2(0.0f, 2.0f), 10.0f);
 
     app.run();
 

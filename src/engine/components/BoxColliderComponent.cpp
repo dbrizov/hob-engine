@@ -21,7 +21,7 @@ void BoxColliderComponent::enter_play() {
     const TransformComponent* tr = get_entity().get_transform();
 
     b2Vec2 center = {m_center.x, m_center.y};
-    b2Rot rotation = b2MakeRot(tr->get_rotation() * DEG_TO_RAD);
+    b2Rot rotation = b2MakeRot(tr->get_rotation_radians());
     b2Polygon box = b2MakeOffsetBox(m_half_width, m_half_height, center, rotation);
 
     b2ShapeDef shape_def = b2DefaultShapeDef();
@@ -46,7 +46,7 @@ void BoxColliderComponent::exit_play() {
 void BoxColliderComponent::render_tick(float delta_time, RenderQueue& render_queue) {
     const TransformComponent* transform = get_entity().get_transform();
     Vector2 position = transform->get_position();
-    float rotation = transform->get_rotation();
+    float rotation = transform->get_rotation_degrees();
 
     Vector2 top_left = position + Vector2::left() * m_half_width + Vector2::up() * m_half_height;
     Vector2 top_right = position + Vector2::right() * m_half_width + Vector2::up() * m_half_height;

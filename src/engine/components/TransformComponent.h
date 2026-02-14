@@ -6,7 +6,7 @@
 
 class TransformComponent : public Component {
     Vector2 m_position;
-    float m_rotation = 0.0f; // In degrees
+    float m_rotation_degrees = 0.0f;
     Vector2 m_scale = Vector2(1.0f, 1.0f);
 
     // Physics is a friend class of TransformComponent so that
@@ -22,8 +22,11 @@ public:
     Vector2 get_position() const;
     void set_position(const Vector2& position);
 
-    float get_rotation() const;
-    void set_rotation(float rotation);
+    float get_rotation_degrees() const;
+    void set_rotation_degrees(float rotation_degrees);
+
+    float get_rotation_radians() const;
+    void set_rotation_radians(float rotation_radians);
 
     Vector2 get_scale() const;
     void set_scale(const Vector2& scale);

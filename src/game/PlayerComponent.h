@@ -6,8 +6,8 @@
 
 
 class PlayerComponent : public Component {
-    float m_speed = 150.0f;
-    float m_camera_follow_speed = 15.0f;
+    float m_speed = 5.0f;
+    float m_camera_follow_speed = 10.0f;
     Vector2 m_movement_input;
     BindingId m_x_axis_id = INVALID_BINDING_ID;
     BindingId m_y_axis_id = INVALID_BINDING_ID;

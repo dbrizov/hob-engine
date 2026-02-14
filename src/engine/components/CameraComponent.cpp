@@ -30,12 +30,19 @@ Vector2 CameraComponent::world_to_screen(const Vector2& world_position) const {
 }
 
 Vector2 CameraComponent::world_to_screen(const Vector2& world_position, const Vector2& camera_position) const {
-    float half_width = static_cast<float>(m_logical_resolution_width) / 2.0f;
-    float half_height = static_cast<float>(m_logical_resolution_height) / 2.0f;
+    float half_width = static_cast<float>(m_logical_resolution_width) * 0.5f;
+    float half_height = static_cast<float>(m_logical_resolution_height) * 0.5f;
 
-    Vector2 screen_position = Vector2(
-        world_position.x - camera_position.x + half_width,
-        world_position.y - camera_position.y + half_height);
+    // 1) Calculate world delta relative to camera
+    Vector2 delta_meters = world_position - camera_position;
+
+    // 2) Convert to pixels
+    Vector2 delta_pixels = delta_meters * get_app().get_config().pixels_per_meter;
+
+    // 3) Flip Y (because screen Y goes down)
+    delta_pixels.y = -delta_pixels.y;
+
+    Vector2 screen_position = Vector2(delta_pixels.x + half_width, delta_pixels.y + half_height);
 
     return screen_position;
 }

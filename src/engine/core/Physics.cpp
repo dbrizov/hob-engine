@@ -6,6 +6,7 @@
 #include "engine/components/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
+#include "engine/math/Math.h"
 
 PhysicsWorld::PhysicsWorld()
     : m_id(b2_nullWorldId) {
@@ -60,22 +61,23 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
 
             entity->physics_tick(m_fixed_delta_time);
 
-            // m_physics_world.tick(m_fixed_delta_time, m_sub_steps_per_tick);
-            //
-            // const RigidbodyComponent* rigidbody = entity->get_rigidbody();
-            // if (!rigidbody || !rigidbody->has_body()) {
-            //     continue;
-            // }
-            //
-            // // For static bodies you can skip writing back.
-            // b2Vec2 pos = b2Body_GetPosition(rigidbody->get_body_id());
-            // b2Rot rot  = b2Body_GetRotation(rigidbody->get_body_id());
-            // float angle_rad = std::atan2(rot.s, rot.c);
-            // float angle_deg = angle_rad * RAD_TO_DEG;
-            // fmt::println("{}", angle_deg);
-            //
-            // transform->set_position(Vector2(pos.x * 12.5f, pos.y * 12.5f));
-            // transform->set_rotation(angle_deg);
+            m_physics_world.tick(m_fixed_delta_time, m_sub_steps_per_tick);
+
+            const RigidbodyComponent* rigidbody = entity->get_rigidbody();
+            if (!rigidbody || !rigidbody->has_body()) {
+                continue;
+            }
+
+            b2Vec2 pos = b2Body_GetPosition(rigidbody->get_body_id());
+            b2Rot rot  = b2Body_GetRotation(rigidbody->get_body_id());
+            float angle_rad = std::atan2(rot.s, rot.c);
+            float angle_deg = angle_rad * RAD_TO_DEG;
+            fmt::println("pos: {}", Vector2(pos.x, pos.y).to_string());
+            fmt::println("rot: {}", angle_deg);
+            fmt::println("");
+
+            transform->set_position(Vector2(pos.x, pos.y));
+            transform->set_rotation_degrees(angle_deg);
         }
 
         m_accumulator -= m_fixed_delta_time;

@@ -16,7 +16,7 @@ void RigidbodyComponent::enter_play() {
 
     b2BodyDef body_def = b2DefaultBodyDef();
     body_def.position = {position.x, position.y};
-    body_def.rotation = b2MakeRot(transform->get_rotation());
+    body_def.rotation = b2MakeRot(transform->get_rotation_radians());
 
     switch (m_body_type) {
         case BodyType::STATIC:
