@@ -22,6 +22,7 @@ struct AppConfig {
     uint32_t target_fps = 60;
     bool vsync_enabled = true;
     uint32_t physics_ticks_per_second = 60;
+    uint32_t physics_sub_steps_per_tick = 4;
     bool physics_interpolation = true;
 };
 

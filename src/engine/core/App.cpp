@@ -18,7 +18,9 @@ App::App(const AppConfig& config)
       , m_timer(config.target_fps, config.vsync_enabled)
       , m_input()
       , m_assets(m_sdl_context.get_renderer())
-      , m_physics(config.physics_ticks_per_second, config.physics_interpolation)
+      , m_physics(config.physics_ticks_per_second,
+                  config.physics_sub_steps_per_tick,
+                  config.physics_interpolation)
       , m_render_queue()
       , m_entity_spawner(*this) {
 }

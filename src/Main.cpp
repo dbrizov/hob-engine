@@ -16,6 +16,7 @@ constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT / 2;
 constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
+constexpr uint32_t PHYSICS_SUB_STEPS_PER_TICK = 4;
 constexpr bool PHYSICS_INTERPOLATION = true;
 
 Entity& spawn_player_entity(App& app) {
@@ -59,6 +60,7 @@ int main(int argc, char* argv[]) {
     app_config.target_fps = TARGET_FPS;
     app_config.vsync_enabled = VSYNC_ENABLED;
     app_config.physics_ticks_per_second = PHYSICS_TICKS_PER_SECOND;
+    app_config.physics_sub_steps_per_tick = PHYSICS_SUB_STEPS_PER_TICK;
     app_config.physics_interpolation = PHYSICS_INTERPOLATION;
 
     App app(app_config);

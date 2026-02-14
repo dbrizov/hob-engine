@@ -2,19 +2,35 @@
 #define HOB_ENGINE_PHYSICS_H
 #include <cstdint>
 #include <vector>
+#include <box2d/box2d.h>
 
 
 class Entity;
 
 
+class PhysicsWorld {
+    b2WorldId m_world_id;
+
+public:
+    PhysicsWorld();
+    ~PhysicsWorld();
+
+    void tick(float fixed_delta_time, uint32_t sub_steps = 4);
+
+    b2WorldId get_world_id() const;
+};
+
+
 class Physics {
+    PhysicsWorld m_physics_world;
     float m_accumulator;
     float m_fixed_delta_time;
+    uint32_t m_sub_steps_per_tick;
     float m_interpolation_fraction;
     bool m_use_interpolation;
 
 public:
-    Physics(uint32_t ticks_per_second, bool use_interpolation);
+    Physics(uint32_t ticks_per_second, uint32_t sub_steps_per_tick, bool use_interpolation);
 
     float get_fixed_delta_time() const;
     float get_interpolation_fraction() const;
