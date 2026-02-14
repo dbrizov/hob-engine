@@ -106,4 +106,4 @@ T* Entity::get_component() const {
 }
 
 
-#endif // HOB_ENGINE_ENTITY_H
+#endif //HOB_ENGINE_ENTITY_H
