@@ -129,7 +129,7 @@ void App::render_frame() {
     m_render_queue.clear();
 
     // Render debug draws
-    debug::render_debug_draws(m_sdl_context.get_renderer(), camera_component);
+    debug::render_debug_draws(m_sdl_context.get_renderer(), m_assets.get_white_pixel_texture(), camera_component);
 
     SDL_RenderPresent(m_sdl_context.get_renderer());
 }

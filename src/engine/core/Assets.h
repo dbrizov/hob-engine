@@ -13,14 +13,16 @@ constexpr TextureId INVALID_TEXTURE_ID = -1;
 
 class Assets {
     SDL_Renderer* m_renderer;
-    std::unordered_map<TextureId, SDL_Texture*> m_textures;
-    TextureId m_next_texture_id;
+    mutable TextureId m_next_texture_id;
+    mutable TextureId m_white_pixel_texture_id;
+    mutable std::unordered_map<TextureId, SDL_Texture*> m_textures;
 
 public:
     explicit Assets(SDL_Renderer* renderer);
     ~Assets();
 
     SDL_Texture* get_texture(TextureId id) const;
+    SDL_Texture* get_white_pixel_texture() const;
     TextureId load_texture(const std::filesystem::path& path);
     bool unload_texture(TextureId id);
 

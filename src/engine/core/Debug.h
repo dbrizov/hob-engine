@@ -16,7 +16,7 @@ namespace debug {
         float thickness = 1.0f;
     };
 
-    void render_debug_draws(SDL_Renderer* renderer, const CameraComponent* camera);
+    void render_debug_draws(SDL_Renderer* renderer, SDL_Texture* white_pixel_texture, const CameraComponent* camera);
 
     void draw_line(const Vector2& start, const Vector2& end, const Color& color, float thickness = 1.0f);
 }
