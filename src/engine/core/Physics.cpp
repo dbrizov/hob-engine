@@ -6,26 +6,26 @@
 #include "engine/entity/Entity.h"
 
 PhysicsWorld::PhysicsWorld()
-    : m_world_id(b2_nullWorldId) {
+    : m_id(b2_nullWorldId) {
     b2WorldDef world_def = b2DefaultWorldDef();
     world_def.gravity = b2Vec2(0, -9.81f);
-    m_world_id = b2CreateWorld(&world_def);
+    m_id = b2CreateWorld(&world_def);
 }
 
 PhysicsWorld::~PhysicsWorld() {
-    if (b2World_IsValid(m_world_id)) {
-        b2DestroyWorld(m_world_id);
+    if (b2World_IsValid(m_id)) {
+        b2DestroyWorld(m_id);
     }
 
-    m_world_id = b2_nullWorldId;
+    m_id = b2_nullWorldId;
 }
 
 void PhysicsWorld::tick(float fixed_delta_time, uint32_t sub_steps) {
-    b2World_Step(m_world_id, fixed_delta_time, static_cast<int>(sub_steps));
+    b2World_Step(m_id, fixed_delta_time, static_cast<int>(sub_steps));
 }
 
-b2WorldId PhysicsWorld::get_world_id() const {
-    return m_world_id;
+b2WorldId PhysicsWorld::get_id() const {
+    return m_id;
 }
 
 Physics::Physics(uint32_t ticks_per_second, uint32_t sub_steps_per_tick, bool use_interpolation)
@@ -35,6 +35,10 @@ Physics::Physics(uint32_t ticks_per_second, uint32_t sub_steps_per_tick, bool us
       , m_sub_steps_per_tick(sub_steps_per_tick)
       , m_interpolation_fraction(0.0f)
       , m_use_interpolation(use_interpolation) {
+}
+
+const PhysicsWorld& Physics::get_physics_world() const {
+    return m_physics_world;
 }
 
 float Physics::get_fixed_delta_time() const {

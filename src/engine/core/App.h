@@ -52,6 +52,7 @@ public:
     Timer& get_timer();
     Input& get_input();
     Assets& get_assets();
+    Physics& get_physics();
     EntitySpawner& get_entity_spawner();
 
 private:

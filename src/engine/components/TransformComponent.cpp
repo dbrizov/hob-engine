@@ -23,6 +23,14 @@ void TransformComponent::set_position(const Vector2& position) {
     }
 }
 
+float TransformComponent::get_rotation() const {
+    return m_rotation;
+}
+
+void TransformComponent::set_rotation(float rotation) {
+    m_rotation = rotation;
+}
+
 Vector2 TransformComponent::get_scale() const {
     return m_scale;
 }

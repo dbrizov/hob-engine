@@ -91,6 +91,10 @@ Assets& App::get_assets() {
     return m_assets;
 }
 
+Physics& App::get_physics() {
+    return m_physics;
+}
+
 EntitySpawner& App::get_entity_spawner() {
     return m_entity_spawner;
 }
