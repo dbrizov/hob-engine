@@ -55,29 +55,31 @@ float Physics::get_interpolation_fraction() const {
 void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {
     m_accumulator += frame_delta_time;
     while (m_accumulator >= m_fixed_delta_time) {
+        // Let components apply forces / set kinematic velocities
         for (Entity* entity : entities) {
+            entity->physics_tick(m_fixed_delta_time);
+        }
+
+        // Tick the physics world
+        m_physics_world.tick(m_fixed_delta_time, m_sub_steps_per_tick);
+
+        // Sync transforms for all rigidbodies
+        for (Entity* entity : entities) {
+            // Save previous position for physics interpolation
             TransformComponent* transform = entity->get_transform();
             transform->set_prev_position(transform->get_position());
-
-            entity->physics_tick(m_fixed_delta_time);
-
-            m_physics_world.tick(m_fixed_delta_time, m_sub_steps_per_tick);
 
             const RigidbodyComponent* rigidbody = entity->get_rigidbody();
             if (!rigidbody || !rigidbody->has_body()) {
                 continue;
             }
 
-            b2Vec2 pos = b2Body_GetPosition(rigidbody->get_body_id());
-            b2Rot rot  = b2Body_GetRotation(rigidbody->get_body_id());
-            float angle_rad = std::atan2(rot.s, rot.c);
-            float angle_deg = angle_rad * RAD_TO_DEG;
-            fmt::println("pos: {}", Vector2(pos.x, pos.y).to_string());
-            fmt::println("rot: {}", angle_deg);
-            fmt::println("");
+            b2Vec2 position = b2Body_GetPosition(rigidbody->get_body_id());
+            b2Rot rotation  = b2Body_GetRotation(rigidbody->get_body_id());
+            float rotation_radians = std::atan2(rotation.s, rotation.c);
 
-            transform->set_position(Vector2(pos.x, pos.y));
-            transform->set_rotation_degrees(angle_deg);
+            transform->set_position(Vector2(position.x, position.y));
+            transform->set_rotation_radians(rotation_radians);
         }
 
         m_accumulator -= m_fixed_delta_time;

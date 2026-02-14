@@ -3,7 +3,6 @@
 #include <box2d/id.h>
 
 #include "Component.h"
-#include "engine/math/Vector2.h"
 
 
 class BoxColliderComponent : public Component {
@@ -12,11 +11,10 @@ class BoxColliderComponent : public Component {
     // Local box
     float m_half_width = 0.5f;
     float m_half_height = 0.5f;
-    Vector2 m_center = Vector2(0.0f, 0.0f);
 
     // Physics properties
     float m_density = 1.0f; // Used for dynamic bodies
-    float m_friction = 0.6f;
+    float m_friction = 0.3f;
     float m_restitution = 0.0f;
 
     // Collision filtering

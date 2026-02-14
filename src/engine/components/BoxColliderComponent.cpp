@@ -8,21 +8,16 @@
 #include "TransformComponent.h"
 #include "engine/core/Debug.h"
 #include "engine/entity/Entity.h"
-#include "engine/math/Math.h"
 
 BoxColliderComponent::BoxColliderComponent(Entity& entity)
     : Component(entity) {
 }
 
 void BoxColliderComponent::enter_play() {
-    const RigidbodyComponent* rb = get_entity().get_rigidbody();
-    assert(rb != nullptr && rb->has_body() && "BoxCollider requires a Rigidbody to function");
+    const RigidbodyComponent* rigidbody = get_entity().get_rigidbody();
+    assert(rigidbody != nullptr && rigidbody->has_body() && "BoxCollider requires a Rigidbody to function");
 
-    const TransformComponent* tr = get_entity().get_transform();
-
-    b2Vec2 center = {m_center.x, m_center.y};
-    b2Rot rotation = b2MakeRot(tr->get_rotation_radians());
-    b2Polygon box = b2MakeOffsetBox(m_half_width, m_half_height, center, rotation);
+    b2Polygon box = b2MakeBox(m_half_width, m_half_height);
 
     b2ShapeDef shape_def = b2DefaultShapeDef();
     shape_def.density = m_density;
@@ -33,7 +28,7 @@ void BoxColliderComponent::enter_play() {
     shape_def.filter.categoryBits = m_category_bits;
     shape_def.filter.maskBits = m_mask_bits;
 
-    m_shape_id = b2CreatePolygonShape(rb->get_body_id(), &shape_def, &box);
+    m_shape_id = b2CreatePolygonShape(rigidbody->get_body_id(), &shape_def, &box);
 }
 
 void BoxColliderComponent::exit_play() {

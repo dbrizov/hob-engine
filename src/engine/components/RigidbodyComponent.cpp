@@ -13,10 +13,11 @@ RigidbodyComponent::RigidbodyComponent(Entity& entity)
 void RigidbodyComponent::enter_play() {
     const TransformComponent* transform = get_entity().get_transform();
     Vector2 position = transform->get_position();
+    float rotation = transform->get_rotation_radians();
 
     b2BodyDef body_def = b2DefaultBodyDef();
     body_def.position = {position.x, position.y};
-    body_def.rotation = b2MakeRot(transform->get_rotation_radians());
+    body_def.rotation = b2MakeRot(rotation);
 
     switch (m_body_type) {
         case BodyType::STATIC:
