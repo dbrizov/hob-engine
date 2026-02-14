@@ -32,7 +32,7 @@ class InputComponent : public Component {
 public:
     explicit InputComponent(Entity& entity);
 
-    virtual ComponentPriority get_priority() const override;
+    virtual int get_priority() const override;
 
     virtual void enter_play() override;
     virtual void exit_play() override;

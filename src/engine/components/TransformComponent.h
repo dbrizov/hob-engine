@@ -16,7 +16,7 @@ class TransformComponent : public Component {
 public:
     explicit TransformComponent(Entity& entity);
 
-    virtual ComponentPriority get_priority() const override;
+    virtual int get_priority() const override;
 
     Vector2 get_position() const;
     void set_position(const Vector2& position);

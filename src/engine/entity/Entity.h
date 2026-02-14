@@ -18,16 +18,16 @@ template<typename T>
 concept ComponentType = std::derived_from<T, Component>;
 
 
-enum class EntityPriority {
-    CAMERA = -1000,
-    DEFAULT = 0,
-};
+namespace entity_priority {
+    constexpr int EP_CAMERA = -1000;
+    constexpr int EP_DEFAULT = 0;
+}
 
 
 class Entity final {
     App& m_app;
     EntityId m_id = 0;
-    EntityPriority m_priority = EntityPriority::DEFAULT;
+    int m_priority = entity_priority::EP_DEFAULT;
     bool m_is_in_play = false;
     bool m_is_ticking = false;
     std::vector<std::unique_ptr<Component>> m_components;
@@ -56,8 +56,8 @@ public:
     EntityId get_id() const;
     void set_id(EntityId id);
 
-    EntityPriority get_priority() const;
-    void set_priority(EntityPriority priority);
+    int get_priority() const;
+    void set_priority(int priority);
 
     bool is_in_play() const;
 
@@ -88,7 +88,7 @@ T* Entity::add_component() {
     m_components.push_back(std::move(component));
     std::sort(m_components.begin(), m_components.end(),
               [](const auto& a, const auto& b) {
-                  return static_cast<int>(a->get_priority()) < static_cast<int>(b->get_priority());
+                  return a->get_priority() < b->get_priority();
               });
 
     return component_ptr;
@@ -106,4 +106,4 @@ T* Entity::get_component() const {
 }
 
 
-#endif //HOB_ENGINE_ENTITY_H
+#endif // HOB_ENGINE_ENTITY_H

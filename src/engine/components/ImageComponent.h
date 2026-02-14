@@ -12,7 +12,7 @@ class ImageComponent : public Component {
 public:
     explicit ImageComponent(Entity& entity);
 
-    virtual ComponentPriority get_priority() const override;
+    virtual int get_priority() const override;
 
     virtual void render_tick(float delta_time, RenderQueue& render_queue) override;
 

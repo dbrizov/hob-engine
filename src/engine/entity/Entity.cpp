@@ -50,11 +50,11 @@ void Entity::set_id(EntityId id) {
     m_id = id;
 }
 
-EntityPriority Entity::get_priority() const {
+int Entity::get_priority() const {
     return m_priority;
 }
 
-void Entity::set_priority(EntityPriority priority) {
+void Entity::set_priority(int priority) {
     m_priority = priority;
 }
 

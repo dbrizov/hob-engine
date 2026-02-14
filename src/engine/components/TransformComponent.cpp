@@ -6,8 +6,8 @@ TransformComponent::TransformComponent(Entity& entity)
     : Component(entity) {
 }
 
-ComponentPriority TransformComponent::get_priority() const {
-    return ComponentPriority::TRANSFORM;
+int TransformComponent::get_priority() const {
+    return component_priority::CP_TRANSFORM;
 }
 
 Vector2 TransformComponent::get_position() const {

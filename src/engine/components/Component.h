@@ -7,12 +7,12 @@ class RenderQueue;
 class Entity;
 
 
-enum class ComponentPriority {
-    INPUT = -200,
-    TRANSFORM = -100,
-    DEFAULT = 0,
-    RENDER = 100
-};
+namespace component_priority {
+    constexpr int CP_INPUT = -200;
+    constexpr int CP_TRANSFORM = -100;
+    constexpr int CP_DEFAULT = 0;
+    constexpr int CP_RENDER = 100;
+}
 
 
 class Component {
@@ -27,7 +27,7 @@ public:
     App& get_app() const;
     Entity& get_entity() const;
 
-    virtual ComponentPriority get_priority() const;
+    virtual int get_priority() const;
 
     virtual void enter_play();
     virtual void exit_play();

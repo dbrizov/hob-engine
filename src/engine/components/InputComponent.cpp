@@ -7,8 +7,8 @@ InputComponent::InputComponent(Entity& entity)
     : Component(entity) {
 }
 
-ComponentPriority InputComponent::get_priority() const {
-    return ComponentPriority::INPUT;
+int InputComponent::get_priority() const {
+    return component_priority::CP_INPUT;
 }
 
 void InputComponent::enter_play() {

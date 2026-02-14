@@ -8,8 +8,8 @@ ImageComponent::ImageComponent(Entity& entity)
     : Component(entity) {
 }
 
-ComponentPriority ImageComponent::get_priority() const {
-    return ComponentPriority::RENDER;
+int ImageComponent::get_priority() const {
+    return component_priority::CP_RENDER;
 }
 
 void ImageComponent::render_tick(float delta_time, RenderQueue& render_queue) {

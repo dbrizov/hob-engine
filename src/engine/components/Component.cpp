@@ -14,8 +14,8 @@ Entity& Component::get_entity() const {
     return m_entity;
 }
 
-ComponentPriority Component::get_priority() const {
-    return ComponentPriority::DEFAULT;
+int Component::get_priority() const {
+    return component_priority::CP_DEFAULT;
 }
 
 void Component::enter_play() {
