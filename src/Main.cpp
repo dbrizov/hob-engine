@@ -1,7 +1,9 @@
 #include <filesystem>
 
+#include "engine/components/BoxColliderComponent.h"
 #include "engine/components/ImageComponent.h"
 #include "engine/components/InputComponent.h"
+#include "engine/components/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 #include "engine/core/PathUtils.h"
@@ -19,9 +21,10 @@ constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr uint32_t PHYSICS_SUB_STEPS_PER_TICK = 4;
 constexpr bool PHYSICS_INTERPOLATION = true;
 
-Entity& spawn_player_entity(App& app) {
+Entity& spawn_player_entity(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_is_ticking(true);
+    entity.get_transform()->set_position(position);
 
     entity.add_component<InputComponent>();
     entity.add_component<PlayerComponent>();
@@ -35,17 +38,27 @@ Entity& spawn_player_entity(App& app) {
     return entity;
 }
 
-Entity& spawn_enemy_entity(App& app) {
+Entity& spawn_static_box(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
+    entity.get_transform()->set_position(position);
 
-    TransformComponent* transform = entity.get_transform();
-    transform->set_position(Vector2(100.0f, 100.0f));
+    RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
+    rigidbody->set_body_type(BodyType::STATIC);
 
-    ImageComponent* image_component = entity.add_component<ImageComponent>();
-    const std::filesystem::path path =
-        PathUtils::get_assets_root_path() / "images" / "entities" / "enemy" / "idle" / "00.png";
-    const TextureId texture_id = app.get_assets().load_texture(path);
-    image_component->set_texture_id(texture_id);
+    entity.add_component<BoxColliderComponent>();
+
+    return entity;
+}
+
+Entity& spawn_dynamic_box(App& app, const Vector2& position) {
+    Entity& entity = app.get_entity_spawner().spawn_entity();
+    entity.set_is_ticking(true);
+    entity.get_transform()->set_position(position);
+
+    RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
+    rigidbody->set_body_type(BodyType::DYNAMIC);
+
+    entity.add_component<BoxColliderComponent>();
 
     return entity;
 }
@@ -69,8 +82,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    spawn_player_entity(app);
-    spawn_enemy_entity(app);
+    spawn_player_entity(app, Vector2(0.0f, 0.0f));
+
+    spawn_static_box(app, Vector2(-100.0f, 50.0f));
+    spawn_static_box(app, Vector2(-75.0f, 50.0f));
+    spawn_static_box(app, Vector2(-50.0f, 50.0f));
+    spawn_static_box(app, Vector2(-25.0f, 50.0f));
+    spawn_static_box(app, Vector2(0.0f, 50.0f));
+    spawn_static_box(app, Vector2(25.0f, 50.0f));
+    spawn_static_box(app, Vector2(50.0f, 50.0f));
+    spawn_static_box(app, Vector2(75.0f, 50.0f));
+    spawn_static_box(app, Vector2(100.0f, 50.0f));
+
+    spawn_dynamic_box(app, Vector2(0.0f, -50.0f));
 
     app.run();
 

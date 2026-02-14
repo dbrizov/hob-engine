@@ -8,8 +8,9 @@
 #include "engine/components/Component.h"
 
 
-class App;
+class RigidbodyComponent;
 class TransformComponent;
+class App;
 
 using EntityId = int;
 constexpr EntityId INVALID_ENTITY_ID = -1;
@@ -32,6 +33,7 @@ class Entity final {
     bool m_is_ticking = false;
     std::vector<std::unique_ptr<Component>> m_components;
     mutable TransformComponent* m_transform = nullptr;
+    mutable RigidbodyComponent* m_rigidbody = nullptr;
 
     // EntitySpawner is a friend of Entity.
     // - Only the EntitySpawner can create entities.
@@ -65,6 +67,7 @@ public:
     void set_is_ticking(bool is_ticking);
 
     TransformComponent* get_transform() const;
+    RigidbodyComponent* get_rigidbody() const;
 
     template<ComponentType T>
     T* add_component();

@@ -101,7 +101,7 @@ EntitySpawner& App::get_entity_spawner() {
 
 void App::render_frame() {
     SDL_SetRenderDrawBlendMode(m_sdl_context.get_renderer(), SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 14, 219, 248, 255);
+    SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 43, 47, 119, 255);
     SDL_RenderClear(m_sdl_context.get_renderer());
 
     // Render entities

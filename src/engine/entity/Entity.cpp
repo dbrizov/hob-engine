@@ -1,5 +1,6 @@
 #include "Entity.h"
 
+#include "engine/components/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 
 Entity::Entity(App& app)
@@ -76,4 +77,12 @@ TransformComponent* Entity::get_transform() const {
     }
 
     return m_transform;
+}
+
+RigidbodyComponent* Entity::get_rigidbody() const {
+    if (m_rigidbody == nullptr) {
+        m_rigidbody = get_component<RigidbodyComponent>();
+    }
+
+    return m_rigidbody;
 }
