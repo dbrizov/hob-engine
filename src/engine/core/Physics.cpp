@@ -1,17 +1,16 @@
 #include "Physics.h"
 
 #include <cassert>
-#include <fmt/format.h>
 
+#include "App.h"
 #include "engine/components/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
-#include "engine/math/Math.h"
 
-PhysicsWorld::PhysicsWorld()
+PhysicsWorld::PhysicsWorld(const Vector2& gravity)
     : m_id(b2_nullWorldId) {
     b2WorldDef world_def = b2DefaultWorldDef();
-    world_def.gravity = b2Vec2(0, -9.81f);
+    world_def.gravity = Physics::vec2_to_b2Vec2(gravity);
     m_id = b2CreateWorld(&world_def);
 }
 
@@ -31,13 +30,13 @@ b2WorldId PhysicsWorld::get_id() const {
     return m_id;
 }
 
-Physics::Physics(uint32_t ticks_per_second, uint32_t sub_steps_per_tick, bool use_interpolation)
-    : m_physics_world()
+Physics::Physics(const PhysicsConfig& physics_config)
+    : m_physics_world(physics_config.gravity)
       , m_accumulator(0.0f)
-      , m_fixed_delta_time(delta_time_from_ticks(ticks_per_second))
-      , m_sub_steps_per_tick(sub_steps_per_tick)
+      , m_fixed_delta_time(delta_time_from_ticks(physics_config.ticks_per_second))
+      , m_sub_steps_per_tick(physics_config.sub_steps_per_tick)
       , m_interpolation_fraction(0.0f)
-      , m_use_interpolation(use_interpolation) {
+      , m_interpolation_enabled(physics_config.interpolation_enabled) {
 }
 
 const PhysicsWorld& Physics::get_physics_world() const {
@@ -75,7 +74,7 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
             }
 
             b2Vec2 position = b2Body_GetPosition(rigidbody->get_body_id());
-            b2Rot rotation  = b2Body_GetRotation(rigidbody->get_body_id());
+            b2Rot rotation = b2Body_GetRotation(rigidbody->get_body_id());
             float rotation_radians = std::atan2(rotation.s, rotation.c);
 
             transform->set_position(Vector2(position.x, position.y));
@@ -85,7 +84,15 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
         m_accumulator -= m_fixed_delta_time;
     }
 
-    m_interpolation_fraction = m_use_interpolation ? (m_accumulator / m_fixed_delta_time) : 1.0f;
+    m_interpolation_fraction = m_interpolation_enabled ? (m_accumulator / m_fixed_delta_time) : 1.0f;
+}
+
+Vector2 Physics::b2Vec2_to_vec2(const b2Vec2& vec) {
+    return Vector2(vec.x, vec.y);
+}
+
+b2Vec2 Physics::vec2_to_b2Vec2(const Vector2& vec) {
+    return b2Vec2(vec.x, vec.y);
 }
 
 float Physics::delta_time_from_ticks(uint32_t ticks_per_second) {

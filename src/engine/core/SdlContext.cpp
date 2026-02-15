@@ -4,19 +4,10 @@
 #include <SDL_image.h>
 #include <fmt/base.h>
 
-SdlContext::SdlContext(const std::string& window_title,
-                       uint32_t window_width,
-                       uint32_t window_height,
-                       uint32_t logical_resolution_width,
-                       uint32_t logical_resolution_height,
-                       bool vsync_enabled)
+#include "App.h"
+
+SdlContext::SdlContext(const GraphicsConfig& graphics_config)
     : m_is_initialized(false)
-      , m_window_title(window_title)
-      , m_window_width(window_width)
-      , m_window_height(window_height)
-      , m_logical_resolution_width(logical_resolution_width)
-      , m_logical_resolution_height(logical_resolution_height)
-      , m_vsync_enabled(vsync_enabled)
       , m_window(nullptr)
       , m_renderer(nullptr) {
     // SDL_Init
@@ -40,11 +31,11 @@ SdlContext::SdlContext(const std::string& window_title,
 
     // SDL_CreateWindow
     m_window = SDL_CreateWindow(
-        m_window_title.c_str(),
+        graphics_config.window_title.c_str(),
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        static_cast<int>(m_window_width),
-        static_cast<int>(m_window_height),
+        static_cast<int>(graphics_config.window_width),
+        static_cast<int>(graphics_config.window_height),
         SDL_WINDOW_SHOWN);
 
     if (!m_window) {
@@ -58,7 +49,7 @@ SdlContext::SdlContext(const std::string& window_title,
 
     // Create renderer
     uint32_t renderer_flags = SDL_RENDERER_ACCELERATED;
-    if (m_vsync_enabled) {
+    if (graphics_config.vsync_enabled) {
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
     }
 
@@ -73,8 +64,8 @@ SdlContext::SdlContext(const std::string& window_title,
 
     SDL_RenderSetLogicalSize(
         m_renderer,
-        static_cast<int>(m_logical_resolution_width),
-        static_cast<int>(m_logical_resolution_height));
+        static_cast<int>(graphics_config.logical_resolution_width),
+        static_cast<int>(graphics_config.logical_resolution_height));
 
     fmt::println("SDL_CreateRenderer");
 

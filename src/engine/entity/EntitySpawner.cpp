@@ -10,8 +10,8 @@
 
 EntitySpawner::EntitySpawner(App& app)
     : m_app(app) {
-    const AppConfig& app_config = app.get_config();
-    spawn_camera_entity(app_config.logical_resolution_width, app_config.logical_resolution_height);
+    const GraphicsConfig& graphics_config = app.get_config().graphics_config;
+    spawn_camera_entity(graphics_config.logical_resolution_width, graphics_config.logical_resolution_height);
 }
 
 Entity& EntitySpawner::spawn_entity() {

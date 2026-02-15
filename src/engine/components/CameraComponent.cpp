@@ -37,7 +37,7 @@ Vector2 CameraComponent::world_to_screen(const Vector2& world_position, const Ve
     Vector2 delta_meters = world_position - camera_position;
 
     // 2) Convert to pixels
-    Vector2 delta_pixels = delta_meters * get_app().get_config().pixels_per_meter;
+    Vector2 delta_pixels = delta_meters * get_app().get_config().graphics_config.pixels_per_meter;
 
     // 3) Flip Y (because screen Y goes down)
     delta_pixels.y = -delta_pixels.y;

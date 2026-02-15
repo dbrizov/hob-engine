@@ -17,10 +17,12 @@ constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH / 2;
 constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT / 2;
 constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
+constexpr float PIXELS_PER_METER = 25.0f;
+
+const Vector2 PHYSICS_GRAVITY = Vector2(0.0f, -9.81f);
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr uint32_t PHYSICS_SUB_STEPS_PER_TICK = 4;
-constexpr bool PHYSICS_INTERPOLATION = true;
-constexpr float PIXELS_PER_METER = 25.0f;
+constexpr bool PHYSICS_INTERPOLATION_ENABLED = true;
 
 Entity& spawn_player_entity(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
@@ -65,18 +67,25 @@ Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degr
 }
 
 int main(int argc, char* argv[]) {
+    GraphicsConfig graphics_config;
+    graphics_config.window_title = WINDOW_TITLE;
+    graphics_config.window_width = WINDOW_WIDTH;
+    graphics_config.window_height = WINDOW_HEIGHT;
+    graphics_config.logical_resolution_width = LOGICAL_RESOLUTION_WIDTH;
+    graphics_config.logical_resolution_height = LOGICAL_RESOLUTION_HEIGHT;
+    graphics_config.target_fps = TARGET_FPS;
+    graphics_config.vsync_enabled = VSYNC_ENABLED;
+    graphics_config.pixels_per_meter = PIXELS_PER_METER;
+
+    PhysicsConfig physics_config;
+    physics_config.gravity = PHYSICS_GRAVITY;
+    physics_config.ticks_per_second = PHYSICS_TICKS_PER_SECOND;
+    physics_config.sub_steps_per_tick = PHYSICS_SUB_STEPS_PER_TICK;
+    physics_config.interpolation_enabled = PHYSICS_INTERPOLATION_ENABLED;
+
     AppConfig app_config;
-    app_config.window_title = WINDOW_TITLE;
-    app_config.window_width = WINDOW_WIDTH;
-    app_config.window_height = WINDOW_HEIGHT;
-    app_config.logical_resolution_width = LOGICAL_RESOLUTION_WIDTH;
-    app_config.logical_resolution_height = LOGICAL_RESOLUTION_HEIGHT;
-    app_config.target_fps = TARGET_FPS;
-    app_config.vsync_enabled = VSYNC_ENABLED;
-    app_config.physics_ticks_per_second = PHYSICS_TICKS_PER_SECOND;
-    app_config.physics_sub_steps_per_tick = PHYSICS_SUB_STEPS_PER_TICK;
-    app_config.physics_interpolation = PHYSICS_INTERPOLATION;
-    app_config.pixels_per_meter = PIXELS_PER_METER;
+    app_config.graphics_config = graphics_config;
+    app_config.physics_config = physics_config;
 
     App app(app_config);
 

@@ -1,32 +1,19 @@
 #ifndef HOB_ENGINE_SDLCONTEXT_H
 #define HOB_ENGINE_SDLCONTEXT_H
-#include <cstdint>
-#include <string>
 
 
+struct GraphicsConfig;
 struct SDL_Window;
 struct SDL_Renderer;
 
 
 class SdlContext {
     bool m_is_initialized;
-    std::string m_window_title;
-    uint32_t m_window_width;
-    uint32_t m_window_height;
-    uint32_t m_logical_resolution_width;
-    uint32_t m_logical_resolution_height;
-    bool m_vsync_enabled;
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
 
 public:
-    SdlContext(const std::string& window_title,
-               uint32_t window_width,
-               uint32_t window_height,
-               uint32_t logical_resolution_width,
-               uint32_t logical_resolution_height,
-               bool vsync_enabled);
-
+    explicit SdlContext(const GraphicsConfig& graphics_config);
     ~SdlContext();
 
     SdlContext(const SdlContext&) = delete;

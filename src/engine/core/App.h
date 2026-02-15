@@ -13,7 +13,7 @@ struct SDL_Window;
 struct SDL_Renderer;
 
 
-struct AppConfig {
+struct GraphicsConfig {
     std::string window_title = "SDL2 Window";
     uint32_t window_width = 1152;
     uint32_t window_height = 648;
@@ -21,10 +21,21 @@ struct AppConfig {
     uint32_t logical_resolution_height = 648;
     uint32_t target_fps = 60;
     bool vsync_enabled = true;
-    uint32_t physics_ticks_per_second = 60;
-    uint32_t physics_sub_steps_per_tick = 4;
-    bool physics_interpolation = true;
-    float pixels_per_meter = 100.0f;
+    float pixels_per_meter = 64.0f;
+};
+
+
+struct PhysicsConfig {
+    Vector2 gravity = Vector2(0.0f, -9.81f);
+    uint32_t ticks_per_second = 60;
+    uint32_t sub_steps_per_tick = 4;
+    bool interpolation_enabled = true;
+};
+
+
+struct AppConfig {
+    GraphicsConfig graphics_config;
+    PhysicsConfig physics_config;
 };
 
 
