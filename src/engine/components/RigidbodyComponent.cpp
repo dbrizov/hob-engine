@@ -64,6 +64,6 @@ bool RigidbodyComponent::has_fixed_rotation() const {
     return m_has_fixed_rotation;
 }
 
-void RigidbodyComponent::set_has_fixed_rotation(bool has_fixed_rotation) {
+void RigidbodyComponent::set_fixed_rotation(bool has_fixed_rotation) {
     m_has_fixed_rotation = has_fixed_rotation;
 }

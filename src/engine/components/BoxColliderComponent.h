@@ -3,31 +3,49 @@
 #include <box2d/id.h>
 
 #include "Component.h"
+#include "engine/math/AABB.h"
 
 
 class BoxColliderComponent : public Component {
     b2ShapeId m_shape_id = b2_nullShapeId;
-
-    // Local box
-    float m_half_width = 0.5f;
-    float m_half_height = 0.5f;
-
-    // Physics properties
-    float m_density = 1.0f; // Used for dynamic bodies
-    float m_friction = 0.3f;
-    float m_restitution = 0.0f;
-
-    // Collision filtering
+    AABB m_aabb = AABB(Vector2(0.0f, 0.0f), Vector2(0.5f, 0.5f)); /// Local AABB
+    float m_density = 1.0f; /// In kg/m^2. A body's <code>mass = density * area</code>
+    float m_friction = 0.6f; /// In range [0, 1]
+    float m_bounciness = 0.0f; /// In range [0, 1]
+    uint64_t m_collision_layer = 1u; /// The collision layer of this collider
+    uint64_t m_collision_mask = ~0u; /// What this collider collides with
     bool m_is_trigger = false;
-    uint16_t m_category_bits = 0x0001;
-    uint16_t m_mask_bits = 0xFFFF;
 
 public:
     explicit BoxColliderComponent(Entity& entity);
 
-    void enter_play() override;
-    void exit_play() override;
-    void render_tick(float delta_time, RenderQueue& render_queue) override;
+    virtual void enter_play() override;
+    virtual void exit_play() override;
+    virtual void render_tick(float delta_time, RenderQueue& render_queue) override;
+
+    Vector2 get_center() const;
+    void set_center(const Vector2& center);
+
+    Vector2 get_size() const;
+    void set_size(const Vector2& size);
+
+    float get_density() const;
+    void set_density(float density);
+
+    float get_friction() const;
+    void set_friction(float friction);
+
+    float get_bounciness() const;
+    void set_bounciness(float bounciness);
+
+    uint64_t get_collision_layer() const;
+    void set_collision_layer(uint64_t collision_layer);
+
+    uint64_t get_collision_mask() const;
+    void set_collision_mask(uint64_t collision_mask);
+
+    bool is_trigger() const;
+    void set_trigger(bool trigger);
 };
 
 

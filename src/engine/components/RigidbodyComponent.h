@@ -30,7 +30,7 @@ public:
     void set_body_type(BodyType body_type);
 
     bool has_fixed_rotation() const;
-    void set_has_fixed_rotation(bool has_fixed_rotation);
+    void set_fixed_rotation(bool has_fixed_rotation);
 };
 
 
