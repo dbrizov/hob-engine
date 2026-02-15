@@ -67,7 +67,7 @@ bool Entity::is_ticking() const {
     return m_is_ticking;
 }
 
-void Entity::set_is_ticking(bool is_ticking) {
+void Entity::set_ticking(bool is_ticking) {
     m_is_ticking = is_ticking;
 }
 

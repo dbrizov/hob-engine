@@ -109,7 +109,7 @@ Entity* EntitySpawner::get_camera_entity() const {
 
 void EntitySpawner::spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height) {
     Entity& camera_entity = spawn_entity();
-    camera_entity.set_is_ticking(true); // Needs to tick for Physics interpolation
+    camera_entity.set_ticking(true); // Needs to tick for Physics interpolation
     camera_entity.set_priority(entity_priority::EP_CAMERA);
 
     CameraComponent* camera_component = camera_entity.add_component<CameraComponent>();

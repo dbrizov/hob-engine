@@ -26,7 +26,7 @@ constexpr bool PHYSICS_INTERPOLATION_ENABLED = false;
 
 Entity& spawn_player_entity(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
-    entity.set_is_ticking(true);
+    entity.set_ticking(true);
     entity.get_transform()->set_position(position);
 
     entity.add_component<InputComponent>();
@@ -54,7 +54,7 @@ Entity& spawn_static_box(App& app, const Vector2& position, float rotation_degre
 
 Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degrees) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
-    entity.set_is_ticking(true);
+    entity.set_ticking(true);
     entity.get_transform()->set_position(position);
     entity.get_transform()->set_rotation_degrees(rotation_degrees);
 

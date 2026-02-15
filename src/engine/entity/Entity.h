@@ -64,7 +64,7 @@ public:
     bool is_in_play() const;
 
     bool is_ticking() const;
-    void set_is_ticking(bool is_ticking);
+    void set_ticking(bool is_ticking);
 
     TransformComponent* get_transform() const;
     RigidbodyComponent* get_rigidbody() const;
