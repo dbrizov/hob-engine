@@ -54,6 +54,8 @@ float Physics::get_interpolation_fraction() const {
 void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {
     m_accumulator += frame_delta_time;
     while (m_accumulator >= m_fixed_delta_time) {
+        // TODO Fix Physics interpolation - set previous position of entities
+
         // Let components apply forces / set kinematic velocities
         for (Entity* entity : entities) {
             entity->physics_tick(m_fixed_delta_time);
@@ -64,10 +66,6 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
 
         // Sync transforms for all rigidbodies
         for (Entity* entity : entities) {
-            // Save previous position for physics interpolation
-            // TransformComponent* transform = entity->get_transform();
-            // transform->set_prev_position(transform->get_position());
-
             const RigidbodyComponent* rigidbody = entity->get_rigidbody();
             b2Vec2 b2_position = b2Body_GetPosition(rigidbody->get_body_id());
             b2Rot b2_rotation = b2Body_GetRotation(rigidbody->get_body_id());
