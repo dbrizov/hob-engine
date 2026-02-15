@@ -65,19 +65,18 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
         // Sync transforms for all rigidbodies
         for (Entity* entity : entities) {
             // Save previous position for physics interpolation
-            TransformComponent* transform = entity->get_transform();
-            transform->set_prev_position(transform->get_position());
+            // TransformComponent* transform = entity->get_transform();
+            // transform->set_prev_position(transform->get_position());
 
             const RigidbodyComponent* rigidbody = entity->get_rigidbody();
-            if (!rigidbody || !rigidbody->has_body()) {
-                continue;
-            }
+            b2Vec2 b2_position = b2Body_GetPosition(rigidbody->get_body_id());
+            b2Rot b2_rotation = b2Body_GetRotation(rigidbody->get_body_id());
 
-            b2Vec2 position = b2Body_GetPosition(rigidbody->get_body_id());
-            b2Rot rotation = b2Body_GetRotation(rigidbody->get_body_id());
-            float rotation_radians = std::atan2(rotation.s, rotation.c);
+            Vector2 position = Physics::b2Vec2_to_vec2(b2_position);
+            float rotation_radians = Physics::b2Rot_to_radians(b2_rotation);
 
-            transform->set_position(Vector2(position.x, position.y));
+            TransformComponent* transform = entity->get_transform();
+            transform->set_position(position);
             transform->set_rotation_radians(rotation_radians);
         }
 
@@ -93,6 +92,14 @@ Vector2 Physics::b2Vec2_to_vec2(const b2Vec2& vec) {
 
 b2Vec2 Physics::vec2_to_b2Vec2(const Vector2& vec) {
     return b2Vec2(vec.x, vec.y);
+}
+
+float Physics::b2Rot_to_radians(const b2Rot& rot) {
+    return std::atan2(rot.s, rot.c);
+}
+
+b2Rot Physics::radians_to_b2Rot(float radians) {
+    return b2MakeRot(radians);
 }
 
 float Physics::delta_time_from_ticks(uint32_t ticks_per_second) {

@@ -18,7 +18,7 @@ public:
 
     virtual void enter_play() override;
     virtual void exit_play() override;
-    virtual void physics_tick(float fixed_delta_time) override;
+    virtual void tick(float delta_time) override;
     virtual void render_tick(float delta_time, RenderQueue& render_queue) override;
 
 private:

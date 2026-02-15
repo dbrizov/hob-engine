@@ -22,7 +22,7 @@ constexpr float PIXELS_PER_METER = 25.0f;
 const Vector2 PHYSICS_GRAVITY = Vector2(0.0f, -9.81f);
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr uint32_t PHYSICS_SUB_STEPS_PER_TICK = 4;
-constexpr bool PHYSICS_INTERPOLATION_ENABLED = true;
+constexpr bool PHYSICS_INTERPOLATION_ENABLED = false;
 
 Entity& spawn_player_entity(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();

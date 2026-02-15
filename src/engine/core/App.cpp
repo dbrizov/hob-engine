@@ -22,6 +22,7 @@ void App::run() {
     bool is_running = true;
     std::vector<Entity*> entities;
     std::vector<Entity*> ticking_entities;
+    std::vector<Entity*> physics_entities;
 
     while (is_running) {
         m_timer.frame_start();
@@ -37,6 +38,7 @@ void App::run() {
         m_entity_spawner.resolve_requests();
         m_entity_spawner.get_entities(entities);
         m_entity_spawner.get_ticking_entities(ticking_entities);
+        m_entity_spawner.get_physics_entities(physics_entities);
 
         const float delta_time = m_timer.get_delta_time();
         const float scaled_delta_time = delta_time * m_timer.get_time_scale();
@@ -51,7 +53,7 @@ void App::run() {
         }
 
         // entities.physics_tick()
-        m_physics.tick_entities(scaled_delta_time, ticking_entities);
+        m_physics.tick_entities(scaled_delta_time, physics_entities);
 
         // entities.render_tick()
         for (Entity* entity : entities) {

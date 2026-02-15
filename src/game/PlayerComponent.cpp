@@ -32,7 +32,7 @@ void PlayerComponent::exit_play() {
     input_component->unbind_action("slow_motion", m_slow_motion_action_id);
 }
 
-void PlayerComponent::physics_tick(float fixed_delta_time) {
+void PlayerComponent::tick(float delta_time) {
     TransformComponent* transform = get_entity().get_component<TransformComponent>();
 
     Vector2 movement_input = m_movement_input;
@@ -42,18 +42,18 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
 
     Vector2 pos_delta_x = Vector2::right() * movement_input.x;
     Vector2 pos_delta_y = Vector2::up() * movement_input.y;
-    Vector2 pos_delta = (pos_delta_x + pos_delta_y) * m_speed * fixed_delta_time;
+    Vector2 pos_delta = (pos_delta_x + pos_delta_y) * m_speed * delta_time;
     Vector2 new_pos = transform->get_position() + pos_delta;
     transform->set_position(new_pos);
 
-    update_camera_position(new_pos, fixed_delta_time);
+    update_camera_position(new_pos, delta_time);
 }
 
 void PlayerComponent::render_tick(float delta_time, RenderQueue& render_queue) {
     TransformComponent* trasnform = get_entity().get_transform();
     TransformComponent* camera_transform = get_app().get_entity_spawner().get_camera_entity()->get_transform();
 
-    debug::draw_line(camera_transform->get_position(), trasnform->get_position(), Color::red());
+    debug::draw_line(camera_transform->get_position(), trasnform->get_position(), Color::white());
 }
 
 void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {

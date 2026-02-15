@@ -4,6 +4,7 @@
 
 #include "Entity.h"
 #include "engine/components/CameraComponent.h"
+#include "engine/components/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 
@@ -63,6 +64,28 @@ void EntitySpawner::get_ticking_entities(std::vector<Entity*>& out_entities) con
         if (entity->is_ticking()) {
             out_entities.push_back(entity.get());
         }
+    }
+
+    std::sort(out_entities.begin(), out_entities.end(),
+              [](const auto& a, const auto& b) {
+                  return a->get_priority() < b->get_priority();
+              });
+}
+
+void EntitySpawner::get_physics_entities(std::vector<Entity*>& out_entities) const {
+    out_entities.clear();
+    out_entities.reserve(m_entities.size());
+    for (const auto& entity : m_entities) {
+        if (!entity->is_ticking()) {
+            continue;
+        }
+
+        const RigidbodyComponent* rigidbody = entity->get_rigidbody();
+        if (rigidbody == nullptr || !rigidbody->has_body() || rigidbody->get_body_type() == BodyType::STATIC) {
+            continue;
+        }
+
+        out_entities.push_back(entity.get());
     }
 
     std::sort(out_entities.begin(), out_entities.end(),

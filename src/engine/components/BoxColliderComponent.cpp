@@ -53,7 +53,20 @@ void BoxColliderComponent::render_tick(float delta_time, RenderQueue& render_que
     bottom_left = Vector2::rotate_around(bottom_left, position, rotation);
     bottom_right = Vector2::rotate_around(bottom_right, position, rotation);
 
-    Color color = get_entity().get_rigidbody()->get_body_type() == BodyType::STATIC ? Color::yellow() : Color::green();
+    BodyType body_type = get_entity().get_rigidbody()->get_body_type();
+    Color color;
+    switch (body_type) {
+        case BodyType::STATIC:
+            color = Color::red();
+            break;
+        case BodyType::DYNAMIC:
+            color = Color::green();
+            break;
+        case BodyType::KINEMATIC:
+            color = Color::yellow();
+            break;
+    }
+
     debug::draw_line(top_left, top_right, color);
     debug::draw_line(top_right, bottom_right, color);
     debug::draw_line(bottom_right, bottom_left, color);

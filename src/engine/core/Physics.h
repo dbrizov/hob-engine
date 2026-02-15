@@ -45,6 +45,9 @@ public:
     static Vector2 b2Vec2_to_vec2(const b2Vec2& vec);
     static b2Vec2 vec2_to_b2Vec2(const Vector2& vec);
 
+    static float b2Rot_to_radians(const b2Rot& rot);
+    static b2Rot radians_to_b2Rot(float radians);
+
 private:
     static float delta_time_from_ticks(uint32_t ticks_per_second);
 };
