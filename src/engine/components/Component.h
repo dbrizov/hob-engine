@@ -11,7 +11,8 @@ namespace component_priority {
     constexpr int CP_INPUT = -200;
     constexpr int CP_TRANSFORM = -100;
     constexpr int CP_DEFAULT = 0;
-    constexpr int CP_RENDER = 100;
+    constexpr int CP_CHARACTER_BODY = 100;
+    constexpr int CP_RENDER = 200;
 }
 
 

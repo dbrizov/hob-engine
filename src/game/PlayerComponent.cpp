@@ -1,6 +1,7 @@
 #include "PlayerComponent.h"
 
 #include "engine/components/CameraComponent.h"
+#include "engine/components/CharacterBodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 #include "engine/core/Debug.h"
@@ -32,21 +33,14 @@ void PlayerComponent::exit_play() {
     input_component->unbind_action("slow_motion", m_slow_motion_action_id);
 }
 
-void PlayerComponent::tick(float delta_time) {
-    TransformComponent* transform = get_entity().get_component<TransformComponent>();
-
+void PlayerComponent::physics_tick(float fixed_delta_time) {
     Vector2 movement_input = m_movement_input;
     if (movement_input.length_sqr() > 1.0f) {
         movement_input = movement_input.normalized();
     }
 
-    Vector2 pos_delta_x = Vector2::right() * movement_input.x;
-    Vector2 pos_delta_y = Vector2::up() * movement_input.y;
-    Vector2 pos_delta = (pos_delta_x + pos_delta_y) * m_speed * delta_time;
-    Vector2 new_pos = transform->get_position() + pos_delta;
-    transform->set_position(new_pos);
-
-    update_camera_position(new_pos, delta_time);
+    Vector2 velocity = movement_input * m_speed;
+    get_entity().get_component<CharacterBodyComponent>()->set_velocity(velocity);
 }
 
 void PlayerComponent::render_tick(float delta_time, RenderQueue& render_queue) {

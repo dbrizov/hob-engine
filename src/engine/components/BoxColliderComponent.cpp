@@ -71,20 +71,12 @@ void BoxColliderComponent::render_tick(float delta_time, RenderQueue& render_que
     debug::draw_line(bottom_left, top_left, color);
 }
 
-Vector2 BoxColliderComponent::get_center() const {
-    return m_aabb.center;
+AABB BoxColliderComponent::get_aabb() const {
+    return m_aabb;
 }
 
-void BoxColliderComponent::set_center(const Vector2& center) {
-    m_aabb.center = center;
-}
-
-Vector2 BoxColliderComponent::get_size() const {
-    return m_aabb.size();
-}
-
-void BoxColliderComponent::set_size(const Vector2& size) {
-    m_aabb.extents = size * 0.5f;
+void BoxColliderComponent::set_aabb(const AABB& aabb) {
+    m_aabb = aabb;
 }
 
 float BoxColliderComponent::get_density() const {

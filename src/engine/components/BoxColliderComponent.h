@@ -23,11 +23,8 @@ public:
     virtual void exit_play() override;
     virtual void render_tick(float delta_time, RenderQueue& render_queue) override;
 
-    Vector2 get_center() const;
-    void set_center(const Vector2& center);
-
-    Vector2 get_size() const;
-    void set_size(const Vector2& size);
+    AABB get_aabb() const;
+    void set_aabb(const AABB& aabb);
 
     float get_density() const;
     void set_density(float density);
