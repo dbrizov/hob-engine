@@ -28,6 +28,7 @@ class EntitySpawner {
 
 public:
     explicit EntitySpawner(App& app);
+    ~EntitySpawner();
 
     Entity& spawn_entity();
     void destroy_entity(EntityId id);

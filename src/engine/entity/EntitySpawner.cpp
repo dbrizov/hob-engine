@@ -15,6 +15,12 @@ EntitySpawner::EntitySpawner(App& app)
     spawn_camera_entity(graphics_config.logical_resolution_width, graphics_config.logical_resolution_height);
 }
 
+EntitySpawner::~EntitySpawner() {
+    for (auto& entity : m_entities) {
+        entity->exit_play();
+    }
+}
+
 Entity& EntitySpawner::spawn_entity() {
     std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity(m_app));
 
