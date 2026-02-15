@@ -55,7 +55,7 @@ void App::run() {
 
         // entities.render_tick()
         for (Entity* entity : entities) {
-            entity->render_tick(delta_time, m_render_queue);
+            entity->render_tick(scaled_delta_time, m_render_queue);
         }
 
         render_frame();
