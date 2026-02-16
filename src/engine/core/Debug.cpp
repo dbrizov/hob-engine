@@ -59,6 +59,7 @@ namespace debug {
                 Vector2 point = circle.center + Vector2(std::cos(angle), std::sin(angle)) * circle.radius;
                 DebugLine line{prev_point, point, circle.color, circle.thickness};
                 sdl_draw_line(renderer, white_pixel_texture, camera, line);
+
                 prev_point = point;
             }
         }
