@@ -47,7 +47,28 @@ void CapsuleColliderComponent::render_tick(float delta_time, RenderQueue& render
     Vector2 position = transform->get_position();
     float rotation = transform->get_rotation_degrees();
 
-    // Choose debug color like your box
+    // Capsule's centers in world space
+    Vector2 c1_world = Vector2::rotate_around(position + m_capsule.center_a, position, rotation);
+    Vector2 c2_world = Vector2::rotate_around(position + m_capsule.center_b, position, rotation);
+
+    // Capsule's axis and its perpendicular (both unit length)
+    Vector2 axis = (c2_world - c1_world);
+    if (axis.length_sqr() > EPSILON) {
+        axis = axis.normalized();
+    }
+    else {
+        axis = Vector2::up(); // Arbitrary if it's basically a circle
+    }
+
+    Vector2 perp(-axis.y, axis.x);
+
+    // Capsule's side line endpoints (tangent lines)
+    Vector2 p1 = c1_world + perp * m_capsule.radius;
+    Vector2 p2 = c2_world + perp * m_capsule.radius;
+    Vector2 p3 = c2_world - perp * m_capsule.radius;
+    Vector2 p4 = c1_world - perp * m_capsule.radius;
+
+    // Choose a color
     BodyType body_type = get_entity().get_rigidbody()->get_body_type();
     Color color;
     switch (body_type) {
@@ -62,27 +83,7 @@ void CapsuleColliderComponent::render_tick(float delta_time, RenderQueue& render
             break;
     }
 
-    // Rotate those centers into world (about body position)
-    Vector2 c1_world = Vector2::rotate_around(position + m_capsule.center_a, position, rotation);
-    Vector2 c2_world = Vector2::rotate_around(position + m_capsule.center_b, position, rotation);
-
-    // Capsule axis (world) and its perpendicular (both unit length)
-    Vector2 axis = (c2_world - c1_world);
-    if (axis.length_sqr() > EPSILON) {
-        axis = axis.normalized();
-    }
-    else {
-        axis = Vector2::up(); // Arbitrary if it's basically a circle
-    }
-
-    Vector2 perp(-axis.y, axis.x);
-
-    // Side line endpoints (tangent lines)
-    Vector2 p1 = c1_world + perp * m_capsule.radius;
-    Vector2 p2 = c2_world + perp * m_capsule.radius;
-    Vector2 p3 = c2_world - perp * m_capsule.radius;
-    Vector2 p4 = c1_world - perp * m_capsule.radius;
-
+    // Draw
     debug::draw_line(p1, p2, color);
     debug::draw_line(p3, p4, color);
 
