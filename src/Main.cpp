@@ -130,12 +130,12 @@ int main(int argc, char* argv[]) {
     spawn_static_box(app, Vector2(-5.0f, 4.0f), 0.0f);
 
     // dynamic boxes
-    // spawn_dynamic_box(app, Vector2(-3.0f, 3.0f), 60.0f);
-    // spawn_dynamic_box(app, Vector2(-2.0f, 0.0f), 0.0f);
-    // spawn_dynamic_box(app, Vector2(1.0f, 1.5f), 30.0f);
-    // spawn_dynamic_box(app, Vector2(0.0f, 3.0f), 40.0f);
-    // spawn_dynamic_box(app, Vector2(1.0f, 4.5f), 0.0f);
-    // spawn_dynamic_box(app, Vector2(2.0f, 6.0f), -10.0f);
+    spawn_dynamic_box(app, Vector2(-3.0f, 3.0f), 60.0f);
+    spawn_dynamic_box(app, Vector2(-2.0f, 0.0f), 0.0f);
+    spawn_dynamic_box(app, Vector2(1.0f, 1.5f), 30.0f);
+    spawn_dynamic_box(app, Vector2(0.0f, 3.0f), 40.0f);
+    spawn_dynamic_box(app, Vector2(1.0f, 4.5f), 0.0f);
+    spawn_dynamic_box(app, Vector2(2.0f, 6.0f), -10.0f);
 
     app.run();
 

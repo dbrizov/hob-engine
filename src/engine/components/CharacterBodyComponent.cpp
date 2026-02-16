@@ -36,7 +36,7 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
     collision_filter.categoryBits = m_capsule_collider->get_collision_layer();
     collision_filter.maskBits = m_capsule_collider->get_collision_mask();
 
-    // TODO Ignore other character
+    // TODO Ignore other characters
     b2QueryFilter cast_filter = b2DefaultQueryFilter();
     cast_filter.categoryBits = m_capsule_collider->get_collision_layer();
     cast_filter.maskBits = m_capsule_collider->get_collision_mask();
@@ -55,7 +55,7 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
     b2Vec2 b2_delta_pos = Physics::vec2_to_b2Vec2(delta_pos);
     b2Vec2 b2_target_pos = b2Add(b2_current_pos, b2_delta_pos);
 
-    for (int i = 0; i < SOLVER_MAX_INTERATION; ++i) {
+    for (int i = 0; i < SOLVER_MAX_ITERATIONS; ++i) {
         m_solver_planes_count = 0;
 
         // Build capsule at current position

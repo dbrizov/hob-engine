@@ -17,7 +17,7 @@ class CharacterBodyComponent : public Component {
     CapsuleColliderComponent* m_capsule_collider = nullptr;
 
     // Collision solver params
-    static constexpr int SOLVER_MAX_INTERATION = 4;
+    static constexpr int SOLVER_MAX_ITERATIONS = 4;
     static constexpr float SOLVER_DISTANCE_TOLERANCE = 0.01f;
     static constexpr int SOLVER_PLANES_CAPACITY = 8;
     int m_solver_planes_count = 0;
