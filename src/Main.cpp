@@ -14,11 +14,11 @@
 const std::string WINDOW_TITLE = "SDL2 Window";
 constexpr uint32_t WINDOW_WIDTH = 1152;
 constexpr uint32_t WINDOW_HEIGHT = 648;
-constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH / 2;
-constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT / 2;
+constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH;
+constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT;
 constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
-constexpr float PIXELS_PER_METER = 25.0f;
+constexpr float PIXELS_PER_METER = 64.0f;
 
 const Vector2 PHYSICS_GRAVITY = Vector2(0.0f, -9.81f);
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
