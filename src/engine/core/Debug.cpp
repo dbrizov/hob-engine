@@ -3,7 +3,7 @@
 #include <SDL_render.h>
 
 #include "engine/components/CameraComponent.h"
-#include "engine/math/Math.h"
+#include "engine/math/Constants.h"
 
 namespace debug {
     namespace {

@@ -1,7 +1,7 @@
 #include "TransformComponent.h"
 
 #include "engine/entity/Entity.h"
-#include "engine/math/Math.h"
+#include "engine/math/Constants.h"
 
 TransformComponent::TransformComponent(Entity& entity)
     : Component(entity) {

@@ -8,7 +8,7 @@
 #include "engine/core/App.h"
 #include "engine/core/Physics.h"
 #include "engine/entity/Entity.h"
-#include "engine/math/Math.h"
+#include "engine/math/Constants.h"
 
 CharacterBodyComponent::CharacterBodyComponent(Entity& entity)
     : Component(entity) {

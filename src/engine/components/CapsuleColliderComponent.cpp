@@ -9,7 +9,7 @@
 #include "engine/core/Physics.h"
 #include "engine/core/Render.h"
 #include "engine/entity/Entity.h"
-#include "engine/math/Math.h"
+#include "engine/math/Constants.h"
 
 CapsuleColliderComponent::CapsuleColliderComponent(Entity& entity)
     : Component(entity) {
