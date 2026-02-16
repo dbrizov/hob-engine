@@ -97,6 +97,7 @@ int main(int argc, char* argv[]) {
 
     spawn_player_entity(app, Vector2(0.0f, 0.0f));
 
+    // floor
     spawn_static_box(app, Vector2(-4.0f, -3.0f), 0.0f);
     spawn_static_box(app, Vector2(-3.0f, -3.0f), 0.0f);
     spawn_static_box(app, Vector2(-2.0f, -3.0f), 0.0f);
@@ -107,12 +108,34 @@ int main(int argc, char* argv[]) {
     spawn_static_box(app, Vector2(3.0f, -3.0f), 0.0f);
     spawn_static_box(app, Vector2(4.0f, -3.0f), 0.0f);
 
-    spawn_dynamic_box(app, Vector2(-3.0f, 3.0f), 60.0f);
-    spawn_dynamic_box(app, Vector2(-2.0f, 0.0f), 0.0f);
-    spawn_dynamic_box(app, Vector2(1.0f, 1.5f), 30.0f);
-    spawn_dynamic_box(app, Vector2(0.0f, 3.0f), 40.0f);
-    spawn_dynamic_box(app, Vector2(1.0f, 4.5f), 0.0f);
-    spawn_dynamic_box(app, Vector2(2.0f, 6.0f), -10.0f);
+    // stairs
+    spawn_static_box(app, Vector2(5.0f, -2.7f), 0.0f);
+    spawn_static_box(app, Vector2(6.0f, -2.4f), 0.0f);
+    spawn_static_box(app, Vector2(7.0f, -2.1f), 0.0f);
+    spawn_static_box(app, Vector2(8.0f, -1.8f), 0.0f);
+    spawn_static_box(app, Vector2(9.0f, -1.5f), 0.0f);
+    spawn_static_box(app, Vector2(10.0f, -1.2f), 0.0f);
+    spawn_static_box(app, Vector2(11.0f, -0.9f), 0.0f);
+    spawn_static_box(app, Vector2(12.0f, -0.6f), 0.0f);
+    spawn_static_box(app, Vector2(13.0f, -0.3f), 0.0f);
+
+    // left wall
+    spawn_static_box(app, Vector2(-5.0f, -3.0f), 0.0f);
+    spawn_static_box(app, Vector2(-5.0f, -2.0f), 0.0f);
+    spawn_static_box(app, Vector2(-5.0f, -1.0f), 0.0f);
+    spawn_static_box(app, Vector2(-5.0f, 0.0f), 0.0f);
+    spawn_static_box(app, Vector2(-5.0f, 1.0f), 0.0f);
+    spawn_static_box(app, Vector2(-5.0f, 2.0f), 0.0f);
+    spawn_static_box(app, Vector2(-5.0f, 3.0f), 0.0f);
+    spawn_static_box(app, Vector2(-5.0f, 4.0f), 0.0f);
+
+    // dynamic boxes
+    // spawn_dynamic_box(app, Vector2(-3.0f, 3.0f), 60.0f);
+    // spawn_dynamic_box(app, Vector2(-2.0f, 0.0f), 0.0f);
+    // spawn_dynamic_box(app, Vector2(1.0f, 1.5f), 30.0f);
+    // spawn_dynamic_box(app, Vector2(0.0f, 3.0f), 40.0f);
+    // spawn_dynamic_box(app, Vector2(1.0f, 4.5f), 0.0f);
+    // spawn_dynamic_box(app, Vector2(2.0f, 6.0f), -10.0f);
 
     app.run();
 

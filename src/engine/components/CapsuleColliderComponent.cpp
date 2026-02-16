@@ -91,6 +91,10 @@ void CapsuleColliderComponent::render_tick(float delta_time, RenderQueue& render
     debug::draw_circle(c2_world, m_capsule.radius, color);
 }
 
+b2ShapeId CapsuleColliderComponent::get_shape_id() const {
+    return m_shape_id;
+}
+
 Capsule CapsuleColliderComponent::get_capsule() const {
     return m_capsule;
 }

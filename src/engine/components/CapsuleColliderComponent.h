@@ -23,6 +23,8 @@ public:
     virtual void exit_play() override;
     virtual void render_tick(float delta_time, RenderQueue& render_queue) override;
 
+    b2ShapeId get_shape_id() const;
+
     Capsule get_capsule() const;
     void set_capsule(const Capsule& capsule);
 

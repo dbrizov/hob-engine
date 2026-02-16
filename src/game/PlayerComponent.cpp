@@ -40,14 +40,17 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
     }
 
     Vector2 velocity = movement_input * m_speed;
-    get_entity().get_component<CharacterBodyComponent>()->set_velocity(velocity);
+    get_entity().get_component<CharacterBodyComponent>()->move_and_slide(velocity, fixed_delta_time);
+
+    // TODO The camera position is not accurate, because the physics hasn't update the transform's position yet
+    Vector2 position = get_entity().get_transform()->get_position();
+    update_camera_position(position, fixed_delta_time);
 }
 
 void PlayerComponent::render_tick(float delta_time, RenderQueue& render_queue) {
-    TransformComponent* trasnform = get_entity().get_transform();
-    TransformComponent* camera_transform = get_app().get_entity_spawner().get_camera_entity()->get_transform();
-
-    debug::draw_line(camera_transform->get_position(), trasnform->get_position(), Color::white());
+    const TransformComponent* transform = get_entity().get_transform();
+    const TransformComponent* camera_transform = get_app().get_entity_spawner().get_camera_entity()->get_transform();
+    // debug::draw_line(camera_transform->get_position(), transform->get_position(), Color::white());
 }
 
 void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {

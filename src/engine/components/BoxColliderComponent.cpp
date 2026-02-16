@@ -71,6 +71,10 @@ void BoxColliderComponent::render_tick(float delta_time, RenderQueue& render_que
     debug::draw_line(bottom_left, top_left, color);
 }
 
+b2ShapeId BoxColliderComponent::get_shape_id() const {
+    return m_shape_id;
+}
+
 AABB BoxColliderComponent::get_aabb() const {
     return m_aabb;
 }
