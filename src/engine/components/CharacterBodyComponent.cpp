@@ -3,7 +3,7 @@
 #include <box2d/box2d.h>
 
 #include "TransformComponent.h"
-#include "engine/components/BoxColliderComponent.h"
+#include "engine/components/CapsuleColliderComponent.h"
 #include "engine/components/RigidbodyComponent.h"
 #include "engine/core/Physics.h"
 #include "engine/entity/Entity.h"
@@ -14,8 +14,7 @@ CharacterBodyComponent::CharacterBodyComponent(Entity& entity)
     m_rigidbody->set_body_type(BodyType::KINEMATIC);
     m_rigidbody->set_fixed_rotation(true);
 
-    m_box_collider = entity.add_component<BoxColliderComponent>();
-    m_box_collider->set_aabb(AABB(Vector2::zero(), Vector2(0.25f, 0.5f)));
+    m_capsule_collider = entity.add_component<CapsuleColliderComponent>();
 }
 
 int CharacterBodyComponent::get_priority() const {

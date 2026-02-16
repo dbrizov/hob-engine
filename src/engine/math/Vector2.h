@@ -35,6 +35,7 @@ struct Vector2 {
     static Vector2 down();
 
     static float dot(const Vector2& a, const Vector2& b);
+    static float distance(const Vector2& a, const Vector2& b);
     static Vector2 lerp(const Vector2& a, const Vector2& b, float t);
     static Vector2 rotate_around(const Vector2& point, const Vector2& center, float degrees);
 

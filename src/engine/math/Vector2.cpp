@@ -102,6 +102,10 @@ float Vector2::dot(const Vector2& a, const Vector2& b) {
     return a.x * b.x + a.y * b.y;
 }
 
+float Vector2::distance(const Vector2& a, const Vector2& b) {
+    return (a - b).length();
+}
+
 Vector2 Vector2::lerp(const Vector2& a, const Vector2& b, float t) {
     return a * (1.0f - t) + b * t;
 }

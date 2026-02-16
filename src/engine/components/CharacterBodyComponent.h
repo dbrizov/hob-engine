@@ -4,13 +4,13 @@
 #include "engine/math/Vector2.h"
 
 
-class BoxColliderComponent;
+class CapsuleColliderComponent;
 class RigidbodyComponent;
 
 
 class CharacterBodyComponent : public Component {
     RigidbodyComponent* m_rigidbody = nullptr;
-    BoxColliderComponent* m_box_collider = nullptr;
+    CapsuleColliderComponent* m_capsule_collider = nullptr;
 
 public:
     explicit CharacterBodyComponent(Entity& entity);
