@@ -115,13 +115,13 @@ Vector2 Vector2::rotate_around(const Vector2& point, const Vector2& center, floa
     float cos = std::cos(rad);
     float sin = std::sin(rad);
 
-    Vector2 vec = point - center; // Translate to origin
+    Vector2 vec = point - center; // translate to origin
 
     Vector2 vec_r;
     vec_r.x = vec.x * cos - vec.y * sin;
     vec_r.y = vec.x * sin + vec.y * cos;
 
-    return center + vec_r; // Translate back
+    return center + vec_r; // translate back
 }
 
 std::string Vector2::to_string() const {
