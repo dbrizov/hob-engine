@@ -11,7 +11,7 @@
 #include "engine/entity/Entity.h"
 #include "game/PlayerComponent.h"
 
-const std::string WINDOW_TITLE = "SDL2 Window";
+constexpr std::string WINDOW_TITLE = "SDL2 Window";
 constexpr uint32_t WINDOW_WIDTH = 1152;
 constexpr uint32_t WINDOW_HEIGHT = 648;
 constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH;

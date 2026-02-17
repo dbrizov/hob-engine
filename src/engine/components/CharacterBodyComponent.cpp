@@ -114,12 +114,12 @@ bool CharacterBodyComponent::plane_result_callback(b2ShapeId shape_id,
     }
 
     // If full, stop searching
-    if (self->m_solver_planes_count >= self->SOLVER_PLANES_CAPACITY) {
+    if (self->m_solver_planes_count >= SOLVER_PLANES_CAPACITY) {
         return false;
     }
 
     // TODO optional UserData for pushing objects
-    float push_limit = FLOAT_MAX;
+    float push_limit = MAX_FLOAT;
     bool clip_velocity = true;
 
     self->m_solver_planes[self->m_solver_planes_count] = {plane_result->plane, push_limit, 0.0f, clip_velocity};
