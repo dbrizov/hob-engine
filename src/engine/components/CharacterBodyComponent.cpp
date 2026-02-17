@@ -104,19 +104,21 @@ b2Capsule CharacterBodyComponent::make_world_capsule(const Capsule& local_capsul
 bool CharacterBodyComponent::plane_result_callback(b2ShapeId shape_id,
                                                    const b2PlaneResult* plane_result,
                                                    void* context) {
-    auto* self = static_cast<CharacterBodyComponent*>(context);
-    if (!self || !plane_result || !plane_result->hit) {
-        return true; // skip but keep searching
-    }
+    CharacterBodyComponent* self = static_cast<CharacterBodyComponent*>(context);
+    assert(self != nullptr && "Null context for place_result_callback");
 
-    // Ignore my own collider
-    if (shape_id.index1 == self->m_capsule_collider->get_shape_id().index1) {
-        return true; // skip but keep searching
-    }
-
-    // If full, stop searching
     if (self->m_solver_planes_count >= SOLVER_PLANES_CAPACITY) {
-        return false;
+        return false; // stop searching
+    }
+
+    bool plane_hit = plane_result != nullptr && plane_result->hit;
+    if (!plane_hit) {
+        return true; // we didn't hit a plane - keep searching
+    }
+
+    bool self_hit = shape_id.index1 == self->m_capsule_collider->get_shape_id().index1;
+    if (self_hit) {
+        return true; // ignore my own collider - keep searching
     }
 
     // TODO optional UserData for pushing objects
