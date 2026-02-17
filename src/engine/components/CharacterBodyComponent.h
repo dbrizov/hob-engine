@@ -28,11 +28,17 @@ public:
 
     virtual int get_priority() const override;
 
+    uint64_t get_collision_layer() const;
+    void set_collision_layer(uint64_t collision_layer);
+
+    uint64_t get_collision_mask() const;
+    void set_collision_mask(uint64_t collision_mask);
+
     void move_and_slide(const Vector2& desired_velocity, float delta_time);
 
 private:
     static b2Capsule make_world_capsule(const Capsule& local_capsule, const Vector2& position, float rotation_degrees);
-    static bool plane_result_callback(b2ShapeId shape_id, const b2PlaneResult* plane_result, void* context);
+    static bool plane_result_callback(b2ShapeId other_shape_id, const b2PlaneResult* plane_result, void* context);
 };
 
 

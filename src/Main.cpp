@@ -25,6 +25,10 @@ constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr uint32_t PHYSICS_SUB_STEPS_PER_TICK = 4;
 constexpr bool PHYSICS_INTERPOLATION_ENABLED = false;
 
+constexpr uint64_t COLLISION_BIT_STATIC = 1u << 0;
+constexpr uint64_t COLLISION_BIT_DYNAMIC = 1u << 1;
+constexpr uint64_t COLLISION_BIT_KINEMATIC = 1u << 2;
+
 Entity& spawn_player_entity(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_ticking(true);
@@ -32,7 +36,10 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
 
     entity.add_component<InputComponent>();
     entity.add_component<PlayerComponent>();
-    entity.add_component<CharacterBodyComponent>();
+
+    CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
+    character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
+    character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC);
 
     // ImageComponent* image_component = entity.add_component<ImageComponent>();
     // const std::filesystem::path path =
@@ -43,13 +50,29 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
     return entity;
 }
 
+Entity& spawn_enemy_entity(App& app, const Vector2& position) {
+    Entity& entity = app.get_entity_spawner().spawn_entity();
+    entity.set_ticking(true);
+    entity.get_transform()->set_position(position);
+
+    CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
+    character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
+    character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC);
+
+    return entity;
+}
+
 Entity& spawn_static_box(App& app, const Vector2& position, float rotation_degrees) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.get_transform()->set_position(position);
     entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
-    entity.add_component<RigidbodyComponent>();
-    entity.add_component<BoxColliderComponent>();
+    RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
+    rigidbody->set_body_type(BodyType::STATIC);
+
+    BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
+    box_collider->set_collision_layer(COLLISION_BIT_STATIC);
+    box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
 
     return entity;
 }
@@ -63,7 +86,9 @@ Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degr
     RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
     rigidbody->set_body_type(BodyType::DYNAMIC);
 
-    entity.add_component<BoxColliderComponent>();
+    BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
+    box_collider->set_collision_layer(COLLISION_BIT_DYNAMIC);
+    box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
 
     return entity;
 }
@@ -96,6 +121,7 @@ int main(int argc, char* argv[]) {
     }
 
     spawn_player_entity(app, Vector2(0.0f, 0.0f));
+    // spawn_enemy_entity(app, Vector2(2.0f, 0.0f));
 
     // floor
     spawn_static_box(app, Vector2(-4.0f, -3.0f), 0.0f);

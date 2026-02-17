@@ -23,6 +23,22 @@ int CharacterBodyComponent::get_priority() const {
     return component_priority::CP_CHARACTER_BODY;
 }
 
+uint64_t CharacterBodyComponent::get_collision_layer() const {
+    return m_capsule_collider->get_collision_layer();
+}
+
+void CharacterBodyComponent::set_collision_layer(uint64_t collision_layer) {
+    m_capsule_collider->set_collision_layer(collision_layer);
+}
+
+uint64_t CharacterBodyComponent::get_collision_mask() const {
+    return m_capsule_collider->get_collision_mask();
+}
+
+void CharacterBodyComponent::set_collision_mask(uint64_t collision_mask) {
+    m_capsule_collider->set_collision_mask(collision_mask);
+}
+
 void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, float delta_time) {
     Vector2 delta_pos = desired_velocity * delta_time;
     if (delta_pos.length_sqr() < EPSILON) {
@@ -30,23 +46,15 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
         return;
     }
 
-    // Filters:
-    // - collide against world + movers if you want (later)
-    // - cast against world only to allow soft character-character
-    b2QueryFilter collision_filter = b2DefaultQueryFilter();
-    collision_filter.categoryBits = m_capsule_collider->get_collision_layer();
-    collision_filter.maskBits = m_capsule_collider->get_collision_mask();
-
-    // TODO Ignore other characters, and dynamic bodies
-    b2QueryFilter cast_filter = b2DefaultQueryFilter();
-    cast_filter.categoryBits = m_capsule_collider->get_collision_layer();
-    cast_filter.maskBits = m_capsule_collider->get_collision_mask();
-
     // Solver data
-    b2BodyId body_id = m_rigidbody->get_body_id();
-    b2WorldId world_id = get_app().get_physics().get_physics_world().get_id();
+    b2QueryFilter collision_filter = b2DefaultQueryFilter();
+    collision_filter.categoryBits = get_collision_layer();
+    collision_filter.maskBits = get_collision_mask();
 
     Capsule local_capsule = m_capsule_collider->get_capsule();
+
+    b2BodyId body_id = m_rigidbody->get_body_id();
+    b2WorldId world_id = get_app().get_physics().get_physics_world().get_id();
 
     b2Vec2 b2_start_pos = b2Body_GetPosition(body_id);
     b2Rot b2_rot = b2Body_GetRotation(body_id);
@@ -56,6 +64,7 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
     b2Vec2 b2_delta_pos = Physics::vec2_to_b2Vec2(delta_pos);
     b2Vec2 b2_target_pos = b2Add(b2_current_pos, b2_delta_pos);
 
+    // Solver iterations
     for (int i = 0; i < SOLVER_MAX_ITERATIONS; ++i) {
         m_solver_planes_count = 0;
 
@@ -71,7 +80,7 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
         b2Vec2 b2_solver_translation = b2_solver_result.translation;
 
         // 3) Cast to make that translation continuous (no tunneling)
-        float fraction = b2World_CastMover(world_id, &mover, b2_solver_translation, cast_filter);
+        float fraction = b2World_CastMover(world_id, &mover, b2_solver_translation, collision_filter);
         b2Vec2 b2_delta = b2MulSV(fraction, b2_solver_translation);
 
         b2_current_pos = b2Add(b2_current_pos, b2_delta);
@@ -101,7 +110,7 @@ b2Capsule CharacterBodyComponent::make_world_capsule(const Capsule& local_capsul
     return b2_capsule;
 }
 
-bool CharacterBodyComponent::plane_result_callback(b2ShapeId shape_id,
+bool CharacterBodyComponent::plane_result_callback(b2ShapeId other_shape_id,
                                                    const b2PlaneResult* plane_result,
                                                    void* context) {
     CharacterBodyComponent* self = static_cast<CharacterBodyComponent*>(context);
@@ -116,9 +125,14 @@ bool CharacterBodyComponent::plane_result_callback(b2ShapeId shape_id,
         return true; // we didn't hit a plane - keep searching
     }
 
-    bool self_hit = shape_id.index1 == self->m_capsule_collider->get_shape_id().index1;
-    if (self_hit) {
-        return true; // ignore my own collider - keep searching
+    // Check for collision with self.
+    // If the collision filters are set correctly, we won't even get to this point.
+    // This only prevents collision with self when using default collision filters.
+    b2BodyId self_body_id = self->m_rigidbody->get_body_id();
+    b2BodyId other_body_id = b2Shape_GetBody(other_shape_id);
+    if (self_body_id.index1 == other_body_id.index1 &&
+        self_body_id.generation == other_body_id.generation) {
+        return true; // ignore self - keep searching
     }
 
     // TODO optional UserData for pushing objects
