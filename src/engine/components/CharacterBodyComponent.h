@@ -26,8 +26,6 @@ class CharacterBodyComponent : public Component {
 public:
     explicit CharacterBodyComponent(Entity& entity);
 
-    virtual int get_priority() const override;
-
     uint64_t get_collision_layer() const;
     void set_collision_layer(uint64_t collision_layer);
 

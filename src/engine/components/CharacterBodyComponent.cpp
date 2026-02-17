@@ -19,10 +19,6 @@ CharacterBodyComponent::CharacterBodyComponent(Entity& entity)
     m_capsule_collider = entity.add_component<CapsuleColliderComponent>();
 }
 
-int CharacterBodyComponent::get_priority() const {
-    return component_priority::CP_CHARACTER_BODY;
-}
-
 uint64_t CharacterBodyComponent::get_collision_layer() const {
     return m_capsule_collider->get_collision_layer();
 }
