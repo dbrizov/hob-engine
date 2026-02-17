@@ -26,6 +26,7 @@ int CharacterBodyComponent::get_priority() const {
 void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, float delta_time) {
     Vector2 delta_pos = desired_velocity * delta_time;
     if (delta_pos.length_sqr() < EPSILON) {
+        b2Body_SetLinearVelocity(m_rigidbody->get_body_id(), b2Vec2_zero);
         return;
     }
 
@@ -36,7 +37,7 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
     collision_filter.categoryBits = m_capsule_collider->get_collision_layer();
     collision_filter.maskBits = m_capsule_collider->get_collision_mask();
 
-    // TODO Ignore other characters
+    // TODO Ignore other characters, and dynamic bodies
     b2QueryFilter cast_filter = b2DefaultQueryFilter();
     cast_filter.categoryBits = m_capsule_collider->get_collision_layer();
     cast_filter.maskBits = m_capsule_collider->get_collision_mask();
@@ -80,10 +81,10 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
         }
     }
 
-    // Apply final position to the kinematic body
-    b2Transform b2_transform = b2Body_GetTransform(body_id);
-    b2_transform.p = b2_current_pos;
-    b2Body_SetTransform(body_id, b2_transform.p, b2_transform.q);
+    // Apply velocity
+    b2Vec2 achieved_delta = b2Sub(b2_current_pos, b2_start_pos);
+    b2Vec2 achieved_velocity = b2MulSV(1.0f / delta_time, achieved_delta);
+    b2Body_SetLinearVelocity(body_id, achieved_velocity);
 }
 
 b2Capsule CharacterBodyComponent::make_world_capsule(const Capsule& local_capsule,
