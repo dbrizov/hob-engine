@@ -17,9 +17,9 @@ constexpr uint32_t WINDOW_WIDTH = 1152;
 constexpr uint32_t WINDOW_HEIGHT = 648;
 constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH;
 constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT;
+constexpr uint32_t PIXELS_PER_METER = 64;
 constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
-constexpr uint32_t PIXELS_PER_METER = 64;
 
 const Vector2 PHYSICS_GRAVITY = Vector2(0.0f, -9.81f);
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
@@ -126,9 +126,9 @@ int main(int argc, char* argv[]) {
     graphics_config.window_height = WINDOW_HEIGHT;
     graphics_config.logical_resolution_width = LOGICAL_RESOLUTION_WIDTH;
     graphics_config.logical_resolution_height = LOGICAL_RESOLUTION_HEIGHT;
+    graphics_config.pixels_per_meter = PIXELS_PER_METER;
     graphics_config.target_fps = TARGET_FPS;
     graphics_config.vsync_enabled = VSYNC_ENABLED;
-    graphics_config.pixels_per_meter = PIXELS_PER_METER;
 
     PhysicsConfig physics_config;
     physics_config.gravity = PHYSICS_GRAVITY;
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     }
 
     spawn_player_entity(app, Vector2(-2.0f, 0.0f));
-    // spawn_enemy_entity(app, Vector2(2.0f, 0.0f));
+    spawn_enemy_entity(app, Vector2(2.0f, 0.0f));
 
     // floor
     spawn_static_box(app, Vector2(-4.0f, -3.0f), 0.0f);

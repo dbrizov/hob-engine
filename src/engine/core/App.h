@@ -19,9 +19,9 @@ struct GraphicsConfig {
     uint32_t window_height = 648;
     uint32_t logical_resolution_width = 1152;
     uint32_t logical_resolution_height = 648;
+    uint32_t pixels_per_meter = 64;
     uint32_t target_fps = 60;
     bool vsync_enabled = true;
-    uint32_t pixels_per_meter = 64;
 };
 
 
