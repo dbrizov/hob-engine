@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-#include "engine/components/RigidbodyComponent.h"
+#include "engine/components/physics/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 
 Entity::Entity(App& app)

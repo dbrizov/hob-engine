@@ -2,8 +2,7 @@
 
 #include <box2d/types.h>
 
-#include "RigidbodyComponent.h"
-#include "TransformComponent.h"
+#include "engine/components/TransformComponent.h"
 #include "engine/core/Debug.h"
 #include "engine/core/Physics.h"
 #include "engine/entity/Entity.h"

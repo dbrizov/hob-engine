@@ -2,7 +2,7 @@
 
 #include <fmt/base.h>
 
-#include "engine/components/ColliderComponent.h"
+#include "engine/components/physics/ColliderComponent.h"
 #include "engine/entity/Entity.h"
 
 ContactLoggerComponent::ContactLoggerComponent(Entity& entity)

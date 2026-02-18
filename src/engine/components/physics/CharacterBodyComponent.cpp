@@ -2,9 +2,9 @@
 
 #include <box2d/box2d.h>
 
-#include "TransformComponent.h"
-#include "engine/components/CapsuleColliderComponent.h"
-#include "engine/components/RigidbodyComponent.h"
+#include "CapsuleColliderComponent.h"
+#include "RigidbodyComponent.h"
+#include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 #include "engine/core/Physics.h"
 #include "engine/entity/Entity.h"

@@ -3,8 +3,8 @@
 #include <cassert>
 
 #include "App.h"
-#include "engine/components/ColliderComponent.h"
-#include "engine/components/RigidbodyComponent.h"
+#include "engine/components/physics/ColliderComponent.h"
+#include "engine/components/physics/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
 

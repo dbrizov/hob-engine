@@ -3,7 +3,7 @@
 #include <box2d/collision.h>
 #include <box2d/id.h>
 
-#include "Component.h"
+#include "engine/components/Component.h"
 #include "engine/math/Vector2.h"
 
 

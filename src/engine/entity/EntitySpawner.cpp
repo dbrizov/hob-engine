@@ -5,7 +5,7 @@
 #include "Entity.h"
 #include "engine/components/CameraComponent.h"
 #include "engine/components/ImageComponent.h"
-#include "engine/components/RigidbodyComponent.h"
+#include "engine/components/physics/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 

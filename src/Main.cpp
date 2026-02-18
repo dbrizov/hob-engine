@@ -1,10 +1,10 @@
 #include <filesystem>
 
-#include "engine/components/BoxColliderComponent.h"
-#include "engine/components/CharacterBodyComponent.h"
 #include "engine/components/ImageComponent.h"
 #include "engine/components/InputComponent.h"
-#include "engine/components/RigidbodyComponent.h"
+#include "engine/components/physics/BoxColliderComponent.h"
+#include "engine/components/physics/CharacterBodyComponent.h"
+#include "engine/components/physics/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 #include "engine/core/PathUtils.h"

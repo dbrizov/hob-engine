@@ -3,11 +3,10 @@
 #include <fmt/base.h>
 
 #include "engine/components/CameraComponent.h"
-#include "engine/components/CharacterBodyComponent.h"
-#include "engine/components/ColliderComponent.h"
+#include "engine/components/physics/CharacterBodyComponent.h"
+#include "engine/components/physics/ColliderComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
-#include "engine/core/Debug.h"
 #include "engine/entity/Entity.h"
 
 PlayerComponent::PlayerComponent(Entity& entity)

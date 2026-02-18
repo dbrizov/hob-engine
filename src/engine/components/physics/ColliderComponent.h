@@ -2,7 +2,7 @@
 #define HOB_ENGINE_COLLIDERCOMPONENT_H
 #include <box2d/id.h>
 
-#include "Component.h"
+#include "engine/components/Component.h"
 
 
 struct Color;

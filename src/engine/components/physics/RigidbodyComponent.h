@@ -2,7 +2,7 @@
 #define HOB_ENGINE_RIGIDBODYCOMPONENT_H
 #include <box2d/id.h>
 
-#include "Component.h"
+#include "engine/components/Component.h"
 
 
 enum class BodyType {
