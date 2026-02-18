@@ -24,7 +24,7 @@ void ColliderComponent::exit_play() {
     }
 }
 
-void ColliderComponent::render_tick(float delta_time, RenderQueue& render_queue) {
+void ColliderComponent::debug_draw_tick(float delta_time) {
     BodyType body_type = get_entity().get_rigidbody()->get_body_type();
     Color color;
     switch (body_type) {

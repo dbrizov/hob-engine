@@ -49,7 +49,6 @@ class App {
     Input m_input;
     Assets m_assets;
     Physics m_physics;
-    RenderQueue m_render_queue;
     EntitySpawner m_entity_spawner;
 
 public:
@@ -68,7 +67,7 @@ public:
     EntitySpawner& get_entity_spawner();
 
 private:
-    void render_frame();
+    void render_frame(const std::vector<const Entity*>& entities);
 };
 
 

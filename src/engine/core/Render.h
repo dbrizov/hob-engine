@@ -31,25 +31,4 @@ struct Color {
 };
 
 
-struct RenderData {
-    TextureId texture_id;
-    Vector2 position;
-    Vector2 prev_position;
-    Vector2 scale;
-
-    RenderData(TextureId texture_id_, const Vector2& position_, const Vector2& prev_position_, const Vector2& scale_);
-};
-
-
-class RenderQueue {
-    std::vector<RenderData> m_render_data;
-
-public:
-    void enqueue(const RenderData& data);
-    void clear();
-
-    std::span<const RenderData> get_render_data() const;
-};
-
-
 #endif //HOB_ENGINE_RENDER_H

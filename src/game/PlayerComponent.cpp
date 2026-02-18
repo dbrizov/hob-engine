@@ -47,12 +47,6 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
     update_camera_position(position, fixed_delta_time);
 }
 
-void PlayerComponent::render_tick(float delta_time, RenderQueue& render_queue) {
-    const TransformComponent* transform = get_entity().get_transform();
-    const TransformComponent* camera_transform = get_app().get_entity_spawner().get_camera_entity()->get_transform();
-    // debug::draw_line(camera_transform->get_position(), transform->get_position(), Color::white());
-}
-
 void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {
     Entity* camera_entity = get_app().get_entity_spawner().get_camera_entity();
     TransformComponent* camera_transform = camera_entity->get_transform();

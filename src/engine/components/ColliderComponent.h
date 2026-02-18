@@ -23,7 +23,7 @@ public:
 
     virtual void enter_play() override;
     virtual void exit_play() override;
-    virtual void render_tick(float delta_time, RenderQueue& render_queue) override;
+    virtual void debug_draw_tick(float delta_time) override;
 
     b2BodyId get_body_id() const;
     b2ShapeId get_shape_id() const;

@@ -37,6 +37,7 @@ public:
     void get_entities(std::vector<Entity*>& out_entities) const;
     void get_ticking_entities(std::vector<Entity*>& out_entities) const;
     void get_physics_entities(std::vector<Entity*>& out_entities) const;
+    void get_render_entities(std::vector<const Entity*>& out_entities) const;
 
     Entity* get_camera_entity() const;
 

@@ -8,10 +8,10 @@ class Entity;
 
 
 namespace component_priority {
+    constexpr int CP_RENDER = -300;
     constexpr int CP_INPUT = -200;
     constexpr int CP_TRANSFORM = -100;
     constexpr int CP_DEFAULT = 0;
-    constexpr int CP_RENDER = 100;
 }
 
 
@@ -33,7 +33,7 @@ public:
     virtual void exit_play();
     virtual void tick(float delta_time);
     virtual void physics_tick(float fixed_delta_time);
-    virtual void render_tick(float delta_time, RenderQueue& render_queue);
+    virtual void debug_draw_tick(float delta_time);
 };
 
 

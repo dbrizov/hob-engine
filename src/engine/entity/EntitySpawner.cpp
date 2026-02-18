@@ -4,6 +4,7 @@
 
 #include "Entity.h"
 #include "engine/components/CameraComponent.h"
+#include "engine/components/ImageComponent.h"
 #include "engine/components/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
@@ -88,6 +89,24 @@ void EntitySpawner::get_physics_entities(std::vector<Entity*>& out_entities) con
 
         const RigidbodyComponent* rigidbody = entity->get_rigidbody();
         if (rigidbody == nullptr || !rigidbody->has_body() || rigidbody->get_body_type() == BodyType::STATIC) {
+            continue;
+        }
+
+        out_entities.push_back(entity.get());
+    }
+
+    std::sort(out_entities.begin(), out_entities.end(),
+              [](const auto& a, const auto& b) {
+                  return a->get_priority() < b->get_priority();
+              });
+}
+
+void EntitySpawner::get_render_entities(std::vector<const Entity*>& out_entities) const {
+    out_entities.clear();
+    out_entities.reserve(m_entities.size());
+    for (const auto& entity : m_entities) {
+        const ImageComponent* img_comp = entity->get_component<ImageComponent>();
+        if (img_comp == nullptr) {
             continue;
         }
 

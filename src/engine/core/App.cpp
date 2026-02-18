@@ -5,6 +5,7 @@
 #include "Debug.h"
 #include "Timer.h"
 #include "engine/components/CameraComponent.h"
+#include "engine/components/ImageComponent.h"
 #include "engine/components/TransformComponent.h"
 
 App::App(const AppConfig& config)
@@ -14,7 +15,6 @@ App::App(const AppConfig& config)
       , m_input()
       , m_assets(m_sdl_context.get_renderer())
       , m_physics(config.physics_config)
-      , m_render_queue()
       , m_entity_spawner(*this) {
 }
 
@@ -23,6 +23,7 @@ void App::run() {
     std::vector<Entity*> entities;
     std::vector<Entity*> ticking_entities;
     std::vector<Entity*> physics_entities;
+    std::vector<const Entity*> render_entities;
 
     while (is_running) {
         m_timer.frame_start();
@@ -39,6 +40,7 @@ void App::run() {
         m_entity_spawner.get_entities(entities);
         m_entity_spawner.get_ticking_entities(ticking_entities);
         m_entity_spawner.get_physics_entities(physics_entities);
+        m_entity_spawner.get_render_entities(render_entities);
 
         const float delta_time = m_timer.get_delta_time();
         const float scaled_delta_time = delta_time * m_timer.get_time_scale();
@@ -55,12 +57,14 @@ void App::run() {
         // entities.physics_tick()
         m_physics.tick_entities(scaled_delta_time, physics_entities);
 
-        // entities.render_tick()
+#ifndef NDEBUG
+        // entities.debug_draw_tick()
         for (Entity* entity : entities) {
-            entity->render_tick(scaled_delta_time, m_render_queue);
+            entity->debug_draw_tick(scaled_delta_time);
         }
+#endif
 
-        render_frame();
+        render_frame(render_entities);
 
         m_timer.frame_end();
     }
@@ -94,7 +98,7 @@ EntitySpawner& App::get_entity_spawner() {
     return m_entity_spawner;
 }
 
-void App::render_frame() {
+void App::render_frame(const std::vector<const Entity*>& entities) {
     SDL_SetRenderDrawBlendMode(m_sdl_context.get_renderer(), SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 43, 47, 119, 255);
     SDL_RenderClear(m_sdl_context.get_renderer());
@@ -106,28 +110,32 @@ void App::render_frame() {
     Vector2 camera_position = Vector2::lerp(camera_transform->get_prev_position(), camera_transform->get_position(),
                                             m_physics.get_interpolation_fraction());
 
-    for (const RenderData& render_data : m_render_queue.get_render_data()) {
-        SDL_Texture* texture = m_assets.get_texture(render_data.texture_id);
+    for (const Entity* entity : entities) {
+        const TransformComponent* tr_comp = entity->get_transform();
+        const ImageComponent* img_comp = entity->get_component<ImageComponent>();
+
+        SDL_Texture* texture = m_assets.get_texture(img_comp->get_texture_id());
         int texture_width = 0;
         int texture_height = 0;
         SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
 
         Vector2 world_position = Vector2::lerp(
-            render_data.prev_position, render_data.position, m_physics.get_interpolation_fraction());
-
+            tr_comp->get_prev_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
         Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
+
+        Vector2 tr_scale = tr_comp->get_scale();
+        Vector2 img_scale = img_comp->get_scale();
+        Vector2 scale = Vector2(tr_scale.x * img_scale.x, tr_scale.y * img_scale.y);
 
         SDL_FRect dst{
             screen_position.x,
             screen_position.y,
-            static_cast<float>(texture_width) * render_data.scale.x,
-            static_cast<float>(texture_height) * render_data.scale.y,
+            static_cast<float>(texture_width) * scale.x,
+            static_cast<float>(texture_height) * scale.y,
         };
 
         SDL_RenderCopyF(m_sdl_context.get_renderer(), texture, nullptr, &dst);
     }
-
-    m_render_queue.clear();
 
     // Render debug draws
     debug::render_debug_draws(m_sdl_context.get_renderer(), m_assets.get_white_pixel_texture(), camera_component);

@@ -53,26 +53,3 @@ Color Color::orange() {
 std::string Color::to_string() const {
     return fmt::format("({}, {}, {}, {})", r, g, b, a);
 }
-
-
-RenderData::RenderData(TextureId texture_id_,
-                       const Vector2& position_,
-                       const Vector2& prev_position_,
-                       const Vector2& scale_)
-    : texture_id(texture_id_)
-      , position(position_)
-      , prev_position(prev_position_)
-      , scale(scale_) {
-}
-
-void RenderQueue::enqueue(const RenderData& data) {
-    m_render_data.push_back(data);
-}
-
-void RenderQueue::clear() {
-    m_render_data.clear();
-}
-
-std::span<RenderData const> RenderQueue::get_render_data() const {
-    return m_render_data;
-}

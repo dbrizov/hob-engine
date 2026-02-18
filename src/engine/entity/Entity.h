@@ -51,7 +51,7 @@ public:
     void exit_play();
     void tick(float delta_time);
     void physics_tick(float fixed_delta_time);
-    void render_tick(float delta_time, RenderQueue& render_queue);
+    void debug_draw_tick(float delta_time);
 
     App& get_app() const;
 
