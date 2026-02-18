@@ -121,16 +121,16 @@ void App::render_frame(const std::vector<const Entity*>& entities) {
 
         Vector2 img_pivot = img_comp->get_pivot();
 
+        Vector2 tr_scale = tr_comp->get_scale();
+        Vector2 img_scale = img_comp->get_scale();
+        Vector2 scale = Vector2(tr_scale.x * img_scale.x, tr_scale.y * img_scale.y);
+
         Vector2 world_position = Vector2::lerp(
             tr_comp->get_prev_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
 
         Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
-        screen_position.x -= texture_width * img_pivot.x;
-        screen_position.y -= texture_height * img_pivot.y;
-
-        Vector2 tr_scale = tr_comp->get_scale();
-        Vector2 img_scale = img_comp->get_scale();
-        Vector2 scale = Vector2(tr_scale.x * img_scale.x, tr_scale.y * img_scale.y);
+        screen_position.x -= texture_width * img_pivot.x * scale.x;
+        screen_position.y -= texture_height * img_pivot.y * scale.y;
 
         SDL_FRect dst{
             screen_position.x,
