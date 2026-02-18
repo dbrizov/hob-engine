@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "App.h"
+#include "engine/components/ColliderComponent.h"
 #include "engine/components/RigidbodyComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/entity/Entity.h"
@@ -39,18 +40,6 @@ Physics::Physics(const PhysicsConfig& physics_config)
       , m_interpolation_enabled(physics_config.interpolation_enabled) {
 }
 
-const PhysicsWorld& Physics::get_physics_world() const {
-    return m_physics_world;
-}
-
-float Physics::get_fixed_delta_time() const {
-    return m_fixed_delta_time;
-}
-
-float Physics::get_interpolation_fraction() const {
-    return m_interpolation_fraction;
-}
-
 void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {
     m_accumulator += frame_delta_time;
     while (m_accumulator >= m_fixed_delta_time) {
@@ -63,6 +52,10 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
 
         // Tick the physics world
         m_physics_world.tick(m_fixed_delta_time, m_sub_steps_per_tick);
+
+        // Dispatch events
+        dispatch_collision_events();
+        dispatch_trigger_events();
 
         // Sync transforms for all rigidbodies
         for (Entity* entity : entities) {
@@ -84,6 +77,18 @@ void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& 
     m_interpolation_fraction = m_interpolation_enabled ? (m_accumulator / m_fixed_delta_time) : 1.0f;
 }
 
+const PhysicsWorld& Physics::get_physics_world() const {
+    return m_physics_world;
+}
+
+float Physics::get_fixed_delta_time() const {
+    return m_fixed_delta_time;
+}
+
+float Physics::get_interpolation_fraction() const {
+    return m_interpolation_fraction;
+}
+
 Vector2 Physics::b2Vec2_to_vec2(const b2Vec2& vec) {
     return Vector2(vec.x, vec.y);
 }
@@ -98,6 +103,86 @@ float Physics::b2Rot_to_radians(const b2Rot& rot) {
 
 b2Rot Physics::radians_to_b2Rot(float radians) {
     return b2MakeRot(radians);
+}
+
+void Physics::dispatch_collision_events() const {
+    b2ContactEvents contact_events = b2World_GetContactEvents(m_physics_world.get_id());
+
+    // Dispatch on_collision_enter
+    for (int i = 0; i < contact_events.beginCount; ++i) {
+        const b2ContactBeginTouchEvent& ev = contact_events.beginEvents[i];
+
+        if (!b2Shape_IsValid(ev.shapeIdA) || !b2Shape_IsValid(ev.shapeIdB)) {
+            continue;
+        }
+
+        const auto* collider_a = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.shapeIdA));
+        const auto* collider_b = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.shapeIdB));
+
+        Entity& entity_a = collider_a->get_entity();
+        Entity& entity_b = collider_b->get_entity();
+
+        entity_a.on_collision_enter(collider_b);
+        entity_b.on_collision_enter(collider_a);
+    }
+
+    // Dispatch on_collision_exit
+    for (int i = 0; i < contact_events.endCount; ++i) {
+        const b2ContactEndTouchEvent& ev = contact_events.endEvents[i];
+
+        if (!b2Shape_IsValid(ev.shapeIdA) || !b2Shape_IsValid(ev.shapeIdB)) {
+            continue;
+        }
+
+        const auto* collider_a = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.shapeIdA));
+        const auto* collider_b = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.shapeIdB));
+
+        Entity& entity_a = collider_a->get_entity();
+        Entity& entity_b = collider_b->get_entity();
+
+        entity_a.on_collision_exit(collider_b);
+        entity_b.on_collision_exit(collider_a);
+    }
+}
+
+void Physics::dispatch_trigger_events() const {
+    b2SensorEvents sensor_events = b2World_GetSensorEvents(m_physics_world.get_id());
+
+    // Dispatch on_trigger_enter
+    for (int i = 0; i < sensor_events.beginCount; ++i) {
+        const b2SensorBeginTouchEvent& ev = sensor_events.beginEvents[i];
+
+        if (!b2Shape_IsValid(ev.sensorShapeId) || !b2Shape_IsValid(ev.visitorShapeId)) {
+            continue;
+        }
+
+        const auto* trigger_collider = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.sensorShapeId));
+        const auto* visitor_collider = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.visitorShapeId));
+
+        Entity& trigger_entity = trigger_collider->get_entity();
+        Entity& visitor_entity = visitor_collider->get_entity();
+
+        trigger_entity.on_trigger_enter(visitor_collider);
+        visitor_entity.on_trigger_enter(trigger_collider);
+    }
+
+    // Dispatch on_trigger_exit
+    for (int i = 0; i < sensor_events.endCount; ++i) {
+        const b2SensorEndTouchEvent& ev = sensor_events.endEvents[i];
+
+        if (!b2Shape_IsValid(ev.sensorShapeId) || !b2Shape_IsValid(ev.visitorShapeId)) {
+            continue;
+        }
+
+        const auto* trigger_collider = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.sensorShapeId));
+        const auto* visitor_collider = static_cast<ColliderComponent*>(b2Shape_GetUserData(ev.visitorShapeId));
+
+        Entity& trigger_entity = trigger_collider->get_entity();
+        Entity& visitor_entity = visitor_collider->get_entity();
+
+        trigger_entity.on_trigger_exit(visitor_collider);
+        visitor_entity.on_trigger_exit(trigger_collider);
+    }
 }
 
 float Physics::delta_time_from_ticks(uint32_t ticks_per_second) {

@@ -1,7 +1,10 @@
 #include "PlayerComponent.h"
 
+#include <fmt/base.h>
+
 #include "engine/components/CameraComponent.h"
 #include "engine/components/CharacterBodyComponent.h"
+#include "engine/components/ColliderComponent.h"
 #include "engine/components/TransformComponent.h"
 #include "engine/core/App.h"
 #include "engine/core/Debug.h"
@@ -45,6 +48,22 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
     // TODO The camera position is not accurate, because the physics hasn't update the transform's position yet
     Vector2 position = get_entity().get_transform()->get_position();
     update_camera_position(position, fixed_delta_time);
+}
+
+void PlayerComponent::on_collision_enter(const ColliderComponent* other_collider) {
+    fmt::println("collision_enter: {}", other_collider->get_entity().get_id());
+}
+
+void PlayerComponent::on_collision_exit(const ColliderComponent* other_collider) {
+    fmt::println("collision_exit: {}", other_collider->get_entity().get_id());
+}
+
+void PlayerComponent::on_trigger_enter(const ColliderComponent* other_collider) {
+    fmt::println("trigger_enter: {}", other_collider->get_entity().get_id());
+}
+
+void PlayerComponent::on_trigger_exit(const ColliderComponent* other_collider) {
+    fmt::println("trigger_exit: {}", other_collider->get_entity().get_id());
 }
 
 void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {

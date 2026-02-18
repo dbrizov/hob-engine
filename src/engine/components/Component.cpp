@@ -32,3 +32,15 @@ void Component::physics_tick(float fixed_delta_time) {
 
 void Component::debug_draw_tick(float delta_time) {
 }
+
+void Component::on_collision_enter(const ColliderComponent* other_collider) {
+}
+
+void Component::on_collision_exit(const ColliderComponent* other_collider) {
+}
+
+void Component::on_trigger_enter(const ColliderComponent* other_collider) {
+}
+
+void Component::on_trigger_exit(const ColliderComponent* other_collider) {
+}

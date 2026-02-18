@@ -39,6 +39,30 @@ void Entity::debug_draw_tick(float delta_time) {
     }
 }
 
+void Entity::on_collision_enter(const ColliderComponent* other_collider) {
+    for (auto& component : m_components) {
+        component->on_collision_enter(other_collider);
+    }
+}
+
+void Entity::on_collision_exit(const ColliderComponent* other_collider) {
+    for (auto& component : m_components) {
+        component->on_collision_exit(other_collider);
+    }
+}
+
+void Entity::on_trigger_enter(const ColliderComponent* other_collider) {
+    for (auto& component : m_components) {
+        component->on_trigger_enter(other_collider);
+    }
+}
+
+void Entity::on_trigger_exit(const ColliderComponent* other_collider) {
+    for (auto& component : m_components) {
+        component->on_trigger_exit(other_collider);
+    }
+}
+
 App& Entity::get_app() const {
     return m_app;
 }

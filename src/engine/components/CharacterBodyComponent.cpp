@@ -118,7 +118,12 @@ bool CharacterBodyComponent::plane_result_callback(b2ShapeId other_shape_id,
 
     bool plane_hit = plane_result != nullptr && plane_result->hit;
     if (!plane_hit) {
-        return true; // we didn't hit a plane - keep searching
+        return true; // no hit - keep searching
+    }
+
+    bool other_shape_is_sensor = b2Shape_IsSensor(other_shape_id);
+    if (other_shape_is_sensor) {
+        return true; // overlap with sensor/trigger - keep searching
     }
 
     // Check for collision with self.

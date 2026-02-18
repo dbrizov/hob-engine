@@ -35,12 +35,12 @@ class Physics {
 public:
     explicit Physics(const PhysicsConfig& physics_config);
 
+    void tick_entities(float frame_delta_time, const std::vector<Entity*>& entities);
+
     const PhysicsWorld& get_physics_world() const;
 
     float get_fixed_delta_time() const;
     float get_interpolation_fraction() const;
-
-    void tick_entities(float frame_delta_time, const std::vector<Entity*>& entities);
 
     static Vector2 b2Vec2_to_vec2(const b2Vec2& vec);
     static b2Vec2 vec2_to_b2Vec2(const Vector2& vec);
@@ -49,6 +49,9 @@ public:
     static b2Rot radians_to_b2Rot(float radians);
 
 private:
+    void dispatch_collision_events() const;
+    void dispatch_trigger_events() const;
+
     static float delta_time_from_ticks(uint32_t ticks_per_second);
 };
 

@@ -15,6 +15,10 @@ void ColliderComponent::enter_play() {
     assert(rigidbody != nullptr && rigidbody->has_body() && "Collider requires a Rigidbody to function");
 
     m_shape_id = create_shape();
+
+    b2Shape_SetUserData(m_shape_id, this);
+    b2Shape_EnableSensorEvents(m_shape_id, true);
+    b2Shape_EnableContactEvents(m_shape_id, !m_is_trigger); // only enable contact events if it's NOT a sensor (trigger)
 }
 
 void ColliderComponent::exit_play() {
@@ -25,18 +29,23 @@ void ColliderComponent::exit_play() {
 }
 
 void ColliderComponent::debug_draw_tick(float delta_time) {
-    BodyType body_type = get_entity().get_rigidbody()->get_body_type();
     Color color;
-    switch (body_type) {
-        case BodyType::STATIC:
-            color = Color::red();
-            break;
-        case BodyType::DYNAMIC:
-            color = Color::green();
-            break;
-        case BodyType::KINEMATIC:
-            color = Color::yellow();
-            break;
+    if (m_is_trigger) {
+        color = Color::cyan();
+    }
+    else {
+        BodyType body_type = get_entity().get_rigidbody()->get_body_type();
+        switch (body_type) {
+            case BodyType::STATIC:
+                color = Color::red();
+                break;
+            case BodyType::DYNAMIC:
+                color = Color::green();
+                break;
+            case BodyType::KINEMATIC:
+                color = Color::yellow();
+                break;
+        }
     }
 
     debug_draw_shape(color);

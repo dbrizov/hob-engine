@@ -19,6 +19,10 @@ public:
     virtual void enter_play() override;
     virtual void exit_play() override;
     virtual void physics_tick(float fixed_delta_time) override;
+    virtual void on_collision_enter(const ColliderComponent* other_collider) override;
+    virtual void on_collision_exit(const ColliderComponent* other_collider) override;
+    virtual void on_trigger_enter(const ColliderComponent* other_collider) override;
+    virtual void on_trigger_exit(const ColliderComponent* other_collider) override;
 
 private:
     void update_camera_position(const Vector2& target_position, float fixed_delta_time);

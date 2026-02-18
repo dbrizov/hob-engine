@@ -8,6 +8,7 @@
 #include "engine/components/Component.h"
 
 
+class ColliderComponent;
 class RigidbodyComponent;
 class TransformComponent;
 class App;
@@ -52,6 +53,10 @@ public:
     void tick(float delta_time);
     void physics_tick(float fixed_delta_time);
     void debug_draw_tick(float delta_time);
+    void on_collision_enter(const ColliderComponent* other_collider);
+    void on_collision_exit(const ColliderComponent* other_collider);
+    void on_trigger_enter(const ColliderComponent* other_collider);
+    void on_trigger_exit(const ColliderComponent* other_collider);
 
     App& get_app() const;
 

@@ -9,6 +9,7 @@
 #include "engine/core/App.h"
 #include "engine/core/PathUtils.h"
 #include "engine/entity/Entity.h"
+#include "game/ContactLoggerComponent.h"
 #include "game/PlayerComponent.h"
 
 const std::string WINDOW_TITLE = "SDL2 Window";
@@ -28,6 +29,7 @@ constexpr bool PHYSICS_INTERPOLATION_ENABLED = false;
 constexpr uint64_t COLLISION_BIT_STATIC = 1u << 0;
 constexpr uint64_t COLLISION_BIT_DYNAMIC = 1u << 1;
 constexpr uint64_t COLLISION_BIT_KINEMATIC = 1u << 2;
+constexpr uint64_t COLLISION_BIT_TRIGGER = 1u << 3;
 
 Entity& spawn_player_entity(App& app, const Vector2& position) {
     Entity& entity = app.get_entity_spawner().spawn_entity();
@@ -39,13 +41,7 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
 
     CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
-    character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC);
-
-    // ImageComponent* image_component = entity.add_component<ImageComponent>();
-    // const std::filesystem::path path =
-    //     PathUtils::get_assets_root_path() / "images" / "robot.png";
-    // const TextureId texture_id = app.get_assets().load_texture(path);
-    // image_component->set_texture_id(texture_id);
+    character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
 
     return entity;
 }
@@ -57,7 +53,9 @@ Entity& spawn_enemy_entity(App& app, const Vector2& position) {
 
     CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
-    character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC);
+    character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
+
+    entity.add_component<ContactLoggerComponent>();
 
     return entity;
 }
@@ -74,6 +72,8 @@ Entity& spawn_static_box(App& app, const Vector2& position, float rotation_degre
     box_collider->set_collision_layer(COLLISION_BIT_STATIC);
     box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
 
+    // entity.add_component<ContactLoggerComponent>();
+
     return entity;
 }
 
@@ -88,13 +88,33 @@ Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degr
 
     BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
     box_collider->set_collision_layer(COLLISION_BIT_DYNAMIC);
-    box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
+    box_collider->set_collision_mask(
+        COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC | COLLISION_BIT_TRIGGER);
 
     ImageComponent* image_component = entity.add_component<ImageComponent>();
     const std::filesystem::path path =
         PathUtils::get_assets_root_path() / "images" / "robot.png";
     const TextureId texture_id = app.get_assets().load_texture(path);
     image_component->set_texture_id(texture_id);
+
+    entity.add_component<ContactLoggerComponent>();
+
+    return entity;
+}
+
+Entity& spawn_trigger_box(App& app, const Vector2& position, float rotation_degrees) {
+    Entity& entity = app.get_entity_spawner().spawn_entity();
+    entity.get_transform()->set_position(position);
+    entity.get_transform()->set_rotation_degrees(rotation_degrees);
+
+    entity.add_component<RigidbodyComponent>();
+
+    BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
+    box_collider->set_trigger(true);
+    box_collider->set_collision_layer(COLLISION_BIT_TRIGGER);
+    box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
+
+    entity.add_component<ContactLoggerComponent>();
 
     return entity;
 }
@@ -126,7 +146,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    spawn_player_entity(app, Vector2(0.0f, 0.0f));
+    spawn_player_entity(app, Vector2(-2.0f, 0.0f));
     // spawn_enemy_entity(app, Vector2(2.0f, 0.0f));
 
     // floor
@@ -162,12 +182,15 @@ int main(int argc, char* argv[]) {
     spawn_static_box(app, Vector2(-5.0f, 4.0f), 0.0f);
 
     // dynamic boxes
-    spawn_dynamic_box(app, Vector2(-3.0f, 3.0f), 60.0f);
-    spawn_dynamic_box(app, Vector2(-2.0f, 0.0f), 0.0f);
-    spawn_dynamic_box(app, Vector2(1.0f, 1.5f), 30.0f);
-    spawn_dynamic_box(app, Vector2(0.0f, 3.0f), 40.0f);
-    spawn_dynamic_box(app, Vector2(1.0f, 4.5f), 0.0f);
-    spawn_dynamic_box(app, Vector2(2.0f, 6.0f), -10.0f);
+    // spawn_dynamic_box(app, Vector2(-3.0f, 3.0f), 60.0f);
+    // spawn_dynamic_box(app, Vector2(-2.0f, 0.0f), 0.0f);
+    // spawn_dynamic_box(app, Vector2(1.0f, 1.5f), 30.0f);
+    spawn_dynamic_box(app, Vector2(-2.0f, 3.0f), 40.0f);
+    // spawn_dynamic_box(app, Vector2(1.0f, 4.5f), 0.0f);
+    // spawn_dynamic_box(app, Vector2(2.0f, 6.0f), -10.0f);
+
+    // trigger boxes
+    spawn_trigger_box(app, Vector2(0.0f, 1.0f), 0.0f);
 
     app.run();
 

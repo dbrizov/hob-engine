@@ -3,7 +3,7 @@
 
 
 class App;
-class RenderQueue;
+class ColliderComponent;
 class Entity;
 
 
@@ -34,6 +34,10 @@ public:
     virtual void tick(float delta_time);
     virtual void physics_tick(float fixed_delta_time);
     virtual void debug_draw_tick(float delta_time);
+    virtual void on_collision_enter(const ColliderComponent* other_collider);
+    virtual void on_collision_exit(const ColliderComponent* other_collider);
+    virtual void on_trigger_enter(const ColliderComponent* other_collider);
+    virtual void on_trigger_exit(const ColliderComponent* other_collider);
 };
 
 

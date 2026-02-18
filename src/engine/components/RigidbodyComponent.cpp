@@ -35,6 +35,8 @@ void RigidbodyComponent::enter_play() {
 
     const PhysicsWorld& physics_world = get_app().get_physics().get_physics_world();
     m_body_id = b2CreateBody(physics_world.get_id(), &body_def);
+
+    b2Body_SetUserData(m_body_id, this);
 }
 
 void RigidbodyComponent::exit_play() {
