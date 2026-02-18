@@ -119,9 +119,14 @@ void App::render_frame(const std::vector<const Entity*>& entities) {
         int texture_height = 0;
         SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
 
+        Vector2 img_pivot = img_comp->get_pivot();
+
         Vector2 world_position = Vector2::lerp(
             tr_comp->get_prev_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
+
         Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
+        screen_position.x -= texture_width * img_pivot.x;
+        screen_position.y -= texture_height * img_pivot.y;
 
         Vector2 tr_scale = tr_comp->get_scale();
         Vector2 img_scale = img_comp->get_scale();
@@ -134,7 +139,14 @@ void App::render_frame(const std::vector<const Entity*>& entities) {
             static_cast<float>(texture_height) * scale.y,
         };
 
-        SDL_RenderCopyF(m_sdl_context.get_renderer(), texture, nullptr, &dst);
+        SDL_FPoint pivot = {
+            dst.w * img_pivot.x,
+            dst.h * img_pivot.y
+        };
+
+        float angle = -tr_comp->get_rotation_degrees();
+
+        SDL_RenderCopyExF(m_sdl_context.get_renderer(), texture, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
     }
 
     // Render debug draws

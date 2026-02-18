@@ -2,7 +2,6 @@
 
 #include "TransformComponent.h"
 #include "engine/core/Render.h"
-#include "engine/entity/Entity.h"
 
 ImageComponent::ImageComponent(Entity& entity)
     : Component(entity) {
@@ -20,10 +19,18 @@ void ImageComponent::set_texture_id(TextureId texture_id) {
     m_texture_id = texture_id;
 }
 
+Vector2 ImageComponent::get_pivot() const {
+    return m_pivot;
+}
+
+void ImageComponent::set_pivot(const Vector2& pivot) {
+    m_pivot = pivot;
+}
+
 Vector2 ImageComponent::get_scale() const {
     return m_scale;
 }
 
-void ImageComponent::set_scale(Vector2 scale) {
+void ImageComponent::set_scale(const Vector2& scale) {
     m_scale = scale;
 }
