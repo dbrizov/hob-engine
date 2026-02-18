@@ -18,7 +18,7 @@ constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH;
 constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT;
 constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
-constexpr float PIXELS_PER_METER = 64.0f;
+constexpr uint32_t PIXELS_PER_METER = 64;
 
 const Vector2 PHYSICS_GRAVITY = Vector2(0.0f, -9.81f);
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
@@ -41,11 +41,11 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC);
 
-    // ImageComponent* image_component = entity.add_component<ImageComponent>();
-    // const std::filesystem::path path =
-    //     PathUtils::get_assets_root_path() / "images" / "entities" / "player" / "idle" / "00.png";
-    // const TextureId texture_id = app.get_assets().load_texture(path);
-    // image_component->set_texture_id(texture_id);
+    ImageComponent* image_component = entity.add_component<ImageComponent>();
+    const std::filesystem::path path =
+        PathUtils::get_assets_root_path() / "images" / "robot.png";
+    const TextureId texture_id = app.get_assets().load_texture(path);
+    image_component->set_texture_id(texture_id);
 
     return entity;
 }
