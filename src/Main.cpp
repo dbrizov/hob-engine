@@ -41,11 +41,11 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC);
 
-    ImageComponent* image_component = entity.add_component<ImageComponent>();
-    const std::filesystem::path path =
-        PathUtils::get_assets_root_path() / "images" / "robot.png";
-    const TextureId texture_id = app.get_assets().load_texture(path);
-    image_component->set_texture_id(texture_id);
+    // ImageComponent* image_component = entity.add_component<ImageComponent>();
+    // const std::filesystem::path path =
+    //     PathUtils::get_assets_root_path() / "images" / "robot.png";
+    // const TextureId texture_id = app.get_assets().load_texture(path);
+    // image_component->set_texture_id(texture_id);
 
     return entity;
 }
@@ -89,6 +89,12 @@ Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degr
     BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
     box_collider->set_collision_layer(COLLISION_BIT_DYNAMIC);
     box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
+
+    ImageComponent* image_component = entity.add_component<ImageComponent>();
+    const std::filesystem::path path =
+        PathUtils::get_assets_root_path() / "images" / "robot.png";
+    const TextureId texture_id = app.get_assets().load_texture(path);
+    image_component->set_texture_id(texture_id);
 
     return entity;
 }
