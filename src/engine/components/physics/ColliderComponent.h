@@ -1,6 +1,7 @@
 #ifndef HOB_ENGINE_COLLIDERCOMPONENT_H
 #define HOB_ENGINE_COLLIDERCOMPONENT_H
 #include <box2d/id.h>
+#include <box2d/types.h>
 
 #include "engine/components/Component.h"
 
@@ -9,7 +10,6 @@ struct Color;
 
 
 class ColliderComponent : public Component {
-protected:
     b2ShapeId m_shape_id = b2_nullShapeId;
     float m_density = 1.0f; // In kg/m^2. A body's mass = density * area
     float m_friction = 0.6f; // In range [0, 1]
@@ -47,7 +47,7 @@ public:
     void set_trigger(bool trigger);
 
 protected:
-    virtual b2ShapeId create_shape() = 0;
+    virtual b2ShapeId create_shape(const b2ShapeDef& shape_def) = 0;
     virtual void debug_draw_shape(const Color& color) const = 0;
 };
 

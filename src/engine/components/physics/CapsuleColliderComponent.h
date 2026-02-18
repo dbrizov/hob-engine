@@ -17,7 +17,7 @@ public:
     void set_capsule(const Capsule& capsule);
 
 protected:
-    virtual b2ShapeId create_shape() override;
+    virtual b2ShapeId create_shape(const b2ShapeDef& shape_def) override;
     virtual void debug_draw_shape(const Color& color) const override;
 };
 

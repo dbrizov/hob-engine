@@ -20,19 +20,11 @@ void CapsuleColliderComponent::set_capsule(const Capsule& capsule) {
     m_capsule = capsule;
 }
 
-b2ShapeId CapsuleColliderComponent::create_shape() {
+b2ShapeId CapsuleColliderComponent::create_shape(const b2ShapeDef& shape_def) {
     b2Capsule b2_capsule;
     b2_capsule.center1 = Physics::vec2_to_b2Vec2(m_capsule.center_a);
     b2_capsule.center2 = Physics::vec2_to_b2Vec2(m_capsule.center_b);
     b2_capsule.radius = m_capsule.radius;
-
-    b2ShapeDef shape_def = b2DefaultShapeDef();
-    shape_def.density = m_density;
-    shape_def.material.friction = m_friction;
-    shape_def.material.restitution = m_bounciness;
-    shape_def.filter.categoryBits = m_collision_layer;
-    shape_def.filter.maskBits = m_collision_mask;
-    shape_def.isSensor = m_is_trigger;
 
     b2ShapeId shape_id = b2CreateCapsuleShape(get_body_id(), &shape_def, &b2_capsule);
     return shape_id;

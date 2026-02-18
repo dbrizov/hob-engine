@@ -14,7 +14,15 @@ void ColliderComponent::enter_play() {
     const RigidbodyComponent* rigidbody = get_entity().get_rigidbody();
     assert(rigidbody != nullptr && rigidbody->has_body() && "Collider requires a Rigidbody to function");
 
-    m_shape_id = create_shape();
+    b2ShapeDef shape_def = b2DefaultShapeDef();
+    shape_def.density = m_density;
+    shape_def.material.friction = m_friction;
+    shape_def.material.restitution = m_bounciness;
+    shape_def.filter.categoryBits = m_collision_layer;
+    shape_def.filter.maskBits = m_collision_mask;
+    shape_def.isSensor = m_is_trigger;
+
+    m_shape_id = create_shape(shape_def);
 
     b2Shape_SetUserData(m_shape_id, this);
     b2Shape_EnableSensorEvents(m_shape_id, true);

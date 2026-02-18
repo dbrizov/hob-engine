@@ -20,16 +20,8 @@ void BoxColliderComponent::set_aabb(const AABB& aabb) {
     m_aabb = aabb;
 }
 
-b2ShapeId BoxColliderComponent::create_shape() {
+b2ShapeId BoxColliderComponent::create_shape(const b2ShapeDef& shape_def) {
     b2Polygon box = b2MakeBox(m_aabb.extents.x, m_aabb.extents.y);
-    b2ShapeDef shape_def = b2DefaultShapeDef();
-    shape_def.density = m_density;
-    shape_def.material.friction = m_friction;
-    shape_def.material.restitution = m_bounciness;
-    shape_def.filter.categoryBits = m_collision_layer;
-    shape_def.filter.maskBits = m_collision_mask;
-    shape_def.isSensor = m_is_trigger;
-
     b2ShapeId shape_id = b2CreatePolygonShape(get_body_id(), &shape_def, &box);
     return shape_id;
 }
