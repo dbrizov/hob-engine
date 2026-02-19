@@ -42,7 +42,11 @@ void PlayerComponent::physics_tick(float fixed_delta_time) {
     }
 
     Vector2 velocity = movement_input * m_speed;
-    get_entity().get_component<CharacterBodyComponent>()->move_and_slide(velocity, fixed_delta_time);
+    CharacterBodyComponent* character_body = get_entity().get_component<CharacterBodyComponent>();
+    character_body->move_and_slide(velocity, fixed_delta_time);
+
+    // Vector2 actual_velocity = character_body->get_velocity();
+    // fmt::println("velocity: {}", actual_velocity.to_string());
 
     // TODO The camera position is not accurate, because the physics hasn't update the transform's position yet
     Vector2 position = get_entity().get_transform()->get_position();

@@ -35,6 +35,21 @@ void CharacterBodyComponent::set_collision_mask(uint64_t collision_mask) {
     m_capsule_collider->set_collision_mask(collision_mask);
 }
 
+uint64_t CharacterBodyComponent::get_solver_ignore_mask() const {
+    return m_solver_ignore_mask;
+}
+
+void CharacterBodyComponent::set_solver_ignore_mask(uint64_t solver_ignore_mask) {
+    m_solver_ignore_mask = solver_ignore_mask;
+}
+
+Vector2 CharacterBodyComponent::get_velocity() const {
+    b2Vec2 b2_velocity = b2Body_GetLinearVelocity(m_rigidbody->get_body_id());
+    Vector2 velocity = Physics::b2Vec2_to_vec2(b2_velocity);
+
+    return velocity;
+}
+
 void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, float delta_time) {
     Vector2 delta_pos = desired_velocity * delta_time;
     if (delta_pos.length_sqr() < EPSILON) {
@@ -45,7 +60,7 @@ void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, flo
     // Solver data
     b2QueryFilter collision_filter = b2DefaultQueryFilter();
     collision_filter.categoryBits = get_collision_layer();
-    collision_filter.maskBits = get_collision_mask();
+    collision_filter.maskBits = get_collision_mask() & ~m_solver_ignore_mask;
 
     Capsule local_capsule = m_capsule_collider->get_capsule();
 

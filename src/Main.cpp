@@ -42,6 +42,7 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
     CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
+    character_body->set_solver_ignore_mask(COLLISION_BIT_TRIGGER);
 
     return entity;
 }
@@ -54,6 +55,7 @@ Entity& spawn_enemy_entity(App& app, const Vector2& position) {
     CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
+    character_body->set_solver_ignore_mask(COLLISION_BIT_TRIGGER);
 
     entity.add_component<ContactLoggerComponent>();
 
