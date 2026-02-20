@@ -10,7 +10,7 @@ ImGuiSystem::ImGuiSystem(SDL_Window* window, SDL_Renderer* renderer)
       , m_context(nullptr)
       , m_window(window)
       , m_renderer(renderer) {
-    if (m_window == nullptr || m_renderer == nullptr) {
+    if (!m_window || !m_renderer) {
         fmt::println(stderr, "ImGuiSystem init failed: window/renderer is null");
         return;
     }
