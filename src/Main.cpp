@@ -57,7 +57,7 @@ Entity& spawn_enemy_entity(App& app, const Vector2& position) {
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
     character_body->set_solver_ignore_mask(COLLISION_BIT_TRIGGER);
 
-    entity.add_component<ContactLoggerComponent>();
+    // entity.add_component<ContactLoggerComponent>();
 
     return entity;
 }
@@ -99,7 +99,7 @@ Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degr
     const TextureId texture_id = app.get_assets().load_texture(path);
     image_component->set_texture_id(texture_id);
 
-    entity.add_component<ContactLoggerComponent>();
+    // entity.add_component<ContactLoggerComponent>();
 
     return entity;
 }
@@ -116,7 +116,7 @@ Entity& spawn_trigger_box(App& app, const Vector2& position, float rotation_degr
     box_collider->set_collision_layer(COLLISION_BIT_TRIGGER);
     box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
 
-    entity.add_component<ContactLoggerComponent>();
+    // entity.add_component<ContactLoggerComponent>();
 
     return entity;
 }
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
     }
 
     spawn_player_entity(app, Vector2(-2.0f, 0.0f));
-    spawn_enemy_entity(app, Vector2(2.0f, 0.0f));
+    // spawn_enemy_entity(app, Vector2(2.0f, 0.0f));
 
     // floor
     spawn_static_box(app, Vector2(-4.0f, -3.0f), 0.0f);

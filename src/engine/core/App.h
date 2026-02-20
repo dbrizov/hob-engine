@@ -1,6 +1,7 @@
 #ifndef HOB_ENGINE_APP_H
 #define HOB_ENGINE_APP_H
 #include "Assets.h"
+#include "ImGuiSystem.h"
 #include "Input.h"
 #include "Physics.h"
 #include "Render.h"
@@ -45,6 +46,7 @@ class App {
     // SDL context must be declared first so it is destroyed last.
     // Objects below depend on SDL resources.
     SdlContext m_sdl_context;
+    ImGuiSystem m_imgui_system;
     Timer m_timer;
     Input m_input;
     Assets m_assets;
@@ -67,7 +69,7 @@ public:
     EntitySpawner& get_entity_spawner();
 
 private:
-    void render_frame(const std::vector<const Entity*>& entities);
+    void render_entities(const std::vector<const Entity*>& entities);
 };
 
 

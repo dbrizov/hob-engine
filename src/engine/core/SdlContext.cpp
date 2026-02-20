@@ -6,10 +6,7 @@
 
 #include "App.h"
 
-SdlContext::SdlContext(const GraphicsConfig& graphics_config)
-    : m_is_initialized(false)
-      , m_window(nullptr)
-      , m_renderer(nullptr) {
+SdlContext::SdlContext(const GraphicsConfig& graphics_config) {
     // SDL_Init
     int sld_init_flags = SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
     if (SDL_Init(sld_init_flags) != 0) {
@@ -100,4 +97,14 @@ SDL_Window* SdlContext::get_window() const {
 
 SDL_Renderer* SdlContext::get_renderer() const {
     return m_renderer;
+}
+
+void SdlContext::frame_start() {
+    SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(m_renderer, 43, 47, 119, 255);
+    SDL_RenderClear(m_renderer);
+}
+
+void SdlContext::frame_end() {
+    SDL_RenderPresent(m_renderer);
 }

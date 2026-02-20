@@ -2,8 +2,6 @@
 
 #include <SDL.h>
 #include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
 
 #include "Debug.h"
 #include "Timer.h"
@@ -14,18 +12,12 @@
 App::App(const AppConfig& config)
     : m_config(config)
       , m_sdl_context(config.graphics_config)
+      , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
       , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
       , m_input()
       , m_assets(m_sdl_context.get_renderer())
       , m_physics(config.physics_config)
       , m_entity_spawner(*this) {
-    // ImGui init
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplSDL2_InitForSDLRenderer(m_sdl_context.get_window(), m_sdl_context.get_renderer());
-    ImGui_ImplSDLRenderer2_Init(m_sdl_context.get_renderer());
 }
 
 void App::run() {
@@ -33,26 +25,33 @@ void App::run() {
     std::vector<Entity*> entities;
     std::vector<Entity*> ticking_entities;
     std::vector<Entity*> physics_entities;
-    std::vector<const Entity*> render_entities;
+    std::vector<const Entity*> renderable_entities;
 
     while (is_running) {
         m_timer.frame_start();
 
-        // Check for quit
+        // - Process events for the ImGuiSystem.
+        // - Check for quit.
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
+            m_imgui_system.process_event(event);
 
             if (event.type == SDL_QUIT) {
                 is_running = false;
             }
         }
 
+        // - The ImGuiSystem needs to start a new frame after the events polling
+        // so that it can take a valid snapshot of the current frame's events.
+        // - The SdlContext's frame_start() doesn't care about events, but I call it here for consistency.
+        m_sdl_context.frame_start();
+        m_imgui_system.frame_start();
+
         m_entity_spawner.resolve_requests();
         m_entity_spawner.get_entities(entities);
         m_entity_spawner.get_ticking_entities(ticking_entities);
         m_entity_spawner.get_physics_entities(physics_entities);
-        m_entity_spawner.get_render_entities(render_entities);
+        m_entity_spawner.get_renderable_entities(renderable_entities);
 
         const float delta_time = m_timer.get_delta_time();
         const float scaled_delta_time = delta_time * m_timer.get_time_scale();
@@ -76,34 +75,23 @@ void App::run() {
         }
 #endif
 
-        SDL_SetRenderDrawBlendMode(m_sdl_context.get_renderer(), SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 43, 47, 119, 255);
-        SDL_RenderClear(m_sdl_context.get_renderer());
+        render_entities(renderable_entities);
 
-        // ImGui start frame
-        ImGui_ImplSDLRenderer2_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
-
-        // ImGui test window
+        // TODO Remove ImGui test window
         ImGui::Begin("Test");
         ImGui::Text("Hello ImGui");
         ImGui::End();
 
-        // ImGui render
-        ImGui::Render();
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), m_sdl_context.get_renderer());
-
-        render_frame(render_entities);
-
-        SDL_RenderPresent(m_sdl_context.get_renderer());
+        m_imgui_system.frame_end();
+        m_sdl_context.frame_end();
 
         m_timer.frame_end();
     }
 }
 
 bool App::is_initialized() const {
-    return m_sdl_context.is_initialized();
+    return m_sdl_context.is_initialized() &&
+           m_imgui_system.is_initialized();
 }
 
 const AppConfig& App::get_config() const {
@@ -130,7 +118,7 @@ EntitySpawner& App::get_entity_spawner() {
     return m_entity_spawner;
 }
 
-void App::render_frame(const std::vector<const Entity*>& entities) {
+void App::render_entities(const std::vector<const Entity*>& entities) {
     // Render entities
     Entity* camera_entity = m_entity_spawner.get_camera_entity();
     CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();

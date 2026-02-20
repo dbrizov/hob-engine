@@ -8,9 +8,9 @@ struct SDL_Renderer;
 
 
 class SdlContext {
-    bool m_is_initialized;
-    SDL_Window* m_window;
-    SDL_Renderer* m_renderer;
+    bool m_is_initialized = false;
+    SDL_Window* m_window = nullptr;
+    SDL_Renderer* m_renderer = nullptr;
 
 public:
     explicit SdlContext(const GraphicsConfig& graphics_config);
@@ -25,6 +25,9 @@ public:
     bool is_initialized() const;
     SDL_Window* get_window() const;
     SDL_Renderer* get_renderer() const;
+
+    void frame_start();
+    void frame_end();
 };
 
 

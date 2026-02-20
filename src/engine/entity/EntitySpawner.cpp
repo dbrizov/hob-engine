@@ -101,7 +101,7 @@ void EntitySpawner::get_physics_entities(std::vector<Entity*>& out_entities) con
               });
 }
 
-void EntitySpawner::get_render_entities(std::vector<const Entity*>& out_entities) const {
+void EntitySpawner::get_renderable_entities(std::vector<const Entity*>& out_entities) const {
     out_entities.clear();
     out_entities.reserve(m_entities.size());
     for (const auto& entity : m_entities) {
