@@ -7,6 +7,19 @@
     "sdl2-ttf",
     "box2d",
     "nlohmann-json",
-    "fmt"
+    "fmt",
+    {
+      "name": "imgui",
+      "features": [
+        "sdl2-binding",
+        "sdl2-renderer-binding"
+      ]
+    }
+  ],
+  "overrides": [
+    {
+      "name": "imgui",
+      "version": "1.91.8#2"
+    }
   ]
 }

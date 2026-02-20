@@ -1,6 +1,9 @@
 #include "App.h"
 
 #include <SDL.h>
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
 
 #include "Debug.h"
 #include "Timer.h"
@@ -9,13 +12,20 @@
 #include "engine/components/TransformComponent.h"
 
 App::App(const AppConfig& config)
-    : m_config(config),
-      m_sdl_context(config.graphics_config)
+    : m_config(config)
+      , m_sdl_context(config.graphics_config)
       , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
       , m_input()
       , m_assets(m_sdl_context.get_renderer())
       , m_physics(config.physics_config)
       , m_entity_spawner(*this) {
+    // ImGui init
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplSDL2_InitForSDLRenderer(m_sdl_context.get_window(), m_sdl_context.get_renderer());
+    ImGui_ImplSDLRenderer2_Init(m_sdl_context.get_renderer());
 }
 
 void App::run() {
@@ -31,6 +41,8 @@ void App::run() {
         // Check for quit
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+
             if (event.type == SDL_QUIT) {
                 is_running = false;
             }
@@ -64,7 +76,27 @@ void App::run() {
         }
 #endif
 
+        SDL_SetRenderDrawBlendMode(m_sdl_context.get_renderer(), SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 43, 47, 119, 255);
+        SDL_RenderClear(m_sdl_context.get_renderer());
+
+        // ImGui start frame
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        // ImGui test window
+        ImGui::Begin("Test");
+        ImGui::Text("Hello ImGui");
+        ImGui::End();
+
+        // ImGui render
+        ImGui::Render();
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), m_sdl_context.get_renderer());
+
         render_frame(render_entities);
+
+        SDL_RenderPresent(m_sdl_context.get_renderer());
 
         m_timer.frame_end();
     }
@@ -99,10 +131,6 @@ EntitySpawner& App::get_entity_spawner() {
 }
 
 void App::render_frame(const std::vector<const Entity*>& entities) {
-    SDL_SetRenderDrawBlendMode(m_sdl_context.get_renderer(), SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(m_sdl_context.get_renderer(), 43, 47, 119, 255);
-    SDL_RenderClear(m_sdl_context.get_renderer());
-
     // Render entities
     Entity* camera_entity = m_entity_spawner.get_camera_entity();
     CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
@@ -118,6 +146,8 @@ void App::render_frame(const std::vector<const Entity*>& entities) {
         int texture_width = 0;
         int texture_height = 0;
         SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
+        float texture_width_f = static_cast<float>(texture_width);
+        float texture_height_f = static_cast<float>(texture_height);
 
         Vector2 img_pivot = img_comp->get_pivot();
 
@@ -129,14 +159,14 @@ void App::render_frame(const std::vector<const Entity*>& entities) {
             tr_comp->get_prev_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
 
         Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
-        screen_position.x -= texture_width * img_pivot.x * scale.x;
-        screen_position.y -= texture_height * img_pivot.y * scale.y;
+        screen_position.x -= texture_width_f * img_pivot.x * scale.x;
+        screen_position.y -= texture_height_f * img_pivot.y * scale.y;
 
         SDL_FRect dst{
             screen_position.x,
             screen_position.y,
-            static_cast<float>(texture_width) * scale.x,
-            static_cast<float>(texture_height) * scale.y,
+            texture_width_f * scale.x,
+            texture_height_f * scale.y,
         };
 
         SDL_FPoint pivot = {
@@ -151,6 +181,4 @@ void App::render_frame(const std::vector<const Entity*>& entities) {
 
     // Render debug draws
     debug::render_debug_draws(m_sdl_context.get_renderer(), m_assets.get_white_pixel_texture(), camera_component);
-
-    SDL_RenderPresent(m_sdl_context.get_renderer());
 }

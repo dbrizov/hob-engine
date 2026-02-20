@@ -64,10 +64,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 find_package(box2d CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE box2d::box2d)
 
-# Find nlohmann-json. It is header only, no linking needed.
+# Find and link nlohmann-json.
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 # Find and link fmt.
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+
+# Find and link imgui
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
