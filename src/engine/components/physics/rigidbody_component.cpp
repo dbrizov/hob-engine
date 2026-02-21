@@ -1,0 +1,73 @@
+#include "rigidbody_component.h"
+
+#include <box2d/box2d.h>
+
+#include "engine//components/transform_component.h"
+#include "engine/core/app.h"
+#include "engine/entity/entity.h"
+
+namespace hob {
+    RigidbodyComponent::RigidbodyComponent(Entity& entity)
+        : Component(entity) {
+    }
+
+    void RigidbodyComponent::enter_play() {
+        const TransformComponent* transform = get_entity().get_transform();
+        Vector2 position = transform->get_position();
+        float rotation_radians = transform->get_rotation_radians();
+
+        b2BodyDef body_def = b2DefaultBodyDef();
+        body_def.position = Physics::vec2_to_b2Vec2(position);
+        body_def.rotation = Physics::radians_to_b2Rot(rotation_radians);
+
+        switch (m_body_type) {
+            case BodyType::STATIC:
+                body_def.type = b2_staticBody;
+                break;
+            case BodyType::DYNAMIC:
+                body_def.type = b2_dynamicBody;
+                break;
+            case BodyType::KINEMATIC:
+                body_def.type = b2_kinematicBody;
+                break;
+        }
+
+        body_def.fixedRotation = m_has_fixed_rotation;
+
+        const PhysicsWorld& physics_world = get_app().get_physics().get_physics_world();
+        m_body_id = b2CreateBody(physics_world.get_id(), &body_def);
+
+        b2Body_SetUserData(m_body_id, this);
+    }
+
+    void RigidbodyComponent::exit_play() {
+        if (b2Body_IsValid(m_body_id)) {
+            b2DestroyBody(m_body_id);
+            m_body_id = b2_nullBodyId;
+        }
+    }
+
+    b2BodyId RigidbodyComponent::get_body_id() const {
+        return m_body_id;
+    }
+
+    bool RigidbodyComponent::has_body() const {
+        return b2Body_IsValid(m_body_id);
+    }
+
+    BodyType RigidbodyComponent::get_body_type() const {
+        return m_body_type;
+    }
+
+    void RigidbodyComponent::set_body_type(BodyType body_type) {
+        m_body_type = body_type;
+    }
+
+    bool RigidbodyComponent::has_fixed_rotation() const {
+        return m_has_fixed_rotation;
+    }
+
+    void RigidbodyComponent::set_fixed_rotation(bool has_fixed_rotation) {
+        m_has_fixed_rotation = has_fixed_rotation;
+    }
+}
