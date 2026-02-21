@@ -41,36 +41,29 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         "Copied config to $<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
 )
 
-# Find and link SDL2.
-find_package(SDL2 CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
-        $<IF:$<TARGET_EXISTS:SDL2::SDL2>, SDL2::SDL2, SDL2::SDL2-static>
-)
-
-# Find and link SDL2_image.
-find_package(SDL2_image CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>, SDL2_image::SDL2_image, SDL2_image::SDL2_image-static>
-)
-
-# Find and link SDL2_ttf.
-find_package(SDL2_ttf CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>, SDL2_ttf::SDL2_ttf, SDL2_ttf::SDL2_ttf-static>
-)
-
-# Find and link box2d.
-find_package(box2d CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE box2d::box2d)
+# Find and link fmt.
+find_package(fmt CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 
 # Find and link nlohmann-json.
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
-# Find and link fmt.
-find_package(fmt CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+# Find and link SDL3.
+find_package(SDL3 CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+
+# Find and link SDL3_image.
+find_package(SDL3_image CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3_image::SDL3_image)
+
+# Find and link SDL3_ttf.
+find_package(SDL3_ttf CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3_ttf::SDL3_ttf)
+
+# Find and link box2d.
+find_package(box2d CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE box2d::box2d)
 
 # Find and link imgui
 find_package(imgui CONFIG REQUIRED)

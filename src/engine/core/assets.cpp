@@ -1,7 +1,7 @@
 #include "assets.h"
 
-#include <SDL_image.h>
-#include <SDL_render.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3/SDL_render.h>
 #include <cassert>
 #include <fmt/base.h>
 
@@ -52,7 +52,7 @@ namespace hob {
     TextureId Assets::load_texture(const std::filesystem::path& path) {
         SDL_Texture* texture = IMG_LoadTexture(m_renderer, path.string().c_str());
         if (!texture) {
-            fmt::println(stderr, "IMG_LoadTexture failed: {}", IMG_GetError());
+            fmt::println(stderr, "IMG_LoadTexture failed: {}", SDL_GetError());
             return INVALID_TEXTURE_ID;
         }
 

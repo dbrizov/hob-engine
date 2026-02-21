@@ -1,6 +1,6 @@
 #include "debug.h"
 
-#include <SDL_render.h>
+#include <SDL3/SDL_render.h>
 #include <vector>
 
 #include "engine/components/camera_component.h"
@@ -46,7 +46,7 @@ namespace hob::debug {
             SDL_SetTextureAlphaMod(white_pixel_texture, line.color.a);
             SDL_SetTextureBlendMode(white_pixel_texture, SDL_BLENDMODE_BLEND);
 
-            SDL_RenderCopyExF(renderer, white_pixel_texture, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
+            SDL_RenderTextureRotated(renderer, white_pixel_texture, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
         }
 
         void sdl_draw_circle(SDL_Renderer* renderer,

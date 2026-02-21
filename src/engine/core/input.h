@@ -2,7 +2,7 @@
 #define HOB_ENGINE_INPUT_H
 #include <filesystem>
 #include <functional>
-#include <SDL_scancode.h>
+#include <SDL3/SDL_scancode.h>
 #include <bitset>
 #include <string>
 #include <unordered_map>
@@ -55,20 +55,20 @@ namespace hob {
         InputMappings m_input_mappings;
         std::unordered_map<std::string, float> m_axis_values;
         std::vector<SDL_Scancode> m_relevant_keys;
-        std::bitset<SDL_NUM_SCANCODES> m_pressed_keys_this_frame{};
-        std::bitset<SDL_NUM_SCANCODES> m_pressed_keys_last_frame{};
+        std::bitset<SDL_SCANCODE_COUNT> m_pressed_keys_this_frame{};
+        std::bitset<SDL_SCANCODE_COUNT> m_pressed_keys_last_frame{};
 
     public:
         Input();
 
-        void tick(float delta_time, const uint8_t* keyboard_state);
+        void tick(float delta_time, const bool* keyboard_state);
 
         InputEventHandlerId add_input_event_handler(InputEventHandler handler);
         bool remove_input_event_handler(InputEventHandlerId id);
 
     private:
         void dispatch_event(const InputEvent& event) const;
-        void update_pressed_keys(const uint8_t* keyboard_state);
+        void update_pressed_keys(const bool* keyboard_state);
     };
 }
 
