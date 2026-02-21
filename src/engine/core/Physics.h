@@ -6,54 +6,53 @@
 
 #include "engine/math/Vector2.h"
 
+namespace hob {
+    struct PhysicsConfig;
+    class Entity;
 
-struct PhysicsConfig;
-class Entity;
+    class PhysicsWorld {
+        b2WorldId m_id;
 
+    public:
+        explicit PhysicsWorld(const Vector2& gravity);
+        ~PhysicsWorld();
 
-class PhysicsWorld {
-    b2WorldId m_id;
+        void tick(float fixed_delta_time, uint32_t sub_steps = 4);
 
-public:
-    explicit PhysicsWorld(const Vector2& gravity);
-    ~PhysicsWorld();
+        b2WorldId get_id() const;
+    };
 
-    void tick(float fixed_delta_time, uint32_t sub_steps = 4);
+    class Physics {
+        PhysicsWorld m_physics_world;
+        float m_accumulator;
+        float m_fixed_delta_time;
+        uint32_t m_sub_steps_per_tick;
+        float m_interpolation_fraction;
+        bool m_interpolation_enabled;
 
-    b2WorldId get_id() const;
-};
+    public:
+        explicit Physics(const PhysicsConfig& physics_config);
 
+        void tick_entities(float frame_delta_time, const std::vector<Entity*>& entities);
 
-class Physics {
-    PhysicsWorld m_physics_world;
-    float m_accumulator;
-    float m_fixed_delta_time;
-    uint32_t m_sub_steps_per_tick;
-    float m_interpolation_fraction;
-    bool m_interpolation_enabled;
+        const PhysicsWorld& get_physics_world() const;
 
-public:
-    explicit Physics(const PhysicsConfig& physics_config);
+        float get_fixed_delta_time() const;
+        float get_interpolation_fraction() const;
 
-    void tick_entities(float frame_delta_time, const std::vector<Entity*>& entities);
+        static Vector2 b2Vec2_to_vec2(const b2Vec2& vec);
+        static b2Vec2 vec2_to_b2Vec2(const Vector2& vec);
 
-    const PhysicsWorld& get_physics_world() const;
+        static float b2Rot_to_radians(const b2Rot& rot);
+        static b2Rot radians_to_b2Rot(float radians);
 
-    float get_fixed_delta_time() const;
-    float get_interpolation_fraction() const;
+    private:
+        void dispatch_collision_events() const;
+        void dispatch_trigger_events() const;
 
-    static Vector2 b2Vec2_to_vec2(const b2Vec2& vec);
-    static b2Vec2 vec2_to_b2Vec2(const Vector2& vec);
-
-    static float b2Rot_to_radians(const b2Rot& rot);
-    static b2Rot radians_to_b2Rot(float radians);
-
-private:
-    void dispatch_collision_events() const;
-    void dispatch_trigger_events() const;
-
-    static float delta_time_from_ticks(uint32_t ticks_per_second);
-};
+        static float delta_time_from_ticks(uint32_t ticks_per_second);
+    };
+}
 
 
 #endif //HOB_ENGINE_PHYSICS_H

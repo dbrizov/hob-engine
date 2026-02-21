@@ -5,7 +5,7 @@
 #include "engine/components/CameraComponent.h"
 #include "engine/math/Constants.h"
 
-namespace debug {
+namespace hob::debug {
     namespace {
         std::vector<DebugLine> lines;
         std::vector<DebugCircle> circles;

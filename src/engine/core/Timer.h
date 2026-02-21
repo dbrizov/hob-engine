@@ -3,40 +3,42 @@
 #include <cstdint>
 
 
-class Timer {
-    uint32_t m_target_fps;
-    bool m_vsync_enabled;
-    float m_time_scale;
-    float m_play_time;
-    float m_delta_time;
+namespace hob {
+    class Timer {
+        uint32_t m_target_fps;
+        bool m_vsync_enabled;
+        float m_time_scale;
+        float m_play_time;
+        float m_delta_time;
 
-    // Used for limiting FPS
-    uint64_t m_frequency;
-    uint64_t m_frame_start_ticks;
-    uint64_t m_last_frame_start_ticks;
+        // Used for limiting FPS
+        uint64_t m_frequency;
+        uint64_t m_frame_start_ticks;
+        uint64_t m_last_frame_start_ticks;
 
-    // App is a friend class of Timer.
-    // - App uses frame_start() and frame_end() to limit FPS
-    friend class App;
+        // App is a friend class of Timer.
+        // - App uses frame_start() and frame_end() to limit FPS
+        friend class App;
 
-public:
-    Timer(uint32_t fps, bool vsync_enabled);
+    public:
+        Timer(uint32_t fps, bool vsync_enabled);
 
-    uint32_t get_fps() const;
-    void set_fps(uint32_t fps);
+        uint32_t get_fps() const;
+        void set_fps(uint32_t fps);
 
-    float get_time_scale() const;
-    void set_time_scale(float time_scale);
+        float get_time_scale() const;
+        void set_time_scale(float time_scale);
 
-    float get_play_time() const;
-    void set_play_time(float play_time);
+        float get_play_time() const;
+        void set_play_time(float play_time);
 
-    float get_delta_time() const;
+        float get_delta_time() const;
 
-private:
-    void frame_start();
-    void frame_end();
-};
+    private:
+        void frame_start();
+        void frame_end();
+    };
+}
 
 
 #endif //HOB_ENGINE_TIME_H

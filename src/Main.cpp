@@ -21,7 +21,7 @@ constexpr uint32_t PIXELS_PER_METER = 64;
 constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
 
-const Vector2 PHYSICS_GRAVITY = Vector2(0.0f, -9.81f);
+const hob::Vector2 PHYSICS_GRAVITY = hob::Vector2(0.0f, -9.81f);
 constexpr uint32_t PHYSICS_TICKS_PER_SECOND = 60;
 constexpr uint32_t PHYSICS_SUB_STEPS_PER_TICK = 4;
 constexpr bool PHYSICS_INTERPOLATION_ENABLED = false;
@@ -31,15 +31,15 @@ constexpr uint64_t COLLISION_BIT_DYNAMIC = 1u << 1;
 constexpr uint64_t COLLISION_BIT_KINEMATIC = 1u << 2;
 constexpr uint64_t COLLISION_BIT_TRIGGER = 1u << 3;
 
-Entity& spawn_player_entity(App& app, const Vector2& position) {
-    Entity& entity = app.get_entity_spawner().spawn_entity();
+hob::Entity& spawn_player_entity(hob::App& app, const hob::Vector2& position) {
+    hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_ticking(true);
     entity.get_transform()->set_position(position);
 
-    entity.add_component<InputComponent>();
-    entity.add_component<PlayerComponent>();
+    entity.add_component<hob::InputComponent>();
+    entity.add_component<game::PlayerComponent>();
 
-    CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
+    hob::CharacterBodyComponent* character_body = entity.add_component<hob::CharacterBodyComponent>();
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
     character_body->set_solver_ignore_mask(COLLISION_BIT_TRIGGER);
@@ -47,12 +47,12 @@ Entity& spawn_player_entity(App& app, const Vector2& position) {
     return entity;
 }
 
-Entity& spawn_enemy_entity(App& app, const Vector2& position) {
-    Entity& entity = app.get_entity_spawner().spawn_entity();
+hob::Entity& spawn_enemy_entity(hob::App& app, const hob::Vector2& position) {
+    hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_ticking(true);
     entity.get_transform()->set_position(position);
 
-    CharacterBodyComponent* character_body = entity.add_component<CharacterBodyComponent>();
+    hob::CharacterBodyComponent* character_body = entity.add_component<hob::CharacterBodyComponent>();
     character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
     character_body->set_solver_ignore_mask(COLLISION_BIT_TRIGGER);
@@ -62,15 +62,15 @@ Entity& spawn_enemy_entity(App& app, const Vector2& position) {
     return entity;
 }
 
-Entity& spawn_static_box(App& app, const Vector2& position, float rotation_degrees) {
-    Entity& entity = app.get_entity_spawner().spawn_entity();
+hob::Entity& spawn_static_box(hob::App& app, const hob::Vector2& position, float rotation_degrees) {
+    hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.get_transform()->set_position(position);
     entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
-    RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
-    rigidbody->set_body_type(BodyType::STATIC);
+    hob::RigidbodyComponent* rigidbody = entity.add_component<hob::RigidbodyComponent>();
+    rigidbody->set_body_type(hob::BodyType::STATIC);
 
-    BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
+    hob::BoxColliderComponent* box_collider = entity.add_component<hob::BoxColliderComponent>();
     box_collider->set_collision_layer(COLLISION_BIT_STATIC);
     box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
 
@@ -79,24 +79,24 @@ Entity& spawn_static_box(App& app, const Vector2& position, float rotation_degre
     return entity;
 }
 
-Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degrees) {
-    Entity& entity = app.get_entity_spawner().spawn_entity();
+hob::Entity& spawn_dynamic_box(hob::App& app, const hob::Vector2& position, float rotation_degrees) {
+    hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_ticking(true);
     entity.get_transform()->set_position(position);
     entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
-    RigidbodyComponent* rigidbody = entity.add_component<RigidbodyComponent>();
-    rigidbody->set_body_type(BodyType::DYNAMIC);
+    hob::RigidbodyComponent* rigidbody = entity.add_component<hob::RigidbodyComponent>();
+    rigidbody->set_body_type(hob::BodyType::DYNAMIC);
 
-    BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
+    hob::BoxColliderComponent* box_collider = entity.add_component<hob::BoxColliderComponent>();
     box_collider->set_collision_layer(COLLISION_BIT_DYNAMIC);
     box_collider->set_collision_mask(
         COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC | COLLISION_BIT_TRIGGER);
 
-    ImageComponent* image_component = entity.add_component<ImageComponent>();
+    hob::ImageComponent* image_component = entity.add_component<hob::ImageComponent>();
     const std::filesystem::path path =
-        PathUtils::get_assets_root_path() / "images" / "robot.png";
-    const TextureId texture_id = app.get_assets().load_texture(path);
+        hob::PathUtils::get_assets_root_path() / "images" / "robot.png";
+    const hob::TextureId texture_id = app.get_assets().load_texture(path);
     image_component->set_texture_id(texture_id);
 
     // entity.add_component<ContactLoggerComponent>();
@@ -104,14 +104,14 @@ Entity& spawn_dynamic_box(App& app, const Vector2& position, float rotation_degr
     return entity;
 }
 
-Entity& spawn_trigger_box(App& app, const Vector2& position, float rotation_degrees) {
-    Entity& entity = app.get_entity_spawner().spawn_entity();
+hob::Entity& spawn_trigger_box(hob::App& app, const hob::Vector2& position, float rotation_degrees) {
+    hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.get_transform()->set_position(position);
     entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
-    entity.add_component<RigidbodyComponent>();
+    entity.add_component<hob::RigidbodyComponent>();
 
-    BoxColliderComponent* box_collider = entity.add_component<BoxColliderComponent>();
+    hob::BoxColliderComponent* box_collider = entity.add_component<hob::BoxColliderComponent>();
     box_collider->set_trigger(true);
     box_collider->set_collision_layer(COLLISION_BIT_TRIGGER);
     box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
@@ -122,7 +122,7 @@ Entity& spawn_trigger_box(App& app, const Vector2& position, float rotation_degr
 }
 
 int main(int argc, char* argv[]) {
-    GraphicsConfig graphics_config;
+    hob::GraphicsConfig graphics_config;
     graphics_config.window_title = WINDOW_TITLE;
     graphics_config.window_width = WINDOW_WIDTH;
     graphics_config.window_height = WINDOW_HEIGHT;
@@ -132,67 +132,67 @@ int main(int argc, char* argv[]) {
     graphics_config.target_fps = TARGET_FPS;
     graphics_config.vsync_enabled = VSYNC_ENABLED;
 
-    PhysicsConfig physics_config;
+    hob::PhysicsConfig physics_config;
     physics_config.gravity = PHYSICS_GRAVITY;
     physics_config.ticks_per_second = PHYSICS_TICKS_PER_SECOND;
     physics_config.sub_steps_per_tick = PHYSICS_SUB_STEPS_PER_TICK;
     physics_config.interpolation_enabled = PHYSICS_INTERPOLATION_ENABLED;
 
-    AppConfig app_config;
+    hob::AppConfig app_config;
     app_config.graphics_config = graphics_config;
     app_config.physics_config = physics_config;
 
-    App app(app_config);
+    hob::App app(app_config);
 
     if (!app.is_initialized()) {
         return 1;
     }
 
-    spawn_player_entity(app, Vector2(-2.0f, 0.0f));
-    // spawn_enemy_entity(app, Vector2(2.0f, 0.0f));
+    spawn_player_entity(app, hob::Vector2(0.0f, -1.5f));
+    // spawn_enemy_entity(app, hob::Vector2(2.0f, 0.0f));
 
     // floor
-    spawn_static_box(app, Vector2(-4.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(-3.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(-2.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(-1.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(0.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(1.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(2.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(3.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(4.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-4.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-3.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-2.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-1.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(0.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(1.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(2.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(3.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(4.0f, -3.0f), 0.0f);
 
     // stairs
-    spawn_static_box(app, Vector2(5.0f, -2.7f), 0.0f);
-    spawn_static_box(app, Vector2(6.0f, -2.4f), 0.0f);
-    spawn_static_box(app, Vector2(7.0f, -2.1f), 0.0f);
-    spawn_static_box(app, Vector2(8.0f, -1.8f), 0.0f);
-    spawn_static_box(app, Vector2(9.0f, -1.5f), 0.0f);
-    spawn_static_box(app, Vector2(10.0f, -1.2f), 0.0f);
-    spawn_static_box(app, Vector2(11.0f, -0.9f), 0.0f);
-    spawn_static_box(app, Vector2(12.0f, -0.6f), 0.0f);
-    spawn_static_box(app, Vector2(13.0f, -0.3f), 0.0f);
+    spawn_static_box(app, hob::Vector2(5.0f, -2.7f), 0.0f);
+    spawn_static_box(app, hob::Vector2(6.0f, -2.4f), 0.0f);
+    spawn_static_box(app, hob::Vector2(7.0f, -2.1f), 0.0f);
+    spawn_static_box(app, hob::Vector2(8.0f, -1.8f), 0.0f);
+    spawn_static_box(app, hob::Vector2(9.0f, -1.5f), 0.0f);
+    spawn_static_box(app, hob::Vector2(10.0f, -1.2f), 0.0f);
+    spawn_static_box(app, hob::Vector2(11.0f, -0.9f), 0.0f);
+    spawn_static_box(app, hob::Vector2(12.0f, -0.6f), 0.0f);
+    spawn_static_box(app, hob::Vector2(13.0f, -0.3f), 0.0f);
 
     // left wall
-    spawn_static_box(app, Vector2(-5.0f, -3.0f), 0.0f);
-    spawn_static_box(app, Vector2(-5.0f, -2.0f), 0.0f);
-    spawn_static_box(app, Vector2(-5.0f, -1.0f), 0.0f);
-    spawn_static_box(app, Vector2(-5.0f, 0.0f), 0.0f);
-    spawn_static_box(app, Vector2(-5.0f, 1.0f), 0.0f);
-    spawn_static_box(app, Vector2(-5.0f, 2.0f), 0.0f);
-    spawn_static_box(app, Vector2(-5.0f, 3.0f), 0.0f);
-    spawn_static_box(app, Vector2(-5.0f, 4.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, -3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, -2.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, -1.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, 0.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, 1.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, 2.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, 3.0f), 0.0f);
+    spawn_static_box(app, hob::Vector2(-5.0f, 4.0f), 0.0f);
 
     // dynamic boxes
-    // spawn_dynamic_box(app, Vector2(-3.0f, 3.0f), 60.0f);
-    // spawn_dynamic_box(app, Vector2(-2.0f, 0.0f), 0.0f);
-    // spawn_dynamic_box(app, Vector2(1.0f, 1.5f), 30.0f);
-    spawn_dynamic_box(app, Vector2(-2.0f, 3.0f), 40.0f);
-    // spawn_dynamic_box(app, Vector2(1.0f, 4.5f), 0.0f);
-    // spawn_dynamic_box(app, Vector2(2.0f, 6.0f), -10.0f);
+    spawn_dynamic_box(app, hob::Vector2(-3.0f, 3.0f), 60.0f);
+    spawn_dynamic_box(app, hob::Vector2(-2.0f, 0.0f), 0.0f);
+    spawn_dynamic_box(app, hob::Vector2(-1.0f, 1.5f), 30.0f);
+    spawn_dynamic_box(app, hob::Vector2(0.0f, 3.0f), 40.0f);
+    spawn_dynamic_box(app, hob::Vector2(1.0f, 4.5f), 0.0f);
+    spawn_dynamic_box(app, hob::Vector2(2.0f, 6.0f), -10.0f);
 
     // trigger boxes
-    spawn_trigger_box(app, Vector2(0.0f, 1.0f), 0.0f);
+    spawn_trigger_box(app, hob::Vector2(0.0f, 1.0f), 0.0f);
 
     app.run();
 

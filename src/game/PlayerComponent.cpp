@@ -9,85 +9,87 @@
 #include "engine/core/App.h"
 #include "engine/entity/Entity.h"
 
-PlayerComponent::PlayerComponent(Entity& entity)
-    : Component(entity) {
-}
-
-void PlayerComponent::enter_play() {
-    InputComponent* input_component = get_entity().get_component<InputComponent>();
-    m_x_axis_id = input_component->bind_axis("horizontal", [this](float axis) {
-        set_movement_input_x(axis);
-    });
-
-    m_y_axis_id = input_component->bind_axis("vertical", [this](float axis) {
-        set_movement_input_y(axis);
-    });
-
-    m_slow_motion_action_id = input_component->bind_action("slow_motion", InputEventType::PRESSED, [this]() {
-        toggle_slow_motion();
-    });
-}
-
-void PlayerComponent::exit_play() {
-    InputComponent* input_component = get_entity().get_component<InputComponent>();
-    input_component->unbind_axis("horizontal", m_x_axis_id);
-    input_component->unbind_axis("vertical", m_y_axis_id);
-    input_component->unbind_action("slow_motion", m_slow_motion_action_id);
-}
-
-void PlayerComponent::physics_tick(float fixed_delta_time) {
-    Vector2 movement_input = m_movement_input;
-    if (movement_input.length_sqr() > 1.0f) {
-        movement_input = movement_input.normalized();
+namespace game {
+    PlayerComponent::PlayerComponent(hob::Entity& entity)
+        : Component(entity) {
     }
 
-    Vector2 velocity = movement_input * m_speed;
-    CharacterBodyComponent* character_body = get_entity().get_component<CharacterBodyComponent>();
-    character_body->move_and_slide(velocity, fixed_delta_time);
+    void PlayerComponent::enter_play() {
+        hob::InputComponent* input_component = get_entity().get_component<hob::InputComponent>();
+        m_x_axis_id = input_component->bind_axis("horizontal", [this](float axis) {
+            set_movement_input_x(axis);
+        });
 
-    // Vector2 actual_velocity = character_body->get_velocity();
-    // fmt::println("velocity: {}", actual_velocity.to_string());
+        m_y_axis_id = input_component->bind_axis("vertical", [this](float axis) {
+            set_movement_input_y(axis);
+        });
 
-    // TODO The camera position is not accurate, because the physics hasn't update the transform's position yet
-    Vector2 position = get_entity().get_transform()->get_position();
-    update_camera_position(position, fixed_delta_time);
-}
+        m_slow_motion_action_id = input_component->bind_action("slow_motion", hob::InputEventType::PRESSED, [this]() {
+            toggle_slow_motion();
+        });
+    }
 
-void PlayerComponent::on_collision_enter(const ColliderComponent* other_collider) {
-    fmt::println("collision_enter: {}", other_collider->get_entity().get_id());
-}
+    void PlayerComponent::exit_play() {
+        hob::InputComponent* input_component = get_entity().get_component<hob::InputComponent>();
+        input_component->unbind_axis("horizontal", m_x_axis_id);
+        input_component->unbind_axis("vertical", m_y_axis_id);
+        input_component->unbind_action("slow_motion", m_slow_motion_action_id);
+    }
 
-void PlayerComponent::on_collision_exit(const ColliderComponent* other_collider) {
-    fmt::println("collision_exit: {}", other_collider->get_entity().get_id());
-}
+    void PlayerComponent::physics_tick(float fixed_delta_time) {
+        hob::Vector2 movement_input = m_movement_input;
+        if (movement_input.length_sqr() > 1.0f) {
+            movement_input = movement_input.normalized();
+        }
 
-void PlayerComponent::on_trigger_enter(const ColliderComponent* other_collider) {
-    fmt::println("trigger_enter: {}", other_collider->get_entity().get_id());
-}
+        hob::Vector2 velocity = movement_input * m_speed;
+        hob::CharacterBodyComponent* character_body = get_entity().get_component<hob::CharacterBodyComponent>();
+        character_body->move_and_slide(velocity, fixed_delta_time);
 
-void PlayerComponent::on_trigger_exit(const ColliderComponent* other_collider) {
-    fmt::println("trigger_exit: {}", other_collider->get_entity().get_id());
-}
+        // Vector2 actual_velocity = character_body->get_velocity();
+        // fmt::println("velocity: {}", actual_velocity.to_string());
 
-void PlayerComponent::update_camera_position(const Vector2& target_position, float fixed_delta_time) {
-    Entity* camera_entity = get_app().get_entity_spawner().get_camera_entity();
-    TransformComponent* camera_transform = camera_entity->get_transform();
+        // TODO The camera position is not accurate, because the physics hasn't update the transform's position yet
+        hob::Vector2 position = get_entity().get_transform()->get_position();
+        update_camera_position(position, fixed_delta_time);
+    }
 
-    Vector2 new_position = Vector2::lerp(
-        camera_transform->get_position(), target_position, fixed_delta_time * m_camera_follow_speed);
+    void PlayerComponent::on_collision_enter(const hob::ColliderComponent* other_collider) {
+        fmt::println("collision_enter: {}", other_collider->get_entity().get_id());
+    }
 
-    camera_transform->set_position(new_position);
-}
+    void PlayerComponent::on_collision_exit(const hob::ColliderComponent* other_collider) {
+        fmt::println("collision_exit: {}", other_collider->get_entity().get_id());
+    }
 
-void PlayerComponent::set_movement_input_x(float x_axis) {
-    m_movement_input.x = x_axis;
-}
+    void PlayerComponent::on_trigger_enter(const hob::ColliderComponent* other_collider) {
+        fmt::println("trigger_enter: {}", other_collider->get_entity().get_id());
+    }
 
-void PlayerComponent::set_movement_input_y(float y_axis) {
-    m_movement_input.y = y_axis;
-}
+    void PlayerComponent::on_trigger_exit(const hob::ColliderComponent* other_collider) {
+        fmt::println("trigger_exit: {}", other_collider->get_entity().get_id());
+    }
 
-void PlayerComponent::toggle_slow_motion() {
-    float new_time_scale = get_app().get_timer().get_time_scale() < 1.0f ? 1.0f : 0.2f;
-    get_app().get_timer().set_time_scale(new_time_scale);
+    void PlayerComponent::update_camera_position(const hob::Vector2& target_position, float fixed_delta_time) {
+        hob::Entity* camera_entity = get_app().get_entity_spawner().get_camera_entity();
+        hob::TransformComponent* camera_transform = camera_entity->get_transform();
+
+        hob::Vector2 new_position = hob::Vector2::lerp(
+            camera_transform->get_position(), target_position, fixed_delta_time * m_camera_follow_speed);
+
+        camera_transform->set_position(new_position);
+    }
+
+    void PlayerComponent::set_movement_input_x(float x_axis) {
+        m_movement_input.x = x_axis;
+    }
+
+    void PlayerComponent::set_movement_input_y(float y_axis) {
+        m_movement_input.y = y_axis;
+    }
+
+    void PlayerComponent::toggle_slow_motion() {
+        float new_time_scale = get_app().get_timer().get_time_scale() < 1.0f ? 1.0f : 0.2f;
+        get_app().get_timer().set_time_scale(new_time_scale);
+    }
 }

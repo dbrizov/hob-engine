@@ -7,28 +7,29 @@
 struct SDL_Renderer;
 struct SDL_Texture;
 
-using TextureId = int32_t;
-constexpr TextureId INVALID_TEXTURE_ID = -1;
+namespace hob {
+    using TextureId = int32_t;
+    constexpr TextureId INVALID_TEXTURE_ID = -1;
 
+    class Assets {
+        SDL_Renderer* m_renderer;
+        mutable TextureId m_next_texture_id;
+        mutable TextureId m_white_pixel_texture_id;
+        mutable std::unordered_map<TextureId, SDL_Texture*> m_textures;
 
-class Assets {
-    SDL_Renderer* m_renderer;
-    mutable TextureId m_next_texture_id;
-    mutable TextureId m_white_pixel_texture_id;
-    mutable std::unordered_map<TextureId, SDL_Texture*> m_textures;
+    public:
+        explicit Assets(SDL_Renderer* renderer);
+        ~Assets();
 
-public:
-    explicit Assets(SDL_Renderer* renderer);
-    ~Assets();
+        SDL_Texture* get_texture(TextureId id) const;
+        SDL_Texture* get_white_pixel_texture() const;
+        TextureId load_texture(const std::filesystem::path& path);
+        bool unload_texture(TextureId id);
 
-    SDL_Texture* get_texture(TextureId id) const;
-    SDL_Texture* get_white_pixel_texture() const;
-    TextureId load_texture(const std::filesystem::path& path);
-    bool unload_texture(TextureId id);
-
-private:
-    void unload_all_textures();
-};
+    private:
+        void unload_all_textures();
+    };
+}
 
 
 #endif //HOB_ENGINE_ASSETS_H
