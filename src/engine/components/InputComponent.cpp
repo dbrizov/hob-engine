@@ -52,7 +52,9 @@ namespace hob {
         }
     }
 
-    BindingId InputComponent::bind_action(const char* action_name, InputEventType event_type, ActionBindingFunc function) {
+    BindingId InputComponent::bind_action(const char* action_name,
+                                          InputEventType event_type,
+                                          ActionBindingFunc function) {
         BindingId binding_id = m_next_binding_id;
         m_next_binding_id += 1;
 
