@@ -2,24 +2,23 @@
   "name": "hob-engine",
   "version": "1.0",
   "dependencies": [
-    "sdl2",
-    "sdl2-image",
-    "sdl2-ttf",
-    "box2d",
-    "nlohmann-json",
     "fmt",
+    "nlohmann-json",
+    "sdl3",
+    {
+      "name": "sdl3-image",
+      "features": [
+        "png"
+      ]
+    },
+    "sdl3-ttf",
+    "box2d",
     {
       "name": "imgui",
       "features": [
-        "sdl2-binding",
-        "sdl2-renderer-binding"
+        "sdl3-binding",
+        "sdl3-renderer-binding"
       ]
-    }
-  ],
-  "overrides": [
-    {
-      "name": "imgui",
-      "version": "1.91.8#2"
     }
   ]
 }

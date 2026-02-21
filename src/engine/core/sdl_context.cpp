@@ -1,7 +1,6 @@
 #include "sdl_context.h"
 
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL3/SDL.h>
 #include <fmt/base.h>
 
 #include "app.h"
@@ -9,36 +8,24 @@
 namespace hob {
     SdlContext::SdlContext(const GraphicsConfig& graphics_config) {
         // SDL_Init
-        int sld_init_flags = SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
-        if (SDL_Init(sld_init_flags) != 0) {
+        int sld_init_flags = SDL_INIT_VIDEO;
+        if (!SDL_Init(sld_init_flags)) {
             fmt::println(stderr, "SDL_Init Error: {}", SDL_GetError());
             return;
         }
 
         fmt::println("SDL_Init");
 
-        // IMG_Init
-        int img_init_flags = IMG_INIT_PNG;
-        if ((IMG_Init(img_init_flags) & img_init_flags) != img_init_flags) {
-            fmt::println(stderr, "IMG_Init Error: {}", IMG_GetError());
-            SDL_Quit();
-            return;
-        }
-
-        fmt::println("IMG_Init");
-
         // SDL_CreateWindow
+        SDL_WindowFlags window_flags = 0;
         m_window = SDL_CreateWindow(
             graphics_config.window_title.c_str(),
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
             static_cast<int>(graphics_config.window_width),
             static_cast<int>(graphics_config.window_height),
-            SDL_WINDOW_SHOWN);
+            window_flags);
 
         if (!m_window) {
             fmt::println(stderr, "SDL_CreateWindow Error: {}", SDL_GetError());
-            IMG_Quit();
             SDL_Quit();
             return;
         }
@@ -46,24 +33,22 @@ namespace hob {
         fmt::println("SDL_CreateWindow");
 
         // Create renderer
-        uint32_t renderer_flags = SDL_RENDERER_ACCELERATED;
-        if (graphics_config.vsync_enabled) {
-            renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
-        }
-
-        m_renderer = SDL_CreateRenderer(m_window, -1, renderer_flags);
+        m_renderer = SDL_CreateRenderer(m_window, nullptr);
         if (!m_renderer) {
             fmt::println(stderr, "SDL_CreateRenderer Error: {}", SDL_GetError());
             SDL_DestroyWindow(m_window);
-            IMG_Quit();
             SDL_Quit();
             return;
         }
 
-        SDL_RenderSetLogicalSize(
+        int vsync = graphics_config.vsync_enabled ? 1 : 0;
+        SDL_SetRenderVSync(m_renderer, vsync);
+
+        SDL_SetRenderLogicalPresentation(
             m_renderer,
             static_cast<int>(graphics_config.logical_resolution_width),
-            static_cast<int>(graphics_config.logical_resolution_height));
+            static_cast<int>(graphics_config.logical_resolution_height),
+            SDL_LOGICAL_PRESENTATION_STRETCH);
 
         fmt::println("SDL_CreateRenderer");
 
@@ -80,9 +65,6 @@ namespace hob {
             SDL_DestroyWindow(m_window);
             fmt::println("SDL_DestroyWindow");
         }
-
-        IMG_Quit();
-        fmt::println("IMG_Quit");
 
         SDL_Quit();
         fmt::println("SDL_Quit");

@@ -1,6 +1,6 @@
 #include "app.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <imgui.h>
 
 #include "debug.h"
@@ -37,7 +37,7 @@ namespace hob {
             while (SDL_PollEvent(&event)) {
                 m_imgui_system.process_event(event);
 
-                if (event.type == SDL_QUIT) {
+                if (event.type == SDL_EVENT_QUIT) {
                     is_running = false;
                 }
             }
@@ -58,7 +58,7 @@ namespace hob {
             const float scaled_delta_time = delta_time * m_timer.get_time_scale();
 
             // input.tick()
-            const uint8_t* keyboard_state = SDL_GetKeyboardState(nullptr);
+            const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
             m_input.tick(scaled_delta_time, keyboard_state);
 
             // entities.tick()
@@ -132,11 +132,9 @@ namespace hob {
             const ImageComponent* img_comp = entity->get_component<ImageComponent>();
 
             SDL_Texture* texture = m_assets.get_texture(img_comp->get_texture_id());
-            int texture_width = 0;
-            int texture_height = 0;
-            SDL_QueryTexture(texture, nullptr, nullptr, &texture_width, &texture_height);
-            float texture_width_f = static_cast<float>(texture_width);
-            float texture_height_f = static_cast<float>(texture_height);
+            float texture_width = 0;
+            float texture_height = 0;
+            SDL_GetTextureSize(texture, &texture_width, &texture_height);
 
             Vector2 img_pivot = img_comp->get_pivot();
 
@@ -148,14 +146,14 @@ namespace hob {
                 tr_comp->get_prev_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
 
             Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
-            screen_position.x -= texture_width_f * img_pivot.x * scale.x;
-            screen_position.y -= texture_height_f * img_pivot.y * scale.y;
+            screen_position.x -= texture_width * img_pivot.x * scale.x;
+            screen_position.y -= texture_height * img_pivot.y * scale.y;
 
             SDL_FRect dst{
                 screen_position.x,
                 screen_position.y,
-                texture_width_f * scale.x,
-                texture_height_f * scale.y,
+                texture_width * scale.x,
+                texture_height * scale.y,
             };
 
             SDL_FPoint pivot = {
@@ -165,7 +163,8 @@ namespace hob {
 
             float angle = -tr_comp->get_rotation_degrees();
 
-            SDL_RenderCopyExF(m_sdl_context.get_renderer(), texture, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
+            SDL_RenderTextureRotated(
+                m_sdl_context.get_renderer(), texture, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
         }
 
         // Render debug draws

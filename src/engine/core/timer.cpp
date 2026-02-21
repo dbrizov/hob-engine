@@ -1,6 +1,6 @@
 #include "timer.h"
 
-#include <SDL_timer.h>
+#include <SDL3/SDL_timer.h>
 
 namespace hob {
     Timer::Timer(uint32_t fps, bool vsync_enabled)
@@ -74,7 +74,8 @@ namespace hob {
 
         while (true) {
             uint64_t now_ticks = SDL_GetPerformanceCounter();
-            double elapsed_seconds = static_cast<double>(now_ticks - m_frame_start_ticks) / m_frequency;
+            double elapsed_seconds =
+                static_cast<double>(now_ticks - m_frame_start_ticks) / static_cast<double>(m_frequency);
 
             if (elapsed_seconds >= target_frame_seconds) {
                 break;

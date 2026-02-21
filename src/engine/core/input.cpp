@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include <SDL_keyboard.h>
+#include <SDL3/SDL_keyboard.h>
 #include <fmt/base.h>
 
 #include "path_utils.h"
@@ -113,7 +113,7 @@ namespace hob {
         }
     }
 
-    void Input::tick(float delta_time, const Uint8* keyboard_state) {
+    void Input::tick(float delta_time, const bool* keyboard_state) {
         update_pressed_keys(keyboard_state);
 
         // Dispatch action events
@@ -203,10 +203,10 @@ namespace hob {
         }
     }
 
-    void Input::update_pressed_keys(const Uint8* keyboard_state) {
+    void Input::update_pressed_keys(const bool* keyboard_state) {
         for (SDL_Scancode key : m_relevant_keys) {
             m_pressed_keys_last_frame.set(key, m_pressed_keys_this_frame.test(key));
-            m_pressed_keys_this_frame.set(key, keyboard_state[key] != 0);
+            m_pressed_keys_this_frame.set(key, keyboard_state[key]);
         }
     }
 }

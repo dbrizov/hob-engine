@@ -1,6 +1,6 @@
 #ifndef HOB_ENGINE_IMGUISYSTEM_H
 #define HOB_ENGINE_IMGUISYSTEM_H
-#include <SDL_events.h>
+#include <SDL3/SDL_events.h>
 
 struct ImGuiContext;
 struct SDL_Window;
