@@ -14,6 +14,7 @@ namespace hob {
         : m_config(config)
           , m_sdl_context(config.graphics_config)
           , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
+          , m_app_console()
           , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
           , m_input()
           , m_assets(m_sdl_context.get_renderer())
@@ -78,10 +79,8 @@ namespace hob {
 
             render_entities(renderable_entities);
 
-            // TODO Remove ImGui test window
-            ImGui::Begin("Test");
-            ImGui::Text("Hello ImGui");
-            ImGui::End();
+            bool open = true;
+            m_app_console.draw("Console", &open);
 
             m_imgui_system.frame_end();
             m_sdl_context.frame_end();

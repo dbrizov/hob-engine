@@ -1,5 +1,6 @@
 #ifndef HOB_ENGINE_APP_H
 #define HOB_ENGINE_APP_H
+#include "app_console.h"
 #include "assets.h"
 #include "imgui_system.h"
 #include "input.h"
@@ -39,6 +40,7 @@ namespace hob {
         // Objects below depend on SDL resources.
         SdlContext m_sdl_context;
         ImGuiSystem m_imgui_system;
+        AppConsole m_app_console;
         Timer m_timer;
         Input m_input;
         Assets m_assets;
