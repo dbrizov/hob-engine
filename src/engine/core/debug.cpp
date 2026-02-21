@@ -1,6 +1,7 @@
 #include "debug.h"
 
 #include <SDL_render.h>
+#include <vector>
 
 #include "engine/components/camera_component.h"
 #include "engine/math/constants.h"
