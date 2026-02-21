@@ -4,7 +4,6 @@
 
 #include "engine/components/component.h"
 
-
 namespace hob {
     enum class BodyType {
         STATIC,
@@ -33,6 +32,5 @@ namespace hob {
         void set_fixed_rotation(bool has_fixed_rotation);
     };
 }
-
 
 #endif //HOB_ENGINE_RIGIDBODYCOMPONENT_H

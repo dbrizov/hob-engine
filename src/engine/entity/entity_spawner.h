@@ -7,7 +7,6 @@
 
 #include "entity.h"
 
-
 namespace hob {
     class App;
 
@@ -49,6 +48,5 @@ namespace hob {
         void resolve_destroy_requests();
     };
 }
-
 
 #endif //HOB_ENGINE_ENTITYSPAWNER_H

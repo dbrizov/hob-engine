@@ -4,7 +4,6 @@
 #include "engine/components/input_component.h"
 #include "engine/math/vector2.h"
 
-
 namespace game {
     class PlayerComponent : public hob::Component {
         float m_speed = 7.0f;
@@ -33,6 +32,5 @@ namespace game {
         void toggle_slow_motion();
     };
 }
-
 
 #endif //HOB_ENGINE_PLAYERCOMPONENT_H

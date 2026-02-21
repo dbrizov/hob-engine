@@ -8,7 +8,6 @@
 #include "timer.h"
 #include "engine/entity/entity_spawner.h"
 
-
 namespace hob {
     struct GraphicsConfig {
         std::string window_title = "SDL2 Window";
@@ -65,6 +64,5 @@ namespace hob {
         void render_entities(const std::vector<const Entity*>& entities);
     };
 }
-
 
 #endif //HOB_ENGINE_APP_H

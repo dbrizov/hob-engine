@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <unordered_map>
 
-
 struct SDL_Renderer;
 struct SDL_Texture;
 
@@ -30,6 +29,5 @@ namespace hob {
         void unload_all_textures();
     };
 }
-
 
 #endif //HOB_ENGINE_ASSETS_H

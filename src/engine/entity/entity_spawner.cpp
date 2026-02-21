@@ -9,7 +9,6 @@
 #include "engine/components/transform_component.h"
 #include "engine/core/app.h"
 
-
 namespace hob {
     EntitySpawner::EntitySpawner(App& app)
         : m_app(app) {

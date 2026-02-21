@@ -2,7 +2,6 @@
 #define HOB_ENGINE_AABB_H
 #include "vector2.h"
 
-
 namespace hob {
     struct AABB {
         Vector2 center;
@@ -15,6 +14,5 @@ namespace hob {
         Vector2 size() const;
     };
 }
-
 
 #endif //HOB_ENGINE_AABB_H

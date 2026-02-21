@@ -2,7 +2,6 @@
 #define HOB_ENGINE_TIME_H
 #include <cstdint>
 
-
 namespace hob {
     class Timer {
         uint32_t m_target_fps;
@@ -39,6 +38,5 @@ namespace hob {
         void frame_end();
     };
 }
-
 
 #endif //HOB_ENGINE_TIME_H

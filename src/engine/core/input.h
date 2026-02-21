@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 namespace hob {
     enum class InputEventType {
         AXIS,
@@ -72,6 +71,5 @@ namespace hob {
         void update_pressed_keys(const uint8_t* keyboard_state);
     };
 }
-
 
 #endif //HOB_ENGINE_INPUT_H

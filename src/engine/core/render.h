@@ -2,7 +2,6 @@
 #define HOB_ENGINE_RENDER_H
 #include "assets.h"
 
-
 namespace hob {
     struct Color {
         uint8_t r;
@@ -27,6 +26,5 @@ namespace hob {
         std::string to_string() const;
     };
 }
-
 
 #endif //HOB_ENGINE_RENDER_H

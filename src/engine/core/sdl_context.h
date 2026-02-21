@@ -1,7 +1,6 @@
 #ifndef HOB_ENGINE_SDLCONTEXT_H
 #define HOB_ENGINE_SDLCONTEXT_H
 
-
 struct SDL_Window;
 struct SDL_Renderer;
 
@@ -31,6 +30,5 @@ namespace hob {
         void frame_end();
     };
 }
-
 
 #endif //HOB_ENGINE_SDLCONTEXT_H

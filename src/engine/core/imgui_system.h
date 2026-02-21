@@ -2,7 +2,6 @@
 #define HOB_ENGINE_IMGUISYSTEM_H
 #include <SDL_events.h>
 
-
 struct ImGuiContext;
 struct SDL_Window;
 struct SDL_Renderer;
@@ -32,6 +31,5 @@ namespace hob {
         void frame_end();
     };
 }
-
 
 #endif //HOB_ENGINE_IMGUISYSTEM_H

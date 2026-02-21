@@ -3,7 +3,6 @@
 #include <cfloat>
 #include <cstdint>
 
-
 namespace hob {
     constexpr float EPSILON = 0.0001f;
     constexpr float PI = 3.1415926535f;
@@ -16,6 +15,5 @@ namespace hob {
     constexpr float MIN_FLOAT = FLT_MIN;
     constexpr float MAX_FLOAT = FLT_MAX;
 }
-
 
 #endif //HOB_ENGINE_MATH_H

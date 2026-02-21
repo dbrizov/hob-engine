@@ -2,7 +2,6 @@
 #define HOB_ENGINE_VECTOR2_H
 #include <string>
 
-
 namespace hob {
     struct Vector2 {
         float x = 0.0f;
@@ -43,6 +42,5 @@ namespace hob {
         std::string to_string() const;
     };
 }
-
 
 #endif //HOB_ENGINE_VECTOR2_H

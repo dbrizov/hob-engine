@@ -2,7 +2,6 @@
 #define HOB_ENGINE_CONTACTLOGGERCOMPONENT_H
 #include "engine/components/component.h"
 
-
 namespace game {
     class ContactLoggerComponent : public hob::Component {
     public:
@@ -14,6 +13,5 @@ namespace game {
         virtual void on_trigger_exit(const hob::ColliderComponent* other_collider) override;
     };
 }
-
 
 #endif //HOB_ENGINE_CONTACTLOGGERCOMPONENT_H

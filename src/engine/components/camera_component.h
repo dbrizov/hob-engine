@@ -5,7 +5,6 @@
 #include "component.h"
 #include "engine/math/vector2.h"
 
-
 namespace hob {
     class CameraComponent : public Component {
         uint32_t m_logical_resolution_width = 0;
@@ -26,6 +25,5 @@ namespace hob {
         Vector2 world_to_screen(const Vector2& world_position, const Vector2& camera_position) const;
     };
 }
-
 
 #endif //HOB_ENGINE_CAMERACOMPONENT_H

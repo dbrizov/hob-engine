@@ -5,7 +5,6 @@
 
 #include "engine/components/component.h"
 
-
 namespace hob {
     struct Color;
 
@@ -51,6 +50,5 @@ namespace hob {
         virtual void debug_draw_shape(const Color& color) const = 0;
     };
 }
-
 
 #endif //HOB_ENGINE_COLLIDERCOMPONENT_H

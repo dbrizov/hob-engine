@@ -7,7 +7,6 @@
 
 #include "engine/components/component.h"
 
-
 namespace hob {
     class App;
     class ColliderComponent;
@@ -112,6 +111,5 @@ namespace hob {
         return nullptr;
     }
 }
-
 
 #endif //HOB_ENGINE_ENTITY_H

@@ -3,7 +3,6 @@
 #include "component.h"
 #include "engine/math/vector2.h"
 
-
 namespace hob {
     class TransformComponent : public Component {
         Vector2 m_position;
@@ -38,6 +37,5 @@ namespace hob {
         void set_prev_position(const Vector2& prev_position);
     };
 }
-
 
 #endif //HOB_ENGINE_TRANSFORMCOMPONENT_H

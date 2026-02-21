@@ -3,7 +3,6 @@
 #include "component.h"
 #include "engine/core/input.h"
 
-
 namespace hob {
     using BindingId = int;
     using AxisBindingFunc = std::function<void(float)>;
@@ -49,6 +48,5 @@ namespace hob {
         void on_input_event(const InputEvent& event);
     };
 }
-
 
 #endif //HOB_ENGINE_INPUTCOMPONENT_H

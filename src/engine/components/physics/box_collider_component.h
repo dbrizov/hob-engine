@@ -5,7 +5,6 @@
 #include "collider_component.h"
 #include "engine/math/aabb.h"
 
-
 namespace hob {
     class BoxColliderComponent : public ColliderComponent {
         // Local AABB
@@ -22,6 +21,5 @@ namespace hob {
         virtual void debug_draw_shape(const Color& color) const override;
     };
 }
-
 
 #endif //HOB_ENGINE_BOXCOLLIDERCOMPONENT_H

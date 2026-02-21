@@ -4,7 +4,6 @@
 #include "engine/core/assets.h"
 #include "engine/math/vector2.h"
 
-
 namespace hob {
     class ImageComponent : public Component {
         TextureId m_texture_id = INVALID_TEXTURE_ID;
@@ -26,6 +25,5 @@ namespace hob {
         void set_scale(const Vector2& scale);
     };
 }
-
 
 #endif //HOB_ENGINE_IMAGECOMPONENT_H

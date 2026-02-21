@@ -2,7 +2,6 @@
 #define HOB_ENGINE_CAPSULE_H
 #include "vector2.h"
 
-
 namespace hob {
     struct Capsule {
         Vector2 center_a;
@@ -14,6 +13,5 @@ namespace hob {
         float get_height() const;
     };
 }
-
 
 #endif //HOB_ENGINE_CAPSULE_H

@@ -6,7 +6,6 @@
 #include "engine/components/component.h"
 #include "engine/math/vector2.h"
 
-
 namespace hob {
     struct Capsule;
     class CapsuleColliderComponent;
@@ -53,6 +52,5 @@ namespace hob {
         static bool plane_result_callback(b2ShapeId other_shape_id, const b2PlaneResult* plane_result, void* context);
     };
 }
-
 
 #endif //HOB_ENGINE_CHARACTERBODYCOMPONENT_H

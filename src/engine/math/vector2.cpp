@@ -5,7 +5,6 @@
 
 #include "constants.h"
 
-
 namespace hob {
     Vector2::Vector2()
         : Vector2(0.0f, 0.0f) {
