@@ -39,16 +39,17 @@ The `cmake` environment variable will be configured automatically.
 sudo apt update
 sudo apt install build-essential cmake ninja-build pkgconf curl zip unzip tar
 ```
-2. Install `vcpkg` dependencies for building SDL from source.
+2. Install dependencies for building `SDL3` from source.
 
-On Linux SDL requires additional features for integration with the desktop stack - `sdl3[core,dbus,ibus,x11,wayland]`.<br>
+On Linux SDL3 requires additional features for integration with the desktop stack - `sdl3[core,ibus,x11,wayland,alsa]`.<br>
 In order for `vcpkg` to build them from source you need to install additional dependencies.
 ```
 sudo apt install python3 python3-venv python3-pip
 sudo apt install autoconf autoconf-archive automake libtool
 sudo apt install libibus-1.0-dev
 sudo apt install libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxrender-dev libxss-dev libxxf86vm-dev libxtst-dev
-sudo apt install libwayland-dev libxkbcommon-dev libegl1-mesa-dev
+sudo apt install libwayland-dev wayland-protocols libxkbcommon-dev libegl1-mesa-dev libdecor-0-dev
+sudo apt install libasound2-dev libpulse-dev libpipewire-0.3-dev libjack-jackd2-dev
 ```
 3. Clone the `vcpkg` git repository.
 ```
