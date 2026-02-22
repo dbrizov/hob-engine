@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
+#include <SDL3/SDL_render.h>
 #include <fmt/base.h>
 
 namespace hob {
@@ -81,11 +82,28 @@ namespace hob {
     void ImGuiSystem::frame_start() {
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
+        ImGui_FixMousePosForLogicalPresentation(m_renderer);
         ImGui::NewFrame();
     }
 
     void ImGuiSystem::frame_end() {
         ImGui::Render();
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer);
+    }
+
+    void ImGuiSystem::ImGui_FixMousePosForLogicalPresentation(SDL_Renderer* renderer) {
+        float wx = 0.0f;
+        float wy = 0.0f;
+        SDL_GetMouseState(&wx, &wy);
+
+        float rx = wx;
+        float ry = wy;
+        if (renderer) {
+            // Convert window -> render coords (accounts for logical presentation/scale/viewport)
+            SDL_RenderCoordinatesFromWindow(renderer, wx, wy, &rx, &ry);
+        }
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddMousePosEvent(rx, ry); // forces ImGui to use the converted position
     }
 }

@@ -36,6 +36,7 @@ namespace hob {
             // - Check for quit.
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
+                SDL_ConvertEventToRenderCoordinates(m_sdl_context.get_renderer(), &event);
                 m_imgui_system.process_event(event);
 
                 if (event.type == SDL_EVENT_QUIT) {

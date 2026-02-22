@@ -29,6 +29,9 @@ namespace hob {
 
         void frame_start();
         void frame_end();
+
+    private:
+        static void ImGui_FixMousePosForLogicalPresentation(SDL_Renderer* renderer);
     };
 }
 
