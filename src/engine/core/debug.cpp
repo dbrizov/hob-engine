@@ -1,5 +1,6 @@
 #include "debug.h"
 
+#include <cmath>
 #include <SDL3/SDL_render.h>
 #include <vector>
 
