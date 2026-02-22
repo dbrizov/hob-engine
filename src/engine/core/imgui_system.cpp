@@ -36,22 +36,22 @@ namespace hob {
 
         // Init backend for SDL
         if (!ImGui_ImplSDL3_InitForSDLRenderer(m_window, m_renderer)) {
-            fmt::println(stderr, "ImGui_ImplSDL2_InitForSDLRenderer failed");
+            fmt::println(stderr, "ImGui_ImplSDL3_InitForSDLRenderer failed");
             ImGui::DestroyContext(m_context);
             return;
         }
 
-        fmt::println("ImGui_ImplSDL2_InitForSDLRenderer");
+        fmt::println("ImGui_ImplSDL3_InitForSDLRenderer");
 
         // Init backend for SDL_Renderer
         if (!ImGui_ImplSDLRenderer3_Init(m_renderer)) {
-            fmt::println(stderr, "ImGui_ImplSDLRenderer2_Init failed");
+            fmt::println(stderr, "ImGui_ImplSDLRenderer3_Init failed");
             ImGui_ImplSDL3_Shutdown();
             ImGui::DestroyContext(m_context);
             return;
         }
 
-        fmt::println("ImGui_ImplSDLRenderer2_Init");
+        fmt::println("ImGui_ImplSDLRenderer3_Init");
 
         m_is_initialized = true;
     }
@@ -62,10 +62,10 @@ namespace hob {
         }
 
         ImGui_ImplSDLRenderer3_Shutdown();
-        fmt::println("ImGui_ImplSDLRenderer2_Shutdown");
+        fmt::println("ImGui_ImplSDLRenderer3_Shutdown");
 
         ImGui_ImplSDL3_Shutdown();
-        fmt::println("ImGui_ImplSDL2_Shutdown");
+        fmt::println("ImGui_ImplSDL3_Shutdown");
 
         ImGui::DestroyContext(m_context);
         fmt::println("ImGui_DestroyContext");
