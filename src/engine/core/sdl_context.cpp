@@ -7,6 +7,10 @@
 
 namespace hob {
     SdlContext::SdlContext(const GraphicsConfig& graphics_config) {
+        // for (int i = 0; i < SDL_GetNumVideoDrivers(); i++) {
+        //     SDL_Log("Video driver %d: %s", i, SDL_GetVideoDriver(i));
+        // }
+
         // SDL_Init
         int sld_init_flags = SDL_INIT_VIDEO;
         if (!SDL_Init(sld_init_flags)) {

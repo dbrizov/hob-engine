@@ -41,10 +41,14 @@ sudo apt install -y build-essential cmake ninja-build pkgconf curl zip unzip tar
 ```
 2. Install `vcpkg` dependencies for building SDL from source.
 
-On Linux SDL requires additional features for integration with the desktop stack - `sdl2[core,dbus,ibus,wayland,x11]`.<br>
+On Linux SDL requires additional features for integration with the desktop stack - `sdl3[core,dbus,ibus,x11,wayland]`.<br>
 In order for `vcpkg` to build them from source you need to install additional dependencies.
 ```
-sudo apt install -y gperf meson python3-jinja2 libltdl-dev
+sudo apt install python3 python3-venv python3-pip
+sudo apt install autoconf autoconf-archive automake libtool
+sudo apt install libibus-1.0-dev
+sudo apt install libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxrender-dev libxss-dev libxxf86vm-dev libxtst-dev
+sudo apt install libwayland-dev libxkbcommon-dev libegl1-mesa-dev
 ```
 3. Clone the `vcpkg` git repository.
 ```
