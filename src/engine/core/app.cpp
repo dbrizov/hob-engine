@@ -42,7 +42,7 @@ namespace hob {
                     is_running = false;
                 }
                 else if (event.type == SDL_EVENT_KEY_DOWN) {
-                    if (event.key.scancode == SDL_SCANCODE_GRAVE) {
+                    if (event.key.key == SDLK_GRAVE) {
                         m_console.toggle_open();
                     }
                 }
