@@ -1,12 +1,24 @@
-#include "app_console.h"
+#include "console.h"
+
+#include "app.h"
 
 namespace hob {
-    AppConsole::AppConsole() {
+    Console::Console(const App& app)
+        : m_app(app) {
         clear_log();
         m_commands = {"help", "history", "clear"};
     }
 
-    void AppConsole::add_log(const char* fmt, ...) {
+    bool Console::is_open() const {
+        return m_open;
+    }
+
+    void Console::toggle_open() {
+        m_open = !m_open;
+        clear_input_buffer();
+    }
+
+    void Console::add_log(const char* fmt, ...) {
         char buff[1024];
 
         va_list args;
@@ -15,21 +27,28 @@ namespace hob {
         buff[IM_ARRAYSIZE(buff) - 1] = 0;
         va_end(args);
 
-        m_items.emplace_back(buff);
+        m_log.emplace_back(buff);
         m_scroll_to_bottom = true;
     }
 
-    void AppConsole::clear_log() {
-        m_items.clear();
+    void Console::clear_log() {
+        m_log.clear();
         m_scroll_to_bottom = true;
     }
 
-    void AppConsole::draw(const char* title, bool* p_open) {
+    void Console::clear_input_buffer() {
+        m_input_buffer[0] = '\0';
+    }
+
+    bool Console::render() {
+        const float width = m_app.get_config().graphics_config.logical_resolution_width;
+        const float height = m_app.get_config().graphics_config.logical_resolution_height * 0.5f;
+
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::SetNextWindowSize(ImVec2(1152, 324));
-        if (!ImGui::Begin(title, p_open, ImGuiWindowFlags_NoResize)) {
+        ImGui::SetNextWindowSize(ImVec2(width, height));
+        if (!ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoResize)) {
             ImGui::End();
-            return;
+            return false;
         }
 
         ImGui::TextWrapped("Enter 'help' for help, press TAB to use text completion.");
@@ -49,7 +68,7 @@ namespace hob {
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
         static ImGuiTextFilter filter;
-        filter.Draw("Filter", 1075);
+        filter.Draw("Filter", width - 75.0f);
         ImGui::PopStyleVar();
 
         ImGui::Separator();
@@ -73,7 +92,7 @@ namespace hob {
                 ImGui::LogToClipboard();
             }
 
-            for (const std::string& s : m_items) {
+            for (const std::string& s : m_log) {
                 const char* item = s.c_str();
                 if (!filter.PassFilter(item)) {
                     continue;
@@ -109,21 +128,21 @@ namespace hob {
         ImGui::Separator();
 
         // Command-line
-        ImGui::SetNextItemWidth(1075);
+        ImGui::SetNextItemWidth(width - 75.0f);
         if (ImGui::InputText("Input",
-                             m_input_buff,
-                             IM_ARRAYSIZE(m_input_buff),
+                             m_input_buffer,
+                             IM_ARRAYSIZE(m_input_buffer),
                              ImGuiInputTextFlags_EnterReturnsTrue |
                              ImGuiInputTextFlags_CallbackCompletion |
                              ImGuiInputTextFlags_CallbackHistory,
                              &text_edit_callback_stub,
                              this)) {
-            trim_right_spaces(m_input_buff);
-            if (m_input_buff[0]) {
-                exec_command(m_input_buff);
+            trim_right_spaces(m_input_buffer);
+            if (m_input_buffer[0]) {
+                exec_command(m_input_buffer);
             }
 
-            m_input_buff[0] = '\0';
+            clear_input_buffer();
         }
 
         // Keep auto-focus on the input box
@@ -135,19 +154,21 @@ namespace hob {
         }
 
         ImGui::End();
+        return true;
     }
 
-    void AppConsole::exec_command(const char* command_line_cstr) {
+    void Console::exec_command(const char* command_line_cstr) {
         std::string command_line = command_line_cstr;
 
         add_log("# %s", command_line.c_str());
 
         // Insert into history: remove duplicates, push to back
-        m_history_pos = -1;
+        m_history_index = -1;
         auto it = std::find_if(m_history.begin(), m_history.end(),
                                [&](const std::string& h) {
                                    return iequals(h, command_line);
                                });
+
         if (it != m_history.end()) {
             m_history.erase(it);
         }
@@ -174,12 +195,12 @@ namespace hob {
         }
     }
 
-    int AppConsole::text_edit_callback_stub(ImGuiInputTextCallbackData* data) {
-        auto* console = static_cast<AppConsole*>(data->UserData);
+    int Console::text_edit_callback_stub(ImGuiInputTextCallbackData* data) {
+        auto* console = static_cast<Console*>(data->UserData);
         return console->text_edit_callback(data);
     }
 
-    int AppConsole::text_edit_callback(ImGuiInputTextCallbackData* data) {
+    int Console::text_edit_callback(ImGuiInputTextCallbackData* data) {
         switch (data->EventFlag) {
             case ImGuiInputTextFlags_CallbackCompletion: {
                 // Locate beginning of current word
@@ -266,26 +287,26 @@ namespace hob {
             }
 
             case ImGuiInputTextFlags_CallbackHistory: {
-                const int prev_history_pos = m_history_pos;
+                const int prev_history_pos = m_history_index;
 
                 if (data->EventKey == ImGuiKey_UpArrow) {
-                    if (m_history_pos == -1) {
-                        m_history_pos = static_cast<int>(m_history.size() - 1);
+                    if (m_history_index == -1) {
+                        m_history_index = static_cast<int>(m_history.size() - 1);
                     }
-                    else if (m_history_pos > 0) {
-                        --m_history_pos;
+                    else if (m_history_index > 0) {
+                        --m_history_index;
                     }
                 }
                 else if (data->EventKey == ImGuiKey_DownArrow) {
-                    if (m_history_pos != -1) {
-                        if (++m_history_pos >= static_cast<int>(m_history.size())) {
-                            m_history_pos = -1;
+                    if (m_history_index != -1) {
+                        if (++m_history_index >= static_cast<int>(m_history.size())) {
+                            m_history_index = -1;
                         }
                     }
                 }
 
-                if (prev_history_pos != m_history_pos) {
-                    const char* history_str = (m_history_pos >= 0) ? m_history[m_history_pos].c_str() : "";
+                if (prev_history_pos != m_history_index) {
+                    const char* history_str = (m_history_index >= 0) ? m_history[m_history_index].c_str() : "";
                     data->DeleteChars(0, data->BufTextLen);
                     data->InsertChars(0, history_str);
                 }
@@ -301,7 +322,7 @@ namespace hob {
         return 0;
     }
 
-    void AppConsole::trim_right_spaces(char* s) {
+    void Console::trim_right_spaces(char* s) {
         assert(s != nullptr && "cstring is null");
 
         char* end = s + std::strlen(s);
@@ -312,11 +333,11 @@ namespace hob {
         *end = '\0';
     }
 
-    unsigned char AppConsole::lower_uc(unsigned char c) {
+    unsigned char Console::lower_uc(unsigned char c) {
         return static_cast<unsigned char>(std::tolower(c));
     }
 
-    bool AppConsole::iequals(std::string_view a, std::string_view b) {
+    bool Console::iequals(std::string_view a, std::string_view b) {
         if (a.size() != b.size()) {
             return false;
         }
@@ -330,7 +351,7 @@ namespace hob {
         return true;
     }
 
-    bool AppConsole::istarts_with(std::string_view s, std::string_view prefix) {
+    bool Console::istarts_with(std::string_view s, std::string_view prefix) {
         if (prefix.size() > s.size()) {
             return false;
         }

@@ -1,7 +1,6 @@
 #include "app.h"
 
 #include <SDL3/SDL.h>
-#include <imgui.h>
 
 #include "debug.h"
 #include "timer.h"
@@ -14,7 +13,7 @@ namespace hob {
         : m_config(config)
         , m_sdl_context(config.graphics_config)
         , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
-        , m_app_console()
+        , m_console(*this)
         , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
         , m_input()
         , m_assets(m_sdl_context.get_renderer())
@@ -42,6 +41,11 @@ namespace hob {
                 if (event.type == SDL_EVENT_QUIT) {
                     is_running = false;
                 }
+                else if (event.type == SDL_EVENT_KEY_DOWN) {
+                    if (event.key.scancode == SDL_SCANCODE_GRAVE) {
+                        m_console.toggle_open();
+                    }
+                }
             }
 
             // - The ImGuiSystem needs to start a new frame after the events polling
@@ -60,8 +64,10 @@ namespace hob {
             const float scaled_delta_time = delta_time * m_timer.get_time_scale();
 
             // input.tick()
-            const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
-            m_input.tick(scaled_delta_time, keyboard_state);
+            if (!m_console.is_open()) {
+                const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
+                m_input.tick(scaled_delta_time, keyboard_state);
+            }
 
             // entities.tick()
             for (Entity* entity : ticking_entities) {
@@ -80,8 +86,9 @@ namespace hob {
 
             render_entities(renderable_entities);
 
-            bool open = true;
-            m_app_console.draw("Console", &open);
+            if (m_console.is_open()) {
+                m_console.render();
+            }
 
             m_imgui_system.frame_end();
             m_sdl_context.frame_end();

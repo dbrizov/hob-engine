@@ -5,26 +5,35 @@
 #include <vector>
 
 namespace hob {
-    class AppConsole {
-        static constexpr size_t INPUT_BUFF_SIZE = 256;
+    class App;
 
-        char m_input_buff[INPUT_BUFF_SIZE] = {};
-        std::vector<std::string> m_items;
+    class Console {
+        const App& m_app;
 
+        bool m_open = false;
+
+        char m_input_buffer[256] = {};
+
+        std::vector<std::string> m_log;
         bool m_scroll_to_bottom = false;
 
         std::vector<std::string> m_history;
-        int m_history_pos = -1; // -1: new line, [0..history-1] browsing history.
+        int m_history_index = -1; // -1: new line, [0..history-1] browsing history.
 
         std::vector<std::string> m_commands;
 
     public:
-        AppConsole();
+        Console(const App& app);
+
+        bool is_open() const;
+        void toggle_open();
 
         void add_log(const char* fmt, ...) IM_FMTARGS(2);
         void clear_log();
 
-        void draw(const char* title, bool* p_open);
+        void clear_input_buffer();
+
+        bool render();
 
     private:
         void exec_command(const char* command_line_cstr);

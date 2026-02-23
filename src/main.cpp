@@ -13,8 +13,8 @@
 #include "game/player_component.h"
 
 const std::string WINDOW_TITLE = "SDL2 Window";
-constexpr uint32_t WINDOW_WIDTH = 1152;
-constexpr uint32_t WINDOW_HEIGHT = 648;
+constexpr uint32_t WINDOW_WIDTH = 1600;
+constexpr uint32_t WINDOW_HEIGHT = 900;
 constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH;
 constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT;
 constexpr uint32_t PIXELS_PER_METER = 64;
