@@ -41,7 +41,7 @@ namespace hob {
         Entity* get_camera_entity() const;
 
     private:
-        void spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height);
+        void spawn_camera_entity();
 
         void resolve_requests();
         void resolve_spawn_requests();

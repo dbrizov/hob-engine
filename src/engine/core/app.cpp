@@ -12,14 +12,14 @@
 namespace hob {
     App::App(const AppConfig& config)
         : m_config(config)
-          , m_sdl_context(config.graphics_config)
-          , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
-          , m_app_console()
-          , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
-          , m_input()
-          , m_assets(m_sdl_context.get_renderer())
-          , m_physics(config.physics_config)
-          , m_entity_spawner(*this) {
+        , m_sdl_context(config.graphics_config)
+        , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
+        , m_app_console()
+        , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
+        , m_input()
+        , m_assets(m_sdl_context.get_renderer())
+        , m_physics(config.physics_config)
+        , m_entity_spawner(*this) {
     }
 
     void App::run() {

@@ -9,9 +9,9 @@
 namespace hob {
     ImGuiSystem::ImGuiSystem(SDL_Window* window, SDL_Renderer* renderer)
         : m_is_initialized(false)
-          , m_context(nullptr)
-          , m_window(window)
-          , m_renderer(renderer) {
+        , m_context(nullptr)
+        , m_window(window)
+        , m_renderer(renderer) {
         if (!m_window || !m_renderer) {
             fmt::println(stderr, "ImGuiSystem init failed: window/renderer is null");
             return;

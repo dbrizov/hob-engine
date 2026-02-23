@@ -11,7 +11,8 @@ namespace hob {
     }
 
     Vector2::Vector2(float x_, float y_)
-        : x(x_), y(y_) {
+        : x(x_)
+        , y(y_) {
     }
 
     float Vector2::length() const {

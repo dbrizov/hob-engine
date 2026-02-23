@@ -12,8 +12,7 @@
 namespace hob {
     EntitySpawner::EntitySpawner(App& app)
         : m_app(app) {
-        const GraphicsConfig& graphics_config = app.get_config().graphics_config;
-        spawn_camera_entity(graphics_config.logical_resolution_width, graphics_config.logical_resolution_height);
+        spawn_camera_entity();
     }
 
     EntitySpawner::~EntitySpawner() {
@@ -126,12 +125,10 @@ namespace hob {
         return camera_entity;
     }
 
-    void EntitySpawner::spawn_camera_entity(uint32_t logical_resolution_width, uint32_t logical_resolution_height) {
+    void EntitySpawner::spawn_camera_entity() {
         Entity& camera_entity = spawn_entity();
         camera_entity.set_priority(entity_priority::EP_CAMERA);
-
-        CameraComponent* camera_component = camera_entity.add_component<CameraComponent>();
-        camera_component->init(logical_resolution_width, logical_resolution_height);
+        camera_entity.add_component<CameraComponent>();
 
         m_camera_entity_id = camera_entity.get_id();
     }

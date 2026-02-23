@@ -5,13 +5,13 @@
 namespace hob {
     Timer::Timer(uint32_t fps, bool vsync_enabled)
         : m_target_fps(fps)
-          , m_vsync_enabled(vsync_enabled)
-          , m_time_scale(1.0f)
-          , m_play_time(0.0f)
-          , m_delta_time(0.0f)
-          , m_frequency(0)
-          , m_frame_start_ticks(0)
-          , m_last_frame_start_ticks(0) {
+        , m_vsync_enabled(vsync_enabled)
+        , m_time_scale(1.0f)
+        , m_play_time(0.0f)
+        , m_delta_time(0.0f)
+        , m_frequency(0)
+        , m_frame_start_ticks(0)
+        , m_last_frame_start_ticks(0) {
         m_frequency = SDL_GetPerformanceFrequency();
         m_frame_start_ticks = SDL_GetPerformanceCounter();
         m_last_frame_start_ticks = SDL_GetPerformanceCounter();

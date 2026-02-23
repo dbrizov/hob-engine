@@ -5,21 +5,8 @@
 #include "engine/entity/entity.h"
 
 namespace hob {
-    void CameraComponent::init(uint32_t logical_resolution_width, uint32_t logical_resolution_height) {
-        m_logical_resolution_width = logical_resolution_width;
-        m_logical_resolution_height = logical_resolution_height;
-    }
-
     CameraComponent::CameraComponent(Entity& entity)
         : Component(entity) {
-    }
-
-    uint32_t CameraComponent::get_logical_resolution_width() const {
-        return m_logical_resolution_width;
-    }
-
-    uint32_t CameraComponent::get_logical_resolution_height() const {
-        return m_logical_resolution_height;
     }
 
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position) const {
@@ -31,14 +18,16 @@ namespace hob {
     }
 
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position, const Vector2& camera_position) const {
-        float half_width = static_cast<float>(m_logical_resolution_width) * 0.5f;
-        float half_height = static_cast<float>(m_logical_resolution_height) * 0.5f;
+        const GraphicsConfig& graphics_config = get_app().get_config().graphics_config;
+
+        float half_width = static_cast<float>(graphics_config.logical_resolution_width) * 0.5f;
+        float half_height = static_cast<float>(graphics_config.logical_resolution_height) * 0.5f;
 
         // 1) Calculate world delta relative to camera
         Vector2 delta_meters = world_position - camera_position;
 
         // 2) Convert to pixels
-        float pixels_per_meter_f = static_cast<float>(get_app().get_config().graphics_config.pixels_per_meter);
+        float pixels_per_meter_f = static_cast<float>(graphics_config.pixels_per_meter);
         Vector2 delta_pixels = delta_meters * pixels_per_meter_f;
 
         // 3) Flip Y (because screen Y goes down)

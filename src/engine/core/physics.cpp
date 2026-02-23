@@ -34,11 +34,11 @@ namespace hob {
 
     Physics::Physics(const PhysicsConfig& physics_config)
         : m_physics_world(physics_config.gravity)
-          , m_accumulator(0.0f)
-          , m_fixed_delta_time(delta_time_from_ticks(physics_config.ticks_per_second))
-          , m_sub_steps_per_tick(physics_config.sub_steps_per_tick)
-          , m_interpolation_fraction(0.0f)
-          , m_interpolation_enabled(physics_config.interpolation_enabled) {
+        , m_accumulator(0.0f)
+        , m_fixed_delta_time(delta_time_from_ticks(physics_config.ticks_per_second))
+        , m_sub_steps_per_tick(physics_config.sub_steps_per_tick)
+        , m_interpolation_fraction(0.0f)
+        , m_interpolation_enabled(physics_config.interpolation_enabled) {
     }
 
     void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {

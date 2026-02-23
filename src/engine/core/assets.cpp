@@ -8,9 +8,9 @@
 namespace hob {
     Assets::Assets(SDL_Renderer* renderer)
         : m_renderer(renderer)
-          , m_next_texture_id(0)
-          , m_white_pixel_texture_id(INVALID_TEXTURE_ID)
-          , m_textures() {
+        , m_next_texture_id(0)
+        , m_white_pixel_texture_id(INVALID_TEXTURE_ID)
+        , m_textures() {
     }
 
     Assets::~Assets() {

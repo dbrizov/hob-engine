@@ -70,8 +70,8 @@ namespace hob {
 
     InputEvent::InputEvent(const char* ev_name, InputEventType ev_type, float ev_axis_value)
         : name(ev_name)
-          , type(ev_type)
-          , axis_value(ev_axis_value) {
+        , type(ev_type)
+        , axis_value(ev_axis_value) {
     }
 
     std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
