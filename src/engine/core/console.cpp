@@ -1,5 +1,7 @@
 #include "console.h"
 
+#include <cstring>
+
 #include "app.h"
 
 namespace hob {
