@@ -43,8 +43,9 @@ namespace hob {
     }
 
     bool Console::render() {
-        const float width = m_app.get_config().graphics_config.logical_resolution_width;
-        const float height = m_app.get_config().graphics_config.logical_resolution_height * 0.5f;
+        const GraphicsConfig& graphics_config = m_app.get_config().graphics_config;
+        const float width = static_cast<float>(graphics_config.logical_resolution_width);
+        const float height = static_cast<float>(graphics_config.logical_resolution_height) * 0.5f;
 
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImVec2(width, height));
@@ -80,14 +81,6 @@ namespace hob {
                           false,
                           ImGuiWindowFlags_HorizontalScrollbar);
         {
-            if (ImGui::BeginPopupContextWindow()) {
-                if (ImGui::Selectable("Clear")) {
-                    clear_log();
-                }
-
-                ImGui::EndPopup();
-            }
-
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
 
             if (copy_to_clipboard) {
