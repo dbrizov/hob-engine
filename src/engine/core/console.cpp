@@ -7,8 +7,8 @@
 #include "app.h"
 
 namespace hob {
-    Console::Console(const App& app) :
-        m_app(app) {
+    Console::Console(const App& app)
+        : m_app(app) {
         m_commands = {"help", "history", "clear"};
     }
 
