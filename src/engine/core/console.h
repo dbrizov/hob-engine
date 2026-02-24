@@ -3,6 +3,7 @@
 #include <format>
 #include <imgui.h>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace hob {
@@ -24,7 +25,7 @@ namespace hob {
         std::vector<std::string> m_commands;
 
     public:
-        Console(const App& app);
+        explicit Console(const App& app);
 
         bool is_open() const;
         void toggle_open();
@@ -42,7 +43,7 @@ namespace hob {
         bool render();
 
     private:
-        void execute_command(const char* command_line_cstr);
+        void execute_command(std::string_view command_line_sv);
 
         static int text_edit_callback_stub(ImGuiInputTextCallbackData* data);
         int text_edit_callback(ImGuiInputTextCallbackData* data);

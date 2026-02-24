@@ -1,6 +1,7 @@
 #include "console.h"
 
-#include <cstring>
+#include <algorithm>
+#include <cassert>
 
 #include "app.h"
 
@@ -47,7 +48,7 @@ namespace hob {
         ImGui::Text("|");
 
         ImGui::SameLine();
-        bool copy_to_clipboard = ImGui::SmallButton("Copy");
+        const bool copy_to_clipboard = ImGui::SmallButton("Copy");
 
         ImGui::SameLine();
         if (ImGui::SmallButton("Scroll to bottom")) {
@@ -75,21 +76,23 @@ namespace hob {
             }
 
             for (const std::string& s : m_log) {
-                const char* item = s.c_str();
-                if (!filter.PassFilter(item)) {
+                const char* item_cstr = s.c_str();
+                if (!filter.PassFilter(item_cstr)) {
                     continue;
                 }
 
+                const std::string_view item{s};
+
                 ImVec4 col(1, 1, 1, 1);
-                if (std::strstr(item, "[error]")) {
+                if (item.find("[error]") != std::string_view::npos) {
                     col = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
                 }
-                else if (std::strncmp(item, "# ", 2) == 0) {
+                else if (item.starts_with("# ")) {
                     col = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
                 }
 
                 ImGui::PushStyleColor(ImGuiCol_Text, col);
-                ImGui::TextUnformatted(item);
+                ImGui::TextUnformatted(item_cstr);
                 ImGui::PopStyleColor();
             }
 
@@ -120,7 +123,8 @@ namespace hob {
                              &text_edit_callback_stub,
                              this)) {
             trim_right_spaces(m_input_buffer);
-            if (m_input_buffer[0]) {
+
+            if (m_input_buffer[0] != '\0') {
                 execute_command(m_input_buffer);
             }
 
@@ -139,10 +143,10 @@ namespace hob {
         return true;
     }
 
-    void Console::execute_command(const char* command_line_cstr) {
-        std::string command_line = command_line_cstr;
+    void Console::execute_command(std::string_view command_line_sv) {
+        std::string command_line = std::string(command_line_sv);
 
-        add_log("# {}", command_line.c_str());
+        add_log("# {}", command_line);
 
         // Insert into history: remove duplicates, push to back
         m_history_index = -1;
@@ -164,16 +168,17 @@ namespace hob {
         else if (equals_ci(command_line, "help")) {
             add_log("Commands:");
             for (const auto& cmd : m_commands) {
-                add_log("- {}", cmd.c_str());
+                add_log("- {}", cmd);
             }
         }
         else if (equals_ci(command_line, "history")) {
-            const size_t start = m_history.size() >= 10 ? m_history.size() - 10 : 0;
-            for (size_t i = start; i < m_history.size(); ++i)
-                add_log("{:3}: {}", static_cast<int>(i), m_history[i].c_str());
+            const size_t start = (m_history.size() >= 10) ? (m_history.size() - 10) : 0;
+            for (size_t i = start; i < m_history.size(); ++i) {
+                add_log("{:3}: {}", static_cast<int>(i), m_history[i]);
+            }
         }
         else {
-            add_log("Unknown command: '{}'", command_line.c_str());
+            add_log("Unknown command: '{}'", command_line);
         }
     }
 
@@ -197,7 +202,7 @@ namespace hob {
                     --word_start;
                 }
 
-                std::string_view typed(word_start, static_cast<size_t>(word_end - word_start));
+                const std::string_view typed(word_start, static_cast<size_t>(word_end - word_start));
 
                 // Build candidates
                 std::vector<std::string_view> candidates;
