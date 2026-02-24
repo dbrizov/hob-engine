@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_APP_CONSOLE_H
-#define HOB_ENGINE_APP_CONSOLE_H
+#ifndef HOB_ENGINE_CONSOLE_H
+#define HOB_ENGINE_CONSOLE_H
 #include <format>
 #include <imgui.h>
 #include <string>
@@ -10,18 +10,18 @@ namespace hob {
     class App;
 
     class Console {
+        static constexpr ImColor LOG_ENTRY_COLOR_WHITE = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+        static constexpr ImColor LOG_ENTRY_COLOR_RED = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
+        static constexpr ImColor LOG_ENTRY_COLOR_ORANGE = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
+        static constexpr size_t INPUT_BUFFER_SIZE = 256;
+
         const App& m_app;
-
         bool m_open = false;
-
-        char m_input_buffer[256] = {};
-
+        char m_input_buffer[INPUT_BUFFER_SIZE] = {};
         std::vector<std::string> m_log;
-        bool m_scroll_to_bottom = false;
-
+        bool m_scroll_to_bottom = true;
         std::vector<std::string> m_history;
         int m_history_index = -1; // -1: new line, [0..history-1] browsing history.
-
         std::vector<std::string> m_commands;
 
     public:
@@ -30,17 +30,21 @@ namespace hob {
         bool is_open() const;
         void toggle_open();
 
+        void clear_input_buffer();
         void clear_log();
 
         template<typename... Args>
-        void add_log(std::format_string<Args...> fmt, Args&&... args) {
+        void log(std::format_string<Args...> fmt, Args&&... args) {
             m_log.emplace_back(std::format(fmt, std::forward<Args>(args)...));
             m_scroll_to_bottom = true;
         }
 
-        void clear_input_buffer();
+        template<typename... Args>
+        void log_error(std::format_string<Args...> fmt, Args&&... args) {
+            log("[error] {}", std::format(fmt, std::forward<Args>(args)...));
+        }
 
-        bool render();
+        void render();
 
     private:
         void execute_command(std::string_view command_line_sv);
@@ -56,4 +60,4 @@ namespace hob {
     };
 }
 
-#endif // HOB_ENGINE_APP_CONSOLE_H
+#endif //HOB_ENGINE_CONSOLE_H

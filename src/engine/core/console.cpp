@@ -8,7 +8,6 @@
 namespace hob {
     Console::Console(const App& app) :
         m_app(app) {
-        clear_log();
         m_commands = {"help", "history", "clear"};
     }
 
@@ -21,16 +20,16 @@ namespace hob {
         clear_input_buffer();
     }
 
+    void Console::clear_input_buffer() {
+        m_input_buffer[0] = '\0';
+    }
+
     void Console::clear_log() {
         m_log.clear();
         m_scroll_to_bottom = true;
     }
 
-    void Console::clear_input_buffer() {
-        m_input_buffer[0] = '\0';
-    }
-
-    bool Console::render() {
+    void Console::render() {
         const GraphicsConfig& graphics_config = m_app.get_config().graphics_config;
         const float width = static_cast<float>(graphics_config.logical_resolution_width);
         const float height = static_cast<float>(graphics_config.logical_resolution_height) * 0.5f;
@@ -39,7 +38,7 @@ namespace hob {
         ImGui::SetNextWindowSize(ImVec2(width, height));
         if (!ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoResize)) {
             ImGui::End();
-            return false;
+            return;
         }
 
         ImGui::TextWrapped("Enter 'help' for help, press TAB to use text completion.");
@@ -83,12 +82,12 @@ namespace hob {
 
                 const std::string_view item{s};
 
-                ImVec4 col(1, 1, 1, 1);
-                if (item.find("[error]") != std::string_view::npos) {
-                    col = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
+                ImVec4 col = LOG_ENTRY_COLOR_WHITE;
+                if (item.starts_with("[error]")) {
+                    col = LOG_ENTRY_COLOR_RED;
                 }
                 else if (item.starts_with("# ")) {
-                    col = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
+                    col = LOG_ENTRY_COLOR_ORANGE;
                 }
 
                 ImGui::PushStyleColor(ImGuiCol_Text, col);
@@ -140,13 +139,12 @@ namespace hob {
         }
 
         ImGui::End();
-        return true;
     }
 
     void Console::execute_command(std::string_view command_line_sv) {
         std::string command_line = std::string(command_line_sv);
 
-        add_log("# {}", command_line);
+        log("# {}", command_line);
 
         // Insert into history: remove duplicates, push to back
         m_history_index = -1;
@@ -166,19 +164,19 @@ namespace hob {
             clear_log();
         }
         else if (equals_ci(command_line, "help")) {
-            add_log("Commands:");
+            log("Commands:");
             for (const auto& cmd : m_commands) {
-                add_log("- {}", cmd);
+                log("- {}", cmd);
             }
         }
         else if (equals_ci(command_line, "history")) {
             const size_t start = (m_history.size() >= 10) ? (m_history.size() - 10) : 0;
             for (size_t i = start; i < m_history.size(); ++i) {
-                add_log("{:3}: {}", static_cast<int>(i), m_history[i]);
+                log("{:3}: {}", static_cast<int>(i), m_history[i]);
             }
         }
         else {
-            add_log("Unknown command: '{}'", command_line);
+            log_error("Unknown command: '{}'", command_line);
         }
     }
 
@@ -214,7 +212,7 @@ namespace hob {
                 }
 
                 if (candidates.empty()) {
-                    add_log("No match for '{}'!", typed);
+                    log("No match for '{}'!", typed);
                 }
                 else if (candidates.size() == 1) {
                     // Replace with single candidate + space
@@ -264,9 +262,9 @@ namespace hob {
                                           candidates[0].data() + match_len);
                     }
 
-                    add_log("Possible matches:");
+                    log("Possible matches:");
                     for (auto c : candidates) {
-                        add_log("- {}", c);
+                        log("- {}", c);
                     }
                 }
 
@@ -301,7 +299,7 @@ namespace hob {
             }
 
             default: {
-                add_log("Invalid event flag");
+                log_error("Invalid event flag");
                 return 1;
             };
         }
