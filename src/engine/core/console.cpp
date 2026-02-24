@@ -5,8 +5,8 @@
 #include "app.h"
 
 namespace hob {
-    Console::Console(const App& app)
-        : m_app(app) {
+    Console::Console(const App& app) :
+        m_app(app) {
         clear_log();
         m_commands = {"help", "history", "clear"};
     }
@@ -18,19 +18,6 @@ namespace hob {
     void Console::toggle_open() {
         m_open = !m_open;
         clear_input_buffer();
-    }
-
-    void Console::add_log(const char* fmt, ...) {
-        char buff[1024];
-
-        va_list args;
-        va_start(args, fmt);
-        std::vsnprintf(buff, IM_ARRAYSIZE(buff), fmt, args);
-        buff[IM_ARRAYSIZE(buff) - 1] = 0;
-        va_end(args);
-
-        m_log.emplace_back(buff);
-        m_scroll_to_bottom = true;
     }
 
     void Console::clear_log() {
@@ -134,7 +121,7 @@ namespace hob {
                              this)) {
             trim_right_spaces(m_input_buffer);
             if (m_input_buffer[0]) {
-                exec_command(m_input_buffer);
+                execute_command(m_input_buffer);
             }
 
             clear_input_buffer();
@@ -152,16 +139,16 @@ namespace hob {
         return true;
     }
 
-    void Console::exec_command(const char* command_line_cstr) {
+    void Console::execute_command(const char* command_line_cstr) {
         std::string command_line = command_line_cstr;
 
-        add_log("# %s", command_line.c_str());
+        add_log("# {}", command_line.c_str());
 
         // Insert into history: remove duplicates, push to back
         m_history_index = -1;
         auto it = std::find_if(m_history.begin(), m_history.end(),
                                [&](const std::string& h) {
-                                   return iequals(h, command_line);
+                                   return equals_ci(h, command_line);
                                });
 
         if (it != m_history.end()) {
@@ -171,22 +158,22 @@ namespace hob {
         m_history.push_back(command_line);
 
         // Process command
-        if (iequals(command_line, "clear")) {
+        if (equals_ci(command_line, "clear")) {
             clear_log();
         }
-        else if (iequals(command_line, "help")) {
+        else if (equals_ci(command_line, "help")) {
             add_log("Commands:");
             for (const auto& cmd : m_commands) {
-                add_log("- %s", cmd.c_str());
+                add_log("- {}", cmd.c_str());
             }
         }
-        else if (iequals(command_line, "history")) {
+        else if (equals_ci(command_line, "history")) {
             const size_t start = m_history.size() >= 10 ? m_history.size() - 10 : 0;
             for (size_t i = start; i < m_history.size(); ++i)
-                add_log("%3d: %s", static_cast<int>(i), m_history[i].c_str());
+                add_log("{:3}: {}", static_cast<int>(i), m_history[i].c_str());
         }
         else {
-            add_log("Unknown command: '%s'", command_line.c_str());
+            add_log("Unknown command: '{}'", command_line.c_str());
         }
     }
 
@@ -216,13 +203,13 @@ namespace hob {
                 std::vector<std::string_view> candidates;
                 candidates.reserve(m_commands.size());
                 for (const auto& cmd : m_commands) {
-                    if (istarts_with(cmd, typed)) {
+                    if (starts_with_ci(cmd, typed)) {
                         candidates.emplace_back(cmd);
                     }
                 }
 
                 if (candidates.empty()) {
-                    add_log("No match for \"%.*s\"!", static_cast<int>(typed.size()), typed.data());
+                    add_log("No match for '{}'!", typed);
                 }
                 else if (candidates.size() == 1) {
                     // Replace with single candidate + space
@@ -247,11 +234,11 @@ namespace hob {
                                 break;
                             }
 
-                            const int c = std::toupper(static_cast<unsigned char>(candidates[i][match_len]));
+                            const int ch = std::toupper(static_cast<unsigned char>(candidates[i][match_len]));
                             if (i == 0) {
-                                next_ch = c;
+                                next_ch = ch;
                             }
-                            else if (c != next_ch) {
+                            else if (ch != next_ch) {
                                 all_match = false;
                             }
                         }
@@ -274,7 +261,7 @@ namespace hob {
 
                     add_log("Possible matches:");
                     for (auto c : candidates) {
-                        add_log("- %.*s", static_cast<int>(c.size()), c.data());
+                        add_log("- {}", c);
                     }
                 }
 
@@ -328,17 +315,21 @@ namespace hob {
         *end = '\0';
     }
 
-    unsigned char Console::lower_uc(unsigned char c) {
+    unsigned char Console::to_upper(unsigned char c) {
+        return static_cast<unsigned char>(std::toupper(c));
+    }
+
+    unsigned char Console::to_lower(unsigned char c) {
         return static_cast<unsigned char>(std::tolower(c));
     }
 
-    bool Console::iequals(std::string_view a, std::string_view b) {
+    bool Console::equals_ci(std::string_view a, std::string_view b) {
         if (a.size() != b.size()) {
             return false;
         }
 
         for (size_t i = 0; i < a.size(); ++i) {
-            if (lower_uc(static_cast<unsigned char>(a[i])) != lower_uc(static_cast<unsigned char>(b[i]))) {
+            if (to_lower(static_cast<unsigned char>(a[i])) != to_lower(static_cast<unsigned char>(b[i]))) {
                 return false;
             }
         }
@@ -346,13 +337,13 @@ namespace hob {
         return true;
     }
 
-    bool Console::istarts_with(std::string_view s, std::string_view prefix) {
+    bool Console::starts_with_ci(std::string_view s, std::string_view prefix) {
         if (prefix.size() > s.size()) {
             return false;
         }
 
         for (size_t i = 0; i < prefix.size(); ++i) {
-            if (lower_uc(static_cast<unsigned char>(s[i])) != lower_uc(static_cast<unsigned char>(prefix[i]))) {
+            if (to_lower(static_cast<unsigned char>(s[i])) != to_lower(static_cast<unsigned char>(prefix[i]))) {
                 return false;
             }
         }

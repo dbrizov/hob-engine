@@ -1,5 +1,6 @@
 #ifndef HOB_ENGINE_APP_CONSOLE_H
 #define HOB_ENGINE_APP_CONSOLE_H
+#include <format>
 #include <imgui.h>
 #include <string>
 #include <vector>
@@ -28,23 +29,29 @@ namespace hob {
         bool is_open() const;
         void toggle_open();
 
-        void add_log(const char* fmt, ...) IM_FMTARGS(2);
         void clear_log();
+
+        template<typename... Args>
+        void add_log(std::format_string<Args...> fmt, Args&&... args) {
+            m_log.emplace_back(std::format(fmt, std::forward<Args>(args)...));
+            m_scroll_to_bottom = true;
+        }
 
         void clear_input_buffer();
 
         bool render();
 
     private:
-        void exec_command(const char* command_line_cstr);
+        void execute_command(const char* command_line_cstr);
 
         static int text_edit_callback_stub(ImGuiInputTextCallbackData* data);
         int text_edit_callback(ImGuiInputTextCallbackData* data);
 
         static void trim_right_spaces(char* s);
-        static unsigned char lower_uc(unsigned char c);
-        static bool iequals(std::string_view a, std::string_view b);
-        static bool istarts_with(std::string_view s, std::string_view prefix);
+        static unsigned char to_upper(unsigned char c);
+        static unsigned char to_lower(unsigned char c);
+        static bool equals_ci(std::string_view a, std::string_view b);
+        static bool starts_with_ci(std::string_view s, std::string_view prefix);
     };
 }
 
