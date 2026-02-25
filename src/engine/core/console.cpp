@@ -7,31 +7,351 @@
 #include "app.h"
 
 namespace hob {
+    // Helper functions
+    namespace {
+        void trim_right_spaces(char* s) {
+            assert(s != nullptr && "cstring is null");
+
+            char* end = s + std::strlen(s);
+            while (end > s && end[-1] == ' ') {
+                --end;
+            }
+
+            *end = '\0';
+        }
+
+        unsigned char to_lower(unsigned char c) {
+            return static_cast<unsigned char>(std::tolower(c));
+        }
+
+        bool equals_ci(std::string_view a, std::string_view b) {
+            if (a.size() != b.size()) {
+                return false;
+            }
+
+            for (size_t i = 0; i < a.size(); ++i) {
+                if (to_lower(static_cast<unsigned char>(a[i])) != to_lower(static_cast<unsigned char>(b[i]))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool starts_with_ci(std::string_view s, std::string_view prefix) {
+            if (prefix.size() > s.size()) {
+                return false;
+            }
+
+            for (size_t i = 0; i < prefix.size(); ++i) {
+                if (to_lower(static_cast<unsigned char>(s[i])) != to_lower(static_cast<unsigned char>(prefix[i]))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    // Console Backend
+    ConsoleBackend::ConsoleBackend() {
+        register_command("help", "List commands and cvars", [this](Args) { cmd_help(); });
+        register_command("cmdlist", "List commands", [this](Args) { cmd_cmdlist(); });
+        register_command("cvarlist", "List cvars", [this](Args) { cmd_cvarlist(); });
+    }
+
+    bool ConsoleBackend::register_command(std::string name, std::string help, CmdFunc func) {
+        std::string key = key_of(name);
+        Command command;
+        command.name = std::move(name);
+        command.help = std::move(help);
+        command.func = std::move(func);
+
+        bool registered = m_commands.emplace(std::move(key), std::move(command)).second;
+        return registered;
+    }
+
+    bool ConsoleBackend::register_cvar(std::string name,
+                                       std::string help,
+                                       std::string default_value,
+                                       CVarType type,
+                                       uint32_t flags,
+                                       std::function<void(const CVar&)> on_changed) {
+        std::string key = key_of(name);
+        CVar cvar;
+        cvar.name = std::move(name);
+        cvar.help = std::move(help);
+        cvar.type = type;
+        cvar.flags = flags;
+        cvar.value = default_value;
+        cvar.default_value = std::move(default_value);
+        cvar.on_changed = std::move(on_changed);
+
+        bool registered = m_cvars.emplace(std::move(key), std::move(cvar)).second;
+        return registered;
+    }
+
+    void ConsoleBackend::execute_line(std::string_view line) {
+        std::vector<std::string> tokens = tokenize(line);
+        if (tokens.empty()) {
+            return;
+        }
+
+        std::string key = key_of(tokens[0]);
+
+        // command?
+        if (auto it = m_commands.find(key); it != m_commands.end()) {
+            it->second.func(tokens);
+            return;
+        }
+
+        // cvar?
+        if (auto it = m_cvars.find(key); it != m_cvars.end()) {
+            execute_cvar(it->second, tokens);
+            return;
+        }
+
+        if (print_error) {
+            print_error(std::format("Unknown command/cvar: '{}'", std::string(tokens[0])));
+        }
+    }
+
+    std::vector<std::string_view> ConsoleBackend::complete(std::string_view prefix) {
+        std::vector<std::string_view> out;
+        out.reserve(m_commands.size() + m_cvars.size());
+
+        for (auto& [_, cmd] : m_commands) {
+            if (starts_with_ci(cmd.name, prefix)) {
+                out.push_back(cmd.name);
+            }
+        }
+
+        for (auto& [_, cv] : m_cvars)
+            if (starts_with_ci(cv.name, prefix))
+                out.push_back(cv.name);
+
+        std::sort(out.begin(), out.end(), [](std::string_view a, std::string_view b) {
+            return a < b;
+        });
+        return out;
+    }
+
+    const ConsoleBackend::Command* ConsoleBackend::find_command(std::string_view name) const {
+        const auto it = m_commands.find(key_of(name));
+        if (it != m_commands.end()) {
+            return &it->second;
+        }
+
+        return nullptr;
+    }
+
+    const ConsoleBackend::CVar* ConsoleBackend::find_cvar(std::string_view name) const {
+        const auto it = m_cvars.find(key_of(name));
+        if (it != m_cvars.end()) {
+            return &it->second;
+        }
+
+        return nullptr;
+    }
+
+    std::string ConsoleBackend::key_of(std::string_view s) {
+        std::string key(s);
+        std::transform(key.begin(), key.end(), key.begin(), to_lower);
+
+        return key;
+    }
+
+    std::vector<std::string> ConsoleBackend::tokenize(std::string_view line) {
+        std::vector<std::string> tokens;
+        std::string current_token;
+        bool in_quotes = false;
+
+        auto push = [&] {
+            if (!current_token.empty()) {
+                tokens.push_back(current_token);
+                current_token.clear();
+            }
+        };
+
+        for (char ch : line) {
+            if (ch == '"') {
+                in_quotes = !in_quotes;
+                continue;
+            }
+
+            if (!in_quotes && (ch == ' ' || ch == '\t')) {
+                push();
+                continue;
+            }
+
+            current_token.push_back(ch);
+        }
+
+        push();
+
+        return tokens;
+    }
+
+    void ConsoleBackend::execute_cvar(CVar& cvar, Args args) {
+        if (args.size() == 1) {
+            if (print) {
+                print(cvar.to_string());
+            }
+
+            return;
+        }
+
+        if (cvar.flags & ReadOnly) {
+            if (print_error) {
+                print_error(std::format("{} is read-only.", cvar.name));
+            }
+
+            return;
+        }
+
+        // Join args[1..] with spaces (so quotes are optional)
+        std::string new_value = args[1];
+        for (size_t i = 2; i < args.size(); ++i) {
+            new_value.push_back(' ');
+            new_value += args[i];
+        }
+
+        cvar.value = std::move(new_value);
+        if (cvar.on_changed)
+            cvar.on_changed(cvar);
+
+        if (print) {
+            print(std::format("{} set to '{}'", cvar.name, cvar.value));
+        }
+    }
+
+    void ConsoleBackend::cmd_help() const {
+        uint32_t max_name_size = 0;
+        for (const auto& [_, cmd] : m_commands) {
+            uint32_t name_size = cmd.name.size();
+            if (name_size > max_name_size) {
+                max_name_size = name_size;
+            }
+        }
+
+        for (const auto& [_, cvar] : m_cvars) {
+            uint32_t name_size = cvar.name.size();
+            if (name_size > max_name_size) {
+                max_name_size = name_size;
+            }
+        }
+
+        cmd_cmdlist(max_name_size);
+        cmd_cvarlist(max_name_size);
+    }
+
+    void ConsoleBackend::cmd_cmdlist(uint32_t indent) const {
+        if (!print) {
+            return;
+        }
+
+        print("Commands:");
+
+        std::vector<std::string_view> names;
+        names.reserve(m_commands.size());
+
+        uint32_t max_name_size = indent;
+        for (const auto& [_, cmd] : m_commands) {
+            names.push_back(cmd.name);
+
+            uint32_t name_size = cmd.name.size();
+            if (name_size > max_name_size) {
+                max_name_size = name_size;
+            }
+        }
+
+        std::sort(names.begin(), names.end());
+
+        for (const auto& name : names) {
+            const Command* command = find_command(name);
+            print(std::format("- {}", command->to_string(max_name_size)));
+        }
+    }
+
+    void ConsoleBackend::cmd_cvarlist(uint32_t indent) const {
+        if (!print) {
+            return;
+        }
+
+        print("CVars:");
+
+        std::vector<std::string_view> names;
+        names.reserve(m_cvars.size());
+
+        uint32_t max_name_size = indent;
+        for (const auto& [_, cvar] : m_cvars) {
+            names.push_back(cvar.name);
+
+            uint32_t name_size = cvar.name.size();
+            if (name_size > max_name_size) {
+                max_name_size = name_size;
+            }
+        }
+
+        std::sort(names.begin(), names.end());
+
+        std::vector<std::string> dummy_args;
+        for (const auto& name : names) {
+            const CVar* cvar = find_cvar(name);
+            print(std::format("- {}", cvar->to_string(max_name_size)));
+        }
+    }
+
+    // Console Frontend
     Console::Console(const App& app)
         : m_app(app) {
-
         // Wire backend output into frontend log
         m_backend.print = [this](std::string_view s) {
             log("{}", s);
         };
+
         m_backend.print_error = [this](std::string_view s) {
             log_error("{}", s);
         };
 
         // Frontend-specific commands that touch UI state
-        m_backend.register_command("clear", "Clear console log", [this](ConsoleBackend::Args){
+        m_backend.register_command("clear", "Clear console log", [this](ConsoleBackend::Args) {
             clear_log();
         });
 
-        m_backend.register_command("history", "Show last 10 commands", [this](ConsoleBackend::Args){
+        m_backend.register_command("history", "Show last 10 commands", [this](ConsoleBackend::Args) {
             const size_t start = (m_history.size() >= 10) ? (m_history.size() - 10) : 0;
             for (size_t i = start; i < m_history.size(); ++i)
                 log("{:3}: {}", (int)i, m_history[i]);
         });
 
-        // Example CVars (you'd move this to engine init)
-        m_backend.register_cvar("g_godmode", "God mode", "0", ConsoleBackend::CVarType::Bool);
-        m_backend.register_cvar("r_fov", "Field of view", "90", ConsoleBackend::CVarType::Int);
+        // Test CVars
+        m_backend.register_cvar(
+            "g_godmode",
+            "God mode",
+            "0",
+            ConsoleBackend::CVarType::Bool);
+
+        m_backend.register_cvar(
+            "r_fps",
+            "Frames per second",
+            "60",
+            ConsoleBackend::CVarType::Int,
+            ConsoleBackend::CVarFlags::Archive);
+
+        m_backend.register_cvar(
+            "phys_hz",
+            "Physics ticks per second",
+            "60",
+            ConsoleBackend::CVarType::Int,
+            ConsoleBackend::CVarFlags::Archive);
+
+        m_backend.register_cvar(
+            "phys_debug_draw",
+            "Debug draw physics colliders",
+            "1",
+            ConsoleBackend::CVarType::Bool,
+            ConsoleBackend::CVarFlags::Archive);
     }
 
     bool Console::is_open() const {
@@ -173,11 +493,12 @@ namespace hob {
         m_history_index = -1;
         auto it = std::find_if(m_history.begin(), m_history.end(),
                                [&](const std::string& h) { return equals_ci(h, command_line); });
-        if (it != m_history.end()) m_history.erase(it);
+        if (it != m_history.end())
+            m_history.erase(it);
         m_history.push_back(command_line);
 
         // execute (backend-owned)
-        m_backend.exec_line(command_line);
+        m_backend.execute_line(command_line);
     }
 
     int Console::text_edit_callback_stub(ImGuiInputTextCallbackData* data) {
@@ -299,52 +620,5 @@ namespace hob {
         }
 
         return 0;
-    }
-
-    void Console::trim_right_spaces(char* s) {
-        assert(s != nullptr && "cstring is null");
-
-        char* end = s + std::strlen(s);
-        while (end > s && end[-1] == ' ') {
-            --end;
-        }
-
-        *end = '\0';
-    }
-
-    unsigned char Console::to_upper(unsigned char c) {
-        return static_cast<unsigned char>(std::toupper(c));
-    }
-
-    unsigned char Console::to_lower(unsigned char c) {
-        return static_cast<unsigned char>(std::tolower(c));
-    }
-
-    bool Console::equals_ci(std::string_view a, std::string_view b) {
-        if (a.size() != b.size()) {
-            return false;
-        }
-
-        for (size_t i = 0; i < a.size(); ++i) {
-            if (to_lower(static_cast<unsigned char>(a[i])) != to_lower(static_cast<unsigned char>(b[i]))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool Console::starts_with_ci(std::string_view s, std::string_view prefix) {
-        if (prefix.size() > s.size()) {
-            return false;
-        }
-
-        for (size_t i = 0; i < prefix.size(); ++i) {
-            if (to_lower(static_cast<unsigned char>(s[i])) != to_lower(static_cast<unsigned char>(prefix[i]))) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
