@@ -77,7 +77,7 @@ namespace hob {
                            std::string help,
                            std::string default_value,
                            CVarType type,
-                           uint32_t flags = None,
+                           CVarFlags flags = None,
                            std::function<void(const CVar&)> on_changed = {});
 
         void execute_line(std::string_view line);
@@ -92,6 +92,7 @@ namespace hob {
         static std::string key_of(std::string_view s);
         static std::vector<std::string> tokenize(std::string_view line);
 
+        void execute_command(const Command& command, Args args);
         void execute_cvar(CVar& cvar, Args args);
 
         // Built-in commands
@@ -139,7 +140,7 @@ namespace hob {
         void render();
 
     private:
-        void execute_command(std::string_view command_line_sv);
+        void execute_line(std::string_view line);
 
         static int text_edit_callback_stub(ImGuiInputTextCallbackData* data);
         int text_edit_callback(ImGuiInputTextCallbackData* data);

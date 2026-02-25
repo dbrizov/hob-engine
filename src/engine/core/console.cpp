@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <ranges>
 
 #include "app.h"
 
@@ -75,7 +76,7 @@ namespace hob {
                                        std::string help,
                                        std::string default_value,
                                        CVarType type,
-                                       uint32_t flags,
+                                       CVarFlags flags,
                                        std::function<void(const CVar&)> on_changed) {
         std::string key = key_of(name);
         CVar cvar;
@@ -99,15 +100,17 @@ namespace hob {
 
         std::string key = key_of(tokens[0]);
 
-        // command?
+        auto args = tokens | std::views::drop(1);
+
+        // Command?
         if (auto it = m_commands.find(key); it != m_commands.end()) {
-            it->second.func(tokens);
+            execute_command(it->second, args);
             return;
         }
 
-        // cvar?
+        // CVar?
         if (auto it = m_cvars.find(key); it != m_cvars.end()) {
-            execute_cvar(it->second, tokens);
+            execute_cvar(it->second, args);
             return;
         }
 
@@ -117,23 +120,24 @@ namespace hob {
     }
 
     std::vector<std::string_view> ConsoleBackend::complete(std::string_view prefix) {
-        std::vector<std::string_view> out;
-        out.reserve(m_commands.size() + m_cvars.size());
+        std::vector<std::string_view> candidates;
+        candidates.reserve(m_commands.size() + m_cvars.size());
 
         for (auto& [_, cmd] : m_commands) {
             if (starts_with_ci(cmd.name, prefix)) {
-                out.push_back(cmd.name);
+                candidates.push_back(cmd.name);
             }
         }
 
-        for (auto& [_, cv] : m_cvars)
-            if (starts_with_ci(cv.name, prefix))
-                out.push_back(cv.name);
+        for (auto& [_, cvar] : m_cvars)
+            if (starts_with_ci(cvar.name, prefix))
+                candidates.push_back(cvar.name);
 
-        std::sort(out.begin(), out.end(), [](std::string_view a, std::string_view b) {
+        std::sort(candidates.begin(), candidates.end(), [](std::string_view a, std::string_view b) {
             return a < b;
         });
-        return out;
+
+        return candidates;
     }
 
     const ConsoleBackend::Command* ConsoleBackend::find_command(std::string_view name) const {
@@ -192,8 +196,12 @@ namespace hob {
         return tokens;
     }
 
+    void ConsoleBackend::execute_command(const Command& command, Args args) {
+        command.func(args);
+    }
+
     void ConsoleBackend::execute_cvar(CVar& cvar, Args args) {
-        if (args.size() == 1) {
+        if (args.size() == 0) {
             if (print) {
                 print(cvar.to_string());
             }
@@ -209,16 +217,17 @@ namespace hob {
             return;
         }
 
-        // Join args[1..] with spaces (so quotes are optional)
-        std::string new_value = args[1];
-        for (size_t i = 2; i < args.size(); ++i) {
+        // Join args with spaces (so quotes are optional)
+        std::string new_value = args[0];
+        for (size_t i = 1; i < args.size(); ++i) {
             new_value.push_back(' ');
             new_value += args[i];
         }
 
         cvar.value = std::move(new_value);
-        if (cvar.on_changed)
+        if (cvar.on_changed) {
             cvar.on_changed(cvar);
+        }
 
         if (print) {
             print(std::format("{} set to '{}'", cvar.name, cvar.value));
@@ -467,7 +476,7 @@ namespace hob {
             trim_right_spaces(m_input_buffer);
 
             if (m_input_buffer[0] != '\0') {
-                execute_command(m_input_buffer);
+                execute_line(m_input_buffer);
             }
 
             clear_input_buffer();
@@ -484,17 +493,22 @@ namespace hob {
         ImGui::End();
     }
 
-    void Console::execute_command(std::string_view command_line_sv) {
-        std::string command_line(command_line_sv);
+    void Console::execute_line(std::string_view line) {
+        std::string command_line(line);
 
         log("# {}", command_line);
 
         // history (frontend-owned)
         m_history_index = -1;
         auto it = std::find_if(m_history.begin(), m_history.end(),
-                               [&](const std::string& h) { return equals_ci(h, command_line); });
-        if (it != m_history.end())
+                               [&](const std::string& h) {
+                                   return equals_ci(h, command_line);
+                               });
+
+        if (it != m_history.end()) {
             m_history.erase(it);
+        }
+
         m_history.push_back(command_line);
 
         // execute (backend-owned)
@@ -521,9 +535,8 @@ namespace hob {
                     --word_start;
                 }
 
+                // Log candidates
                 const std::string_view typed(word_start, static_cast<size_t>(word_end - word_start));
-
-                // Build candidates
                 std::vector<std::string_view> candidates = m_backend.complete(typed);
 
                 if (candidates.empty()) {
