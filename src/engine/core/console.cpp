@@ -9,7 +9,29 @@
 namespace hob {
     Console::Console(const App& app)
         : m_app(app) {
-        m_commands = {"help", "history", "clear"};
+
+        // Wire backend output into frontend log
+        m_backend.print = [this](std::string_view s) {
+            log("{}", s);
+        };
+        m_backend.print_error = [this](std::string_view s) {
+            log_error("{}", s);
+        };
+
+        // Frontend-specific commands that touch UI state
+        m_backend.register_command("clear", "Clear console log", [this](ConsoleBackend::Args){
+            clear_log();
+        });
+
+        m_backend.register_command("history", "Show last 10 commands", [this](ConsoleBackend::Args){
+            const size_t start = (m_history.size() >= 10) ? (m_history.size() - 10) : 0;
+            for (size_t i = start; i < m_history.size(); ++i)
+                log("{:3}: {}", (int)i, m_history[i]);
+        });
+
+        // Example CVars (you'd move this to engine init)
+        m_backend.register_cvar("g_godmode", "God mode", "0", ConsoleBackend::CVarType::Bool);
+        m_backend.register_cvar("r_fov", "Field of view", "90", ConsoleBackend::CVarType::Int);
     }
 
     bool Console::is_open() const {
@@ -143,42 +165,19 @@ namespace hob {
     }
 
     void Console::execute_command(std::string_view command_line_sv) {
-        std::string command_line = std::string(command_line_sv);
+        std::string command_line(command_line_sv);
 
         log("# {}", command_line);
 
-        // Insert into history: remove duplicates, push to back
+        // history (frontend-owned)
         m_history_index = -1;
         auto it = std::find_if(m_history.begin(), m_history.end(),
-                               [&](const std::string& h) {
-                                   return equals_ci(h, command_line);
-                               });
-
-        if (it != m_history.end()) {
-            m_history.erase(it);
-        }
-
+                               [&](const std::string& h) { return equals_ci(h, command_line); });
+        if (it != m_history.end()) m_history.erase(it);
         m_history.push_back(command_line);
 
-        // Process command
-        if (equals_ci(command_line, "clear")) {
-            clear_log();
-        }
-        else if (equals_ci(command_line, "help")) {
-            log("Commands:");
-            for (const auto& cmd : m_commands) {
-                log("- {}", cmd);
-            }
-        }
-        else if (equals_ci(command_line, "history")) {
-            const size_t start = (m_history.size() >= 10) ? (m_history.size() - 10) : 0;
-            for (size_t i = start; i < m_history.size(); ++i) {
-                log("{:3}: {}", static_cast<int>(i), m_history[i]);
-            }
-        }
-        else {
-            log_error("Unknown command: '{}'", command_line);
-        }
+        // execute (backend-owned)
+        m_backend.exec_line(command_line);
     }
 
     int Console::text_edit_callback_stub(ImGuiInputTextCallbackData* data) {
@@ -204,13 +203,7 @@ namespace hob {
                 const std::string_view typed(word_start, static_cast<size_t>(word_end - word_start));
 
                 // Build candidates
-                std::vector<std::string_view> candidates;
-                candidates.reserve(m_commands.size());
-                for (const auto& cmd : m_commands) {
-                    if (starts_with_ci(cmd, typed)) {
-                        candidates.emplace_back(cmd);
-                    }
-                }
+                std::vector<std::string_view> candidates = m_backend.complete(typed);
 
                 if (candidates.empty()) {
                     log("No match for '{}'!", typed);
