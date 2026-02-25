@@ -58,11 +58,11 @@ namespace hob {
         BindingId binding_id = m_next_binding_id;
         m_next_binding_id += 1;
 
-        if (event_type == InputEventType::PRESSED) {
+        if (event_type == InputEventType::Pressed) {
             auto& bindings = m_action_pressed_bindings[action_name];
             bindings.emplace_back(binding_id, std::move(function));
         }
-        else if (event_type == InputEventType::RELEASED) {
+        else if (event_type == InputEventType::Released) {
             auto& bindings = m_action_released_bindings[action_name];
             bindings.emplace_back(binding_id, std::move(function));
         }
@@ -102,7 +102,7 @@ namespace hob {
 
     void InputComponent::on_input_event(const InputEvent& event) {
         switch (event.type) {
-            case InputEventType::AXIS: {
+            case InputEventType::Axis: {
                 auto it = m_axis_bindings.find(event.name);
                 if (it == m_axis_bindings.end()) {
                     return;
@@ -115,7 +115,7 @@ namespace hob {
                 break;
             }
 
-            case InputEventType::PRESSED: {
+            case InputEventType::Pressed: {
                 auto it = m_action_pressed_bindings.find(event.name);
                 if (it == m_action_pressed_bindings.end()) {
                     return;
@@ -128,7 +128,7 @@ namespace hob {
                 break;
             }
 
-            case InputEventType::RELEASED: {
+            case InputEventType::Released: {
                 auto it = m_action_released_bindings.find(event.name);
                 if (it == m_action_released_bindings.end()) {
                     return;

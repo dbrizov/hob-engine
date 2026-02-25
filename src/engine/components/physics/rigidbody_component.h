@@ -6,14 +6,14 @@
 
 namespace hob {
     enum class BodyType {
-        STATIC,
-        DYNAMIC,
-        KINEMATIC
+        Static,
+        Dynamic,
+        Kinematic
     };
 
     class RigidbodyComponent : public Component {
         b2BodyId m_body_id = b2_nullBodyId;
-        BodyType m_body_type = BodyType::STATIC;
+        BodyType m_body_type = BodyType::Static;
         bool m_has_fixed_rotation = false;
 
     public:

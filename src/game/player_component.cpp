@@ -24,7 +24,7 @@ namespace game {
             set_movement_input_y(axis);
         });
 
-        m_slow_motion_action_id = input_component->bind_action("slow_motion", hob::InputEventType::PRESSED, [this]() {
+        m_slow_motion_action_id = input_component->bind_action("slow_motion", hob::InputEventType::Pressed, [this]() {
             toggle_slow_motion();
         });
     }

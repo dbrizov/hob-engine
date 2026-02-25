@@ -14,7 +14,7 @@ namespace hob {
     CharacterBodyComponent::CharacterBodyComponent(Entity& entity)
         : Component(entity) {
         m_rigidbody = entity.add_component<RigidbodyComponent>();
-        m_rigidbody->set_body_type(BodyType::KINEMATIC);
+        m_rigidbody->set_body_type(BodyType::Kinematic);
         m_rigidbody->set_fixed_rotation(true);
 
         m_capsule_collider = entity.add_component<CapsuleColliderComponent>();

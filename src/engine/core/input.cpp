@@ -123,10 +123,10 @@ namespace hob {
                 bool pressed_before = m_pressed_keys_last_frame.test(key);
 
                 if (pressed_now && !pressed_before) {
-                    dispatch_event(InputEvent(action.c_str(), InputEventType::PRESSED, 0.0f));
+                    dispatch_event(InputEvent(action.c_str(), InputEventType::Pressed, 0.0f));
                 }
                 else if (!pressed_now && pressed_before) {
-                    dispatch_event(InputEvent(action.c_str(), InputEventType::RELEASED, 0.0f));
+                    dispatch_event(InputEvent(action.c_str(), InputEventType::Released, 0.0f));
                 }
             }
         }
@@ -164,7 +164,7 @@ namespace hob {
                 axis_value = std::max(axis_value - mapping.acceleration * delta_time, -1.0f);
             }
 
-            dispatch_event(InputEvent(axis.c_str(), InputEventType::AXIS, axis_value));
+            dispatch_event(InputEvent(axis.c_str(), InputEventType::Axis, axis_value));
         }
     }
 

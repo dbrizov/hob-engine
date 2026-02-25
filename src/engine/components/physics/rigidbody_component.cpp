@@ -21,13 +21,13 @@ namespace hob {
         body_def.rotation = Physics::radians_to_b2Rot(rotation_radians);
 
         switch (m_body_type) {
-            case BodyType::STATIC:
+            case BodyType::Static:
                 body_def.type = b2_staticBody;
                 break;
-            case BodyType::DYNAMIC:
+            case BodyType::Dynamic:
                 body_def.type = b2_dynamicBody;
                 break;
-            case BodyType::KINEMATIC:
+            case BodyType::Kinematic:
                 body_def.type = b2_kinematicBody;
                 break;
         }

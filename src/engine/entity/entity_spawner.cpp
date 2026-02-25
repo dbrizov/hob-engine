@@ -87,7 +87,7 @@ namespace hob {
             }
 
             const RigidbodyComponent* rigidbody = entity->get_rigidbody();
-            if (rigidbody == nullptr || !rigidbody->has_body() || rigidbody->get_body_type() == BodyType::STATIC) {
+            if (rigidbody == nullptr || !rigidbody->has_body() || rigidbody->get_body_type() == BodyType::Static) {
                 continue;
             }
 

@@ -10,9 +10,9 @@
 
 namespace hob {
     enum class InputEventType {
-        AXIS,
-        PRESSED,
-        RELEASED,
+        Axis,
+        Pressed,
+        Released,
     };
 
     struct InputEvent {

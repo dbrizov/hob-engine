@@ -66,7 +66,7 @@ hob::Entity& spawn_static_box(hob::App& app, const hob::Vector2& position, float
     entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
     hob::RigidbodyComponent* rigidbody = entity.add_component<hob::RigidbodyComponent>();
-    rigidbody->set_body_type(hob::BodyType::STATIC);
+    rigidbody->set_body_type(hob::BodyType::Static);
 
     hob::BoxColliderComponent* box_collider = entity.add_component<hob::BoxColliderComponent>();
     box_collider->set_collision_layer(COLLISION_BIT_STATIC);
@@ -82,7 +82,7 @@ hob::Entity& spawn_dynamic_box(hob::App& app, const hob::Vector2& position, floa
     entity.get_transform()->set_rotation_degrees(rotation_degrees);
 
     hob::RigidbodyComponent* rigidbody = entity.add_component<hob::RigidbodyComponent>();
-    rigidbody->set_body_type(hob::BodyType::DYNAMIC);
+    rigidbody->set_body_type(hob::BodyType::Dynamic);
 
     hob::BoxColliderComponent* box_collider = entity.add_component<hob::BoxColliderComponent>();
     box_collider->set_collision_layer(COLLISION_BIT_DYNAMIC);

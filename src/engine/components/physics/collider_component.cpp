@@ -45,13 +45,13 @@ namespace hob {
         else {
             BodyType body_type = get_entity().get_rigidbody()->get_body_type();
             switch (body_type) {
-                case BodyType::STATIC:
+                case BodyType::Static:
                     color = Color::red();
                     break;
-                case BodyType::DYNAMIC:
+                case BodyType::Dynamic:
                     color = Color::green();
                     break;
-                case BodyType::KINEMATIC:
+                case BodyType::Kinematic:
                     color = Color::yellow();
                     break;
             }

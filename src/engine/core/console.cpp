@@ -201,7 +201,7 @@ namespace hob {
     }
 
     void ConsoleBackend::execute_cvar(CVar& cvar, Args args) {
-        if (args.size() == 0) {
+        if (args.empty()) {
             if (print) {
                 print(cvar.to_string());
             }
