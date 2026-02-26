@@ -1,6 +1,6 @@
 #include "render.h"
 
-#include <fmt/format.h>
+#include <format>
 
 namespace hob {
     Color::Color()
@@ -55,6 +55,6 @@ namespace hob {
     }
 
     std::string Color::to_string() const {
-        return fmt::format("({}, {}, {}, {})", r, g, b, a);
+        return std::format("({}, {}, {}, {})", r, g, b, a);
     }
 }

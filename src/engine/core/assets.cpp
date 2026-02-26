@@ -3,7 +3,8 @@
 #include <SDL3_image/SDL_image.h>
 #include <SDL3/SDL_render.h>
 #include <cassert>
-#include <fmt/base.h>
+
+#include "logging.h"
 
 namespace hob {
     Assets::Assets(SDL_Renderer* renderer)
@@ -23,7 +24,7 @@ namespace hob {
             return it->second;
         }
 
-        fmt::println(stderr, "Assets::get_texture failed. Invalid texture id: {}", id);
+        debug::log_error("Assets::get_texture failed. Invalid texture id: {}", id);
         return nullptr;
     }
 
@@ -52,7 +53,7 @@ namespace hob {
     TextureId Assets::load_texture(const std::filesystem::path& path) {
         SDL_Texture* texture = IMG_LoadTexture(m_renderer, path.string().c_str());
         if (!texture) {
-            fmt::println(stderr, "IMG_LoadTexture failed: {}", SDL_GetError());
+            debug::log_error("IMG_LoadTexture failed: {}", SDL_GetError());
             return INVALID_TEXTURE_ID;
         }
 
@@ -83,6 +84,6 @@ namespace hob {
         }
 
         m_textures.clear();
-        fmt::println("Assets::unload_all_textures()");
+        debug::log("Assets::unload_all_textures()");
     }
 }

@@ -4,7 +4,8 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 #include <SDL3/SDL_render.h>
-#include <fmt/base.h>
+
+#include "logging.h"
 
 namespace hob {
     ImGuiSystem::ImGuiSystem(SDL_Window* window, SDL_Renderer* renderer)
@@ -13,7 +14,7 @@ namespace hob {
         , m_window(window)
         , m_renderer(renderer) {
         if (!m_window || !m_renderer) {
-            fmt::println(stderr, "ImGuiSystem init failed: window/renderer is null");
+            debug::log_error("ImGuiSystem init failed: window/renderer is null");
             return;
         }
 
@@ -22,11 +23,11 @@ namespace hob {
         // Create context
         m_context = ImGui::CreateContext();
         if (!m_context) {
-            fmt::println(stderr, "ImGui_CreateContext failed");
+            debug::log_error("ImGui_CreateContext failed");
             return;
         }
 
-        fmt::println("ImGui_CreateContext()");
+        debug::log("ImGui_CreateContext()");
 
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -36,22 +37,22 @@ namespace hob {
 
         // Init backend for SDL
         if (!ImGui_ImplSDL3_InitForSDLRenderer(m_window, m_renderer)) {
-            fmt::println(stderr, "ImGui_ImplSDL3_InitForSDLRenderer failed");
+            debug::log_error("ImGui_ImplSDL3_InitForSDLRenderer failed");
             ImGui::DestroyContext(m_context);
             return;
         }
 
-        fmt::println("ImGui_ImplSDL3_InitForSDLRenderer");
+        debug::log("ImGui_ImplSDL3_InitForSDLRenderer");
 
         // Init backend for SDL_Renderer
         if (!ImGui_ImplSDLRenderer3_Init(m_renderer)) {
-            fmt::println(stderr, "ImGui_ImplSDLRenderer3_Init failed");
+            debug::log_error("ImGui_ImplSDLRenderer3_Init failed");
             ImGui_ImplSDL3_Shutdown();
             ImGui::DestroyContext(m_context);
             return;
         }
 
-        fmt::println("ImGui_ImplSDLRenderer3_Init");
+        debug::log("ImGui_ImplSDLRenderer3_Init");
 
         m_is_initialized = true;
     }
@@ -62,13 +63,13 @@ namespace hob {
         }
 
         ImGui_ImplSDLRenderer3_Shutdown();
-        fmt::println("ImGui_ImplSDLRenderer3_Shutdown");
+        debug::log("ImGui_ImplSDLRenderer3_Shutdown");
 
         ImGui_ImplSDL3_Shutdown();
-        fmt::println("ImGui_ImplSDL3_Shutdown");
+        debug::log("ImGui_ImplSDL3_Shutdown");
 
         ImGui::DestroyContext(m_context);
-        fmt::println("ImGui_DestroyContext");
+        debug::log("ImGui_DestroyContext");
     }
 
     bool ImGuiSystem::is_initialized() const {

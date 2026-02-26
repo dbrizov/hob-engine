@@ -3,8 +3,8 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <SDL3/SDL_keyboard.h>
-#include <fmt/base.h>
 
+#include "logging.h"
 #include "path_utils.h"
 
 namespace hob {
@@ -12,7 +12,7 @@ namespace hob {
     static SDL_Scancode scancode_from_name(const std::string& name) {
         SDL_Scancode scancode = SDL_GetScancodeFromName(name.c_str());
         if (scancode == SDL_SCANCODE_UNKNOWN) {
-            fmt::println(stderr, "Unknown key: {}", name);
+            debug::log_error("Unknown key: {}", name);
         }
 
         return scancode;
@@ -23,7 +23,7 @@ namespace hob {
 
         std::ifstream file(path);
         if (!file.is_open()) {
-            fmt::println(stderr, "Cannot open input config file: {}", path.string());
+            debug::log_error("Cannot open input config file: {}", path.string());
             return input_mappings;
         }
 

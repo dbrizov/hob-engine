@@ -41,10 +41,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         "Copied config to $<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
 )
 
-# Find and link fmt.
-find_package(fmt CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
-
 # Find and link nlohmann-json.
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)

@@ -1,7 +1,8 @@
 #include "vector2.h"
 
 #include <cassert>
-#include <fmt/format.h>
+#include <cmath>
+#include <format>
 
 #include "constants.h"
 
@@ -126,6 +127,6 @@ namespace hob {
     }
 
     std::string Vector2::to_string() const {
-        return fmt::format("({:.2f}, {:.2f})", x, y);
+        return std::format("({:.2f}, {:.2f})", x, y);
     }
 }

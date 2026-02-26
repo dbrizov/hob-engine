@@ -2,7 +2,6 @@
   "name": "hob-engine",
   "version": "1.0",
   "dependencies": [
-    "fmt",
     "nlohmann-json",
     "sdl3",
     {

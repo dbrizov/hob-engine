@@ -1,12 +1,11 @@
 #include "player_component.h"
 
-#include <fmt/base.h>
-
 #include "engine/components/camera_component.h"
 #include "engine/components/physics/character_body_component.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/app.h"
+#include "engine/core/logging.h"
 #include "engine/entity/entity.h"
 
 namespace game {
@@ -46,28 +45,25 @@ namespace game {
         hob::CharacterBodyComponent* character_body = get_entity().get_component<hob::CharacterBodyComponent>();
         character_body->move_and_slide(velocity, fixed_delta_time);
 
-        // Vector2 actual_velocity = character_body->get_velocity();
-        // fmt::println("velocity: {}", actual_velocity.to_string());
-
         // TODO The camera position is not accurate, because the physics hasn't update the transform's position yet
         hob::Vector2 position = get_entity().get_transform()->get_position();
         update_camera_position(position, fixed_delta_time);
     }
 
     void PlayerComponent::on_collision_enter(const hob::ColliderComponent* other_collider) {
-        fmt::println("collision_enter: {}", other_collider->get_entity().get_id());
+        hob::debug::log("collision_enter: {}", other_collider->get_entity().get_id());
     }
 
     void PlayerComponent::on_collision_exit(const hob::ColliderComponent* other_collider) {
-        fmt::println("collision_exit: {}", other_collider->get_entity().get_id());
+        hob::debug::log("collision_exit: {}", other_collider->get_entity().get_id());
     }
 
     void PlayerComponent::on_trigger_enter(const hob::ColliderComponent* other_collider) {
-        fmt::println("trigger_enter: {}", other_collider->get_entity().get_id());
+        hob::debug::log("trigger_enter: {}", other_collider->get_entity().get_id());
     }
 
     void PlayerComponent::on_trigger_exit(const hob::ColliderComponent* other_collider) {
-        fmt::println("trigger_exit: {}", other_collider->get_entity().get_id());
+        hob::debug::log("trigger_exit: {}", other_collider->get_entity().get_id());
     }
 
     void PlayerComponent::update_camera_position(const hob::Vector2& target_position, float fixed_delta_time) {
