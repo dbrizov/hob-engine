@@ -92,34 +92,25 @@ namespace hob {
         return registered;
     }
 
-    void ConsoleBackend::execute_line(std::string_view line) {
-        std::vector<std::string> tokens = tokenize(line);
-        if (tokens.empty()) {
-            return;
+    const ConsoleBackend::Command* ConsoleBackend::find_command(std::string_view name) const {
+        const auto it = m_commands.find(key_of(name));
+        if (it != m_commands.end()) {
+            return &it->second;
         }
 
-        std::string key = key_of(tokens[0]);
-
-        auto args = tokens | std::views::drop(1);
-
-        // Command?
-        if (auto it = m_commands.find(key); it != m_commands.end()) {
-            execute_command(it->second, args);
-            return;
-        }
-
-        // CVar?
-        if (auto it = m_cvars.find(key); it != m_cvars.end()) {
-            execute_cvar(it->second, args);
-            return;
-        }
-
-        if (print_error) {
-            print_error(std::format("Unknown command/cvar: '{}'", std::string(tokens[0])));
-        }
+        return nullptr;
     }
 
-    std::vector<std::string_view> ConsoleBackend::complete(std::string_view prefix) {
+    const ConsoleBackend::CVar* ConsoleBackend::find_cvar(std::string_view name) const {
+        const auto it = m_cvars.find(key_of(name));
+        if (it != m_cvars.end()) {
+            return &it->second;
+        }
+
+        return nullptr;
+    }
+
+    std::vector<std::string_view> ConsoleBackend::get_candidates_for_prefix(std::string_view prefix) {
         std::vector<std::string_view> candidates;
         candidates.reserve(m_commands.size() + m_cvars.size());
 
@@ -140,60 +131,30 @@ namespace hob {
         return candidates;
     }
 
-    const ConsoleBackend::Command* ConsoleBackend::find_command(std::string_view name) const {
-        const auto it = m_commands.find(key_of(name));
-        if (it != m_commands.end()) {
-            return &it->second;
+    void ConsoleBackend::execute_line(std::string_view line) {
+        std::vector<std::string> tokens = tokenize(line);
+        if (tokens.empty()) {
+            return;
         }
 
-        return nullptr;
-    }
+        std::string key = key_of(tokens[0]);
+        auto args = tokens | std::views::drop(1);
 
-    const ConsoleBackend::CVar* ConsoleBackend::find_cvar(std::string_view name) const {
-        const auto it = m_cvars.find(key_of(name));
-        if (it != m_cvars.end()) {
-            return &it->second;
+        // Command?
+        if (const auto it = m_commands.find(key); it != m_commands.end()) {
+            execute_command(it->second, args);
+            return;
         }
 
-        return nullptr;
-    }
-
-    std::string ConsoleBackend::key_of(std::string_view s) {
-        std::string key(s);
-        std::transform(key.begin(), key.end(), key.begin(), to_lower);
-
-        return key;
-    }
-
-    std::vector<std::string> ConsoleBackend::tokenize(std::string_view line) {
-        std::vector<std::string> tokens;
-        std::string current_token;
-        bool in_quotes = false;
-
-        auto push = [&] {
-            if (!current_token.empty()) {
-                tokens.push_back(current_token);
-                current_token.clear();
-            }
-        };
-
-        for (char ch : line) {
-            if (ch == '"') {
-                in_quotes = !in_quotes;
-                continue;
-            }
-
-            if (!in_quotes && (ch == ' ' || ch == '\t')) {
-                push();
-                continue;
-            }
-
-            current_token.push_back(ch);
+        // CVar?
+        if (const auto it = m_cvars.find(key); it != m_cvars.end()) {
+            execute_cvar(it->second, args);
+            return;
         }
 
-        push();
-
-        return tokens;
+        if (print_error) {
+            print_error(std::format("Unknown command/cvar: '{}'", std::string(tokens[0])));
+        }
     }
 
     void ConsoleBackend::execute_command(const Command& command, Args args) {
@@ -232,6 +193,44 @@ namespace hob {
         if (print) {
             print(std::format("{} set to '{}'", cvar.name, cvar.value));
         }
+    }
+
+    std::string ConsoleBackend::key_of(std::string_view s) {
+        std::string key(s);
+        std::transform(key.begin(), key.end(), key.begin(), to_lower);
+
+        return key;
+    }
+
+    std::vector<std::string> ConsoleBackend::tokenize(std::string_view line) {
+        std::vector<std::string> tokens;
+        std::string current_token;
+        bool in_quotes = false;
+
+        auto push = [&] {
+            if (!current_token.empty()) {
+                tokens.push_back(current_token);
+                current_token.clear();
+            }
+        };
+
+        for (char ch : line) {
+            if (ch == '"') {
+                in_quotes = !in_quotes;
+                continue;
+            }
+
+            if (!in_quotes && (ch == ' ' || ch == '\t')) {
+                push();
+                continue;
+            }
+
+            current_token.push_back(ch);
+        }
+
+        push();
+
+        return tokens;
     }
 
     void ConsoleBackend::cmd_help() const {
@@ -328,39 +327,12 @@ namespace hob {
             clear_log();
         });
 
-        m_backend.register_command("history", "Show last 10 commands", [this](ConsoleBackend::Args) {
+        m_backend.register_command("history", "Show the last 10 commands used", [this](ConsoleBackend::Args) {
             const size_t start = (m_history.size() >= 10) ? (m_history.size() - 10) : 0;
-            for (size_t i = start; i < m_history.size(); ++i)
-                log("{:3}: {}", (int)i, m_history[i]);
+            for (size_t i = start; i < m_history.size(); ++i) {
+                log("{:3}: {}", i, m_history[i]);
+            }
         });
-
-        // Test CVars
-        m_backend.register_cvar(
-            "g_godmode",
-            "God mode",
-            "0",
-            ConsoleBackend::CVarType::Bool);
-
-        m_backend.register_cvar(
-            "r_fps",
-            "Frames per second",
-            "60",
-            ConsoleBackend::CVarType::Int,
-            ConsoleBackend::CVarFlags::Archive);
-
-        m_backend.register_cvar(
-            "phys_hz",
-            "Physics ticks per second",
-            "60",
-            ConsoleBackend::CVarType::Int,
-            ConsoleBackend::CVarFlags::Archive);
-
-        m_backend.register_cvar(
-            "phys_debug_draw",
-            "Debug draw physics colliders",
-            "1",
-            ConsoleBackend::CVarType::Bool,
-            ConsoleBackend::CVarFlags::Archive);
     }
 
     bool Console::is_open() const {
@@ -500,10 +472,10 @@ namespace hob {
 
         // history (frontend-owned)
         m_history_index = -1;
-        auto it = std::find_if(m_history.begin(), m_history.end(),
-                               [&](const std::string& h) {
-                                   return equals_ci(h, command_line);
-                               });
+        const auto it = std::find_if(m_history.begin(), m_history.end(),
+                                     [&](const std::string& h) {
+                                         return equals_ci(h, command_line);
+                                     });
 
         if (it != m_history.end()) {
             m_history.erase(it);
@@ -511,7 +483,6 @@ namespace hob {
 
         m_history.push_back(command_line);
 
-        // execute (backend-owned)
         m_backend.execute_line(command_line);
     }
 
@@ -537,7 +508,7 @@ namespace hob {
 
                 // Log candidates
                 const std::string_view typed(word_start, static_cast<size_t>(word_end - word_start));
-                std::vector<std::string_view> candidates = m_backend.complete(typed);
+                std::vector<std::string_view> candidates = m_backend.get_candidates_for_prefix(typed);
 
                 if (candidates.empty()) {
                     log("No match for '{}'!", typed);
@@ -554,7 +525,7 @@ namespace hob {
                     data->InsertChars(data->CursorPos, " ");
                 }
                 else {
-                    // Find longest common prefix among candidates (case-insensitive)
+                    // Find longest common prefix among candidates
                     size_t match_len = typed.size();
                     while (true) {
                         bool all_match = true;

@@ -72,7 +72,6 @@ namespace hob {
         ConsoleBackend();
 
         bool register_command(std::string name, std::string help, CmdFunc func);
-
         bool register_cvar(std::string name,
                            std::string help,
                            std::string default_value,
@@ -80,22 +79,20 @@ namespace hob {
                            CVarFlags flags = None,
                            std::function<void(const CVar&)> on_changed = {});
 
-        void execute_line(std::string_view line);
-
-        // Completion for a prefix (word currently being completed)
-        std::vector<std::string_view> complete(std::string_view prefix);
-
         const Command* find_command(std::string_view name) const;
         const CVar* find_cvar(std::string_view name) const;
 
-    private:
-        static std::string key_of(std::string_view s);
-        static std::vector<std::string> tokenize(std::string_view line);
+        std::vector<std::string_view> get_candidates_for_prefix(std::string_view prefix);
 
+        void execute_line(std::string_view line);
+
+    private:
         void execute_command(const Command& command, Args args);
         void execute_cvar(CVar& cvar, Args args);
 
-        // Built-in commands
+        static std::string key_of(std::string_view s);
+        static std::vector<std::string> tokenize(std::string_view line);
+
         void cmd_help() const;
         void cmd_cmdlist(uint32_t indent = 0) const;
         void cmd_cvarlist(uint32_t indent = 0) const;
