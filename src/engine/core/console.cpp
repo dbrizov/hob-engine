@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <optional>
 #include <ranges>
 
 #include "app.h"
@@ -14,7 +15,12 @@ namespace hob {
             assert(s != nullptr && "cstring is null");
 
             char* end = s + std::strlen(s);
-            while (end > s && end[-1] == ' ') {
+            while (end > s) {
+                unsigned char c = static_cast<unsigned char>(end[-1]);
+                if (!std::isspace(c)) {
+                    break;
+                }
+
                 --end;
             }
 
@@ -52,6 +58,81 @@ namespace hob {
 
             return true;
         }
+
+        std::optional<bool> parse_bool(std::string_view sv) {
+            if (sv.empty()) {
+                return std::nullopt;
+            }
+
+            if (sv == "1" || equals_ci(sv, "true") || equals_ci(sv, "on") || equals_ci(sv, "yes")) {
+                return true;
+            }
+
+            if (sv == "0" || equals_ci(sv, "false") || equals_ci(sv, "off") || equals_ci(sv, "no")) {
+                return false;
+            }
+
+            return std::nullopt;
+        }
+
+        std::optional<int> parse_int(std::string_view sv) {
+            if (sv.empty()) {
+                return std::nullopt;
+            }
+
+            int out = 0;
+            const char* first = sv.data();
+            const char* last = sv.data() + sv.size();
+
+            auto [ptr, ec] = std::from_chars(first, last, out);
+            if (ec == std::errc{} && ptr == last) {
+                return out;
+            }
+
+            return std::nullopt;
+        }
+
+        std::optional<float> parse_float(std::string_view sv) {
+            if (sv.empty()) {
+                return std::nullopt;
+            }
+
+            float out = 0.0f;
+            const char* first = sv.data();
+            const char* last = sv.data() + sv.size();
+
+            auto [ptr, ec] = std::from_chars(first, last, out);
+            if (ec == std::errc{} && ptr == last) {
+                return out;
+            }
+
+            return std::nullopt;
+        }
+    }
+
+    // Console Command
+    std::string ConsoleCommand::to_string(uint32_t indent) const {
+        return std::format("{:<{}} ({})", name, indent, help);
+    }
+
+    // Console Variable
+    bool ConsoleVariable::bool_value() const {
+        bool bool_value = parse_bool(value).value();
+        return bool_value;
+    }
+
+    int ConsoleVariable::int_value() const {
+        int int_value = parse_int(value).value();
+        return int_value;
+    }
+
+    float ConsoleVariable::float_value() const {
+        float float_value = parse_float(value).value();
+        return float_value;
+    }
+
+    std::string ConsoleVariable::to_string(uint32_t indent) const {
+        return std::format("{:<{}} = '{}' (default '{}')", name, indent, value, default_value);
     }
 
     // Console Backend
@@ -183,6 +264,41 @@ namespace hob {
         for (size_t i = 1; i < args.size(); ++i) {
             new_value.push_back(' ');
             new_value += args[i];
+        }
+
+        if (cvar.type == ConsoleVariableType::Bool) {
+            std::optional<bool> bool_value = parse_bool(new_value);
+            if (!bool_value.has_value()) {
+                if (print_error) {
+                    print_error(std::format("'{}' is not a boolean", new_value));
+                }
+
+                return;
+            }
+
+            new_value = bool_value.value() ? "1" : "0";
+        }
+
+        if (cvar.type == ConsoleVariableType::Int) {
+            std::optional<int> int_value = parse_int(new_value);
+            if (!int_value.has_value()) {
+                if (print_error) {
+                    print_error(std::format("'{}' is not an integer", new_value));
+                }
+
+                return;
+            }
+        }
+
+        if (cvar.type == ConsoleVariableType::Float) {
+            std::optional<float> float_value = parse_float(new_value);
+            if (!float_value.has_value()) {
+                if (print_error) {
+                    print_error(std::format("'{}' is not a floating point number", new_value));
+                }
+
+                return;
+            }
         }
 
         cvar.value = std::move(new_value);

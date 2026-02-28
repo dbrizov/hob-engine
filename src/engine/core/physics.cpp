@@ -45,7 +45,7 @@ namespace hob {
                                         ConsoleVariableType::Bool,
                                         ConsoleVariableFlags::None,
                                         [this](const ConsoleVariable& cvar) {
-                                            cvar_debug_draw = cvar.value == "1" ? true : false;
+                                            cvar_debug_draw = cvar.bool_value();
                                         });
     }
 

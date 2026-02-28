@@ -34,9 +34,7 @@ namespace hob {
         std::string help;
         CommandFunc func;
 
-        std::string to_string(uint32_t indent = 0) const {
-            return std::format("{:<{}} ({})", name, indent, help);
-        }
+        std::string to_string(uint32_t indent = 0) const;
     };
 
     struct ConsoleVariable {
@@ -50,9 +48,11 @@ namespace hob {
 
         std::function<void(const ConsoleVariable&)> on_changed;
 
-        std::string to_string(uint32_t indent = 0) const {
-            return std::format("{:<{}} = '{}' (default '{}')", name, indent, value, default_value);
-        }
+        bool bool_value() const;
+        int int_value() const;
+        float float_value() const;
+
+        std::string to_string(uint32_t indent = 0) const;
     };
 
     class ConsoleBackend {
