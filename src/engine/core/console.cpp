@@ -465,6 +465,27 @@ namespace hob {
         ImGui::End();
     }
 
+    bool Console::register_command(std::string_view name, std::string_view help, CommandFunc func) {
+        return m_backend.register_command(name, help, std::move(func));
+    }
+
+    bool Console::register_cvar(std::string_view name,
+                                std::string_view help,
+                                std::string_view default_value,
+                                ConsoleVariableType type,
+                                ConsoleVariableFlags flags,
+                                std::function<void(const ConsoleVariable&)> on_changed) {
+        return m_backend.register_cvar(name, help, default_value, type, flags, std::move(on_changed));
+    }
+
+    const ConsoleCommand* Console::find_command(std::string_view name) const {
+        return m_backend.find_command(name);
+    }
+
+    const ConsoleVariable* Console::find_cvar(std::string_view name) const {
+        return m_backend.find_cvar(name);
+    }
+
     void Console::execute_line(std::string_view line) {
         std::string command_line(line);
 

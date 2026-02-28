@@ -17,7 +17,7 @@ namespace hob {
         , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
         , m_input()
         , m_assets(m_sdl_context.get_renderer())
-        , m_physics(config.physics_config)
+        , m_physics(*this)
         , m_entity_spawner(*this) {
     }
 
@@ -104,6 +104,10 @@ namespace hob {
 
     const AppConfig& App::get_config() const {
         return m_config;
+    }
+
+    Console& App::get_console() {
+        return m_console;
     }
 
     Timer& App::get_timer() {

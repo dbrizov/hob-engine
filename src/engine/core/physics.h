@@ -7,7 +7,7 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    struct PhysicsConfig;
+    class App;
     class Entity;
 
     class PhysicsWorld {
@@ -31,7 +31,9 @@ namespace hob {
         bool m_interpolation_enabled;
 
     public:
-        explicit Physics(const PhysicsConfig& physics_config);
+        bool cvar_debug_draw = true;
+
+        explicit Physics(App& app);
 
         void tick_entities(float frame_delta_time, const std::vector<Entity*>& entities);
 

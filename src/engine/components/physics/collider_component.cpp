@@ -3,6 +3,7 @@
 #include <box2d/box2d.h>
 
 #include "rigidbody_component.h"
+#include "engine/core/app.h"
 #include "engine/core/render.h"
 #include "engine/entity/entity.h"
 
@@ -57,7 +58,9 @@ namespace hob {
             }
         }
 
-        debug_draw_shape(color);
+        if (get_app().get_physics().cvar_debug_draw) {
+            debug_draw_shape(color);
+        }
     }
 
     b2BodyId ColliderComponent::get_body_id() const {

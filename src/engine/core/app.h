@@ -56,6 +56,7 @@ namespace hob {
 
         const AppConfig& get_config() const;
 
+        Console& get_console();
         Timer& get_timer();
         Input& get_input();
         Assets& get_assets();

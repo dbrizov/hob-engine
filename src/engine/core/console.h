@@ -131,6 +131,17 @@ namespace hob {
 
         void render();
 
+        bool register_command(std::string_view name, std::string_view help, CommandFunc func);
+        bool register_cvar(std::string_view name,
+                           std::string_view help,
+                           std::string_view default_value,
+                           ConsoleVariableType type,
+                           ConsoleVariableFlags flags = None,
+                           std::function<void(const ConsoleVariable&)> on_changed = {});
+
+        const ConsoleCommand* find_command(std::string_view name) const;
+        const ConsoleVariable* find_cvar(std::string_view name) const;
+
     private:
         void execute_line(std::string_view line);
 

@@ -32,13 +32,21 @@ namespace hob {
         return m_id;
     }
 
-    Physics::Physics(const PhysicsConfig& physics_config)
-        : m_physics_world(physics_config.gravity)
+    Physics::Physics(App& app)
+        : m_physics_world(app.get_config().physics_config.gravity)
         , m_accumulator(0.0f)
-        , m_fixed_delta_time(delta_time_from_ticks(physics_config.ticks_per_second))
-        , m_sub_steps_per_tick(physics_config.sub_steps_per_tick)
+        , m_fixed_delta_time(delta_time_from_ticks(app.get_config().physics_config.ticks_per_second))
+        , m_sub_steps_per_tick(app.get_config().physics_config.sub_steps_per_tick)
         , m_interpolation_fraction(0.0f)
-        , m_interpolation_enabled(physics_config.interpolation_enabled) {
+        , m_interpolation_enabled(app.get_config().physics_config.interpolation_enabled) {
+        app.get_console().register_cvar("phys_debug_draw",
+                                        "Debug draw physics colliders",
+                                        "1",
+                                        ConsoleVariableType::Bool,
+                                        ConsoleVariableFlags::None,
+                                        [this](const ConsoleVariable& cvar) {
+                                            cvar_debug_draw = cvar.value == "1" ? true : false;
+                                        });
     }
 
     void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {
