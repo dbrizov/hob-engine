@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <charconv>
 #include <cstring>
 #include <optional>
 #include <ranges>
