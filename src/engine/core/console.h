@@ -12,83 +12,78 @@
 namespace hob {
     class App;
 
+    using CommandArgs = std::span<const std::string>;
+    using CommandFunc = std::function<void(CommandArgs)>;
+
+    enum class ConsoleVariableType {
+        Bool,
+        Int,
+        Float,
+        String
+    };
+
+    enum ConsoleVariableFlags : uint32_t {
+        None = 0,
+        Archive = 1 << 0,
+        ReadOnly = 1 << 1,
+        Cheat = 1 << 2,
+    };
+
+    struct ConsoleCommand {
+        std::string name;
+        std::string help;
+        CommandFunc func;
+
+        std::string to_string(uint32_t indent = 0) const {
+            return std::format("{:<{}} ({})", name, indent, help);
+        }
+    };
+
+    struct ConsoleVariable {
+        std::string name;
+        std::string help;
+        ConsoleVariableType type = ConsoleVariableType::String;
+        uint32_t flags = None;
+
+        std::string value;
+        std::string default_value;
+
+        std::function<void(const ConsoleVariable&)> on_changed;
+
+        std::string to_string(uint32_t indent = 0) const {
+            return std::format("{:<{}} = '{}' (default '{}')", name, indent, value, default_value);
+        }
+    };
+
     class ConsoleBackend {
-    public:
-        struct Command;
-        struct CVar;
-
-    private:
-        std::unordered_map<std::string, Command> m_commands;
-        std::unordered_map<std::string, CVar> m_cvars;
+        std::unordered_map<std::string, ConsoleCommand> m_commands;
+        std::unordered_map<std::string, ConsoleVariable> m_cvars;
 
     public:
-        using Args = std::span<const std::string>;
-        using CmdFunc = std::function<void(Args)>;
-
-        enum class CVarType {
-            Bool,
-            Int,
-            Float,
-            String
-        };
-
-        enum CVarFlags : uint32_t {
-            None = 0,
-            Archive = 1 << 0,
-            ReadOnly = 1 << 1,
-            Cheat = 1 << 2,
-        };
-
-        struct Command {
-            std::string name;
-            std::string help;
-            CmdFunc func;
-
-            std::string to_string(uint32_t indent = 0) const {
-                return std::format("{:<{}} ({})", name, indent, help);
-            }
-        };
-
-        struct CVar {
-            std::string name;
-            std::string help;
-            CVarType type = CVarType::String;
-            uint32_t flags = None;
-
-            std::string value;
-            std::string default_value;
-
-            std::function<void(const CVar&)> on_changed;
-
-            std::string to_string(uint32_t indent = 0) const {
-                return std::format("{:<{}} = '{}' (default '{}')", name, indent, value, default_value);
-            }
-        };
-
         // Logging sink (frontend sets this)
         std::function<void(std::string_view)> print;
         std::function<void(std::string_view)> print_error;
 
         ConsoleBackend();
 
-        bool register_command(std::string name, std::string help, CmdFunc func);
-        bool register_cvar(std::string name,
-                           std::string help,
-                           std::string default_value,
-                           CVarType type,
-                           CVarFlags flags = None,
-                           std::function<void(const CVar&)> on_changed = {});
+        bool register_command(std::string_view name, std::string_view help, CommandFunc func);
+        bool register_cvar(std::string_view name,
+                           std::string_view help,
+                           std::string_view default_value,
+                           ConsoleVariableType type,
+                           ConsoleVariableFlags flags = None,
+                           std::function<void(const ConsoleVariable&)> on_changed = {});
 
-        const Command* find_command(std::string_view name) const;
-        const CVar* find_cvar(std::string_view name) const;
+        const ConsoleCommand* find_command(std::string_view name) const;
+        const ConsoleVariable* find_cvar(std::string_view name) const;
 
         std::vector<std::string_view> get_candidates_for_prefix(std::string_view prefix);
 
         void execute_line(std::string_view line);
 
     private:
-        void execute_command(const Command& command, Args args);
-        void execute_cvar(CVar& cvar, Args args);
+        void execute_command(const ConsoleCommand& command, CommandArgs args);
+        void execute_cvar(ConsoleVariable& cvar, CommandArgs args);
 
         static std::string key_of(std::string_view s);
         static std::vector<std::string> tokenize(std::string_view line);

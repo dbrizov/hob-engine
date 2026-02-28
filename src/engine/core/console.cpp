@@ -56,43 +56,43 @@ namespace hob {
 
     // Console Backend
     ConsoleBackend::ConsoleBackend() {
-        register_command("help", "List commands and cvars", [this](Args) { cmd_help(); });
-        register_command("cmdlist", "List commands", [this](Args) { cmd_cmdlist(); });
-        register_command("cvarlist", "List cvars", [this](Args) { cmd_cvarlist(); });
+        register_command("help", "List commands and cvars", [this](CommandArgs) { cmd_help(); });
+        register_command("cmdlist", "List commands", [this](CommandArgs) { cmd_cmdlist(); });
+        register_command("cvarlist", "List cvars", [this](CommandArgs) { cmd_cvarlist(); });
     }
 
-    bool ConsoleBackend::register_command(std::string name, std::string help, CmdFunc func) {
+    bool ConsoleBackend::register_command(std::string_view name, std::string_view help, CommandFunc func) {
         std::string key = key_of(name);
-        Command command;
-        command.name = std::move(name);
-        command.help = std::move(help);
+        ConsoleCommand command;
+        command.name = std::string(name);
+        command.help = std::string(help);
         command.func = std::move(func);
 
         bool registered = m_commands.emplace(std::move(key), std::move(command)).second;
         return registered;
     }
 
-    bool ConsoleBackend::register_cvar(std::string name,
-                                       std::string help,
-                                       std::string default_value,
-                                       CVarType type,
-                                       CVarFlags flags,
-                                       std::function<void(const CVar&)> on_changed) {
+    bool ConsoleBackend::register_cvar(std::string_view name,
+                                       std::string_view help,
+                                       std::string_view default_value,
+                                       ConsoleVariableType type,
+                                       ConsoleVariableFlags flags,
+                                       std::function<void(const ConsoleVariable&)> on_changed) {
         std::string key = key_of(name);
-        CVar cvar;
-        cvar.name = std::move(name);
-        cvar.help = std::move(help);
+        ConsoleVariable cvar;
+        cvar.name = std::string(name);
+        cvar.help = std::string(help);
         cvar.type = type;
         cvar.flags = flags;
-        cvar.value = default_value;
-        cvar.default_value = std::move(default_value);
+        cvar.value = std::string(default_value);
+        cvar.default_value = std::string(default_value);
         cvar.on_changed = std::move(on_changed);
 
         bool registered = m_cvars.emplace(std::move(key), std::move(cvar)).second;
         return registered;
     }
 
-    const ConsoleBackend::Command* ConsoleBackend::find_command(std::string_view name) const {
+    const ConsoleCommand* ConsoleBackend::find_command(std::string_view name) const {
         const auto it = m_commands.find(key_of(name));
         if (it != m_commands.end()) {
             return &it->second;
@@ -101,7 +101,7 @@ namespace hob {
         return nullptr;
     }
 
-    const ConsoleBackend::CVar* ConsoleBackend::find_cvar(std::string_view name) const {
+    const ConsoleVariable* ConsoleBackend::find_cvar(std::string_view name) const {
         const auto it = m_cvars.find(key_of(name));
         if (it != m_cvars.end()) {
             return &it->second;
@@ -157,11 +157,11 @@ namespace hob {
         }
     }
 
-    void ConsoleBackend::execute_command(const Command& command, Args args) {
+    void ConsoleBackend::execute_command(const ConsoleCommand& command, CommandArgs args) {
         command.func(args);
     }
 
-    void ConsoleBackend::execute_cvar(CVar& cvar, Args args) {
+    void ConsoleBackend::execute_cvar(ConsoleVariable& cvar, CommandArgs args) {
         if (args.empty()) {
             if (print) {
                 print(cvar.to_string());
@@ -276,7 +276,7 @@ namespace hob {
         std::sort(names.begin(), names.end());
 
         for (const auto& name : names) {
-            const Command* command = find_command(name);
+            const ConsoleCommand* command = find_command(name);
             print(std::format("- {}", command->to_string(max_name_size)));
         }
     }
@@ -305,7 +305,7 @@ namespace hob {
 
         std::vector<std::string> dummy_args;
         for (const auto& name : names) {
-            const CVar* cvar = find_cvar(name);
+            const ConsoleVariable* cvar = find_cvar(name);
             print(std::format("- {}", cvar->to_string(max_name_size)));
         }
     }
@@ -323,11 +323,11 @@ namespace hob {
         };
 
         // Frontend-specific commands that touch UI state
-        m_backend.register_command("clear", "Clear console log", [this](ConsoleBackend::Args) {
+        m_backend.register_command("clear", "Clear console log", [this](CommandArgs) {
             clear_log();
         });
 
-        m_backend.register_command("history", "Show the last 10 commands used", [this](ConsoleBackend::Args) {
+        m_backend.register_command("history", "Show the last 10 commands used", [this](CommandArgs) {
             const size_t start = (m_history.size() >= 10) ? (m_history.size() - 10) : 0;
             for (size_t i = start; i < m_history.size(); ++i) {
                 log("{:3}: {}", i, m_history[i]);
