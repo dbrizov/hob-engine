@@ -52,7 +52,8 @@ namespace hob {
         int int_value() const;
         float float_value() const;
 
-        std::string to_string(uint32_t indent = 0) const;
+        std::string to_string_short(uint32_t indent = 0) const;
+        std::string to_string_long(uint32_t indent = 0) const;
     };
 
     class ConsoleBackend {
@@ -89,13 +90,16 @@ namespace hob {
         static std::vector<std::string> tokenize(std::string_view line);
 
         void cmd_help() const;
-        void cmd_cmdlist(uint32_t indent = 0) const;
-        void cmd_cvarlist(uint32_t indent = 0) const;
+        void cmd_cmdlist() const;
+        void cmd_cvarlist() const;
     };
 
     class Console {
         static constexpr ImColor LOG_ENTRY_COLOR_WHITE = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+        static constexpr ImColor LOG_ENTRY_COLOR_GRAY = ImColor(0.65f, 0.65f, 0.65f, 1.0f);
         static constexpr ImColor LOG_ENTRY_COLOR_RED = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
+        static constexpr ImColor LOG_ENTRY_COLOR_GREEN = ImColor(0.55f, 0.85f, 0.60f, 1.0f);
+        static constexpr ImColor LOG_ENTRY_COLOR_BLUE = ImColor(0.55f, 0.70f, 0.95f, 1.0f);
         static constexpr ImColor LOG_ENTRY_COLOR_ORANGE = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
         static constexpr size_t INPUT_BUFFER_SIZE = 256;
 

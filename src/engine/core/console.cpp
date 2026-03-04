@@ -132,8 +132,12 @@ namespace hob {
         return float_value;
     }
 
-    std::string ConsoleVariable::to_string(uint32_t indent) const {
+    std::string ConsoleVariable::to_string_short(uint32_t indent) const {
         return std::format("{:<{}} = '{}' (default '{}')", name, indent, value, default_value);
+    }
+
+    std::string ConsoleVariable::to_string_long(uint32_t indent) const {
+        return std::format("{:<{}} = '{}' (default '{}') - {}", name, indent, value, default_value, help);
     }
 
     // Console Backend
@@ -246,7 +250,7 @@ namespace hob {
     void ConsoleBackend::execute_cvar(ConsoleVariable& cvar, CommandArgs args) {
         if (args.empty()) {
             if (print) {
-                print(cvar.to_string());
+                print(cvar.to_string_short());
             }
 
             return;
@@ -351,36 +355,21 @@ namespace hob {
     }
 
     void ConsoleBackend::cmd_help() const {
-        uint32_t max_name_size = 0;
-        for (const auto& [_, cmd] : m_commands) {
-            uint32_t name_size = cmd.name.size();
-            if (name_size > max_name_size) {
-                max_name_size = name_size;
-            }
-        }
-
-        for (const auto& [_, cvar] : m_cvars) {
-            uint32_t name_size = cvar.name.size();
-            if (name_size > max_name_size) {
-                max_name_size = name_size;
-            }
-        }
-
-        cmd_cmdlist(max_name_size);
-        cmd_cvarlist(max_name_size);
+        cmd_cmdlist();
+        cmd_cvarlist();
     }
 
-    void ConsoleBackend::cmd_cmdlist(uint32_t indent) const {
+    void ConsoleBackend::cmd_cmdlist() const {
         if (!print) {
             return;
         }
 
-        print("Commands:");
+        print("@ Commands:");
 
         std::vector<std::string_view> names;
         names.reserve(m_commands.size());
 
-        uint32_t max_name_size = indent;
+        uint32_t max_name_size = 0;
         for (const auto& [_, cmd] : m_commands) {
             names.push_back(cmd.name);
 
@@ -398,17 +387,17 @@ namespace hob {
         }
     }
 
-    void ConsoleBackend::cmd_cvarlist(uint32_t indent) const {
+    void ConsoleBackend::cmd_cvarlist() const {
         if (!print) {
             return;
         }
 
-        print("CVars:");
+        print("@ CVars:");
 
         std::vector<std::string_view> names;
         names.reserve(m_cvars.size());
 
-        uint32_t max_name_size = indent;
+        uint32_t max_name_size = 0;
         for (const auto& [_, cvar] : m_cvars) {
             names.push_back(cvar.name);
 
@@ -423,7 +412,7 @@ namespace hob {
         std::vector<std::string> dummy_args;
         for (const auto& name : names) {
             const ConsoleVariable* cvar = find_cvar(name);
-            print(std::format("- {}", cvar->to_string(max_name_size)));
+            print(std::format("- {}", cvar->to_string_long(max_name_size)));
         }
     }
 
@@ -524,10 +513,19 @@ namespace hob {
                 const std::string_view item{s};
 
                 ImVec4 col = LOG_ENTRY_COLOR_WHITE;
-                if (item.starts_with("[error]")) {
+                if (item.starts_with("~")) {
+                    col = LOG_ENTRY_COLOR_GRAY;
+                }
+                else if (item.starts_with("[error]")) {
                     col = LOG_ENTRY_COLOR_RED;
                 }
-                else if (item.starts_with("# ")) {
+                else if (item.starts_with("$")) {
+                    col = LOG_ENTRY_COLOR_GREEN;
+                }
+                else if (item.starts_with("@")) {
+                    col = LOG_ENTRY_COLOR_BLUE;
+                }
+                else if (item.starts_with("#")) {
                     col = LOG_ENTRY_COLOR_ORANGE;
                 }
 
