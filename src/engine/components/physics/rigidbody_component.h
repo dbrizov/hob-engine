@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_RIGIDBODYCOMPONENT_H
-#define HOB_ENGINE_RIGIDBODYCOMPONENT_H
+#pragma once
+
 #include <box2d/id.h>
 
 #include "engine/components/component.h"
@@ -32,5 +32,3 @@ namespace hob {
         void set_fixed_rotation(bool has_fixed_rotation);
     };
 }
-
-#endif //HOB_ENGINE_RIGIDBODYCOMPONENT_H

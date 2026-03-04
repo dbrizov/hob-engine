@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_ASSETS_H
-#define HOB_ENGINE_ASSETS_H
+#pragma once
+
 #include <filesystem>
 #include <unordered_map>
 
@@ -29,5 +29,3 @@ namespace hob {
         void unload_all_textures();
     };
 }
-
-#endif //HOB_ENGINE_ASSETS_H

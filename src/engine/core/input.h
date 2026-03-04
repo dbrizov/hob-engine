@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_INPUT_H
-#define HOB_ENGINE_INPUT_H
+#pragma once
+
 #include <filesystem>
 #include <functional>
 #include <SDL3/SDL_scancode.h>
@@ -71,5 +71,3 @@ namespace hob {
         void update_pressed_keys(const bool* keyboard_state);
     };
 }
-
-#endif //HOB_ENGINE_INPUT_H

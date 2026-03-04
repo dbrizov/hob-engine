@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_IOUTILS_H
-#define HOB_ENGINE_IOUTILS_H
+#pragma once
+
 #include <filesystem>
 
 namespace hob {
@@ -10,5 +10,3 @@ namespace hob {
         static std::filesystem::path get_input_config_path();
     };
 }
-
-#endif //HOB_ENGINE_IOUTILS_H

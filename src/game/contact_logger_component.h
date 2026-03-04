@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_CONTACTLOGGERCOMPONENT_H
-#define HOB_ENGINE_CONTACTLOGGERCOMPONENT_H
+#pragma once
+
 #include "engine/components/component.h"
 
 namespace game {
@@ -13,5 +13,3 @@ namespace game {
         virtual void on_trigger_exit(const hob::ColliderComponent* other_collider) override;
     };
 }
-
-#endif //HOB_ENGINE_CONTACTLOGGERCOMPONENT_H

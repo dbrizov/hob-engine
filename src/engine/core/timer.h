@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_TIME_H
-#define HOB_ENGINE_TIME_H
+#pragma once
+
 #include <cstdint>
 
 namespace hob {
@@ -38,5 +38,3 @@ namespace hob {
         void frame_end();
     };
 }
-
-#endif //HOB_ENGINE_TIME_H

@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_APP_H
-#define HOB_ENGINE_APP_H
+#pragma once
+
 #include "assets.h"
 #include "console.h"
 #include "imgui_system.h"
@@ -67,5 +67,3 @@ namespace hob {
         void render_entities(const std::vector<const Entity*>& entities);
     };
 }
-
-#endif //HOB_ENGINE_APP_H

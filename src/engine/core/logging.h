@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_LOGGING_H
-#define HOB_ENGINE_LOGGING_H
+#pragma once
+
 #include <format>
 #include <iostream>
 
@@ -14,5 +14,3 @@ namespace hob::debug {
         std::cerr << std::format(fmt, std::forward<Args>(args)...) << std::endl;
     }
 }
-
-#endif //HOB_ENGINE_LOGGING_H

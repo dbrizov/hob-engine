@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_DEBUG_H
-#define HOB_ENGINE_DEBUG_H
+#pragma once
+
 #include "render.h"
 #include "engine/math/vector2.h"
 
@@ -40,5 +40,3 @@ namespace hob {
                          int segments = 16);
     }
 }
-
-#endif //HOB_ENGINE_DEBUG_H

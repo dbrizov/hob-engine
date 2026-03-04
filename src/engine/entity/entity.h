@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_ENTITY_H
-#define HOB_ENGINE_ENTITY_H
+#pragma once
+
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -102,5 +102,3 @@ namespace hob {
         return nullptr;
     }
 }
-
-#endif //HOB_ENGINE_ENTITY_H

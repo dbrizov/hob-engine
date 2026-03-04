@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_RENDER_H
-#define HOB_ENGINE_RENDER_H
+#pragma once
+
 #include "assets.h"
 
 namespace hob {
@@ -26,5 +26,3 @@ namespace hob {
         std::string to_string() const;
     };
 }
-
-#endif //HOB_ENGINE_RENDER_H

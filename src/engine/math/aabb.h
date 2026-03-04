@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_AABB_H
-#define HOB_ENGINE_AABB_H
+#pragma once
+
 #include "vector2.h"
 
 namespace hob {
@@ -14,5 +14,3 @@ namespace hob {
         Vector2 size() const;
     };
 }
-
-#endif //HOB_ENGINE_AABB_H

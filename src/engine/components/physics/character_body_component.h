@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_CHARACTERBODYCOMPONENT_H
-#define HOB_ENGINE_CHARACTERBODYCOMPONENT_H
+#pragma once
+
 #include <box2d/collision.h>
 #include <box2d/id.h>
 
@@ -52,5 +52,3 @@ namespace hob {
         static bool plane_result_callback(b2ShapeId other_shape_id, const b2PlaneResult* plane_result, void* context);
     };
 }
-
-#endif //HOB_ENGINE_CHARACTERBODYCOMPONENT_H

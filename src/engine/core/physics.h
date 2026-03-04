@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_PHYSICS_H
-#define HOB_ENGINE_PHYSICS_H
+#pragma once
+
 #include <cstdint>
 #include <vector>
 #include <box2d/box2d.h>
@@ -55,5 +55,3 @@ namespace hob {
         static float delta_time_from_ticks(uint32_t ticks_per_second);
     };
 }
-
-#endif //HOB_ENGINE_PHYSICS_H

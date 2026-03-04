@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_ENTITYSPAWNER_H
-#define HOB_ENGINE_ENTITYSPAWNER_H
+#pragma once
+
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -48,5 +48,3 @@ namespace hob {
         void resolve_destroy_requests();
     };
 }
-
-#endif //HOB_ENGINE_ENTITYSPAWNER_H

@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_CAPSULECOLLIDERCOMPONENT_H
-#define HOB_ENGINE_CAPSULECOLLIDERCOMPONENT_H
+#pragma once
+
 #include <box2d/id.h>
 
 #include "collider_component.h"
@@ -21,5 +21,3 @@ namespace hob {
         virtual void debug_draw_shape(const Color& color) const override;
     };
 }
-
-#endif //HOB_ENGINE_CAPSULECOLLIDERCOMPONENT_H

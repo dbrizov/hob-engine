@@ -1,5 +1,4 @@
-#ifndef HOB_ENGINE_COMPONENT_H
-#define HOB_ENGINE_COMPONENT_H
+#pragma once
 
 namespace hob {
     class App;
@@ -38,5 +37,3 @@ namespace hob {
         virtual void on_trigger_exit(const ColliderComponent* other_collider);
     };
 }
-
-#endif //HOB_ENGINE_COMPONENT_H

@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_PLAYERCOMPONENT_H
-#define HOB_ENGINE_PLAYERCOMPONENT_H
+#pragma once
+
 #include "engine/components/component.h"
 #include "engine/components/input_component.h"
 #include "engine/math/vector2.h"
@@ -32,5 +32,3 @@ namespace game {
         void toggle_slow_motion();
     };
 }
-
-#endif //HOB_ENGINE_PLAYERCOMPONENT_H

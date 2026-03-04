@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_MATH_H
-#define HOB_ENGINE_MATH_H
+#pragma once
+
 #include <cfloat>
 #include <cstdint>
 
@@ -15,5 +15,3 @@ namespace hob {
     constexpr float MIN_FLOAT = FLT_MIN;
     constexpr float MAX_FLOAT = FLT_MAX;
 }
-
-#endif //HOB_ENGINE_MATH_H

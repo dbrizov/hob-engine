@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_TRANSFORMCOMPONENT_H
-#define HOB_ENGINE_TRANSFORMCOMPONENT_H
+#pragma once
+
 #include "component.h"
 #include "engine/math/vector2.h"
 
@@ -37,5 +37,3 @@ namespace hob {
         void set_prev_position(const Vector2& prev_position);
     };
 }
-
-#endif //HOB_ENGINE_TRANSFORMCOMPONENT_H

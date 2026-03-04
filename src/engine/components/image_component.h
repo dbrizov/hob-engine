@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_IMAGECOMPONENT_H
-#define HOB_ENGINE_IMAGECOMPONENT_H
+#pragma once
+
 #include "component.h"
 #include "engine/core/assets.h"
 #include "engine/math/vector2.h"
@@ -25,5 +25,3 @@ namespace hob {
         void set_scale(const Vector2& scale);
     };
 }
-
-#endif //HOB_ENGINE_IMAGECOMPONENT_H

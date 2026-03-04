@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_CONSOLE_H
-#define HOB_ENGINE_CONSOLE_H
+#pragma once
+
 #include <cstdint>
 #include <format>
 #include <functional>
@@ -149,5 +149,3 @@ namespace hob {
         int text_edit_callback(ImGuiInputTextCallbackData* data);
     };
 }
-
-#endif //HOB_ENGINE_CONSOLE_H

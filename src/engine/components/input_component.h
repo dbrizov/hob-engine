@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_INPUTCOMPONENT_H
-#define HOB_ENGINE_INPUTCOMPONENT_H
+#pragma once
+
 #include "component.h"
 #include "engine/core/input.h"
 
@@ -48,5 +48,3 @@ namespace hob {
         void on_input_event(const InputEvent& event);
     };
 }
-
-#endif //HOB_ENGINE_INPUTCOMPONENT_H

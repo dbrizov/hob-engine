@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_VECTOR2_H
-#define HOB_ENGINE_VECTOR2_H
+#pragma once
+
 #include <string>
 
 namespace hob {
@@ -42,5 +42,3 @@ namespace hob {
         std::string to_string() const;
     };
 }
-
-#endif //HOB_ENGINE_VECTOR2_H

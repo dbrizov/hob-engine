@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_CAPSULE_H
-#define HOB_ENGINE_CAPSULE_H
+#pragma once
+
 #include "vector2.h"
 
 namespace hob {
@@ -13,5 +13,3 @@ namespace hob {
         float get_height() const;
     };
 }
-
-#endif //HOB_ENGINE_CAPSULE_H

@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_IMGUISYSTEM_H
-#define HOB_ENGINE_IMGUISYSTEM_H
+#pragma once
+
 #include <SDL3/SDL_events.h>
 
 struct ImGuiContext;
@@ -34,5 +34,3 @@ namespace hob {
         static void ImGui_FixMousePosForLogicalPresentation(SDL_Renderer* renderer);
     };
 }
-
-#endif //HOB_ENGINE_IMGUISYSTEM_H

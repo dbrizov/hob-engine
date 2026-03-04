@@ -1,5 +1,5 @@
-#ifndef HOB_ENGINE_COLLIDERCOMPONENT_H
-#define HOB_ENGINE_COLLIDERCOMPONENT_H
+#pragma once
+
 #include <box2d/id.h>
 #include <box2d/types.h>
 
@@ -50,5 +50,3 @@ namespace hob {
         virtual void debug_draw_shape(const Color& color) const = 0;
     };
 }
-
-#endif //HOB_ENGINE_COLLIDERCOMPONENT_H
