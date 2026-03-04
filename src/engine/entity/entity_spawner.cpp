@@ -71,11 +71,6 @@ namespace hob {
                 out_entities.push_back(entity.get());
             }
         }
-
-        std::sort(out_entities.begin(), out_entities.end(),
-                  [](const auto& a, const auto& b) {
-                      return a->get_priority() < b->get_priority();
-                  });
     }
 
     void EntitySpawner::get_physics_entities(std::vector<Entity*>& out_entities) const {
@@ -93,11 +88,6 @@ namespace hob {
 
             out_entities.push_back(entity.get());
         }
-
-        std::sort(out_entities.begin(), out_entities.end(),
-                  [](const auto& a, const auto& b) {
-                      return a->get_priority() < b->get_priority();
-                  });
     }
 
     void EntitySpawner::get_renderable_entities(std::vector<const Entity*>& out_entities) const {
@@ -112,10 +102,10 @@ namespace hob {
             out_entities.push_back(entity.get());
         }
 
-        std::sort(out_entities.begin(), out_entities.end(),
-                  [](const auto& a, const auto& b) {
-                      return a->get_priority() < b->get_priority();
-                  });
+        // std::sort(out_entities.begin(), out_entities.end(),
+        //           [](const auto& a, const auto& b) {
+        //               return a->get_priority() < b->get_priority();
+        //           });
     }
 
     Entity* EntitySpawner::get_camera_entity() const {
@@ -127,7 +117,6 @@ namespace hob {
 
     void EntitySpawner::spawn_camera_entity() {
         Entity& camera_entity = spawn_entity();
-        camera_entity.set_priority(entity_priority::EP_CAMERA);
         camera_entity.add_component<CameraComponent>();
 
         m_camera_entity_id = camera_entity.get_id();

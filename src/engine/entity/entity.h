@@ -19,15 +19,9 @@ namespace hob {
     template<typename T>
     concept ComponentType = std::derived_from<T, Component>;
 
-    namespace entity_priority {
-        constexpr int EP_CAMERA = -1000;
-        constexpr int EP_DEFAULT = 0;
-    }
-
     class Entity final {
         App& m_app;
         EntityId m_id = 0;
-        int m_priority = entity_priority::EP_DEFAULT;
         bool m_is_in_play = false;
         bool m_is_ticking = false;
         std::vector<std::unique_ptr<Component>> m_components;
@@ -60,9 +54,6 @@ namespace hob {
 
         EntityId get_id() const;
         void set_id(EntityId id);
-
-        int get_priority() const;
-        void set_priority(int priority);
 
         bool is_in_play() const;
 

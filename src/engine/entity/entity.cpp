@@ -76,14 +76,6 @@ namespace hob {
         m_id = id;
     }
 
-    int Entity::get_priority() const {
-        return m_priority;
-    }
-
-    void Entity::set_priority(int priority) {
-        m_priority = priority;
-    }
-
     bool Entity::is_in_play() const {
         return m_is_in_play;
     }
