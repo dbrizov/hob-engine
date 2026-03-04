@@ -8,10 +8,6 @@ namespace hob {
         : Component(entity) {
     }
 
-    int TransformComponent::get_priority() const {
-        return component_priority::CP_TRANSFORM;
-    }
-
     Vector2 TransformComponent::get_position() const {
         return m_position;
     }

@@ -13,8 +13,6 @@ namespace hob {
     public:
         explicit ImageComponent(Entity& entity);
 
-        virtual int get_priority() const override;
-
         TextureId get_texture_id() const;
         void set_texture_id(TextureId texture_id);
 

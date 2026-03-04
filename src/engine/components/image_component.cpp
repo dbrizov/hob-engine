@@ -8,10 +8,6 @@ namespace hob {
         : Component(entity) {
     }
 
-    int ImageComponent::get_priority() const {
-        return component_priority::CP_RENDER;
-    }
-
     TextureId ImageComponent::get_texture_id() const {
         return m_texture_id;
     }
