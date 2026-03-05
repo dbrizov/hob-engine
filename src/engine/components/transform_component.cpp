@@ -1,7 +1,7 @@
 #include "transform_component.h"
 
 #include "engine/entity/entity.h"
-#include "engine/math/constants.h"
+#include "engine/math/mathf.h"
 
 namespace hob {
     TransformComponent::TransformComponent(Entity& entity)
@@ -17,26 +17,21 @@ namespace hob {
 
         if (!get_entity().is_in_play()) {
             // The entity isn't spawned yet. Match positions to prevent initial Physics interpolation
-            m_prev_position = m_position;
+            m_prev_physics_position = m_position;
         }
     }
 
-    float TransformComponent::get_rotation_degrees() const {
-        return m_rotation_degrees;
+    float TransformComponent::get_rotation() const {
+        return m_rotation;
     }
 
-    void TransformComponent::set_rotation_degrees(float rotation_degrees) {
-        m_rotation_degrees = rotation_degrees;
-    }
+    void TransformComponent::set_rotation(float rotation_degrees) {
+        m_rotation = math::normalize_angle(rotation_degrees);
 
-    float TransformComponent::get_rotation_radians() const {
-        float radians = m_rotation_degrees * DEG_TO_RAD;
-        return radians;
-    }
-
-    void TransformComponent::set_rotation_radians(float rotation_radians) {
-        float degrees = rotation_radians * RAD_TO_DEG;
-        m_rotation_degrees = degrees;
+        if (!get_entity().is_in_play()) {
+            // The entity isn't spawned yet. Match rotations to prevent initial Physics interpolation
+            m_prev_physics_rotation = m_rotation;
+        }
     }
 
     Vector2 TransformComponent::get_scale() const {
@@ -47,11 +42,19 @@ namespace hob {
         m_scale = scale;
     }
 
-    Vector2 TransformComponent::get_prev_position() const {
-        return m_prev_position;
+    Vector2 TransformComponent::get_prev_physics_position() const {
+        return m_prev_physics_position;
     }
 
-    void TransformComponent::set_prev_position(const Vector2& prev_position) {
-        m_prev_position = prev_position;
+    void TransformComponent::set_prev_physics_position(const Vector2& position) {
+        m_prev_physics_position = position;
+    }
+
+    float TransformComponent::get_prev_physics_rotation() const {
+        return m_prev_physics_rotation;
+    }
+
+    void TransformComponent::set_prev_physics_rotation(float rotation_degrees) {
+        m_prev_physics_rotation = rotation_degrees;
     }
 }

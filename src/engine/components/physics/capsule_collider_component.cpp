@@ -34,7 +34,7 @@ namespace hob {
     void CapsuleColliderComponent::debug_draw_shape(const Color& color) const {
         const TransformComponent* transform = get_entity().get_transform();
         Vector2 position = transform->get_position();
-        float rotation = transform->get_rotation_degrees();
+        float rotation = transform->get_rotation();
 
         // Capsule's centers in world space
         Vector2 c1_world = Vector2::rotate_around(position + m_capsule.center_a, position, rotation);

@@ -5,6 +5,7 @@
 #include "engine//components/transform_component.h"
 #include "engine/core/app.h"
 #include "engine/entity/entity.h"
+#include "engine/math/constants.h"
 
 namespace hob {
     RigidbodyComponent::RigidbodyComponent(Entity& entity)
@@ -14,11 +15,11 @@ namespace hob {
     void RigidbodyComponent::enter_play() {
         const TransformComponent* transform = get_entity().get_transform();
         Vector2 position = transform->get_position();
-        float rotation_radians = transform->get_rotation_radians();
+        float rotation_rad = transform->get_rotation() * DEG_TO_RAD;
 
         b2BodyDef body_def = b2DefaultBodyDef();
         body_def.position = Physics::vec2_to_b2Vec2(position);
-        body_def.rotation = Physics::radians_to_b2Rot(rotation_radians);
+        body_def.rotation = Physics::radians_to_b2Rot(rotation_rad);
 
         switch (m_body_type) {
             case BodyType::Static:

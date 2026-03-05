@@ -30,7 +30,7 @@ namespace hob {
     void BoxColliderComponent::debug_draw_shape(const Color& color) const {
         const TransformComponent* transform = get_entity().get_transform();
         Vector2 position = transform->get_position();
-        float rotation = transform->get_rotation_degrees();
+        float rotation = transform->get_rotation();
 
         Vector2 top_left = position + Vector2::left() * m_aabb.extents.x + Vector2::up() * m_aabb.extents.y;
         Vector2 top_right = position + Vector2::right() * m_aabb.extents.x + Vector2::up() * m_aabb.extents.y;

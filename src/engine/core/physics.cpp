@@ -7,6 +7,7 @@
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/entity/entity.h"
+#include "engine/math/constants.h"
 
 namespace hob {
     PhysicsWorld::PhysicsWorld(const Vector2& gravity)
@@ -52,7 +53,14 @@ namespace hob {
     void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {
         m_accumulator += frame_delta_time;
         while (m_accumulator >= m_fixed_delta_time) {
-            // TODO Fix Physics interpolation - set previous position of entities
+            // Save previous (start-of-step) state for Physics interpolation
+            if (m_interpolation_enabled) {
+                for (Entity* entity : entities) {
+                    TransformComponent* transform = entity->get_transform();
+                    transform->set_prev_physics_position(transform->get_position());
+                    transform->set_prev_physics_rotation(transform->get_rotation());
+                }
+            }
 
             // Let components apply forces / set kinematic velocities
             for (Entity* entity : entities) {
@@ -73,11 +81,12 @@ namespace hob {
                 b2Rot b2_rotation = b2Body_GetRotation(rigidbody->get_body_id());
 
                 Vector2 position = Physics::b2Vec2_to_vec2(b2_position);
-                float rotation_radians = Physics::b2Rot_to_radians(b2_rotation);
+                float rotation_rad = Physics::b2Rot_to_radians(b2_rotation);
+                float rotation_deg = rotation_rad * RAD_TO_DEG;
 
                 TransformComponent* transform = entity->get_transform();
                 transform->set_position(position);
-                transform->set_rotation_radians(rotation_radians);
+                transform->set_rotation(rotation_deg);
             }
 
             m_accumulator -= m_fixed_delta_time;

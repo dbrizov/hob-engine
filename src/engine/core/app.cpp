@@ -7,6 +7,7 @@
 #include "engine/components/camera_component.h"
 #include "engine/components/image_component.h"
 #include "engine/components/transform_component.h"
+#include "engine/math/mathf.h"
 
 namespace hob {
     App::App(const AppConfig& config)
@@ -85,6 +86,7 @@ namespace hob {
 #endif
 
             render_entities(renderable_entities);
+            render_debug_draws();
 
             if (m_console.is_open()) {
                 m_console.render();
@@ -131,12 +133,10 @@ namespace hob {
     }
 
     void App::render_entities(const std::vector<const Entity*>& entities) {
-        // Render entities
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
         TransformComponent* camera_transform = camera_entity->get_transform();
-        Vector2 camera_position = Vector2::lerp(camera_transform->get_prev_position(), camera_transform->get_position(),
-                                                m_physics.get_interpolation_fraction());
+        Vector2 camera_position = camera_transform->get_position();
 
         for (const Entity* entity : entities) {
             const TransformComponent* tr_comp = entity->get_transform();
@@ -154,7 +154,7 @@ namespace hob {
             Vector2 scale = Vector2(tr_scale.x * img_scale.x, tr_scale.y * img_scale.y);
 
             Vector2 world_position = Vector2::lerp(
-                tr_comp->get_prev_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
+                tr_comp->get_prev_physics_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
 
             Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
             screen_position.x -= texture_width * img_pivot.x * scale.x;
@@ -172,13 +172,19 @@ namespace hob {
                 dst.h * img_pivot.y
             };
 
-            float angle = -tr_comp->get_rotation_degrees();
+            float rotation = math::lerp_angle(
+                tr_comp->get_prev_physics_rotation(), tr_comp->get_rotation(), m_physics.get_interpolation_fraction());
+            rotation = -rotation; // SDL rotates images clockwise, so invert the rotation
 
             SDL_RenderTextureRotated(
-                m_sdl_context.get_renderer(), texture, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
+                m_sdl_context.get_renderer(), texture, nullptr, &dst, rotation, &pivot, SDL_FLIP_NONE);
         }
+    }
 
-        // Render debug draws
+    void App::render_debug_draws() {
+        Entity* camera_entity = m_entity_spawner.get_camera_entity();
+        CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
+
         debug::render_debug_draws(m_sdl_context.get_renderer(), m_assets.get_white_pixel_texture(), camera_component);
     }
 }

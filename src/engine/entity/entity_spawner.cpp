@@ -101,11 +101,6 @@ namespace hob {
 
             out_entities.push_back(entity.get());
         }
-
-        // std::sort(out_entities.begin(), out_entities.end(),
-        //           [](const auto& a, const auto& b) {
-        //               return a->get_priority() < b->get_priority();
-        //           });
     }
 
     Entity* EntitySpawner::get_camera_entity() const {

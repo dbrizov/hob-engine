@@ -63,7 +63,7 @@ hob::Entity& spawn_enemy_entity(hob::App& app, const hob::Vector2& position) {
 hob::Entity& spawn_static_box(hob::App& app, const hob::Vector2& position, float rotation_degrees) {
     hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.get_transform()->set_position(position);
-    entity.get_transform()->set_rotation_degrees(rotation_degrees);
+    entity.get_transform()->set_rotation(rotation_degrees);
 
     hob::RigidbodyComponent* rigidbody = entity.add_component<hob::RigidbodyComponent>();
     rigidbody->set_body_type(hob::BodyType::Static);
@@ -79,7 +79,7 @@ hob::Entity& spawn_dynamic_box(hob::App& app, const hob::Vector2& position, floa
     hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.set_ticking(true);
     entity.get_transform()->set_position(position);
-    entity.get_transform()->set_rotation_degrees(rotation_degrees);
+    entity.get_transform()->set_rotation(rotation_degrees);
 
     hob::RigidbodyComponent* rigidbody = entity.add_component<hob::RigidbodyComponent>();
     rigidbody->set_body_type(hob::BodyType::Dynamic);
@@ -101,7 +101,7 @@ hob::Entity& spawn_dynamic_box(hob::App& app, const hob::Vector2& position, floa
 hob::Entity& spawn_trigger_box(hob::App& app, const hob::Vector2& position, float rotation_degrees) {
     hob::Entity& entity = app.get_entity_spawner().spawn_entity();
     entity.get_transform()->set_position(position);
-    entity.get_transform()->set_rotation_degrees(rotation_degrees);
+    entity.get_transform()->set_rotation(rotation_degrees);
 
     entity.add_component<hob::RigidbodyComponent>();
 
