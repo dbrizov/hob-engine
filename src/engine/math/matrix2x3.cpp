@@ -16,6 +16,10 @@ namespace hob {
         return Vector2(x.length(), y.length());
     }
 
+    Vector2 Matrix2x3::transform_point(Vector2 p) const {
+        return origin + x * p.x + y * p.y;
+    }
+
     Matrix2x3 Matrix2x3::multiply(const Matrix2x3& a, const Matrix2x3& b) {
         Matrix2x3 out;
         out.x = a.x * b.x.x + a.y * b.x.y;
@@ -44,9 +48,5 @@ namespace hob {
         matrix.origin = center - (matrix.x * center.x + matrix.y * center.y);
 
         return matrix;
-    }
-
-    Vector2 Matrix2x3::transform_point(const Matrix2x3& m, Vector2 p) {
-        return m.origin + m.x * p.x + m.y * p.y;
     }
 }
