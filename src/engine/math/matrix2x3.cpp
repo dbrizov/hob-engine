@@ -33,6 +33,19 @@ namespace hob {
         };
     }
 
+    Matrix2x3 Matrix2x3::make_rotate_around(const Vector2& center, float degrees) {
+        float rad = degrees * DEG_TO_RAD;
+        float cos = std::cos(rad);
+        float sin = std::sin(rad);
+
+        Matrix2x3 matrix;
+        matrix.x = Vector2(cos, sin);
+        matrix.y = Vector2(-sin, cos);
+        matrix.origin = center - (matrix.x * center.x + matrix.y * center.y);
+
+        return matrix;
+    }
+
     Vector2 Matrix2x3::transform_point(const Matrix2x3& m, Vector2 p) {
         return m.origin + m.x * p.x + m.y * p.y;
     }
