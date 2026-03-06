@@ -7,6 +7,7 @@
 #include "engine/components/camera_component.h"
 #include "engine/components/image_component.h"
 #include "engine/components/transform_component.h"
+#include "engine/math/constants.h"
 #include "engine/math/mathf.h"
 
 namespace hob {
@@ -147,15 +148,17 @@ namespace hob {
             float texture_height = 0;
             SDL_GetTextureSize(texture, &texture_width, &texture_height);
 
+            Matrix2x3 matrix = Matrix2x3::lerp(tr_comp->get_prev_local_matrix(),
+                                               tr_comp->get_local_matrix(),
+                                               m_physics.get_interpolation_fraction());
+
             Vector2 img_pivot = img_comp->get_pivot();
 
-            Vector2 tr_scale = tr_comp->get_scale();
+            Vector2 tr_scale = matrix.get_scale();
             Vector2 img_scale = img_comp->get_scale();
             Vector2 scale = Vector2(tr_scale.x * img_scale.x, tr_scale.y * img_scale.y);
 
-            Vector2 world_position = Vector2::lerp(
-                tr_comp->get_prev_physics_position(), tr_comp->get_position(), m_physics.get_interpolation_fraction());
-
+            Vector2 world_position = matrix.origin;
             Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
             screen_position.x -= texture_width * img_pivot.x * scale.x;
             screen_position.y -= texture_height * img_pivot.y * scale.y;
@@ -172,12 +175,11 @@ namespace hob {
                 dst.h * img_pivot.y
             };
 
-            float rotation = math::lerp_angle(
-                tr_comp->get_prev_physics_rotation(), tr_comp->get_rotation(), m_physics.get_interpolation_fraction());
-            rotation = -rotation; // SDL rotates images clockwise, so invert the rotation
+            float rotation_deg = matrix.get_rotation_degrees();
+            float sdl_rotation = -rotation_deg; // SDL rotates clockwise, so invert the rotation
 
             SDL_RenderTextureRotated(
-                m_sdl_context.get_renderer(), texture, nullptr, &dst, rotation, &pivot, SDL_FLIP_NONE);
+                m_sdl_context.get_renderer(), texture, nullptr, &dst, sdl_rotation, &pivot, SDL_FLIP_NONE);
         }
     }
 

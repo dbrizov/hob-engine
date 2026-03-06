@@ -57,8 +57,7 @@ namespace hob {
             if (m_interpolation_enabled) {
                 for (Entity* entity : entities) {
                     TransformComponent* transform = entity->get_transform();
-                    transform->set_prev_physics_position(transform->get_position());
-                    transform->set_prev_physics_rotation(transform->get_rotation());
+                    transform->set_prev_local_matrix(transform->get_local_matrix());
                 }
             }
 

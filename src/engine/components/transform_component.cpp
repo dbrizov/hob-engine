@@ -1,11 +1,15 @@
 #include "transform_component.h"
 
+#include <cmath>
+
 #include "engine/entity/entity.h"
+#include "engine/math/constants.h"
 #include "engine/math/mathf.h"
 
 namespace hob {
     TransformComponent::TransformComponent(Entity& entity)
         : Component(entity) {
+        rebuild_local_matrix();
     }
 
     Vector2 TransformComponent::get_position() const {
@@ -14,10 +18,11 @@ namespace hob {
 
     void TransformComponent::set_position(const Vector2& position) {
         m_position = position;
+        m_local_matrix.origin = m_position;
 
         if (!get_entity().is_in_play()) {
-            // The entity isn't spawned yet. Match positions to prevent initial Physics interpolation
-            m_prev_physics_position = m_position;
+            // The entity isn't spawned yet. Match translation to prevent initial Physics interpolation
+            m_prev_local_matrix.origin = m_local_matrix.origin;
         }
     }
 
@@ -27,11 +32,7 @@ namespace hob {
 
     void TransformComponent::set_rotation(float rotation_degrees) {
         m_rotation = math::normalize_angle(rotation_degrees);
-
-        if (!get_entity().is_in_play()) {
-            // The entity isn't spawned yet. Match rotations to prevent initial Physics interpolation
-            m_prev_physics_rotation = m_rotation;
-        }
+        rebuild_local_matrix();
     }
 
     Vector2 TransformComponent::get_scale() const {
@@ -40,21 +41,33 @@ namespace hob {
 
     void TransformComponent::set_scale(const Vector2& scale) {
         m_scale = scale;
+        rebuild_local_matrix();
     }
 
-    Vector2 TransformComponent::get_prev_physics_position() const {
-        return m_prev_physics_position;
+    const Matrix2x3& TransformComponent::get_local_matrix() const {
+        return m_local_matrix;
     }
 
-    void TransformComponent::set_prev_physics_position(const Vector2& position) {
-        m_prev_physics_position = position;
+    const Matrix2x3& TransformComponent::get_prev_local_matrix() const {
+        return m_prev_local_matrix;
     }
 
-    float TransformComponent::get_prev_physics_rotation() const {
-        return m_prev_physics_rotation;
+    void TransformComponent::rebuild_local_matrix() {
+        float rad = m_rotation * DEG_TO_RAD;
+        float cos = std::cos(rad);
+        float sin = std::sin(rad);
+
+        m_local_matrix.x = Vector2(cos * m_scale.x, sin * m_scale.x);
+        m_local_matrix.y = Vector2(-sin * m_scale.y, cos * m_scale.y);
+        m_local_matrix.origin = m_position;
+
+        if (!get_entity().is_in_play()) {
+            // The entity isn't spawned yet. Match local matrices to prevent initial Physics interpolation
+            m_prev_local_matrix = m_local_matrix;
+        }
     }
 
-    void TransformComponent::set_prev_physics_rotation(float rotation_degrees) {
-        m_prev_physics_rotation = rotation_degrees;
+    void TransformComponent::set_prev_local_matrix(const Matrix2x3& prev_local_matrix) {
+        m_prev_local_matrix = prev_local_matrix;
     }
 }
