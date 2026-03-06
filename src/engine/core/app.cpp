@@ -8,7 +8,6 @@
 #include "engine/components/image_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/math/constants.h"
-#include "engine/math/mathf.h"
 
 namespace hob {
     App::App(const AppConfig& config)
@@ -154,7 +153,7 @@ namespace hob {
 
             Vector2 img_pivot = img_comp->get_pivot();
 
-            Vector2 tr_scale = matrix.get_scale();
+            Vector2 tr_scale = tr_comp->get_scale(); // we don't interpolate scale
             Vector2 img_scale = img_comp->get_scale();
             Vector2 scale = Vector2(tr_scale.x * img_scale.x, tr_scale.y * img_scale.y);
 
@@ -175,7 +174,7 @@ namespace hob {
                 dst.h * img_pivot.y
             };
 
-            float rotation_deg = matrix.get_rotation_degrees();
+            float rotation_deg = matrix.get_rotation() * RAD_TO_DEG;
             float sdl_rotation = -rotation_deg; // SDL rotates clockwise, so invert the rotation
 
             SDL_RenderTextureRotated(

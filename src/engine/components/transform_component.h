@@ -7,7 +7,7 @@
 namespace hob {
     class TransformComponent : public Component {
         Vector2 m_position;
-        float m_rotation = 0.0f; // in degrees
+        float m_rotation = 0.0f; // in radians
         Vector2 m_scale = Vector2(1.0f, 1.0f);
 
         Matrix2x3 m_local_matrix;
@@ -24,7 +24,7 @@ namespace hob {
         void set_position(const Vector2& position);
 
         float get_rotation() const;
-        void set_rotation(float rotation_degrees);
+        void set_rotation(float radians);
 
         Vector2 get_scale() const;
         void set_scale(const Vector2& scale);

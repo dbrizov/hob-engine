@@ -30,17 +30,17 @@ namespace hob {
     void BoxColliderComponent::debug_draw_shape(const Color& color) const {
         const TransformComponent* transform = get_entity().get_transform();
         Vector2 position = transform->get_position();
-        float rotation = transform->get_rotation();
+        float radians = transform->get_rotation();
 
         Vector2 top_left = position + Vector2::left() * m_aabb.extents.x + Vector2::up() * m_aabb.extents.y;
         Vector2 top_right = position + Vector2::right() * m_aabb.extents.x + Vector2::up() * m_aabb.extents.y;
         Vector2 bottom_left = position + Vector2::left() * m_aabb.extents.x + Vector2::down() * m_aabb.extents.y;
         Vector2 bottom_right = position + Vector2::right() * m_aabb.extents.x + Vector2::down() * m_aabb.extents.y;
 
-        top_left = Vector2::rotate_around(top_left, position, rotation);
-        top_right = Vector2::rotate_around(top_right, position, rotation);
-        bottom_left = Vector2::rotate_around(bottom_left, position, rotation);
-        bottom_right = Vector2::rotate_around(bottom_right, position, rotation);
+        top_left = Vector2::rotate_around(top_left, position, radians);
+        top_right = Vector2::rotate_around(top_right, position, radians);
+        bottom_left = Vector2::rotate_around(bottom_left, position, radians);
+        bottom_right = Vector2::rotate_around(bottom_right, position, radians);
 
         debug::draw_line(top_left, top_right, color);
         debug::draw_line(top_right, bottom_right, color);

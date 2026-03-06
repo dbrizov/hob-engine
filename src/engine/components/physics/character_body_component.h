@@ -47,7 +47,7 @@ namespace hob {
     private:
         static b2Capsule make_world_capsule(const Capsule& local_capsule,
                                             const Vector2& position,
-                                            float rotation_degrees);
+                                            float radians);
 
         static bool plane_result_callback(b2ShapeId other_shape_id, const b2PlaneResult* plane_result, void* context);
     };

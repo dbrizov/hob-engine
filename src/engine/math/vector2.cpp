@@ -113,9 +113,9 @@ namespace hob {
         return a * (1.0f - t) + b * t;
     }
 
-    Vector2 Vector2::rotate_around(const Vector2& point, const Vector2& center, float degrees) {
-        Matrix2x3 rot_matrix = Matrix2x3::make_rotate_around(center, degrees);
-        Vector2 rotated_point = rot_matrix.transform_point(point);
+    Vector2 Vector2::rotate_around(const Vector2& point, const Vector2& center, float radians) {
+        Matrix2x3 rotation_matrix = Matrix2x3::make_rotate_around(center, radians);
+        Vector2 rotated_point = rotation_matrix.transform_point(point);
 
         return rotated_point;
     }

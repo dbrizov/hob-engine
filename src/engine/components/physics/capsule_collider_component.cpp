@@ -34,11 +34,11 @@ namespace hob {
     void CapsuleColliderComponent::debug_draw_shape(const Color& color) const {
         const TransformComponent* transform = get_entity().get_transform();
         Vector2 position = transform->get_position();
-        float rotation = transform->get_rotation();
+        float radians = transform->get_rotation();
 
         // Capsule's centers in world space
-        Vector2 c1_world = Vector2::rotate_around(position + m_capsule.center_a, position, rotation);
-        Vector2 c2_world = Vector2::rotate_around(position + m_capsule.center_b, position, rotation);
+        Vector2 c1_world = Vector2::rotate_around(position + m_capsule.center_a, position, radians);
+        Vector2 c2_world = Vector2::rotate_around(position + m_capsule.center_b, position, radians);
 
         // Capsule's axis and its perpendicular (both unit length)
         Vector2 axis = (c2_world - c1_world);

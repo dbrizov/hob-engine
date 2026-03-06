@@ -70,7 +70,7 @@ namespace hob {
 
         b2Vec2 b2_start_pos = b2Body_GetPosition(body_id);
         b2Rot b2_rot = b2Body_GetRotation(body_id);
-        float rot_degrees = Physics::b2Rot_to_radians(b2_rot) * RAD_TO_DEG;
+        float radians = Physics::b2Rot_to_radians(b2_rot);
 
         b2Vec2 b2_current_pos = b2_start_pos;
         b2Vec2 b2_delta_pos = Physics::vec2_to_b2Vec2(delta_pos);
@@ -81,7 +81,7 @@ namespace hob {
             m_solver_planes_count = 0;
 
             // Build capsule at current position
-            b2Capsule mover = make_world_capsule(local_capsule, Physics::b2Vec2_to_vec2(b2_current_pos), rot_degrees);
+            b2Capsule mover = make_world_capsule(local_capsule, Physics::b2Vec2_to_vec2(b2_current_pos), radians);
 
             // 1) Gather planes at current position
             b2World_CollideMover(world_id, &mover, collision_filter, plane_result_callback, this);
@@ -112,9 +112,9 @@ namespace hob {
 
     b2Capsule CharacterBodyComponent::make_world_capsule(const Capsule& local_capsule,
                                                          const Vector2& position,
-                                                         float rotation_degrees) {
-        Vector2 c1_world = Vector2::rotate_around(position + local_capsule.center_a, position, rotation_degrees);
-        Vector2 c2_world = Vector2::rotate_around(position + local_capsule.center_b, position, rotation_degrees);
+                                                         float radians) {
+        Vector2 c1_world = Vector2::rotate_around(position + local_capsule.center_a, position, radians);
+        Vector2 c2_world = Vector2::rotate_around(position + local_capsule.center_b, position, radians);
 
         b2Capsule b2_capsule;
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(c1_world);

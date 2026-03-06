@@ -2,14 +2,10 @@
 
 #include <cmath>
 
-#include "constants.h"
-
 namespace hob {
-    float Matrix2x3::get_rotation_degrees() const {
-        float rotation_rad = std::atan2(x.y, x.x); // rotation from basis X direction
-        float rotation_deg = rotation_rad * RAD_TO_DEG;
-
-        return rotation_deg;
+    float Matrix2x3::get_rotation() const {
+        float radians = std::atan2(x.y, x.x); // rotation from basis X direction
+        return radians;
     }
 
     Vector2 Matrix2x3::get_scale() const {
@@ -37,10 +33,9 @@ namespace hob {
         };
     }
 
-    Matrix2x3 Matrix2x3::make_rotate_around(const Vector2& center, float degrees) {
-        float rad = degrees * DEG_TO_RAD;
-        float cos = std::cos(rad);
-        float sin = std::sin(rad);
+    Matrix2x3 Matrix2x3::make_rotate_around(const Vector2& center, float radians) {
+        float cos = std::cos(radians);
+        float sin = std::sin(radians);
 
         Matrix2x3 matrix;
         matrix.x = Vector2(cos, sin);

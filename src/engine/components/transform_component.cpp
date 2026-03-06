@@ -3,8 +3,6 @@
 #include <cmath>
 
 #include "engine/entity/entity.h"
-#include "engine/math/constants.h"
-#include "engine/math/mathf.h"
 
 namespace hob {
     TransformComponent::TransformComponent(Entity& entity)
@@ -30,8 +28,8 @@ namespace hob {
         return m_rotation;
     }
 
-    void TransformComponent::set_rotation(float rotation_degrees) {
-        m_rotation = math::normalize_angle(rotation_degrees);
+    void TransformComponent::set_rotation(float radians) {
+        m_rotation = radians;
         rebuild_local_matrix();
     }
 
@@ -53,9 +51,8 @@ namespace hob {
     }
 
     void TransformComponent::rebuild_local_matrix() {
-        float rad = m_rotation * DEG_TO_RAD;
-        float cos = std::cos(rad);
-        float sin = std::sin(rad);
+        float cos = std::cos(m_rotation);
+        float sin = std::sin(m_rotation);
 
         m_local_matrix.x = Vector2(cos * m_scale.x, sin * m_scale.x);
         m_local_matrix.y = Vector2(-sin * m_scale.y, cos * m_scale.y);
