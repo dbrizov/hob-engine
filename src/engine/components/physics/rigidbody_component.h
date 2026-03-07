@@ -3,6 +3,7 @@
 #include <box2d/id.h>
 
 #include "engine/components/component.h"
+#include "engine/math/vector2.h"
 
 namespace hob {
     enum class BodyType {
@@ -30,5 +31,14 @@ namespace hob {
 
         bool has_fixed_rotation() const;
         void set_fixed_rotation(bool has_fixed_rotation);
+
+        Vector2 get_velocity() const;
+        void set_velocity(const Vector2& velocity);
+
+        Vector2 get_position() const;
+        void set_position(const Vector2& position);
+
+        float get_rotation() const;
+        void set_rotation(float radians);
     };
 }

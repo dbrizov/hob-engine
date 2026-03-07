@@ -3,7 +3,10 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_render.h>
 
+#include "app.h"
 #include "logging.h"
 #include "path_utils.h"
 
@@ -104,7 +107,8 @@ namespace hob {
     }
 
     // ---------------- Input ----------------
-    Input::Input() {
+    Input::Input(App& app)
+        : m_app(app) {
         m_input_mappings = load_input_mappings(PathUtils::get_input_config_path());
         m_relevant_keys = m_input_mappings.relevant_keys();
 
@@ -113,8 +117,9 @@ namespace hob {
         }
     }
 
-    void Input::tick(float delta_time, const bool* keyboard_state) {
-        update_pressed_keys(keyboard_state);
+    void Input::tick(float delta_time) {
+        update_mouse_screen_position();
+        update_pressed_keys();
 
         // Dispatch action events
         for (auto& [action, keys] : m_input_mappings.actions) {
@@ -197,16 +202,30 @@ namespace hob {
         return true;
     }
 
-    void Input::dispatch_event(const InputEvent& event) const {
-        for (const auto& entry : m_handlers) {
-            entry.handler(event);
-        }
+    Vector2 Input::get_mouse_screen_position() const {
+        return m_mouse_screen_position;
     }
 
-    void Input::update_pressed_keys(const bool* keyboard_state) {
+    void Input::update_mouse_screen_position() {
+        float x = 0.0f;
+        float y = 0.0f;
+        SDL_GetMouseState(&x, &y);
+        SDL_RenderCoordinatesFromWindow(m_app.get_sdl_context().get_renderer(), x, y, &x, &y);
+
+        m_mouse_screen_position = Vector2(x, y);
+    }
+
+    void Input::update_pressed_keys() {
+        const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
         for (SDL_Scancode key : m_relevant_keys) {
             m_pressed_keys_last_frame.set(key, m_pressed_keys_this_frame.test(key));
             m_pressed_keys_this_frame.set(key, keyboard_state[key]);
+        }
+    }
+
+    void Input::dispatch_event(const InputEvent& event) const {
+        for (const auto& entry : m_handlers) {
+            entry.handler(event);
         }
     }
 }

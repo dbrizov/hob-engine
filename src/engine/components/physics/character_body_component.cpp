@@ -44,13 +44,6 @@ namespace hob {
         m_solver_ignore_mask = solver_ignore_mask;
     }
 
-    Vector2 CharacterBodyComponent::get_velocity() const {
-        b2Vec2 b2_velocity = b2Body_GetLinearVelocity(m_rigidbody->get_body_id());
-        Vector2 velocity = Physics::b2Vec2_to_vec2(b2_velocity);
-
-        return velocity;
-    }
-
     void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, float delta_time) {
         Vector2 delta_pos = desired_velocity * delta_time;
         if (delta_pos.length_sqr() < EPSILON) {
@@ -108,6 +101,30 @@ namespace hob {
         b2Vec2 achieved_delta = b2Sub(b2_current_pos, b2_start_pos);
         b2Vec2 achieved_velocity = b2MulSV(1.0f / delta_time, achieved_delta);
         b2Body_SetLinearVelocity(body_id, achieved_velocity);
+    }
+
+    Vector2 CharacterBodyComponent::get_velocity() const {
+        return m_rigidbody->get_velocity();
+    }
+
+    void CharacterBodyComponent::set_velocity(const Vector2& velocity) {
+        m_rigidbody->set_velocity(velocity);
+    }
+
+    Vector2 CharacterBodyComponent::get_position() const {
+        return m_rigidbody->get_position();
+    }
+
+    void CharacterBodyComponent::set_position(const Vector2& position) {
+        m_rigidbody->set_position(position);
+    }
+
+    float CharacterBodyComponent::get_rotation() const {
+        return m_rigidbody->get_rotation();
+    }
+
+    void CharacterBodyComponent::set_rotation(float radians) {
+        m_rigidbody->set_rotation(radians);
     }
 
     b2Capsule CharacterBodyComponent::make_world_capsule(const Capsule& local_capsule,

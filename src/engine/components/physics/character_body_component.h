@@ -40,9 +40,16 @@ namespace hob {
         uint64_t get_solver_ignore_mask() const;
         void set_solver_ignore_mask(uint64_t solver_ignore_mask);
 
-        Vector2 get_velocity() const;
-
         void move_and_slide(const Vector2& desired_velocity, float delta_time);
+
+        Vector2 get_velocity() const;
+        void set_velocity(const Vector2& velocity);
+
+        Vector2 get_position() const;
+        void set_position(const Vector2& position);
+
+        float get_rotation() const;
+        void set_rotation(float radians);
 
     private:
         static b2Capsule make_world_capsule(const Capsule& local_capsule,

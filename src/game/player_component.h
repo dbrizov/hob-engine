@@ -25,7 +25,8 @@ namespace game {
         virtual void on_trigger_exit(const hob::ColliderComponent* other_collider) override;
 
     private:
-        void update_camera_position(const hob::Vector2& target_position, float fixed_delta_time);
+        void update_camera_position(const hob::Vector2& target_position, float delta_time);
+        void update_rotation(float delta_time);
 
         void set_movement_input_x(float x_axis);
         void set_movement_input_y(float y_axis);

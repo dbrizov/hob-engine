@@ -10,5 +10,8 @@ namespace hob {
 
         Vector2 world_to_screen(const Vector2& world_position) const;
         Vector2 world_to_screen(const Vector2& world_position, const Vector2& camera_position) const;
+
+        Vector2 screen_to_world(const Vector2& screen_position) const;
+        Vector2 screen_to_world(const Vector2& screen_position, const Vector2& camera_position) const;
     };
 }

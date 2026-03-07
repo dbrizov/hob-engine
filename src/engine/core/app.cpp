@@ -17,7 +17,7 @@ namespace hob {
         , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
         , m_console(*this)
         , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
-        , m_input()
+        , m_input(*this)
         , m_assets(m_sdl_context.get_renderer())
         , m_physics(*this)
         , m_entity_spawner(*this) {
@@ -67,8 +67,7 @@ namespace hob {
 
             // input.tick()
             if (!m_console.is_open()) {
-                const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
-                m_input.tick(scaled_delta_time, keyboard_state);
+                m_input.tick(scaled_delta_time);
             }
 
             // entities.tick()
@@ -107,6 +106,10 @@ namespace hob {
 
     const AppConfig& App::get_config() const {
         return m_config;
+    }
+
+    SdlContext& App::get_sdl_context() {
+        return m_sdl_context;
     }
 
     Console& App::get_console() {

@@ -1,6 +1,7 @@
 #include "physics.h"
 
 #include <cassert>
+#include <cmath>
 
 #include "app.h"
 #include "engine/components/physics/collider_component.h"

@@ -1,14 +1,17 @@
 #pragma once
 
-#include <filesystem>
-#include <functional>
-#include <SDL3/SDL_scancode.h>
 #include <bitset>
-#include <string>
+#include <functional>
 #include <unordered_map>
 #include <vector>
+#include <string>
+#include <SDL3/SDL_scancode.h>
+
+#include "engine/math/vector2.h"
 
 namespace hob {
+    class App;
+
     enum class InputEventType {
         Axis,
         Pressed,
@@ -43,6 +46,8 @@ namespace hob {
     };
 
     class Input {
+        App& m_app;
+
         struct HandlerEntry {
             InputEventHandlerId handler_id;
             InputEventHandler handler;
@@ -58,16 +63,22 @@ namespace hob {
         std::bitset<SDL_SCANCODE_COUNT> m_pressed_keys_this_frame{};
         std::bitset<SDL_SCANCODE_COUNT> m_pressed_keys_last_frame{};
 
-    public:
-        Input();
+        Vector2 m_mouse_screen_position;
 
-        void tick(float delta_time, const bool* keyboard_state);
+    public:
+        explicit Input(App& app);
+
+        void tick(float delta_time);
 
         InputEventHandlerId add_input_event_handler(InputEventHandler handler);
         bool remove_input_event_handler(InputEventHandlerId id);
 
+        Vector2 get_mouse_screen_position() const;
+
     private:
+        void update_mouse_screen_position();
+        void update_pressed_keys();
+
         void dispatch_event(const InputEvent& event) const;
-        void update_pressed_keys(const bool* keyboard_state);
     };
 }

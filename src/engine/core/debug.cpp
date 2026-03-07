@@ -26,7 +26,7 @@ namespace hob::debug {
                 return;
             }
 
-            float angle = std::atan2(v.y, v.x) * RAD_TO_DEG; // Angle in degrees for SDL
+            float angle = std::atan2(v.y, v.x) * RAD_TO_DEG; // angle in degrees for SDL
             float thickness = std::max(1.0f, line.thickness);
 
             // Destination rectangle:
