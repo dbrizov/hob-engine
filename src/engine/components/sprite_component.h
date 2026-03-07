@@ -5,14 +5,14 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    class ImageComponent : public Component {
+    class SpriteComponent : public Component {
         TextureId m_texture_id = INVALID_TEXTURE_ID;
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
         int m_z_index = 0;
 
     public:
-        explicit ImageComponent(Entity& entity);
+        explicit SpriteComponent(Entity& entity);
 
         TextureId get_texture_id() const;
         void set_texture_id(TextureId texture_id);

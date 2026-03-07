@@ -1,11 +1,11 @@
 #include <filesystem>
 
-#include "engine/components/image_component.h"
 #include "engine/components/input_component.h"
 #include "engine/components/physics/box_collider_component.h"
 #include "engine/components/physics/capsule_collider_component.h"
 #include "engine/components/physics/character_body_component.h"
 #include "engine/components/physics/rigidbody_component.h"
+#include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/app.h"
 #include "engine/core/path_utils.h"
@@ -49,12 +49,12 @@ hob::Entity& spawn_player_entity(hob::App& app, const hob::Vector2& position) {
     hob::CapsuleColliderComponent* capsule_collider = entity.get_component<hob::CapsuleColliderComponent>();
     capsule_collider->set_capsule(hob::Capsule(hob::Vector2::zero(), hob::Vector2::zero(), 1.2f));
 
-    hob::ImageComponent* image_component = entity.add_component<hob::ImageComponent>();
+    hob::SpriteComponent* sprite_component = entity.add_component<hob::SpriteComponent>();
     const std::filesystem::path path =
         hob::PathUtils::get_assets_root_path() / "images" / "player" / "HJ_run01.png";
     const hob::TextureId texture_id = app.get_assets().load_texture(path);
-    image_component->set_texture_id(texture_id);
-    image_component->set_z_index(1);
+    sprite_component->set_texture_id(texture_id);
+    sprite_component->set_z_index(1);
 
     return entity;
 }
@@ -88,11 +88,11 @@ hob::Entity& spawn_dynamic_box(hob::App& app, const hob::Vector2& position, floa
     box_collider->set_collision_mask(
         COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC | COLLISION_BIT_TRIGGER);
 
-    hob::ImageComponent* image_component = entity.add_component<hob::ImageComponent>();
+    hob::SpriteComponent* sprite_component = entity.add_component<hob::SpriteComponent>();
     const std::filesystem::path path =
         hob::PathUtils::get_assets_root_path() / "images" / "robot.png";
     const hob::TextureId texture_id = app.get_assets().load_texture(path);
-    image_component->set_texture_id(texture_id);
+    sprite_component->set_texture_id(texture_id);
 
     return entity;
 }
@@ -109,11 +109,11 @@ hob::Entity& spawn_trigger_box(hob::App& app, const hob::Vector2& position, floa
     box_collider->set_collision_layer(COLLISION_BIT_TRIGGER);
     box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
 
-    hob::ImageComponent* image_component = entity.add_component<hob::ImageComponent>();
+    hob::SpriteComponent* sprite_component = entity.add_component<hob::SpriteComponent>();
     const std::filesystem::path path =
         hob::PathUtils::get_assets_root_path() / "images" / "robot.png";
     const hob::TextureId texture_id = app.get_assets().load_texture(path);
-    image_component->set_texture_id(texture_id);
+    sprite_component->set_texture_id(texture_id);
 
     entity.add_component<game::ContactLoggerComponent>();
 
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    spawn_player_entity(app, hob::Vector2(0.0f, -1.5f));
+    spawn_player_entity(app, hob::Vector2(0.0f, 0.0f));
 
     // floor
     spawn_static_box(app, hob::Vector2(-4.0f, -3.0f), 0.0f);
@@ -190,7 +190,7 @@ int main(int argc, char* argv[]) {
     // spawn_dynamic_box(app, hob::Vector2(2.0f, 6.0f), -10.0f);
 
     // trigger boxes
-    spawn_trigger_box(app, hob::Vector2(0.0f, 1.0f), 0.0f);
+    spawn_trigger_box(app, hob::Vector2(0.0f, 2.0f), 0.0f);
 
     app.run();
 

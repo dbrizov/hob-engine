@@ -4,8 +4,8 @@
 
 #include "entity.h"
 #include "engine/components/camera_component.h"
-#include "engine/components/image_component.h"
 #include "engine/components/physics/rigidbody_component.h"
+#include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/app.h"
 
@@ -94,8 +94,8 @@ namespace hob {
         out_entities.clear();
         out_entities.reserve(m_entities.size());
         for (const auto& entity : m_entities) {
-            const ImageComponent* img_comp = entity->get_component<ImageComponent>();
-            if (img_comp == nullptr) {
+            const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
+            if (sprite_comp == nullptr) {
                 continue;
             }
 

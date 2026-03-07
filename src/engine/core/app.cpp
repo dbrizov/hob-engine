@@ -6,7 +6,7 @@
 #include "debug.h"
 #include "timer.h"
 #include "engine/components/camera_component.h"
-#include "engine/components/image_component.h"
+#include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/math/constants.h"
 
@@ -141,17 +141,17 @@ namespace hob {
 
         std::sort(entities.begin(), entities.end(),
                   [](const Entity* a, const Entity* b) {
-                      const ImageComponent* a_img_comp = a->get_component<ImageComponent>();
-                      const ImageComponent* b_img_comp = b->get_component<ImageComponent>();
+                      const SpriteComponent* a_sprite = a->get_component<SpriteComponent>();
+                      const SpriteComponent* b_sprite = b->get_component<SpriteComponent>();
 
-                      return a_img_comp->get_z_index() < b_img_comp->get_z_index();
+                      return a_sprite->get_z_index() < b_sprite->get_z_index();
                   });
 
         for (const Entity* entity : entities) {
             const TransformComponent* tr_comp = entity->get_transform();
-            const ImageComponent* img_comp = entity->get_component<ImageComponent>();
+            const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
 
-            SDL_Texture* texture = m_assets.get_texture(img_comp->get_texture_id());
+            SDL_Texture* texture = m_assets.get_texture(sprite_comp->get_texture_id());
             float texture_width = 0;
             float texture_height = 0;
             SDL_GetTextureSize(texture, &texture_width, &texture_height);
@@ -160,16 +160,16 @@ namespace hob {
                                                tr_comp->get_local_matrix(),
                                                m_physics.get_interpolation_fraction());
 
-            Vector2 img_pivot = img_comp->get_pivot();
+            Vector2 sprite_pivot = sprite_comp->get_pivot();
 
             Vector2 tr_scale = tr_comp->get_scale(); // we don't interpolate scale
-            Vector2 img_scale = img_comp->get_scale();
-            Vector2 scale = Vector2(tr_scale.x * img_scale.x, tr_scale.y * img_scale.y);
+            Vector2 sprite_scale = sprite_comp->get_scale();
+            Vector2 scale = Vector2(tr_scale.x * sprite_scale.x, tr_scale.y * sprite_scale.y);
 
             Vector2 world_position = matrix.origin;
             Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
-            screen_position.x -= texture_width * img_pivot.x * scale.x;
-            screen_position.y -= texture_height * img_pivot.y * scale.y;
+            screen_position.x -= texture_width * sprite_pivot.x * scale.x;
+            screen_position.y -= texture_height * sprite_pivot.y * scale.y;
 
             SDL_FRect dst{
                 screen_position.x,
@@ -179,8 +179,8 @@ namespace hob {
             };
 
             SDL_FPoint pivot = {
-                dst.w * img_pivot.x,
-                dst.h * img_pivot.y
+                dst.w * sprite_pivot.x,
+                dst.h * sprite_pivot.y
             };
 
             float rotation_deg = matrix.get_rotation() * RAD_TO_DEG;
