@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include <SDL3/SDL.h>
+#include <algorithm>
 
 #include "debug.h"
 #include "timer.h"
@@ -132,11 +133,19 @@ namespace hob {
         return m_entity_spawner;
     }
 
-    void App::render_entities(const std::vector<const Entity*>& entities) {
+    void App::render_entities(std::vector<const Entity*>& entities) {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
         TransformComponent* camera_transform = camera_entity->get_transform();
         Vector2 camera_position = camera_transform->get_position();
+
+        std::sort(entities.begin(), entities.end(),
+                  [](const Entity* a, const Entity* b) {
+                      const ImageComponent* a_img_comp = a->get_component<ImageComponent>();
+                      const ImageComponent* b_img_comp = b->get_component<ImageComponent>();
+
+                      return a_img_comp->get_z_index() < b_img_comp->get_z_index();
+                  });
 
         for (const Entity* entity : entities) {
             const TransformComponent* tr_comp = entity->get_transform();

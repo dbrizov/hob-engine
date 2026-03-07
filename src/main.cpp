@@ -3,6 +3,7 @@
 #include "engine/components/image_component.h"
 #include "engine/components/input_component.h"
 #include "engine/components/physics/box_collider_component.h"
+#include "engine/components/physics/capsule_collider_component.h"
 #include "engine/components/physics/character_body_component.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"
@@ -16,8 +17,8 @@
 const std::string WINDOW_TITLE = "SDL2 Window";
 constexpr uint32_t WINDOW_WIDTH = 1152;
 constexpr uint32_t WINDOW_HEIGHT = 648;
-constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = WINDOW_WIDTH;
-constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = WINDOW_HEIGHT;
+constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = 1920;
+constexpr uint32_t LOGICAL_RESOLUTION_HEIGHT = 1080;
 constexpr uint32_t PIXELS_PER_METER = 64;
 constexpr uint32_t TARGET_FPS = 60;
 constexpr bool VSYNC_ENABLED = true;
@@ -45,18 +46,15 @@ hob::Entity& spawn_player_entity(hob::App& app, const hob::Vector2& position) {
     character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
     character_body->set_solver_ignore_mask(COLLISION_BIT_TRIGGER);
 
-    return entity;
-}
+    hob::CapsuleColliderComponent* capsule_collider = entity.get_component<hob::CapsuleColliderComponent>();
+    capsule_collider->set_capsule(hob::Capsule(hob::Vector2::zero(), hob::Vector2::zero(), 1.2f));
 
-hob::Entity& spawn_enemy_entity(hob::App& app, const hob::Vector2& position) {
-    hob::Entity& entity = app.get_entity_spawner().spawn_entity();
-    entity.set_ticking(true);
-    entity.get_transform()->set_position(position);
-
-    hob::CharacterBodyComponent* character_body = entity.add_component<hob::CharacterBodyComponent>();
-    character_body->set_collision_layer(COLLISION_BIT_KINEMATIC);
-    character_body->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_TRIGGER);
-    character_body->set_solver_ignore_mask(COLLISION_BIT_TRIGGER);
+    hob::ImageComponent* image_component = entity.add_component<hob::ImageComponent>();
+    const std::filesystem::path path =
+        hob::PathUtils::get_assets_root_path() / "images" / "player" / "HJ_run01.png";
+    const hob::TextureId texture_id = app.get_assets().load_texture(path);
+    image_component->set_texture_id(texture_id);
+    image_component->set_z_index(1);
 
     return entity;
 }
@@ -111,6 +109,12 @@ hob::Entity& spawn_trigger_box(hob::App& app, const hob::Vector2& position, floa
     box_collider->set_collision_layer(COLLISION_BIT_TRIGGER);
     box_collider->set_collision_mask(COLLISION_BIT_STATIC | COLLISION_BIT_DYNAMIC | COLLISION_BIT_KINEMATIC);
 
+    hob::ImageComponent* image_component = entity.add_component<hob::ImageComponent>();
+    const std::filesystem::path path =
+        hob::PathUtils::get_assets_root_path() / "images" / "robot.png";
+    const hob::TextureId texture_id = app.get_assets().load_texture(path);
+    image_component->set_texture_id(texture_id);
+
     entity.add_component<game::ContactLoggerComponent>();
 
     return entity;
@@ -144,7 +148,6 @@ int main(int argc, char* argv[]) {
     }
 
     spawn_player_entity(app, hob::Vector2(0.0f, -1.5f));
-    // spawn_enemy_entity(app, hob::Vector2(2.0f, 0.0f));
 
     // floor
     spawn_static_box(app, hob::Vector2(-4.0f, -3.0f), 0.0f);
@@ -179,12 +182,12 @@ int main(int argc, char* argv[]) {
     spawn_static_box(app, hob::Vector2(-5.0f, 4.0f), 0.0f);
 
     // dynamic boxes
-    spawn_dynamic_box(app, hob::Vector2(-3.0f, 3.0f), 60.0f);
-    spawn_dynamic_box(app, hob::Vector2(-2.0f, 0.0f), 0.0f);
-    spawn_dynamic_box(app, hob::Vector2(-1.0f, 1.5f), 30.0f);
-    spawn_dynamic_box(app, hob::Vector2(0.0f, 3.0f), 40.0f);
-    spawn_dynamic_box(app, hob::Vector2(1.0f, 4.5f), 0.0f);
-    spawn_dynamic_box(app, hob::Vector2(2.0f, 6.0f), -10.0f);
+    // spawn_dynamic_box(app, hob::Vector2(-3.0f, 3.0f), 60.0f);
+    // spawn_dynamic_box(app, hob::Vector2(-2.0f, 0.0f), 0.0f);
+    // spawn_dynamic_box(app, hob::Vector2(-1.0f, 1.5f), 30.0f);
+    // spawn_dynamic_box(app, hob::Vector2(0.0f, 3.0f), 40.0f);
+    // spawn_dynamic_box(app, hob::Vector2(1.0f, 4.5f), 0.0f);
+    // spawn_dynamic_box(app, hob::Vector2(2.0f, 6.0f), -10.0f);
 
     // trigger boxes
     spawn_trigger_box(app, hob::Vector2(0.0f, 1.0f), 0.0f);

@@ -31,4 +31,12 @@ namespace hob {
     void ImageComponent::set_scale(const Vector2& scale) {
         m_scale = scale;
     }
+
+    int ImageComponent::get_z_index() const {
+        return m_z_index;
+    }
+
+    void ImageComponent::set_z_index(int z_index) {
+        m_z_index = z_index;
+    }
 }

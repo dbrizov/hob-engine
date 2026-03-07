@@ -64,7 +64,7 @@ namespace hob {
         EntitySpawner& get_entity_spawner();
 
     private:
-        void render_entities(const std::vector<const Entity*>& entities);
+        void render_entities(std::vector<const Entity*>& entities);
         void render_debug_draws();
     };
 }

@@ -9,6 +9,7 @@ namespace hob {
         TextureId m_texture_id = INVALID_TEXTURE_ID;
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
+        int m_z_index = 0;
 
     public:
         explicit ImageComponent(Entity& entity);
@@ -21,5 +22,8 @@ namespace hob {
 
         Vector2 get_scale() const;
         void set_scale(const Vector2& scale);
+
+        int get_z_index() const;
+        void set_z_index(int z_index);
     };
 }
