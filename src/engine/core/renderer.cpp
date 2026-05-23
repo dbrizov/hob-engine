@@ -10,26 +10,26 @@
 
 namespace hob {
     Color::Color()
-        : Color(0, 0, 0, 0) {
+        : Color(0.0f, 0.0f, 0.0f, 0.0f) {
     }
 
-    Color::Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_)
+    Color::Color(float r_, float g_, float b_, float a_)
         : r(r_)
         , g(g_)
         , b(b_)
         , a(a_) {
     }
 
-    Color Color::black() { return Color(0, 0, 0); }
-    Color Color::white() { return Color(255, 255, 255); }
-    Color Color::gray() { return Color(128, 128, 128); }
-    Color Color::red() { return Color(255, 0, 0); }
-    Color Color::green() { return Color(0, 255, 0); }
-    Color Color::blue() { return Color(0, 0, 255); }
-    Color Color::yellow() { return Color(255, 255, 0); }
-    Color Color::magenta() { return Color(255, 0, 255); }
-    Color Color::cyan() { return Color(0, 255, 255); }
-    Color Color::orange() { return Color(255, 165, 0); }
+    Color Color::black() { return Color(0.0f, 0.0f, 0.0f); }
+    Color Color::white() { return Color(1.0f, 1.0f, 1.0f); }
+    Color Color::gray() { return Color(0.5f, 0.5f, 0.5f); }
+    Color Color::red() { return Color(1.0f, 0.0f, 0.0f); }
+    Color Color::green() { return Color(0.0f, 1.0f, 0.0f); }
+    Color Color::blue() { return Color(0.0f, 0.0f, 1.0f); }
+    Color Color::yellow() { return Color(1.0f, 1.0f, 0.0f); }
+    Color Color::magenta() { return Color(1.0f, 0.0f, 1.0f); }
+    Color Color::cyan() { return Color(0.0f, 1.0f, 1.0f); }
+    Color Color::orange() { return Color(1.0f, 0.647f, 0.0f); }
 
     std::string Color::to_string() const {
         return std::format("({}, {}, {}, {})", r, g, b, a);
@@ -380,7 +380,7 @@ void main() {
     void Renderer::frame_start() {
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
         glViewport(0, 0, static_cast<GLsizei>(m_logical_width), static_cast<GLsizei>(m_logical_height));
-        glClearColor(43.0f / 255.0f, 47.0f / 255.0f, 119.0f / 255.0f, 1.0f);
+        glClearColor(0.17f, 0.18f, 0.47f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
@@ -422,8 +422,7 @@ void main() {
         // remains visually counter-clockwise.
         glUniform1f(m_u_sprite_rotation, -rotation_rad);
 
-        glUniform4f(m_u_sprite_tint,
-                    tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
+        glUniform4f(m_u_sprite_tint, tint.r, tint.g, tint.b, tint.a);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -436,14 +435,9 @@ void main() {
         const std::array<float, 16> projection =
             ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height));
 
-        const float r = color.r / 255.0f;
-        const float g = color.g / 255.0f;
-        const float bl = color.b / 255.0f;
-        const float al = color.a / 255.0f;
-
         const float verts[] = {
-            a.x, a.y, r, g, bl, al,
-            b.x, b.y, r, g, bl, al,
+            a.x, a.y, color.r, color.g, color.b, color.a,
+            b.x, b.y, color.r, color.g, color.b, color.a,
         };
 
         glUseProgram(m_line_program);
