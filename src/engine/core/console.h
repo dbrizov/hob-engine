@@ -103,7 +103,6 @@ namespace hob {
         static constexpr ImColor LOG_ENTRY_COLOR_ORANGE = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
         static constexpr size_t INPUT_BUFFER_SIZE = 256;
 
-        const App& m_app;
         bool m_open = false;
         char m_input_buffer[INPUT_BUFFER_SIZE] = {};
         std::vector<std::string> m_log;
@@ -114,7 +113,7 @@ namespace hob {
         ConsoleBackend m_backend;
 
     public:
-        explicit Console(const App& app);
+        Console();
 
         bool is_open() const;
         void toggle_open();

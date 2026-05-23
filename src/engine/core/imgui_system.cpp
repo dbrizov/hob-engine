@@ -54,6 +54,24 @@ namespace hob {
 
         debug::log("ImGui_ImplSDLRenderer3_Init");
 
+        // The renderer's logical presentation downscales ImGui's output to the window, so default
+        // widget and font sizes appear shrunk. Scale them up by logical / window so they render at
+        // their natural apparent size after the downscale.
+        int window_w = 0;
+        int window_h = 0;
+        SDL_GetWindowSize(m_window, &window_w, &window_h);
+
+        int logical_w = 0;
+        int logical_h = 0;
+        SDL_RendererLogicalPresentation logical_mode = SDL_LOGICAL_PRESENTATION_DISABLED;
+        SDL_GetRenderLogicalPresentation(m_renderer, &logical_w, &logical_h, &logical_mode);
+
+        if (logical_mode != SDL_LOGICAL_PRESENTATION_DISABLED && window_w > 0 && logical_w > 0) {
+            const float scale = static_cast<float>(logical_w) / static_cast<float>(window_w);
+            ImGui::GetStyle().ScaleAllSizes(scale);
+            io.FontGlobalScale = scale;
+        }
+
         m_is_initialized = true;
     }
 
@@ -83,6 +101,21 @@ namespace hob {
     void ImGuiSystem::frame_start() {
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
+
+        // The SDL3 backend sets DisplaySize to the window size, but the renderer has a logical
+        // presentation set, so all draw commands (including ImGui's) get scaled from logical
+        // space to the window. Override DisplaySize to match the renderer's logical resolution
+        // so ImGui builds geometry in the same space the renderer expects.
+        int logical_w = 0;
+        int logical_h = 0;
+        SDL_RendererLogicalPresentation logical_mode = SDL_LOGICAL_PRESENTATION_DISABLED;
+        if (SDL_GetRenderLogicalPresentation(m_renderer, &logical_w, &logical_h, &logical_mode) &&
+            logical_mode != SDL_LOGICAL_PRESENTATION_DISABLED &&
+            logical_w > 0 && logical_h > 0) {
+
+            ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(logical_w), static_cast<float>(logical_h));
+        }
+
         ImGui_FixMousePosForLogicalPresentation(m_renderer);
         ImGui::NewFrame();
     }

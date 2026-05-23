@@ -15,7 +15,7 @@ namespace hob {
         : m_config(config)
         , m_sdl_context(config.graphics_config)
         , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
-        , m_console(*this)
+        , m_console()
         , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
         , m_input(*this)
         , m_assets(m_sdl_context.get_renderer())

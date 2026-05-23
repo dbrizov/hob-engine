@@ -417,8 +417,7 @@ namespace hob {
     }
 
     // Console Frontend
-    Console::Console(const App& app)
-        : m_app(app) {
+    Console::Console() {
         // Wire backend output into frontend log
         m_backend.print = [this](std::string_view s) {
             log("{}", s);
@@ -460,9 +459,11 @@ namespace hob {
     }
 
     void Console::render() {
-        const GraphicsConfig& graphics_config = m_app.get_config().graphics_config;
-        const float width = static_cast<float>(graphics_config.logical_resolution_width);
-        const float height = static_cast<float>(graphics_config.logical_resolution_height) * 0.5f;
+        // ImGui draws to the window framebuffer, not SDL's logical-presentation space,
+        // so anchor the console to ImGui's display size rather than the logical resolution.
+        const ImVec2 display_size = ImGui::GetIO().DisplaySize;
+        const float width = display_size.x;
+        const float height = display_size.y * 0.5f;
 
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImVec2(width, height));
@@ -488,7 +489,7 @@ namespace hob {
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
         static ImGuiTextFilter filter;
-        filter.Draw("Filter", width - 75.0f);
+        filter.Draw("Filter", width - 125.0f);
         ImGui::PopStyleVar();
 
         ImGui::Separator();
@@ -551,7 +552,7 @@ namespace hob {
         ImGui::Separator();
 
         // Command-line
-        ImGui::SetNextItemWidth(width - 75.0f);
+        ImGui::SetNextItemWidth(width - 125.0f);
         if (ImGui::InputText("Input",
                              m_input_buffer,
                              IM_ARRAYSIZE(m_input_buffer),
