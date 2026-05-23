@@ -5,6 +5,7 @@
 #include "imgui_system.h"
 #include "input.h"
 #include "physics.h"
+#include "renderer.h"
 #include "sdl_context.h"
 #include "timer.h"
 #include "engine/entity/entity_spawner.h"
@@ -37,8 +38,9 @@ namespace hob {
         AppConfig m_config;
 
         // SDL context must be declared first so it is destroyed last.
-        // Objects below depend on SDL resources.
+        // Objects below depend on SDL/GL resources.
         SdlContext m_sdl_context;
+        Renderer m_renderer;
         ImGuiSystem m_imgui_system;
         Console m_console;
         Timer m_timer;
@@ -57,6 +59,7 @@ namespace hob {
         const AppConfig& get_config() const;
 
         SdlContext& get_sdl_context();
+        Renderer& get_renderer();
         Console& get_console();
         Timer& get_timer();
         Input& get_input();

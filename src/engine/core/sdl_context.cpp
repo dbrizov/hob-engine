@@ -1,5 +1,6 @@
 #include "sdl_context.h"
 
+#include <glad/glad.h>
 #include <SDL3/SDL.h>
 
 #include "app.h"
@@ -7,26 +8,25 @@
 
 namespace hob {
     SdlContext::SdlContext(const GraphicsConfig& graphics_config) {
-        // for (int i = 0; i < SDL_GetNumVideoDrivers(); i++) {
-        //     SDL_Log("Video driver %d: %s", i, SDL_GetVideoDriver(i));
-        // }
-
-        // SDL_Init
-        int sld_init_flags = SDL_INIT_VIDEO;
-        if (!SDL_Init(sld_init_flags)) {
+        if (!SDL_Init(SDL_INIT_VIDEO)) {
             debug::log_error("SDL_Init Error: {}", SDL_GetError());
             return;
         }
 
         debug::log("SDL_Init");
 
-        // SDL_CreateWindow
-        SDL_WindowFlags window_flags = 0;
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+
         m_window = SDL_CreateWindow(
             graphics_config.window_title.c_str(),
             static_cast<int>(graphics_config.window_width),
             static_cast<int>(graphics_config.window_height),
-            window_flags);
+            SDL_WINDOW_OPENGL);
 
         if (!m_window) {
             debug::log_error("SDL_CreateWindow Error: {}", SDL_GetError());
@@ -36,33 +36,35 @@ namespace hob {
 
         debug::log("SDL_CreateWindow");
 
-        // Create renderer
-        m_renderer = SDL_CreateRenderer(m_window, nullptr);
-        if (!m_renderer) {
-            debug::log_error("SDL_CreateRenderer Error: {}", SDL_GetError());
+        m_gl_context = SDL_GL_CreateContext(m_window);
+        if (!m_gl_context) {
+            debug::log_error("SDL_GL_CreateContext Error: {}", SDL_GetError());
             SDL_DestroyWindow(m_window);
             SDL_Quit();
             return;
         }
 
-        int vsync = graphics_config.vsync_enabled ? 1 : 0;
-        SDL_SetRenderVSync(m_renderer, vsync);
+        SDL_GL_MakeCurrent(m_window, m_gl_context);
 
-        SDL_SetRenderLogicalPresentation(
-            m_renderer,
-            static_cast<int>(graphics_config.logical_resolution_width),
-            static_cast<int>(graphics_config.logical_resolution_height),
-            SDL_LOGICAL_PRESENTATION_STRETCH);
+        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
+            debug::log_error("gladLoadGLLoader failed");
+            SDL_GL_DestroyContext(m_gl_context);
+            SDL_DestroyWindow(m_window);
+            SDL_Quit();
+            return;
+        }
 
-        debug::log("SDL_CreateRenderer");
+        SDL_GL_SetSwapInterval(graphics_config.vsync_enabled ? 1 : 0);
+
+        debug::log("OpenGL {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
         m_is_initialized = true;
     }
 
     SdlContext::~SdlContext() {
-        if (m_renderer) {
-            SDL_DestroyRenderer(m_renderer);
-            debug::log("SDL_DestroyRenderer");
+        if (m_gl_context) {
+            SDL_GL_DestroyContext(m_gl_context);
+            debug::log("SDL_GL_DestroyContext");
         }
 
         if (m_window) {
@@ -82,17 +84,11 @@ namespace hob {
         return m_window;
     }
 
-    SDL_Renderer* SdlContext::get_renderer() const {
-        return m_renderer;
+    SDL_GLContext SdlContext::get_gl_context() const {
+        return m_gl_context;
     }
 
-    void SdlContext::frame_start() {
-        SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(m_renderer, 43, 47, 119, 255);
-        SDL_RenderClear(m_renderer);
-    }
-
-    void SdlContext::frame_end() {
-        SDL_RenderPresent(m_renderer);
+    void SdlContext::swap() {
+        SDL_GL_SwapWindow(m_window);
     }
 }

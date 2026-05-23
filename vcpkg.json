@@ -13,10 +13,16 @@
     "sdl3-ttf",
     "box2d",
     {
+      "name": "glad",
+      "features": [
+        "gl-api-33"
+      ]
+    },
+    {
       "name": "imgui",
       "features": [
         "sdl3-binding",
-        "sdl3-renderer-binding"
+        "opengl3-binding"
       ]
     }
   ]

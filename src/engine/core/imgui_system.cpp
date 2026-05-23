@@ -2,25 +2,22 @@
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
-#include <imgui_impl_sdlrenderer3.h>
-#include <SDL3/SDL_render.h>
+#include <imgui_impl_opengl3.h>
 
 #include "logging.h"
+#include "renderer.h"
 
 namespace hob {
-    ImGuiSystem::ImGuiSystem(SDL_Window* window, SDL_Renderer* renderer)
-        : m_is_initialized(false)
-        , m_context(nullptr)
-        , m_window(window)
-        , m_renderer(renderer) {
-        if (!m_window || !m_renderer) {
-            debug::log_error("ImGuiSystem init failed: window/renderer is null");
+    ImGuiSystem::ImGuiSystem(SDL_Window* window, SDL_GLContext gl_context)
+        : m_window(window)
+        , m_gl_context(gl_context) {
+        if (!m_window || !m_gl_context) {
+            debug::log_error("ImGuiSystem init failed: window/GL context is null");
             return;
         }
 
         IMGUI_CHECKVERSION();
 
-        // Create context
         m_context = ImGui::CreateContext();
         if (!m_context) {
             debug::log_error("ImGui_CreateContext failed");
@@ -35,42 +32,22 @@ namespace hob {
 
         ImGui::StyleColorsDark();
 
-        // Init backend for SDL
-        if (!ImGui_ImplSDL3_InitForSDLRenderer(m_window, m_renderer)) {
-            debug::log_error("ImGui_ImplSDL3_InitForSDLRenderer failed");
+        if (!ImGui_ImplSDL3_InitForOpenGL(m_window, m_gl_context)) {
+            debug::log_error("ImGui_ImplSDL3_InitForOpenGL failed");
             ImGui::DestroyContext(m_context);
             return;
         }
 
-        debug::log("ImGui_ImplSDL3_InitForSDLRenderer");
+        debug::log("ImGui_ImplSDL3_InitForOpenGL");
 
-        // Init backend for SDL_Renderer
-        if (!ImGui_ImplSDLRenderer3_Init(m_renderer)) {
-            debug::log_error("ImGui_ImplSDLRenderer3_Init failed");
+        if (!ImGui_ImplOpenGL3_Init(GLSL_VERSION)) {
+            debug::log_error("ImGui_ImplOpenGL3_Init failed");
             ImGui_ImplSDL3_Shutdown();
             ImGui::DestroyContext(m_context);
             return;
         }
 
-        debug::log("ImGui_ImplSDLRenderer3_Init");
-
-        // The renderer's logical presentation downscales ImGui's output to the window, so default
-        // widget and font sizes appear shrunk. Scale them up by logical / window so they render at
-        // their natural apparent size after the downscale.
-        int window_w = 0;
-        int window_h = 0;
-        SDL_GetWindowSize(m_window, &window_w, &window_h);
-
-        int logical_w = 0;
-        int logical_h = 0;
-        SDL_RendererLogicalPresentation logical_mode = SDL_LOGICAL_PRESENTATION_DISABLED;
-        SDL_GetRenderLogicalPresentation(m_renderer, &logical_w, &logical_h, &logical_mode);
-
-        if (logical_mode != SDL_LOGICAL_PRESENTATION_DISABLED && window_w > 0 && logical_w > 0) {
-            const float scale = static_cast<float>(logical_w) / static_cast<float>(window_w);
-            ImGui::GetStyle().ScaleAllSizes(scale);
-            io.FontGlobalScale = scale;
-        }
+        debug::log("ImGui_ImplOpenGL3_Init");
 
         m_is_initialized = true;
     }
@@ -80,8 +57,8 @@ namespace hob {
             return;
         }
 
-        ImGui_ImplSDLRenderer3_Shutdown();
-        debug::log("ImGui_ImplSDLRenderer3_Shutdown");
+        ImGui_ImplOpenGL3_Shutdown();
+        debug::log("ImGui_ImplOpenGL3_Shutdown");
 
         ImGui_ImplSDL3_Shutdown();
         debug::log("ImGui_ImplSDL3_Shutdown");
@@ -99,45 +76,13 @@ namespace hob {
     }
 
     void ImGuiSystem::frame_start() {
-        ImGui_ImplSDLRenderer3_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
-
-        // The SDL3 backend sets DisplaySize to the window size, but the renderer has a logical
-        // presentation set, so all draw commands (including ImGui's) get scaled from logical
-        // space to the window. Override DisplaySize to match the renderer's logical resolution
-        // so ImGui builds geometry in the same space the renderer expects.
-        int logical_w = 0;
-        int logical_h = 0;
-        SDL_RendererLogicalPresentation logical_mode = SDL_LOGICAL_PRESENTATION_DISABLED;
-        if (SDL_GetRenderLogicalPresentation(m_renderer, &logical_w, &logical_h, &logical_mode) &&
-            logical_mode != SDL_LOGICAL_PRESENTATION_DISABLED &&
-            logical_w > 0 && logical_h > 0) {
-
-            ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(logical_w), static_cast<float>(logical_h));
-        }
-
-        ImGui_FixMousePosForLogicalPresentation(m_renderer);
         ImGui::NewFrame();
     }
 
     void ImGuiSystem::frame_end() {
         ImGui::Render();
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer);
-    }
-
-    void ImGuiSystem::ImGui_FixMousePosForLogicalPresentation(SDL_Renderer* renderer) {
-        float wx = 0.0f;
-        float wy = 0.0f;
-        SDL_GetMouseState(&wx, &wy);
-
-        float rx = wx;
-        float ry = wy;
-        if (renderer) {
-            // Convert window -> render coords (accounts for logical presentation/scale/viewport)
-            SDL_RenderCoordinatesFromWindow(renderer, wx, wy, &rx, &ry);
-        }
-
-        ImGuiIO& io = ImGui::GetIO();
-        io.AddMousePosEvent(rx, ry); // forces ImGui to use the converted position
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 }

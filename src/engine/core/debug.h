@@ -1,12 +1,11 @@
 #pragma once
 
-#include "render.h"
+#include "renderer.h"
 #include "engine/math/vector2.h"
-
-struct SDL_Renderer;
 
 namespace hob {
     class CameraComponent;
+    class Renderer;
 
     namespace debug {
         struct DebugLine {
@@ -24,9 +23,7 @@ namespace hob {
             int segments = 16;
         };
 
-        void render_debug_draws(SDL_Renderer* renderer,
-                                SDL_Texture* white_pixel_texture,
-                                const CameraComponent* camera);
+        void render_debug_draws(Renderer& renderer, const CameraComponent* camera);
 
         void draw_line(const Vector2& start,
                        const Vector2& end,

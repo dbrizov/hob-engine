@@ -1,7 +1,6 @@
 #include "sprite_component.h"
 
 #include "transform_component.h"
-#include "engine/core/render.h"
 
 namespace hob {
     SpriteComponent::SpriteComponent(Entity& entity)
@@ -30,6 +29,14 @@ namespace hob {
 
     void SpriteComponent::set_scale(const Vector2& scale) {
         m_scale = scale;
+    }
+
+    Color SpriteComponent::get_tint() const {
+        return m_tint;
+    }
+
+    void SpriteComponent::set_tint(const Color& tint) {
+        m_tint = tint;
     }
 
     int SpriteComponent::get_z_index() const {

@@ -4,7 +4,7 @@
 
 #include "rigidbody_component.h"
 #include "engine/core/app.h"
-#include "engine/core/render.h"
+#include "engine/core/renderer.h"
 #include "engine/entity/entity.h"
 
 namespace hob {

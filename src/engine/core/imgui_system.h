@@ -4,17 +4,16 @@
 
 struct ImGuiContext;
 struct SDL_Window;
-struct SDL_Renderer;
 
 namespace hob {
     class ImGuiSystem {
         bool m_is_initialized = false;
         ImGuiContext* m_context = nullptr;
         SDL_Window* m_window = nullptr;
-        SDL_Renderer* m_renderer = nullptr;
+        SDL_GLContext m_gl_context = nullptr;
 
     public:
-        ImGuiSystem(SDL_Window* window, SDL_Renderer* renderer);
+        ImGuiSystem(SDL_Window* window, SDL_GLContext gl_context);
         ~ImGuiSystem();
 
         ImGuiSystem(const ImGuiSystem&) = delete;
@@ -29,8 +28,5 @@ namespace hob {
 
         void frame_start();
         void frame_end();
-
-    private:
-        static void ImGui_FixMousePosForLogicalPresentation(SDL_Renderer* renderer);
     };
 }

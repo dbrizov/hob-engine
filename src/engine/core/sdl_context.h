@@ -1,7 +1,6 @@
 #pragma once
 
-struct SDL_Window;
-struct SDL_Renderer;
+#include <SDL3/SDL_video.h>
 
 namespace hob {
     struct GraphicsConfig;
@@ -9,7 +8,7 @@ namespace hob {
     class SdlContext {
         bool m_is_initialized = false;
         SDL_Window* m_window = nullptr;
-        SDL_Renderer* m_renderer = nullptr;
+        SDL_GLContext m_gl_context = nullptr;
 
     public:
         explicit SdlContext(const GraphicsConfig& graphics_config);
@@ -23,9 +22,8 @@ namespace hob {
 
         bool is_initialized() const;
         SDL_Window* get_window() const;
-        SDL_Renderer* get_renderer() const;
+        SDL_GLContext get_gl_context() const;
 
-        void frame_start();
-        void frame_end();
+        void swap();
     };
 }

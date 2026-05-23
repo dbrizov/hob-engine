@@ -1,16 +1,15 @@
 #include "assets.h"
 
 #include <SDL3_image/SDL_image.h>
-#include <SDL3/SDL_render.h>
-#include <cassert>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_surface.h>
 
 #include "logging.h"
+#include "renderer.h"
 
 namespace hob {
-    Assets::Assets(SDL_Renderer* renderer)
-        : m_renderer(renderer)
-        , m_next_texture_id(0)
-        , m_white_pixel_texture_id(INVALID_TEXTURE_ID)
+    Assets::Assets()
+        : m_next_texture_id(0)
         , m_textures() {
     }
 
@@ -18,49 +17,44 @@ namespace hob {
         unload_all_textures();
     }
 
-    SDL_Texture* Assets::get_texture(TextureId id) const {
+    GlTextureHandle Assets::get_texture(TextureId id) const {
         auto it = m_textures.find(id);
         if (it != m_textures.end()) {
             return it->second;
         }
 
         debug::log_error("Assets::get_texture failed. Invalid texture id: {}", id);
-        return nullptr;
-    }
-
-    SDL_Texture* Assets::get_white_pixel_texture() const {
-        if (m_white_pixel_texture_id == INVALID_TEXTURE_ID) {
-            SDL_Texture* white_pixel_texture = SDL_CreateTexture(
-                m_renderer,
-                SDL_PIXELFORMAT_RGBA8888,
-                SDL_TEXTUREACCESS_STATIC,
-                1, 1);
-
-            assert(white_pixel_texture != nullptr && "Could not create SDL texture");
-
-            uint32_t pixel = 0xFFFFFFFF; // White RGBA
-            SDL_UpdateTexture(white_pixel_texture, nullptr, &pixel, sizeof(pixel));
-
-            m_white_pixel_texture_id = m_next_texture_id;
-            m_next_texture_id += 1;
-
-            m_textures.emplace(m_white_pixel_texture_id, white_pixel_texture);
-        }
-
-        return get_texture(m_white_pixel_texture_id);
+        return 0;
     }
 
     TextureId Assets::load_texture(const std::filesystem::path& path) {
-        SDL_Texture* texture = IMG_LoadTexture(m_renderer, path.string().c_str());
-        if (!texture) {
-            debug::log_error("IMG_LoadTexture failed: {}", SDL_GetError());
+        SDL_Surface* surface = IMG_Load(path.string().c_str());
+        if (!surface) {
+            debug::log_error("IMG_Load failed: {}", SDL_GetError());
             return INVALID_TEXTURE_ID;
         }
+
+        SDL_Surface* rgba = surface;
+        if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+            rgba = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+            SDL_DestroySurface(surface);
+            if (!rgba) {
+                debug::log_error("SDL_ConvertSurface failed: {}", SDL_GetError());
+                return INVALID_TEXTURE_ID;
+            }
+        }
+
+        GlTextureHandle handle = Renderer::create_texture_from_pixels(rgba->pixels, rgba->w, rgba->h);
+        const int w = rgba->w;
+        const int h = rgba->h;
+        SDL_DestroySurface(rgba);
 
         TextureId texture_id = m_next_texture_id;
         m_next_texture_id += 1;
 
-        m_textures.emplace(texture_id, texture);
+        m_textures.emplace(texture_id, handle);
+        m_texture_widths.emplace(texture_id, w);
+        m_texture_heights.emplace(texture_id, h);
 
         return texture_id;
     }
@@ -68,22 +62,31 @@ namespace hob {
     bool Assets::unload_texture(TextureId id) {
         auto it = m_textures.find(id);
         if (it != m_textures.end()) {
-            SDL_Texture* texture = it->second;
-            SDL_DestroyTexture(texture);
+            Renderer::destroy_texture(it->second);
             m_textures.erase(it);
-
+            m_texture_widths.erase(id);
+            m_texture_heights.erase(id);
             return true;
         }
 
         return false;
     }
 
+    void Assets::get_texture_size(TextureId id, int& out_width, int& out_height) const {
+        auto width_it = m_texture_widths.find(id);
+        auto height_it = m_texture_heights.find(id);
+        out_width = (width_it != m_texture_widths.end()) ? width_it->second : 0;
+        out_height = (height_it != m_texture_heights.end()) ? height_it->second : 0;
+    }
+
     void Assets::unload_all_textures() {
-        for (auto& [id, texture] : m_textures) {
-            SDL_DestroyTexture(texture);
+        for (auto& [id, handle] : m_textures) {
+            Renderer::destroy_texture(handle);
         }
 
         m_textures.clear();
+        m_texture_widths.clear();
+        m_texture_heights.clear();
         debug::log("Assets::unload_all_textures()");
     }
 }

@@ -14,11 +14,12 @@ namespace hob {
     App::App(const AppConfig& config)
         : m_config(config)
         , m_sdl_context(config.graphics_config)
-        , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_renderer())
+        , m_renderer(m_sdl_context.get_window(), config.graphics_config)
+        , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_gl_context())
         , m_console()
         , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
         , m_input(*this)
-        , m_assets(m_sdl_context.get_renderer())
+        , m_assets()
         , m_physics(*this)
         , m_entity_spawner(*this) {
     }
@@ -33,11 +34,8 @@ namespace hob {
         while (is_running) {
             m_timer.frame_start();
 
-            // - Process events for the ImGuiSystem.
-            // - Check for quit.
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                SDL_ConvertEventToRenderCoordinates(m_sdl_context.get_renderer(), &event);
                 m_imgui_system.process_event(event);
 
                 if (event.type == SDL_EVENT_QUIT) {
@@ -50,10 +48,6 @@ namespace hob {
                 }
             }
 
-            // - The ImGuiSystem needs to start a new frame after the events polling
-            // so that it can take a valid snapshot of the current frame's events.
-            // - The SdlContext's frame_start() doesn't care about events, but I call it here for consistency.
-            m_sdl_context.frame_start();
             m_imgui_system.frame_start();
 
             m_entity_spawner.resolve_requests();
@@ -65,35 +59,36 @@ namespace hob {
             const float delta_time = m_timer.get_delta_time();
             const float scaled_delta_time = delta_time * m_timer.get_time_scale();
 
-            // input.tick()
             if (!m_console.is_open()) {
                 m_input.tick(scaled_delta_time);
             }
 
-            // entities.tick()
             for (Entity* entity : ticking_entities) {
                 entity->tick(scaled_delta_time);
             }
 
-            // entities.physics_tick()
             m_physics.tick_entities(scaled_delta_time, physics_entities);
 
 #ifndef NDEBUG
-            // entities.debug_draw_tick()
             for (Entity* entity : entities) {
                 entity->debug_draw_tick(scaled_delta_time);
             }
 #endif
 
+            m_renderer.frame_start();
+
             render_entities(renderable_entities);
             render_debug_draws();
+
+            m_renderer.frame_end();
 
             if (m_console.is_open()) {
                 m_console.render();
             }
 
             m_imgui_system.frame_end();
-            m_sdl_context.frame_end();
+
+            m_sdl_context.swap();
 
             m_timer.frame_end();
         }
@@ -101,6 +96,7 @@ namespace hob {
 
     bool App::is_initialized() const {
         return m_sdl_context.is_initialized() &&
+               m_renderer.is_initialized() &&
                m_imgui_system.is_initialized();
     }
 
@@ -110,6 +106,10 @@ namespace hob {
 
     SdlContext& App::get_sdl_context() {
         return m_sdl_context;
+    }
+
+    Renderer& App::get_renderer() {
+        return m_renderer;
     }
 
     Console& App::get_console() {
@@ -151,46 +151,42 @@ namespace hob {
                   });
 
         for (const Entity* entity : entities) {
-            const TransformComponent* tr_comp = entity->get_transform();
+            const TransformComponent* transform_comp = entity->get_transform();
             const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
 
-            SDL_Texture* texture = m_assets.get_texture(sprite_comp->get_texture_id());
-            float texture_width = 0;
-            float texture_height = 0;
-            SDL_GetTextureSize(texture, &texture_width, &texture_height);
+            int texture_width = 0;
+            int texture_height = 0;
+            m_assets.get_texture_size(sprite_comp->get_texture_id(), texture_width, texture_height);
 
-            Matrix2x3 matrix = Matrix2x3::lerp(tr_comp->get_prev_local_matrix(),
-                                               tr_comp->get_local_matrix(),
-                                               m_physics.get_interpolation_fraction());
+            const Matrix2x3 matrix = Matrix2x3::lerp(transform_comp->get_prev_local_matrix(),
+                                                     transform_comp->get_local_matrix(),
+                                                     m_physics.get_interpolation_fraction());
 
-            Vector2 sprite_pivot = sprite_comp->get_pivot();
+            const Vector2 sprite_pivot = sprite_comp->get_pivot();
 
-            Vector2 tr_scale = tr_comp->get_scale(); // we don't interpolate scale
-            Vector2 sprite_scale = sprite_comp->get_scale();
-            Vector2 scale = Vector2(tr_scale.x * sprite_scale.x, tr_scale.y * sprite_scale.y);
+            const Vector2 transform_scale = transform_comp->get_scale();
+            const Vector2 sprite_scale = sprite_comp->get_scale();
+            const Vector2 scale = Vector2(transform_scale.x * sprite_scale.x, transform_scale.y * sprite_scale.y);
 
-            Vector2 world_position = matrix.origin;
+            const float f_texture_width = static_cast<float>(texture_width);
+            const float f_texture_height = static_cast<float>(texture_height);
+            const Vector2 world_position = matrix.origin;
             Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
-            screen_position.x -= texture_width * sprite_pivot.x * scale.x;
-            screen_position.y -= texture_height * sprite_pivot.y * scale.y;
+            screen_position.x -= f_texture_width * sprite_pivot.x * scale.x;
+            screen_position.y -= f_texture_height * sprite_pivot.y * scale.y;
 
-            SDL_FRect dst{
-                screen_position.x,
-                screen_position.y,
-                texture_width * scale.x,
-                texture_height * scale.y,
-            };
+            const Vector2 size = Vector2(f_texture_width * scale.x, f_texture_height * scale.y);
+            const Vector2 pivot_pixel(size.x * sprite_pivot.x, size.y * sprite_pivot.y);
 
-            SDL_FPoint pivot = {
-                dst.w * sprite_pivot.x,
-                dst.h * sprite_pivot.y
-            };
+            const float rotation_rad = matrix.get_rotation();
 
-            float rotation_deg = matrix.get_rotation() * RAD_TO_DEG;
-            float sdl_rotation = -rotation_deg; // SDL rotates clockwise, so invert the rotation
-
-            SDL_RenderTextureRotated(
-                m_sdl_context.get_renderer(), texture, nullptr, &dst, sdl_rotation, &pivot, SDL_FLIP_NONE);
+            m_renderer.draw_sprite(
+                m_assets.get_texture(sprite_comp->get_texture_id()),
+                screen_position,
+                size,
+                pivot_pixel,
+                rotation_rad,
+                sprite_comp->get_tint());
         }
     }
 
@@ -198,6 +194,6 @@ namespace hob {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
 
-        debug::render_debug_draws(m_sdl_context.get_renderer(), m_assets.get_white_pixel_texture(), camera_component);
+        debug::render_debug_draws(m_renderer, camera_component);
     }
 }

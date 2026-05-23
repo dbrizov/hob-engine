@@ -4,11 +4,12 @@
 #include <nlohmann/json.hpp>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_mouse.h>
-#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_video.h>
 
 #include "app.h"
 #include "logging.h"
 #include "path_utils.h"
+#include "renderer.h"
 
 namespace hob {
     // ---------------- InputMappings ----------------
@@ -210,7 +211,21 @@ namespace hob {
         float x = 0.0f;
         float y = 0.0f;
         SDL_GetMouseState(&x, &y);
-        SDL_RenderCoordinatesFromWindow(m_app.get_sdl_context().get_renderer(), x, y, &x, &y);
+
+        // Map window pixels to logical (FBO) pixels. The FBO is blitted to the window with a
+        // uniform STRETCH (no letterboxing today), so the mapping is just an axis-wise scale.
+        int window_w = 0;
+        int window_h = 0;
+        SDL_GetWindowSize(m_app.get_sdl_context().get_window(), &window_w, &window_h);
+
+        const Renderer& renderer = m_app.get_renderer();
+        const float logical_w = static_cast<float>(renderer.get_logical_width());
+        const float logical_h = static_cast<float>(renderer.get_logical_height());
+
+        if (window_w > 0 && window_h > 0) {
+            x = x * (logical_w / static_cast<float>(window_w));
+            y = y * (logical_h / static_cast<float>(window_h));
+        }
 
         m_mouse_screen_position = Vector2(x, y);
     }
