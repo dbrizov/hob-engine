@@ -4,6 +4,7 @@
 #include "console.h"
 #include "imgui_system.h"
 #include "input.h"
+#include "lua_script_system.h"
 #include "physics.h"
 #include "renderer.h"
 #include "sdl_context.h"
@@ -48,6 +49,7 @@ namespace hob {
         Assets m_assets;
         Physics m_physics;
         EntitySpawner m_entity_spawner;
+        LuaScriptSystem m_lua_script_system;
 
     public:
         explicit App(const AppConfig& config);
@@ -66,6 +68,7 @@ namespace hob {
         Assets& get_assets();
         Physics& get_physics();
         EntitySpawner& get_entity_spawner();
+        LuaScriptSystem& get_lua_script_system();
 
     private:
         void render_entities(std::vector<const Entity*>& entities);

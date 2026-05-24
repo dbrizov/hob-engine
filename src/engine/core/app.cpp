@@ -21,7 +21,8 @@ namespace hob {
         , m_input(*this)
         , m_assets()
         , m_physics(*this)
-        , m_entity_spawner(*this) {
+        , m_entity_spawner(*this)
+        , m_lua_script_system(*this) {
     }
 
     void App::run() {
@@ -134,6 +135,10 @@ namespace hob {
 
     EntitySpawner& App::get_entity_spawner() {
         return m_entity_spawner;
+    }
+
+    LuaScriptSystem& App::get_lua_script_system() {
+        return m_lua_script_system;
     }
 
     void App::render_entities(std::vector<const Entity*>& entities) {

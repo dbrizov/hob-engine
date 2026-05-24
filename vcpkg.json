@@ -24,6 +24,8 @@
         "sdl3-binding",
         "opengl3-binding"
       ]
-    }
+    },
+    "lua",
+    "sol2"
   ]
 }
