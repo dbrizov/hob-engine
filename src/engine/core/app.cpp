@@ -21,8 +21,8 @@ namespace hob {
         , m_input(*this)
         , m_assets()
         , m_physics(*this)
-        , m_entity_spawner(*this)
-        , m_lua_script_system(*this) {
+        , m_lua_script_system(*this)
+        , m_entity_spawner(*this) {
     }
 
     void App::run() {

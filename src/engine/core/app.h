@@ -48,8 +48,8 @@ namespace hob {
         Input m_input;
         Assets m_assets;
         Physics m_physics;
-        EntitySpawner m_entity_spawner;
         LuaScriptSystem m_lua_script_system;
+        EntitySpawner m_entity_spawner;
 
     public:
         explicit App(const AppConfig& config);

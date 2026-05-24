@@ -80,7 +80,8 @@ namespace hob {
             "r", &Color::r,
             "g", &Color::g,
             "b", &Color::b,
-            "a", &Color::a);
+            "a", &Color::a,
+            sol::meta_function::to_string, &Color::to_string);
 
         sol::table c = lua["Color"];
         c["black"] = &Color::black;
