@@ -21,8 +21,16 @@ namespace hob {
         , m_input(*this)
         , m_assets()
         , m_physics(*this)
-        , m_lua_script_system(*this)
-        , m_entity_spawner(*this) {
+        , m_entity_spawner(*this)
+        , m_lua_script_system(*this) {
+    }
+
+    App::~App() {
+        // Tear down entities (and their components) while every subsystem is still alive.
+        // Avoids dangling references during member destruction.
+        // In particular - LuaScriptComponent's sol::table must release its Lua registry slot before
+        // LuaScriptSystem destroys the lua_State.
+        m_entity_spawner.clear();
     }
 
     void App::run() {

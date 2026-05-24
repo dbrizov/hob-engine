@@ -16,9 +16,7 @@ namespace hob {
     }
 
     EntitySpawner::~EntitySpawner() {
-        for (auto& entity : m_entities) {
-            entity->exit_play();
-        }
+        clear();
     }
 
     Entity& EntitySpawner::spawn_entity() {
@@ -166,5 +164,17 @@ namespace hob {
             m_entities.pop_back();
             m_entity_index_by_id.erase(it);
         }
+    }
+
+    void EntitySpawner::clear() {
+        for (auto& entity : m_entities) {
+            entity->exit_play();
+        }
+
+        m_entities.clear();
+        m_entity_index_by_id.clear();
+        m_entity_spawn_requests.clear();
+        m_entity_destroy_requests.clear();
+        m_camera_entity_id = INVALID_ENTITY_ID;
     }
 }

@@ -2,16 +2,8 @@ local collision = require("collision")
 
 local M = {}
 
-local function spawner()
-    return app:get_entity_spawner()
-end
-
-local function assets()
-    return app:get_assets()
-end
-
 function M.player(position)
-    local entity = spawner():spawn_entity()
+    local entity = EntitySpawner.spawn_entity()
     entity:set_ticking(true)
     entity:get_transform():set_position(position)
 
@@ -27,14 +19,14 @@ function M.player(position)
     capsule_collider:set_capsule(Capsule(Vector2.zero(), Vector2.zero(), 1.2))
 
     local sprite = entity:add_sprite()
-    sprite:set_texture_id(assets():load_texture("images/player/HJ_run01.png"))
+    sprite:set_texture_id(Assets.load_texture("images/player/HJ_run01.png"))
     sprite:set_z_index(1)
 
     return entity
 end
 
 function M.static_box(position, rotation_degrees)
-    local entity = spawner():spawn_entity()
+    local entity = EntitySpawner.spawn_entity()
     entity:get_transform():set_position(position)
     entity:get_transform():set_rotation(rotation_degrees * Math.DEG_TO_RAD)
 
@@ -49,7 +41,7 @@ function M.static_box(position, rotation_degrees)
 end
 
 function M.dynamic_box(position, rotation_degrees)
-    local entity = spawner():spawn_entity()
+    local entity = EntitySpawner.spawn_entity()
     entity:set_ticking(true)
     entity:get_transform():set_position(position)
     entity:get_transform():set_rotation(rotation_degrees * Math.DEG_TO_RAD)
@@ -62,13 +54,13 @@ function M.dynamic_box(position, rotation_degrees)
     box:set_collision_mask(collision.STATIC | collision.DYNAMIC | collision.KINEMATIC | collision.TRIGGER)
 
     local sprite = entity:add_sprite()
-    sprite:set_texture_id(assets():load_texture("images/robot.png"))
+    sprite:set_texture_id(Assets.load_texture("images/robot.png"))
 
     return entity
 end
 
 function M.trigger_box(position, rotation_degrees)
-    local entity = spawner():spawn_entity()
+    local entity = EntitySpawner.spawn_entity()
     entity:get_transform():set_position(position)
     entity:get_transform():set_rotation(rotation_degrees * Math.DEG_TO_RAD)
 
@@ -80,7 +72,7 @@ function M.trigger_box(position, rotation_degrees)
     box:set_collision_mask(collision.STATIC | collision.DYNAMIC | collision.KINEMATIC)
 
     local sprite = entity:add_sprite()
-    sprite:set_texture_id(assets():load_texture("images/robot.png"))
+    sprite:set_texture_id(Assets.load_texture("images/robot.png"))
 
     entity:add_lua_script("components.contact_logger")
 

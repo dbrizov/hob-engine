@@ -29,9 +29,17 @@
 namespace hob {
     static void bind_math(sol::state& lua) {
         sol::table math_table = lua.create_named_table("Math");
+        math_table["PI"] = PI;
+        math_table["EPSILON"] = EPSILON;
         math_table["DEG_TO_RAD"] = DEG_TO_RAD;
         math_table["RAD_TO_DEG"] = RAD_TO_DEG;
-        math_table["PI"] = PI;
+
+        sol::table numbers_table = lua.create_named_table("Numbers");
+        numbers_table["MIN_INT32"] = MIN_INT32;
+        numbers_table["MAX_INT32"] = MAX_INT32;
+        numbers_table["MAX_UINT32"] = MAX_UINT32;
+        numbers_table["MIN_FLOAT"] = MIN_FLOAT;
+        numbers_table["MAX_FLOAT"] = MAX_FLOAT;
 
         lua.new_usertype<Vector2>(
             "Vector2",
@@ -99,6 +107,39 @@ namespace hob {
         color_table["magenta"] = &Color::magenta;
         color_table["cyan"] = &Color::cyan;
         color_table["orange"] = &Color::orange;
+    }
+
+    static void bind_entity(sol::state& lua) {
+        lua.new_usertype<Entity>(
+            "Entity",
+            sol::no_constructor,
+            "get_id", &Entity::get_id,
+            "is_in_play", &Entity::is_in_play,
+            "is_ticking", &Entity::is_ticking,
+            "set_ticking", &Entity::set_ticking,
+            "get_transform", &Entity::get_transform,
+            "get_rigidbody", &Entity::get_rigidbody,
+            // add_*
+            "add_sprite", &Entity::add_component<SpriteComponent>,
+            "add_camera", &Entity::add_component<CameraComponent>,
+            "add_rigidbody", &Entity::add_component<RigidbodyComponent>,
+            "add_box_collider", &Entity::add_component<BoxColliderComponent>,
+            "add_capsule_collider", &Entity::add_component<CapsuleColliderComponent>,
+            "add_character_body", &Entity::add_component<CharacterBodyComponent>,
+            "add_input", &Entity::add_component<InputComponent>,
+            "add_lua_script", [](Entity& self, const std::string& script_name) {
+                LuaScriptComponent* lua_script_comp = self.add_component<LuaScriptComponent>();
+                lua_script_comp->set_script_name(script_name);
+                return lua_script_comp;
+            },
+            // get_*
+            "get_sprite", &Entity::get_component<SpriteComponent>,
+            "get_camera", &Entity::get_component<CameraComponent>,
+            "get_box_collider", &Entity::get_component<BoxColliderComponent>,
+            "get_capsule_collider", &Entity::get_component<CapsuleColliderComponent>,
+            "get_character_body", &Entity::get_component<CharacterBodyComponent>,
+            "get_input", &Entity::get_component<InputComponent>,
+            "get_lua_script", &Entity::get_component<LuaScriptComponent>);
     }
 
     static void bind_components(sol::state& lua) {
@@ -261,78 +302,51 @@ namespace hob {
             "set_script_name", &LuaScriptComponent::set_script_name);
     }
 
-    static void bind_entity(sol::state& lua) {
-        lua.new_usertype<Entity>(
-            "Entity",
-            sol::no_constructor,
-            "get_id", &Entity::get_id,
-            "is_in_play", &Entity::is_in_play,
-            "is_ticking", &Entity::is_ticking,
-            "set_ticking", &Entity::set_ticking,
-            "get_transform", &Entity::get_transform,
-            "get_rigidbody", &Entity::get_rigidbody,
-            // add_*
-            "add_sprite", &Entity::add_component<SpriteComponent>,
-            "add_camera", &Entity::add_component<CameraComponent>,
-            "add_rigidbody", &Entity::add_component<RigidbodyComponent>,
-            "add_box_collider", &Entity::add_component<BoxColliderComponent>,
-            "add_capsule_collider", &Entity::add_component<CapsuleColliderComponent>,
-            "add_character_body", &Entity::add_component<CharacterBodyComponent>,
-            "add_input", &Entity::add_component<InputComponent>,
-            "add_lua_script", [](Entity& self, const std::string& script_name) {
-                LuaScriptComponent* lua_script_comp = self.add_component<LuaScriptComponent>();
-                lua_script_comp->set_script_name(script_name);
-                return lua_script_comp;
-            },
-            // get_*
-            "get_sprite", &Entity::get_component<SpriteComponent>,
-            "get_camera", &Entity::get_component<CameraComponent>,
-            "get_box_collider", &Entity::get_component<BoxColliderComponent>,
-            "get_capsule_collider", &Entity::get_component<CapsuleColliderComponent>,
-            "get_character_body", &Entity::get_component<CharacterBodyComponent>,
-            "get_input", &Entity::get_component<InputComponent>,
-            "get_lua_script", &Entity::get_component<LuaScriptComponent>);
+    static void bind_subsystems(sol::state& lua, App& app) {
+        // Capturing subsystems by reference is safe: App's destructor clears all
+        // entities before any member destructor runs, so these lambdas can never be
+        // invoked through Lua against a half-destroyed subsystem.
+        EntitySpawner& spawner = app.get_entity_spawner();
+        Input& input = app.get_input();
+        Timer& timer = app.get_timer();
+        Assets& assets = app.get_assets();
 
-        lua.new_usertype<EntitySpawner>(
-            "EntitySpawner",
-            sol::no_constructor,
-            "spawn_entity", [](EntitySpawner& self) { return &self.spawn_entity(); },
-            "destroy_entity", &EntitySpawner::destroy_entity,
-            "get_entity", &EntitySpawner::get_entity,
-            "get_camera_entity", &EntitySpawner::get_camera_entity);
-    }
+        sol::table entity_spawner_table = lua.create_named_table("EntitySpawner");
+        entity_spawner_table["spawn_entity"] = [&spawner]() { return &spawner.spawn_entity(); };
+        entity_spawner_table["destroy_entity"] = [&spawner](EntityId id) { spawner.destroy_entity(id); };
+        entity_spawner_table["get_entity"] = [&spawner](EntityId id) { return spawner.get_entity(id); };
 
-    static void bind_subsystems(sol::state& lua) {
-        lua.new_usertype<Assets>(
-            "Assets",
-            sol::no_constructor,
-            "load_texture", [](Assets& self, const std::string& relative_path) {
-                std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
-                return self.load_texture(full);
-            });
+        sol::table input_table = lua.create_named_table("Input");
+        input_table["get_mouse_screen_position"] = [&input]() { return input.get_mouse_screen_position(); };
 
-        lua.new_usertype<Input>(
-            "Input",
-            sol::no_constructor,
-            "get_mouse_screen_position", &Input::get_mouse_screen_position);
+        sol::table timer_table = lua.create_named_table("Timer");
+        timer_table["get_fps"] = [&timer]() { return timer.get_fps(); };
+        timer_table["set_fps"] = [&timer](uint32_t v) { timer.set_fps(v); };
+        timer_table["get_time_scale"] = [&timer]() { return timer.get_time_scale(); };
+        timer_table["set_time_scale"] = [&timer](float v) { timer.set_time_scale(v); };
+        timer_table["get_play_time"] = [&timer]() { return timer.get_play_time(); };
+        timer_table["get_delta_time"] = [&timer]() { return timer.get_delta_time(); };
 
-        lua.new_usertype<Timer>(
-            "Timer",
-            sol::no_constructor,
-            "get_fps", &Timer::get_fps,
-            "set_fps", &Timer::set_fps,
-            "get_time_scale", &Timer::get_time_scale,
-            "set_time_scale", &Timer::set_time_scale,
-            "get_play_time", &Timer::get_play_time,
-            "get_delta_time", &Timer::get_delta_time);
+        sol::table assets_table = lua.create_named_table("Assets");
+        assets_table["load_texture"] = [&assets](const std::string& relative_path) {
+            std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
+            return assets.load_texture(full);
+        };
 
-        lua.new_usertype<App>(
-            "App",
-            sol::no_constructor,
-            "get_assets", [](App& self) { return &self.get_assets(); },
-            "get_input", [](App& self) { return &self.get_input(); },
-            "get_timer", [](App& self) { return &self.get_timer(); },
-            "get_entity_spawner", [](App& self) { return &self.get_entity_spawner(); });
+        sol::table camera_table = lua.create_named_table("Camera");
+        camera_table["get_entity"] = [&spawner]() { return spawner.get_camera_entity(); };
+        camera_table["world_to_screen"] = [&spawner](const Vector2& world_pos) {
+            return spawner.get_camera_entity()->get_component<CameraComponent>()->world_to_screen(world_pos);
+        };
+        camera_table["screen_to_world"] = [&spawner](const Vector2& screen_pos) {
+            return spawner.get_camera_entity()->get_component<CameraComponent>()->screen_to_world(screen_pos);
+        };
+        camera_table["get_position"] = [&spawner]() {
+            return spawner.get_camera_entity()->get_transform()->get_position();
+        };
+        camera_table["set_position"] = [&spawner](const Vector2& p) {
+            spawner.get_camera_entity()->get_transform()->set_position(p);
+        };
     }
 
     static void bind_logging(sol::state& lua) {
@@ -361,16 +375,11 @@ namespace hob {
         });
     }
 
-    static void bind_globals(sol::state& lua, App& app) {
-        lua["app"] = &app;
-    }
-
     void register_bindings(sol::state& lua, App& app) {
         bind_math(lua);
-        bind_components(lua);
         bind_entity(lua);
-        bind_subsystems(lua);
+        bind_components(lua);
+        bind_subsystems(lua, app);
         bind_logging(lua);
-        bind_globals(lua, app);
     }
 }

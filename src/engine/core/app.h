@@ -38,8 +38,7 @@ namespace hob {
     class App {
         AppConfig m_config;
 
-        // SDL context must be declared first so it is destroyed last.
-        // Objects below depend on SDL/GL resources.
+        // Order matters
         SdlContext m_sdl_context;
         Renderer m_renderer;
         ImGuiSystem m_imgui_system;
@@ -48,11 +47,12 @@ namespace hob {
         Input m_input;
         Assets m_assets;
         Physics m_physics;
-        LuaScriptSystem m_lua_script_system;
         EntitySpawner m_entity_spawner;
+        LuaScriptSystem m_lua_script_system;
 
     public:
         explicit App(const AppConfig& config);
+        ~App();
 
         void run();
 

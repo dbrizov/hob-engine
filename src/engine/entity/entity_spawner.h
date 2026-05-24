@@ -22,7 +22,7 @@ namespace hob {
         std::unordered_set<EntityId> m_entity_destroy_requests;
 
         // App is a friend of EntitySpawner so that:
-        // - It can resolve spawn requests via resolve_requests()
+        // - It can handle the lifecycle of entities
         friend class App;
 
     public:
@@ -46,5 +46,12 @@ namespace hob {
         void resolve_requests();
         void resolve_spawn_requests();
         void resolve_destroy_requests();
+
+        // Destroy every live and pending entity, calling exit_play on those in play.
+        // Call this before App's other subsystems start tearing down so that
+        // components which hold references into other subsystems (e.g. LuaScriptComponent
+        // owns a sol::table tied to the Lua state) are destroyed while those subsystems
+        // are still alive.
+        void clear();
     };
 }

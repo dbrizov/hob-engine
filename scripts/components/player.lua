@@ -24,9 +24,8 @@ function Player:enter_play()
     end)
 
     self.slow_motion_action_id = input:bind_action("slow_motion", InputEventType.Pressed, function()
-        local timer = app:get_timer()
-        local new_scale = timer:get_time_scale() < 1.0 and 1.0 or 0.2
-        timer:set_time_scale(new_scale)
+        local new_scale = Timer.get_time_scale() < 1.0 and 1.0 or 0.2
+        Timer.set_time_scale(new_scale)
     end)
 end
 
@@ -53,18 +52,14 @@ function Player:physics_tick(fixed_delta_time)
 end
 
 function Player:update_camera_position(target_position, delta_time)
-    local camera_entity = app:get_entity_spawner():get_camera_entity()
-    local camera_transform = camera_entity:get_transform()
-    local new_position = Vector2.lerp(
-        camera_transform:get_position(), target_position, delta_time * self.camera_follow_speed)
-    camera_transform:set_position(new_position)
+    local current_position = Camera.get_position()
+    local new_position = Vector2.lerp(current_position, target_position, delta_time * self.camera_follow_speed)
+    Camera.set_position(new_position)
 end
 
 function Player:update_rotation(delta_time)
-    local camera_entity = app:get_entity_spawner():get_camera_entity()
-    local camera = camera_entity:get_camera()
-    local mouse_screen = app:get_input():get_mouse_screen_position()
-    local mouse_world = camera:screen_to_world(mouse_screen)
+    local mouse_screen = Input.get_mouse_screen_position()
+    local mouse_world = Camera.screen_to_world(mouse_screen)
 
     local character_body = self.entity:get_character_body()
     local player_pos = character_body:get_position()
