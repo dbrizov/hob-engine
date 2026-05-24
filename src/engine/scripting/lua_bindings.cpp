@@ -28,6 +28,11 @@
 
 namespace hob {
     static void bind_math(sol::state& lua) {
+        sol::table math_table = lua.create_named_table("Math");
+        math_table["DEG_TO_RAD"] = DEG_TO_RAD;
+        math_table["RAD_TO_DEG"] = RAD_TO_DEG;
+        math_table["PI"] = PI;
+
         lua.new_usertype<Vector2>(
             "Vector2",
             sol::call_constructor, sol::constructors<Vector2(), Vector2(float, float)>(),
@@ -45,17 +50,17 @@ namespace hob {
             sol::meta_function::equal_to, &Vector2::operator==,
             sol::meta_function::to_string, &Vector2::to_string);
 
-        sol::table v2 = lua["Vector2"];
-        v2["zero"] = &Vector2::zero;
-        v2["one"] = &Vector2::one;
-        v2["left"] = &Vector2::left;
-        v2["right"] = &Vector2::right;
-        v2["up"] = &Vector2::up;
-        v2["down"] = &Vector2::down;
-        v2["dot"] = &Vector2::dot;
-        v2["distance"] = &Vector2::distance;
-        v2["lerp"] = &Vector2::lerp;
-        v2["rotate_around"] = &Vector2::rotate_around;
+        sol::table vector2_table = lua["Vector2"];
+        vector2_table["zero"] = &Vector2::zero;
+        vector2_table["one"] = &Vector2::one;
+        vector2_table["left"] = &Vector2::left;
+        vector2_table["right"] = &Vector2::right;
+        vector2_table["up"] = &Vector2::up;
+        vector2_table["down"] = &Vector2::down;
+        vector2_table["dot"] = &Vector2::dot;
+        vector2_table["distance"] = &Vector2::distance;
+        vector2_table["lerp"] = &Vector2::lerp;
+        vector2_table["rotate_around"] = &Vector2::rotate_around;
 
         lua.new_usertype<Capsule>(
             "Capsule",
@@ -83,21 +88,17 @@ namespace hob {
             "a", &Color::a,
             sol::meta_function::to_string, &Color::to_string);
 
-        sol::table c = lua["Color"];
-        c["black"] = &Color::black;
-        c["white"] = &Color::white;
-        c["gray"] = &Color::gray;
-        c["red"] = &Color::red;
-        c["green"] = &Color::green;
-        c["blue"] = &Color::blue;
-        c["yellow"] = &Color::yellow;
-        c["magenta"] = &Color::magenta;
-        c["cyan"] = &Color::cyan;
-        c["orange"] = &Color::orange;
-
-        lua["DEG_TO_RAD"] = DEG_TO_RAD;
-        lua["RAD_TO_DEG"] = RAD_TO_DEG;
-        lua["PI"] = PI;
+        sol::table color_table = lua["Color"];
+        color_table["black"] = &Color::black;
+        color_table["white"] = &Color::white;
+        color_table["gray"] = &Color::gray;
+        color_table["red"] = &Color::red;
+        color_table["green"] = &Color::green;
+        color_table["blue"] = &Color::blue;
+        color_table["yellow"] = &Color::yellow;
+        color_table["magenta"] = &Color::magenta;
+        color_table["cyan"] = &Color::cyan;
+        color_table["orange"] = &Color::orange;
     }
 
     static void bind_components(sol::state& lua) {
@@ -334,21 +335,42 @@ namespace hob {
             "get_entity_spawner", [](App& self) { return &self.get_entity_spawner(); });
     }
 
+    static void bind_logging(sol::state& lua) {
+        auto stringify_args = [](sol::this_state ts, sol::variadic_args args) -> std::string {
+            lua_State* L = ts;
+            sol::state_view sv(L);
+            sol::protected_function tostring = sv["tostring"];
+            std::string out;
+            bool first = true;
+            for (auto v : args) {
+                sol::protected_function_result r = tostring(sol::object(v));
+                std::string piece = r.valid() ? r.get<std::string>() : "<tostring failed>";
+                if (!first) {
+                    out += '\t';
+                }
+                out += piece;
+                first = false;
+            }
+            return out;
+        };
+        lua.set_function("log", [stringify_args](sol::this_state ts, sol::variadic_args args) {
+            debug::log("{}", stringify_args(ts, args));
+        });
+        lua.set_function("log_error", [stringify_args](sol::this_state ts, sol::variadic_args args) {
+            debug::log_error("{}", stringify_args(ts, args));
+        });
+    }
+
+    static void bind_globals(sol::state& lua, App& app) {
+        lua["app"] = &app;
+    }
+
     void register_bindings(sol::state& lua, App& app) {
         bind_math(lua);
         bind_components(lua);
         bind_entity(lua);
         bind_subsystems(lua);
-
-        // Convenience globals.
-        lua["app"] = &app;
-
-        // Logging hooks.
-        lua.set_function("log", [](const std::string& msg) {
-            debug::log("{}", msg);
-        });
-        lua.set_function("log_error", [](const std::string& msg) {
-            debug::log_error("{}", msg);
-        });
+        bind_logging(lua);
+        bind_globals(lua, app);
     }
 }

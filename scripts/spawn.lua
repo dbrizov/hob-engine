@@ -36,7 +36,7 @@ end
 function M.static_box(position, rotation_degrees)
     local entity = spawner():spawn_entity()
     entity:get_transform():set_position(position)
-    entity:get_transform():set_rotation(rotation_degrees * DEG_TO_RAD)
+    entity:get_transform():set_rotation(rotation_degrees * Math.DEG_TO_RAD)
 
     local rigidbody = entity:add_rigidbody()
     rigidbody:set_body_type(BodyType.Static)
@@ -52,7 +52,7 @@ function M.dynamic_box(position, rotation_degrees)
     local entity = spawner():spawn_entity()
     entity:set_ticking(true)
     entity:get_transform():set_position(position)
-    entity:get_transform():set_rotation(rotation_degrees * DEG_TO_RAD)
+    entity:get_transform():set_rotation(rotation_degrees * Math.DEG_TO_RAD)
 
     local rigidbody = entity:add_rigidbody()
     rigidbody:set_body_type(BodyType.Dynamic)
@@ -70,7 +70,7 @@ end
 function M.trigger_box(position, rotation_degrees)
     local entity = spawner():spawn_entity()
     entity:get_transform():set_position(position)
-    entity:get_transform():set_rotation(rotation_degrees * DEG_TO_RAD)
+    entity:get_transform():set_rotation(rotation_degrees * Math.DEG_TO_RAD)
 
     entity:add_rigidbody()
 
