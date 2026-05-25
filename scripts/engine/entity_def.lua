@@ -1,21 +1,3 @@
--- DefineEntity: declarative entity templates.
---
--- Usage:
---   DefineEntity.Player = {
---       ticking = true,
---       character_body = {
---           collision_layer = Collision.KINEMATIC,
---           collision_mask  = Collision.STATIC | Collision.DYNAMIC | Collision.TRIGGER,
---           capsule         = Capsule(Vector2.zero(), Vector2.zero(), 1.2),
---       },
---       sprite = { texture = "images/player/HJ_run01.png", z_index = 1 },
---       input = {},
---       lua_components = { "Player" },
---   }
---
---   local player = EntitySpawner.spawn_entity("Player")
---   player:get_transform():set_position(Vector2(5, 0))
-
 _G.__entity_prefab_registry = _G.__entity_prefab_registry or {}
 
 _G.DefineEntity = setmetatable({}, {
@@ -32,7 +14,7 @@ _G.DefineEntity = setmetatable({}, {
     end,
 })
 
-local function apply_setters(component, entity, section, setters)
+local function apply_setters(component, section, setters)
     for prop, value in pairs(section) do
         local setter = setters[prop]
         if setter == nil then
@@ -40,7 +22,7 @@ local function apply_setters(component, entity, section, setters)
         elseif type(setter) == "string" then
             component[setter](component, value)
         else
-            setter(component, value, entity)
+            setter(component, value)
         end
     end
 end
@@ -57,7 +39,7 @@ local function apply_prefab(entity, prefab)
         if section ~= nil then
             local schema = schemas[key]
             local component = entity[schema.add](entity)
-            apply_setters(component, entity, section, schema.setters)
+            apply_setters(component, section, schema.setters)
         end
     end
 
@@ -68,7 +50,7 @@ local function apply_prefab(entity, prefab)
     end
 end
 
-EntitySpawner.spawn_entity = function(name, position, rotation_degrees)
+EntitySpawner.spawn_entity = function(name, position, rotation_degrees, scale)
     local entity = EntitySpawner.spawn_entity_c()
     if name == nil then
         return entity
@@ -90,6 +72,7 @@ EntitySpawner.spawn_entity = function(name, position, rotation_degrees)
     local transform = entity:get_transform()
     transform:set_position(position or Vector2())
     transform:set_rotation((rotation_degrees or 0) * Math.DEG_TO_RAD)
+    transform:set_scale(scale or Vector2.one())
 
     return entity
 end

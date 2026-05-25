@@ -1,10 +1,8 @@
 DefineEntity.StaticBox = {
-    rigidbody = {
-        body_type = BodyType.Static,
-    },
+    rigidbody = {},
     box_collider = {
         collision_layer = Collision.Static,
-        collision_mask  = Collision.Static | Collision.Dynamic | Collision.Kinematic,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
 }
 
@@ -15,7 +13,7 @@ DefineEntity.DynamicBox = {
     },
     box_collider = {
         collision_layer = Collision.Dynamic,
-        collision_mask  = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
     },
     sprite = {
         texture = "images/robot.png",
@@ -25,9 +23,9 @@ DefineEntity.DynamicBox = {
 DefineEntity.TriggerBox = {
     rigidbody = {},
     box_collider = {
-        trigger         = true,
+        trigger = true,
         collision_layer = Collision.Trigger,
-        collision_mask  = Collision.Static | Collision.Dynamic | Collision.Kinematic,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
     sprite = {
         texture = "images/robot.png",

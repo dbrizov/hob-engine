@@ -1,11 +1,13 @@
-DefineComponent.Player = {
-    speed = 7.0,
-    camera_follow_speed = 10.0,
-    movement_input = Vector2.zero(),
-    x_axis_id = nil,
-    y_axis_id = nil,
-    slow_motion_action_id = nil,
-}
+DefineComponent.Player = {}
+
+function Player:init()
+    self.speed = 7.0
+    self.camera_follow_speed = 10.0
+    self.movement_input = Vector2.zero()
+    self.x_axis_id = nil
+    self.y_axis_id = nil
+    self.slow_motion_action_id = nil
+end
 
 function Player:enter_play()
     local input = self.entity:get_input()

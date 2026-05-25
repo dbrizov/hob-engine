@@ -4,7 +4,6 @@
 
 #include "capsule_collider_component.h"
 #include "rigidbody_component.h"
-#include "engine/components/transform_component.h"
 #include "engine/core/app.h"
 #include "engine/core/physics.h"
 #include "engine/entity/entity.h"
