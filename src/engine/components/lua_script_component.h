@@ -8,14 +8,14 @@
 
 namespace hob {
     class LuaScriptComponent : public Component {
-        std::string m_script_name;
+        std::string m_class_name;
         sol::table m_instance;
 
     public:
         explicit LuaScriptComponent(Entity& entity);
 
-        const std::string& get_script_name() const;
-        void set_script_name(std::string name);
+        const std::string& get_class_name() const;
+        void set_class_name(std::string name);
 
         void enter_play() override;
         void exit_play() override;

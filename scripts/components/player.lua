@@ -1,16 +1,11 @@
-local Player = {}
-Player.__index = Player
-
-function Player.new()
-    local self = setmetatable({}, Player)
-    self.speed = 7.0
-    self.camera_follow_speed = 10.0
-    self.movement_input = Vector2.zero()
-    self.x_axis_id = nil
-    self.y_axis_id = nil
-    self.slow_motion_action_id = nil
-    return self
-end
+DefineComponent.Player = {
+    speed = 7.0,
+    camera_follow_speed = 10.0,
+    movement_input = Vector2.zero(),
+    x_axis_id = nil,
+    y_axis_id = nil,
+    slow_motion_action_id = nil,
+}
 
 function Player:enter_play()
     local input = self.entity:get_input()
@@ -84,5 +79,3 @@ end
 function Player:on_trigger_exit(other)
     log("trigger_exit: " .. other:get_entity():get_id())
 end
-
-return Player

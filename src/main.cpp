@@ -1,5 +1,4 @@
 #include "engine/core/app.h"
-#include "engine/core/lua_script_system.h"
 #include "engine/math/vector2.h"
 
 const std::string WINDOW_TITLE = "SDL2 Window";
@@ -40,10 +39,6 @@ int main(int argc, char* argv[]) {
     hob::App app(app_config);
 
     if (!app.is_initialized()) {
-        return 1;
-    }
-
-    if (!app.get_lua_script_system().run_file("scripts/main.lua")) {
         return 1;
     }
 
