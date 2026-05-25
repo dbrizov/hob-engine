@@ -1,3 +1,20 @@
+-- Component Schemas: maps prefab keys to Entity:add_* methods and per-property setters.
+--
+-- Schema entry shape:
+--   key_name = {
+--       add = "add_method_name",                -- Entity method to attach the component
+--       setters = {
+--           prop_name = "set_method_name",      -- simple setter, called as comp:set_X(value)
+--           prop_name = function(comp, value),  -- custom setter; reach siblings via comp:get_entity():get_other_component()
+--           ...
+--           end,
+--       },
+--   }
+--
+-- Iteration order is fixed (see __order below) so order-sensitive setup
+-- (Box2D bodies before colliders, etc.) is deterministic. To support a new
+-- component in prefabs: add an entry here and append its key to __order.
+
 local schemas = {
     rigidbody = {
         add = "add_rigidbody",

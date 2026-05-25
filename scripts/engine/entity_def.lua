@@ -1,3 +1,18 @@
+-- DefineEntity: Prefab declaration for entities.
+--
+-- Usage:
+--   DefineEntity.Player = {
+--       ticking = true,
+--       character_body = {
+--           collision_layer = Collision.Kinematic,
+--           collision_mask  = Collision.Static | Collision.Dynamic | Collision.Trigger,
+--           capsule         = Capsule(Vector2.zero(), Vector2.zero(), 1.2),
+--       },
+--       sprite = { texture = "images/player/HJ_run01.png", z_index = 1 },
+--       input = {},
+--       lua_components = { "Player" },
+--   }
+
 _G.__entity_prefab_registry = _G.__entity_prefab_registry or {}
 
 _G.DefineEntity = setmetatable({}, {

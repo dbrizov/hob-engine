@@ -1,3 +1,20 @@
+-- DefineComponent: Class declaration for Lua components.
+--
+-- Usage:
+--   DefineComponent.Player = {
+--       speed = 7.0,                          -- scalar default; per-instance via Lua shadowing
+--       __parents = { "Base" },               -- optional inheritance
+--   }
+--
+--   function Player:init() ... end            -- per-instance setup (mutable state goes here)
+--       self.speed = 10.0                     -- override the default speed
+--   }
+--
+--   function Player:enter_play() ... end
+--   function Player:exit_play() ... end
+--   function Player:tick(delta_time) ... end
+--   function Player:my_helper() ... end       -- any user method
+
 _G.__component_registry = _G.__component_registry or {}
 
 local function build_class(name, def)
