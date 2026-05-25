@@ -66,21 +66,13 @@ local function apply_prefab(entity, prefab)
 end
 
 EntitySpawner.spawn_entity = function(name, position, rotation_degrees, scale)
-    local entity = EntitySpawner.spawn_entity_c()
-    if name == nil then
-        return entity
-    end
-
-    if type(name) ~= "string" then
-        log_error("EntitySpawner.spawn_entity expects a prefab name string or no argument")
-        return entity
-    end
-
     local prefab = _G.__entity_prefab_registry[name]
     if not prefab then
         log_error("EntitySpawner.spawn_entity: prefab '" .. name .. "' is not registered")
-        return entity
+        return nil
     end
+
+    local entity = EntitySpawner.spawn_entity_c()
 
     apply_prefab(entity, prefab)
 
