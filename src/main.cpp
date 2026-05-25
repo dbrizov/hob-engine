@@ -1,7 +1,7 @@
 #include "engine/core/app.h"
 #include "engine/math/vector2.h"
 
-const std::string WINDOW_TITLE = "SDL2 Window";
+const std::string WINDOW_TITLE = "Hob Engine";
 constexpr uint32_t WINDOW_WIDTH = 1152;
 constexpr uint32_t WINDOW_HEIGHT = 648;
 constexpr uint32_t LOGICAL_RESOLUTION_WIDTH = 1920;

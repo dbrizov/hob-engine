@@ -19,21 +19,44 @@ namespace hob {
         m_class_name = std::move(name);
     }
 
-    static void call_hook(sol::table& instance, const char* method, auto&&... args) {
-        sol::object fn = instance[method];
-        if (!fn.is<sol::protected_function>()) {
-            return;
-        }
-
-        sol::protected_function pfn = fn;
-        sol::protected_function_result result = pfn(instance, std::forward<decltype(args)>(args)...);
-        if (!result.valid()) {
-            sol::error err = result;
-            debug::log_error("Lua error in {}: {}", method, err.what());
-        }
+    void LuaScriptComponent::enter_play() {
+        init_lua_instance();
+        call_hook("enter_play");
     }
 
-    void LuaScriptComponent::enter_play() {
+    void LuaScriptComponent::exit_play() {
+        call_hook("exit_play");
+    }
+
+    void LuaScriptComponent::tick(float delta_time) {
+        call_hook("tick", delta_time);
+    }
+
+    void LuaScriptComponent::physics_tick(float fixed_delta_time) {
+        call_hook("physics_tick", fixed_delta_time);
+    }
+
+    void LuaScriptComponent::debug_draw_tick(float delta_time) {
+        call_hook("debug_draw_tick", delta_time);
+    }
+
+    void LuaScriptComponent::on_collision_enter(const ColliderComponent* other_collider) {
+        call_hook("on_collision_enter", other_collider);
+    }
+
+    void LuaScriptComponent::on_collision_exit(const ColliderComponent* other_collider) {
+        call_hook("on_collision_exit", other_collider);
+    }
+
+    void LuaScriptComponent::on_trigger_enter(const ColliderComponent* other_collider) {
+        call_hook("on_trigger_enter", other_collider);
+    }
+
+    void LuaScriptComponent::on_trigger_exit(const ColliderComponent* other_collider) {
+        call_hook("on_trigger_exit", other_collider);
+    }
+
+    void LuaScriptComponent::init_lua_instance() {
         if (m_class_name.empty()) {
             debug::log_error("LuaScriptComponent has no class name");
             return;
@@ -75,57 +98,7 @@ namespace hob {
             return;
         }
 
-        m_instance = inst_obj;
-        m_instance["entity"] = &get_entity();
-
-        call_hook(m_instance, "enter_play");
-    }
-
-    void LuaScriptComponent::exit_play() {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "exit_play");
-        }
-    }
-
-    void LuaScriptComponent::tick(float delta_time) {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "tick", delta_time);
-        }
-    }
-
-    void LuaScriptComponent::physics_tick(float fixed_delta_time) {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "physics_tick", fixed_delta_time);
-        }
-    }
-
-    void LuaScriptComponent::debug_draw_tick(float delta_time) {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "debug_draw_tick", delta_time);
-        }
-    }
-
-    void LuaScriptComponent::on_collision_enter(const ColliderComponent* other_collider) {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "on_collision_enter", other_collider);
-        }
-    }
-
-    void LuaScriptComponent::on_collision_exit(const ColliderComponent* other_collider) {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "on_collision_exit", other_collider);
-        }
-    }
-
-    void LuaScriptComponent::on_trigger_enter(const ColliderComponent* other_collider) {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "on_trigger_enter", other_collider);
-        }
-    }
-
-    void LuaScriptComponent::on_trigger_exit(const ColliderComponent* other_collider) {
-        if (m_instance.valid()) {
-            call_hook(m_instance, "on_trigger_exit", other_collider);
-        }
+        m_lua_instance = inst_obj;
+        m_lua_instance["entity"] = &get_entity();
     }
 }
