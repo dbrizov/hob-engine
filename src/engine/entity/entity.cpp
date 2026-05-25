@@ -1,5 +1,7 @@
 #include "entity.h"
 
+#include <format>
+
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"
 
@@ -62,6 +64,27 @@ namespace hob {
         for (auto& component : m_components) {
             component->on_trigger_exit(other_collider);
         }
+    }
+
+    std::string Entity::to_string() const {
+        std::string result = std::format("Entity(id = {}, in_play = {}, ticking = {})",
+                                         get_id(),
+                                         is_in_play(),
+                                         is_ticking());
+
+        if (const TransformComponent* transform = get_transform()) {
+            result += std::format("\n  position = {}, rotation = {}, scale = {}",
+                                  transform->get_position().to_string(),
+                                  transform->get_rotation(),
+                                  transform->get_scale().to_string());
+        }
+
+        result += std::format("\n  components ({}):", m_components.size());
+        for (const auto& component : m_components) {
+            result += std::format("\n    - {}", component->to_string());
+        }
+
+        return result;
     }
 
     App& Entity::get_app() const {

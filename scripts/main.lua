@@ -1,4 +1,5 @@
-EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
+local player = EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
+log(player)
 
 -- floor
 for x = -4, 4 do

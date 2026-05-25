@@ -220,36 +220,45 @@ namespace hob {
             "is_in_play", &Entity::is_in_play,
             "is_ticking", &Entity::is_ticking,
             "set_ticking", &Entity::set_ticking,
-            "get_transform", &Entity::get_transform,
-            "get_rigidbody", &Entity::get_rigidbody,
             // add_*
-            "add_sprite", &Entity::add_component<SpriteComponent>,
-            "add_camera", &Entity::add_component<CameraComponent>,
             "add_rigidbody", &Entity::add_component<RigidbodyComponent>,
             "add_box_collider", &Entity::add_component<BoxColliderComponent>,
             "add_capsule_collider", &Entity::add_component<CapsuleColliderComponent>,
             "add_character_body", &Entity::add_component<CharacterBodyComponent>,
+            "add_sprite", &Entity::add_component<SpriteComponent>,
             "add_input", &Entity::add_component<InputComponent>,
             "add_lua_component", [](Entity& self, const std::string& class_name) {
-                LuaScriptComponent* lua_script_comp = self.add_component<LuaScriptComponent>();
-                lua_script_comp->set_class_name(class_name);
-                return lua_script_comp;
+                LuaScriptComponent* lua_comp = self.add_component<LuaScriptComponent>();
+                lua_comp->set_class_name(class_name);
+                return lua_comp;
             },
             // get_*
-            "get_sprite", &Entity::get_component<SpriteComponent>,
-            "get_camera", &Entity::get_component<CameraComponent>,
+            "get_transform", &Entity::get_transform,
+            "get_rigidbody", &Entity::get_rigidbody,
             "get_box_collider", &Entity::get_component<BoxColliderComponent>,
             "get_capsule_collider", &Entity::get_component<CapsuleColliderComponent>,
             "get_character_body", &Entity::get_component<CharacterBodyComponent>,
+            "get_sprite", &Entity::get_component<SpriteComponent>,
             "get_input", &Entity::get_component<InputComponent>,
-            "get_lua_component", &Entity::get_component<LuaScriptComponent>);
+            "get_lua_component", [](Entity& self, const std::string& class_name) -> LuaScriptComponent* {
+                std::vector<LuaScriptComponent*> lua_components = self.get_components<LuaScriptComponent>();
+                for (LuaScriptComponent* lua_comp : lua_components) {
+                    if (lua_comp->get_class_name() == class_name) {
+                        return lua_comp;
+                    }
+                }
+                return nullptr;
+            },
+            "get_lua_components", &Entity::get_components<LuaScriptComponent>,
+            sol::meta_function::to_string, &Entity::to_string);
     }
 
     void LuaScriptSystem::bind_components() {
         m_lua.new_usertype<Component>(
             "Component",
             sol::no_constructor,
-            "get_entity", [](Component& c) { return &c.get_entity(); });
+            "get_entity", [](Component& c) { return &c.get_entity(); },
+            sol::meta_function::to_string, &Component::to_string);
 
         m_lua.new_usertype<TransformComponent>(
             "TransformComponent",

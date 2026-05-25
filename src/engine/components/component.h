@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace hob {
     class App;
     class ColliderComponent;
@@ -33,5 +35,7 @@ namespace hob {
         virtual void on_collision_exit(const ColliderComponent* other_collider);
         virtual void on_trigger_enter(const ColliderComponent* other_collider);
         virtual void on_trigger_exit(const ColliderComponent* other_collider);
+
+        virtual std::string to_string() const;
     };
 }

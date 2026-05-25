@@ -24,6 +24,8 @@ namespace hob {
         virtual void exit_play() override;
         virtual void debug_draw_tick(float delta_time) override;
 
+        std::string to_string() const override;
+
         b2BodyId get_body_id() const;
         b2ShapeId get_shape_id() const;
 

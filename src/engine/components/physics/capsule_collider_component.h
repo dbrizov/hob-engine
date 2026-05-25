@@ -13,6 +13,8 @@ namespace hob {
     public:
         explicit CapsuleColliderComponent(Entity& entity);
 
+        std::string to_string() const override;
+
         Capsule get_capsule() const;
         void set_capsule(const Capsule& capsule);
 

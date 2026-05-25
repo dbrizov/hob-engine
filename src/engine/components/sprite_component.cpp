@@ -1,10 +1,17 @@
 #include "sprite_component.h"
 
+#include <format>
+
+#include "engine/entity/entity.h"
 #include "transform_component.h"
 
 namespace hob {
     SpriteComponent::SpriteComponent(Entity& entity)
         : Component(entity) {
+    }
+
+    std::string SpriteComponent::to_string() const {
+        return std::format("SpriteComponent(entity_id = {})", get_entity().get_id());
     }
 
     TextureId SpriteComponent::get_texture_id() const {

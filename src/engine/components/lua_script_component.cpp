@@ -1,5 +1,7 @@
 #include "lua_script_component.h"
 
+#include <format>
+
 #include "engine/components/physics/collider_component.h"
 #include "engine/core/app.h"
 #include "engine/core/logging.h"
@@ -21,6 +23,7 @@ namespace hob {
 
     void LuaScriptComponent::enter_play() {
         init_lua_instance();
+
         call_hook("enter_play");
     }
 
@@ -54,6 +57,12 @@ namespace hob {
 
     void LuaScriptComponent::on_trigger_exit(const ColliderComponent* other_collider) {
         call_hook("on_trigger_exit", other_collider);
+    }
+
+    std::string LuaScriptComponent::to_string() const {
+        return std::format("LuaScriptComponent(entity_id = {}, class = {})",
+                           get_entity().get_id(),
+                           get_class_name());
     }
 
     void LuaScriptComponent::init_lua_instance() {

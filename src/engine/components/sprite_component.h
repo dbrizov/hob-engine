@@ -16,6 +16,8 @@ namespace hob {
     public:
         explicit SpriteComponent(Entity& entity);
 
+        std::string to_string() const override;
+
         TextureId get_texture_id() const;
         void set_texture_id(TextureId texture_id);
 

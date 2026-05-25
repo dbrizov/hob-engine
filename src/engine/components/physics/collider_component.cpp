@@ -1,5 +1,7 @@
 #include "collider_component.h"
 
+#include <format>
+
 #include <box2d/box2d.h>
 
 #include "rigidbody_component.h"
@@ -61,6 +63,10 @@ namespace hob {
         if (get_app().get_physics().cvar_debug_draw) {
             debug_draw_shape(color);
         }
+    }
+
+    std::string ColliderComponent::to_string() const {
+        return std::format("ColliderComponent(entity_id = {})", get_entity().get_id());
     }
 
     b2BodyId ColliderComponent::get_body_id() const {

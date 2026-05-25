@@ -13,6 +13,8 @@ namespace hob {
     public:
         explicit BoxColliderComponent(Entity& entity);
 
+        std::string to_string() const override;
+
         AABB get_aabb() const;
         void set_aabb(const AABB& aabb);
 

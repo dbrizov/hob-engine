@@ -1,5 +1,7 @@
 #include "input_component.h"
 
+#include <format>
+
 #include "engine/core/app.h"
 #include "engine/entity/entity.h"
 
@@ -21,6 +23,10 @@ namespace hob {
 
     void InputComponent::exit_play() {
         get_app().get_input().remove_input_event_handler(m_input_event_handler_id);
+    }
+
+    std::string InputComponent::to_string() const {
+        return std::format("InputComponent(entity_id = {})", get_entity().get_id());
     }
 
     BindingId InputComponent::bind_axis(const char* axis_name, AxisBindingFunc function) {

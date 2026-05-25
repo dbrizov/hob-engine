@@ -20,6 +20,8 @@ namespace hob {
     public:
         explicit TransformComponent(Entity& entity);
 
+        std::string to_string() const override;
+
         Vector2 get_position() const;
         void set_position(const Vector2& position);
 

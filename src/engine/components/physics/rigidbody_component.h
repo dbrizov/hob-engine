@@ -23,6 +23,8 @@ namespace hob {
         virtual void enter_play() override;
         virtual void exit_play() override;
 
+        std::string to_string() const override;
+
         b2BodyId get_body_id() const;
         bool has_body() const;
 

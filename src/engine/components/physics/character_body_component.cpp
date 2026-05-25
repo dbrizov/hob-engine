@@ -1,5 +1,7 @@
 #include "character_body_component.h"
 
+#include <format>
+
 #include <box2d/box2d.h>
 
 #include "capsule_collider_component.h"
@@ -17,6 +19,10 @@ namespace hob {
         m_rigidbody->set_fixed_rotation(true);
 
         m_capsule_collider = entity.add_component<CapsuleColliderComponent>();
+    }
+
+    std::string CharacterBodyComponent::to_string() const {
+        return std::format("CharacterBodyComponent(entity_id = {})", get_entity().get_id());
     }
 
     uint64_t CharacterBodyComponent::get_collision_layer() const {

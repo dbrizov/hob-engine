@@ -1,6 +1,7 @@
 #include "transform_component.h"
 
 #include <cmath>
+#include <format>
 
 #include "engine/entity/entity.h"
 
@@ -8,6 +9,10 @@ namespace hob {
     TransformComponent::TransformComponent(Entity& entity)
         : Component(entity) {
         rebuild_local_matrix();
+    }
+
+    std::string TransformComponent::to_string() const {
+        return std::format("TransformComponent(entity_id = {})", get_entity().get_id());
     }
 
     Vector2 TransformComponent::get_position() const {

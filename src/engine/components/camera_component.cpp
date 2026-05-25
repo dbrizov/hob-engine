@@ -1,5 +1,7 @@
 #include "camera_component.h"
 
+#include <format>
+
 #include "transform_component.h"
 #include "engine/core/app.h"
 #include "engine/entity/entity.h"
@@ -7,6 +9,10 @@
 namespace hob {
     CameraComponent::CameraComponent(Entity& entity)
         : Component(entity) {
+    }
+
+    std::string CameraComponent::to_string() const {
+        return std::format("CameraComponent(entity_id = {})", get_entity().get_id());
     }
 
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position) const {

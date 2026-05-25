@@ -1,8 +1,8 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "engine/components/component.h"
@@ -50,6 +50,8 @@ namespace hob {
         void on_trigger_enter(const ColliderComponent* other_collider);
         void on_trigger_exit(const ColliderComponent* other_collider);
 
+        std::string to_string() const;
+
         App& get_app() const;
 
         EntityId get_id() const;
@@ -68,12 +70,13 @@ namespace hob {
 
         template<ComponentType T>
         T* get_component() const;
+
+        template<ComponentType T>
+        std::vector<T*> get_components() const;
     };
 
     template<ComponentType T>
     T* Entity::add_component() {
-        assert(get_component<T>() == nullptr && "Component of this type already exists");
-
         std::unique_ptr<T> component = std::make_unique<T>(*this);
 
         if (is_in_play()) {
@@ -100,5 +103,17 @@ namespace hob {
         }
 
         return nullptr;
+    }
+
+    template<ComponentType T>
+    std::vector<T*> Entity::get_components() const {
+        std::vector<T*> result;
+        for (auto& c : m_components) {
+            if (T* casted = dynamic_cast<T*>(c.get())) {
+                result.push_back(casted);
+            }
+        }
+
+        return result;
     }
 }

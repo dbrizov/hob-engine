@@ -36,6 +36,8 @@ namespace hob {
         virtual void enter_play() override;
         virtual void exit_play() override;
 
+        std::string to_string() const override;
+
         BindingId bind_axis(const char* axis_name, AxisBindingFunc function);
         void unbind_axis(const char* axis_name, BindingId axis_binding_id);
 

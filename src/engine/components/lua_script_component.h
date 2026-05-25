@@ -29,6 +29,8 @@ namespace hob {
         void on_trigger_enter(const ColliderComponent* other_collider) override;
         void on_trigger_exit(const ColliderComponent* other_collider) override;
 
+        std::string to_string() const override;
+
     private:
         void init_lua_instance();
 

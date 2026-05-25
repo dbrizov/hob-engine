@@ -1,5 +1,7 @@
 #include "capsule_collider_component.h"
 
+#include <format>
+
 #include <box2d/types.h>
 
 #include "engine/components/transform_component.h"
@@ -11,6 +13,10 @@
 namespace hob {
     CapsuleColliderComponent::CapsuleColliderComponent(Entity& entity)
         : ColliderComponent(entity) {
+    }
+
+    std::string CapsuleColliderComponent::to_string() const {
+        return std::format("CapsuleColliderComponent(entity_id = {})", get_entity().get_id());
     }
 
     Capsule CapsuleColliderComponent::get_capsule() const {

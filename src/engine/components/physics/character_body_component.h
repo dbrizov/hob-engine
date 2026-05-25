@@ -31,6 +31,8 @@ namespace hob {
     public:
         explicit CharacterBodyComponent(Entity& entity);
 
+        std::string to_string() const override;
+
         uint64_t get_collision_layer() const;
         void set_collision_layer(uint64_t collision_layer);
 

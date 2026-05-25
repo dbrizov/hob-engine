@@ -11,5 +11,5 @@ DefineEntity.Player = {
         texture = "images/player/HJ_run01.png",
         z_index = 1,
     },
-    lua_components = { "Player" },
+    lua_components = { "Player", "ContactLogger" },
 }
