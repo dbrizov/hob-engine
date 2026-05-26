@@ -19,6 +19,18 @@
       }
     },
     {
+      "name": "release-gcc",
+      "hidden": false,
+      "description": "Linux release configure preset using GCC.",
+      "binaryDir": "${sourceDir}/build/release/linux-gcc",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
       "name": "debug-clang",
       "hidden": false,
       "description": "macOS debug configure preset using Clang.",
@@ -28,6 +40,18 @@
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
         "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release-clang",
+      "hidden": false,
+      "description": "macOS release configure preset using Clang.",
+      "binaryDir": "${sourceDir}/build/release/macos-clang",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
@@ -72,9 +96,19 @@
       "description": "Linux debug build using GCC."
     },
     {
+      "name": "linux-release-gcc-x64",
+      "configurePreset": "release-gcc",
+      "description": "Linux release build using GCC."
+    },
+    {
       "name": "macos-debug-clang-arm64-osx",
       "configurePreset": "debug-clang",
       "description": "macOS debug build using Clang."
+    },
+    {
+      "name": "macos-release-clang-arm64-osx",
+      "configurePreset": "release-clang",
+      "description": "macOS release build using Clang."
     },
     {
       "name": "windows-debug-msvc-x64",

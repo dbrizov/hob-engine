@@ -41,10 +41,24 @@
                 "name": "Debug Lua (hob_engine)",
                 "type": "lua-local",
                 "request": "launch",
-                "program": {
-                    "command": "${workspaceFolder}/../build/debug/windows-msvc/Debug/hob_engine.exe"
+                "linux": {
+                    "program": {
+                        "command": "${workspaceFolder}/../build/debug/linux-gcc/hob_engine"
+                    },
+                    "cwd": "${workspaceFolder}/../build/debug/linux-gcc"
                 },
-                "cwd": "${workspaceFolder}/../build/debug/windows-msvc/Debug"
+                "osx": {
+                    "program": {
+                        "command": "${workspaceFolder}/../build/debug/macos-clang/hob_engine"
+                    },
+                    "cwd": "${workspaceFolder}/../build/debug/macos-clang"
+                },
+                "windows": {
+                    "program": {
+                        "command": "${workspaceFolder}/../build/debug/windows-msvc/Debug/hob_engine.exe"
+                    },
+                    "cwd": "${workspaceFolder}/../build/debug/windows-msvc/Debug"
+                }
             }
         ]
     }
