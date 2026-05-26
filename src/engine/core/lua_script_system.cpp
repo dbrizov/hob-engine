@@ -113,10 +113,10 @@ namespace hob {
     bool LuaScriptSystem::run_bootstrap() {
         // Engine bootstrap.
         // 1. Load engine scripts first (DefineComponent/DefinePrefab, schemas, shared globals).
-        // 2. then everything user-defined under scripts - skipping the engine folder (already loaded) and main.lua.
+        // 2. Then everything user-defined under scripts (excluding engine, meta and main.lua).
         // 3. Then finally main.lua as the entry point.
         bool engine_ok = run_folder("scripts/engine");
-        bool user_ok = run_folder("scripts", {"engine", "main.lua"});
+        bool user_ok = run_folder("scripts", {"engine", "meta", "main.lua"});
         bool main_ok = run_file("scripts/main.lua");
 
         return engine_ok && user_ok && main_ok;
