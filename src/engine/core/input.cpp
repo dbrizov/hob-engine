@@ -153,7 +153,6 @@ namespace hob {
             bool any_negative = any_pressed(mapping.negative);
 
             float& axis_value = m_axis_values[axis];
-            float old_axis_value = axis_value;
 
             if ((any_positive && any_negative) || (!any_positive && !any_negative)) {
                 if (axis_value < 0.0f) {
