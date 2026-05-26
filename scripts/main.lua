@@ -1,3 +1,7 @@
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+    require("lldebugger").start()
+end
+
 local player = EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
 log(player)
 

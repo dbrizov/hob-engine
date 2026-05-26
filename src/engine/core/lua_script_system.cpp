@@ -37,7 +37,15 @@ namespace hob {
             sol::lib::math,
             sol::lib::table,
             sol::lib::io,
-            sol::lib::os);
+            sol::lib::os,
+            sol::lib::package,
+            sol::lib::coroutine,
+            sol::lib::debug);
+
+        // Make `require` find modules in scripts/lib (e.g. vendored lldebugger).
+        const std::string lib_path = (PathUtils::get_root_path() / "scripts" / "lib" / "?.lua").string();
+        sol::table package = m_lua["package"];
+        package["path"] = lib_path + ";" + package["path"].get<std::string>();
 
         register_bindings();
         run_bootstrap();
@@ -116,7 +124,7 @@ namespace hob {
         // 2. Then everything user-defined under scripts (excluding engine, meta and main.lua).
         // 3. Then finally main.lua as the entry point.
         bool engine_ok = run_folder("scripts/engine");
-        bool user_ok = run_folder("scripts", {"engine", "meta", "main.lua"});
+        bool user_ok = run_folder("scripts", {"engine", "lib", "meta", "main.lua"});
         bool main_ok = run_file("scripts/main.lua");
 
         return engine_ok && user_ok && main_ok;

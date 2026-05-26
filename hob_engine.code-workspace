@@ -28,7 +28,22 @@
     },
     "extensions": {
         "recommendations": [
-            "sumneko.lua"
+            "sumneko.lua",
+            "tomblind.local-lua-debugger-vscode"
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Debug Lua (hob_engine)",
+                "type": "lua-local",
+                "request": "launch",
+                "program": {
+                    "command": "${workspaceFolder}/../build/debug/windows-msvc/Debug/hob_engine.exe"
+                },
+                "cwd": "${workspaceFolder}/../build/debug/windows-msvc/Debug"
+            }
         ]
     }
 }
