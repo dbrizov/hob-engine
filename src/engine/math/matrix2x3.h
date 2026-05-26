@@ -15,6 +15,6 @@ namespace hob {
 
         static Matrix2x3 multiply(const Matrix2x3& a, const Matrix2x3& b);
         static Matrix2x3 lerp(const Matrix2x3& a, const Matrix2x3& b, float t);
-        static Matrix2x3 make_rotate_around(const Vector2& center, float radians);
+        static Matrix2x3 make_rotate_around(const Vector2& pivot, float radians);
     };
 }
