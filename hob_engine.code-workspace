@@ -1,0 +1,33 @@
+{
+    "folders": [
+        {
+            "path": "scripts"
+        }
+    ],
+    "settings": {
+        "files.eol": "\n",
+        "files.encoding": "utf8",
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        "files.associations": {
+            "*.lua": "lua"
+        },
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "Lua.hint.enable": true,
+        "Lua.workspace.checkThirdParty": false,
+        "Lua.workspace.library": [
+            "meta"
+        ],
+        "Lua.diagnostics.disable": [
+            "lowercase-global",
+            "undefined-global",
+            "duplicate-set-field"
+        ],
+    },
+    "extensions": {
+        "recommendations": [
+            "sumneko.lua"
+        ]
+    }
+}

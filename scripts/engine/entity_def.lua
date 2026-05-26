@@ -65,6 +65,11 @@ local function apply_prefab(entity, prefab)
     end
 end
 
+---@param name string
+---@param position? Vector2
+---@param rotation_degrees? number
+---@param scale? Vector2
+---@return Entity|nil
 EntitySpawner.spawn_entity = function(name, position, rotation_degrees, scale)
     local prefab = _G.__entity_prefab_registry[name]
     if not prefab then
