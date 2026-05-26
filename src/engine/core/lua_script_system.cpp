@@ -235,11 +235,7 @@ namespace hob {
             "add_character_body", &Entity::add_component<CharacterBodyComponent>,
             "add_sprite", &Entity::add_component<SpriteComponent>,
             "add_input", &Entity::add_component<InputComponent>,
-            "add_lua_component", [](Entity& self, const std::string& class_name) {
-                LuaScriptComponent* lua_comp = self.add_component<LuaScriptComponent>();
-                lua_comp->set_class_name(class_name);
-                return lua_comp;
-            },
+            "add_lua_component", &Entity::add_component<LuaScriptComponent, std::string>,
             // get_*
             "get_transform", &Entity::get_transform,
             "get_rigidbody", &Entity::get_rigidbody,
@@ -418,8 +414,7 @@ namespace hob {
             "LuaScriptComponent",
             sol::no_constructor,
             sol::base_classes, sol::bases<Component>(),
-            "get_class_name", &LuaScriptComponent::get_class_name,
-            "set_class_name", &LuaScriptComponent::set_class_name);
+            "get_class_name", &LuaScriptComponent::get_class_name);
     }
 
     void LuaScriptSystem::bind_subsystems() {

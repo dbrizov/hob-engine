@@ -196,6 +196,7 @@ InputEventType = {}
 -- lifecycle hooks (init/enter_play/tick/...) are typed correctly.
 ---@class LuaComponent
 ---@field entity Entity
+---@field priority integer?  # Priority execution order for this component type. Defaults to 0 (CP_DEFAULT). Set on the class table (e.g. `Player.priority = -50`), NOT per-instance.
 local LuaComponent = {}
 
 --- Called once when the component instance is created (before enter_play).
@@ -475,9 +476,6 @@ local LuaScriptComponent = {}
 
 ---@return string
 function LuaScriptComponent:get_class_name() end
-
----@param name string
-function LuaScriptComponent:set_class_name(name) end
 
 -- Entity
 ---@class Entity

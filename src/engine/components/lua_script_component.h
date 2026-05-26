@@ -10,15 +10,18 @@
 
 namespace hob {
     class LuaScriptComponent : public Component {
+        int m_priority;
         std::string m_class_name;
         sol::table m_lua_instance;
 
     public:
-        explicit LuaScriptComponent(Entity& entity);
+        LuaScriptComponent(Entity& entity, std::string class_name);
 
         const std::string& get_class_name() const;
-        void set_class_name(std::string name);
 
+        int get_priority() const override;
+
+        void init() override;
         void enter_play() override;
         void exit_play() override;
         void tick(float delta_time) override;
@@ -32,8 +35,6 @@ namespace hob {
         std::string to_string() const override;
 
     private:
-        void init_lua_instance();
-
         template<typename... Args>
         void call_hook(const char* method, Args&&... args) {
             if (!m_lua_instance.valid()) {

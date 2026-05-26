@@ -9,21 +9,74 @@
 #include "engine/entity/entity.h"
 
 namespace hob {
-    LuaScriptComponent::LuaScriptComponent(Entity& entity)
-        : Component(entity) {
+    LuaScriptComponent::LuaScriptComponent(Entity& entity, std::string class_name)
+        : Component(entity)
+        , m_priority(component_priority::CP_DEFAULT)
+        , m_class_name(std::move(class_name))
+        , m_lua_instance() {
     }
 
     const std::string& LuaScriptComponent::get_class_name() const {
         return m_class_name;
     }
 
-    void LuaScriptComponent::set_class_name(std::string name) {
-        m_class_name = std::move(name);
+    int LuaScriptComponent::get_priority() const {
+        return m_priority;
+    }
+
+    void LuaScriptComponent::init() {
+        if (m_class_name.empty()) {
+            debug::log_error("LuaScriptComponent has no class name");
+            return;
+        }
+
+        sol::state& lua = get_app().get_lua_script_system().get_lua();
+
+        sol::object registry_obj = lua["__component_registry"];
+        if (!registry_obj.is<sol::table>()) {
+            debug::log_error("__component_registry is missing — engine bootstrap did not run");
+            return;
+        }
+
+        sol::table registry = registry_obj;
+        sol::object class_obj = registry[m_class_name];
+        if (!class_obj.is<sol::table>()) {
+            debug::log_error("DefineComponent '{}' is not registered", m_class_name);
+            return;
+        }
+
+        sol::table class_table = class_obj;
+
+        sol::optional<int> priority = class_table["priority"];
+        m_priority = priority.value_or(component_priority::CP_DEFAULT);
+
+        sol::object new_fn_obj = class_table["new"];
+        if (!new_fn_obj.is<sol::protected_function>()) {
+            debug::log_error("'{}' does not have a 'new' function", m_class_name);
+            return;
+        }
+
+        sol::protected_function new_fn = new_fn_obj;
+        sol::protected_function_result inst_result = new_fn();
+        if (!inst_result.valid()) {
+            sol::error err = inst_result;
+            debug::log_error("Failed to instantiate '{}': {}", m_class_name, err.what());
+            return;
+        }
+
+        sol::object inst_obj = inst_result;
+        if (!inst_obj.is<sol::table>()) {
+            debug::log_error("'{}'.new() did not return a table", m_class_name);
+            return;
+        }
+
+        m_lua_instance = inst_obj;
+        m_lua_instance["entity"] = &get_entity();
+
+        call_hook("init");
     }
 
     void LuaScriptComponent::enter_play() {
-        init_lua_instance();
-
         call_hook("enter_play");
     }
 
@@ -63,51 +116,5 @@ namespace hob {
         return std::format("LuaScriptComponent(entity_id = {}, class = {})",
                            get_entity().get_id(),
                            get_class_name());
-    }
-
-    void LuaScriptComponent::init_lua_instance() {
-        if (m_class_name.empty()) {
-            debug::log_error("LuaScriptComponent has no class name");
-            return;
-        }
-
-        sol::state& lua = get_app().get_lua_script_system().get_lua();
-
-        sol::object registry_obj = lua["__component_registry"];
-        if (!registry_obj.is<sol::table>()) {
-            debug::log_error("__component_registry is missing — engine bootstrap did not run");
-            return;
-        }
-
-        sol::table registry = registry_obj;
-        sol::object class_obj = registry[m_class_name];
-        if (!class_obj.is<sol::table>()) {
-            debug::log_error("DefineComponent '{}' is not registered", m_class_name);
-            return;
-        }
-
-        sol::table class_table = class_obj;
-        sol::object new_fn_obj = class_table["new"];
-        if (!new_fn_obj.is<sol::protected_function>()) {
-            debug::log_error("'{}' does not have a 'new' function", m_class_name);
-            return;
-        }
-
-        sol::protected_function new_fn = new_fn_obj;
-        sol::protected_function_result inst_result = new_fn();
-        if (!inst_result.valid()) {
-            sol::error err = inst_result;
-            debug::log_error("Failed to instantiate '{}': {}", m_class_name, err.what());
-            return;
-        }
-
-        sol::object inst_obj = inst_result;
-        if (!inst_obj.is<sol::table>()) {
-            debug::log_error("'{}'.new() did not return a table", m_class_name);
-            return;
-        }
-
-        m_lua_instance = inst_obj;
-        m_lua_instance["entity"] = &get_entity();
     }
 }

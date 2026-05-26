@@ -21,6 +21,9 @@ namespace hob {
         return component_priority::CP_DEFAULT;
     }
 
+    void Component::init() {
+    }
+
     void Component::enter_play() {
     }
 

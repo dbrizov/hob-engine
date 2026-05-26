@@ -3,6 +3,7 @@
 -- Usage:
 --   DefineComponent.Player = {
 --       speed = 7.0,                          -- scalar default; per-instance via Lua shadowing
+--       priority = 1,                         -- priority execution order for this type of component; NOT per-instance data
 --       __parents = { "Base" },               -- optional inheritance
 --   }
 --
@@ -48,14 +49,10 @@ local function build_class(name, def)
 
     class.__index = class
 
-    -- Init per-instance data.
+    -- Allocates an instance. The engine sets self.entity and calls init()
+    -- from C++ after this returns, so do not invoke init() here.
     function class.new()
-        local self = setmetatable({}, class)
-        if class.init then
-            class.init(self)
-        end
-
-        return self
+        return setmetatable({}, class)
     end
 
     return class

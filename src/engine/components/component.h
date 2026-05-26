@@ -26,6 +26,7 @@ namespace hob {
 
         virtual int get_priority() const;
 
+        virtual void init();
         virtual void enter_play();
         virtual void exit_play();
         virtual void tick(float delta_time);

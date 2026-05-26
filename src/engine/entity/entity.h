@@ -65,19 +65,24 @@ namespace hob {
         TransformComponent* get_transform() const;
         RigidbodyComponent* get_rigidbody() const;
 
-        template<ComponentType T>
-        T* add_component();
+        template<ComponentType T, typename... Args>
+        T* add_component(Args&&... args);
 
         template<ComponentType T>
         T* get_component() const;
 
         template<ComponentType T>
         std::vector<T*> get_components() const;
+
+    private:
+        void sort_components();
     };
 
-    template<ComponentType T>
-    T* Entity::add_component() {
-        std::unique_ptr<T> component = std::make_unique<T>(*this);
+    template<ComponentType T, typename... Args>
+    T* Entity::add_component(Args&&... args) {
+        std::unique_ptr<T> component = std::make_unique<T>(*this, std::forward<Args>(args)...);
+
+        component->init();
 
         if (is_in_play()) {
             component->enter_play();
@@ -86,10 +91,7 @@ namespace hob {
         T* component_ptr = component.get();
 
         m_components.push_back(std::move(component));
-        std::sort(m_components.begin(), m_components.end(),
-                  [](const auto& a, const auto& b) {
-                      return a->get_priority() < b->get_priority();
-                  });
+        sort_components();
 
         return component_ptr;
     }

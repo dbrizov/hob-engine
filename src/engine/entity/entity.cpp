@@ -1,5 +1,6 @@
 #include "entity.h"
 
+#include <algorithm>
 #include <format>
 
 #include "engine/components/physics/rigidbody_component.h"
@@ -125,5 +126,12 @@ namespace hob {
         }
 
         return m_rigidbody;
+    }
+
+    void Entity::sort_components() {
+        std::sort(m_components.begin(), m_components.end(),
+                  [](const auto& a, const auto& b) {
+                      return a->get_priority() < b->get_priority();
+                  });
     }
 }
