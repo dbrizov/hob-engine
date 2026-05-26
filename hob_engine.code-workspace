@@ -23,7 +23,9 @@
             "lowercase-global",
             "undefined-global",
             "duplicate-set-field",
-            "need-check-nil"
+            "need-check-nil",
+            "deprecated",
+            "cast-local-type"
         ],
     },
     "extensions": {
