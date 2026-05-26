@@ -210,8 +210,8 @@ local TransformComponent = {}
 ---@return Vector2
 function TransformComponent:get_position() end
 
----@param p Vector2
-function TransformComponent:set_position(p) end
+---@param position Vector2
+function TransformComponent:set_position(position) end
 
 ---@return number
 function TransformComponent:get_rotation() end
@@ -222,8 +222,8 @@ function TransformComponent:set_rotation(radians) end
 ---@return Vector2
 function TransformComponent:get_scale() end
 
----@param s Vector2
-function TransformComponent:set_scale(s) end
+---@param scale Vector2
+function TransformComponent:set_scale(scale) end
 
 -- SpriteComponent
 ---@class SpriteComponent : Component
@@ -238,26 +238,26 @@ function SpriteComponent:set_texture_id(id) end
 ---@return Vector2
 function SpriteComponent:get_pivot() end
 
----@param p Vector2
-function SpriteComponent:set_pivot(p) end
+---@param pivot Vector2
+function SpriteComponent:set_pivot(pivot) end
 
 ---@return Vector2
 function SpriteComponent:get_scale() end
 
----@param s Vector2
-function SpriteComponent:set_scale(s) end
+---@param scale Vector2
+function SpriteComponent:set_scale(scale) end
 
 ---@return Color
 function SpriteComponent:get_tint() end
 
----@param c Color
-function SpriteComponent:set_tint(c) end
+---@param color Color
+function SpriteComponent:set_tint(color) end
 
 ---@return integer
 function SpriteComponent:get_z_index() end
 
----@param z integer
-function SpriteComponent:set_z_index(z) end
+---@param z_index integer
+function SpriteComponent:set_z_index(z_index) end
 
 -- CameraComponent
 ---@class CameraComponent : Component
@@ -278,32 +278,32 @@ local RigidbodyComponent = {}
 ---@return integer
 function RigidbodyComponent:get_body_type() end
 
----@param t integer
-function RigidbodyComponent:set_body_type(t) end
+---@param type BodyType
+function RigidbodyComponent:set_body_type(type) end
 
 ---@return boolean
 function RigidbodyComponent:has_fixed_rotation() end
 
----@param v boolean
-function RigidbodyComponent:set_fixed_rotation(v) end
+---@param is_fixed boolean
+function RigidbodyComponent:set_fixed_rotation(is_fixed) end
 
 ---@return Vector2
 function RigidbodyComponent:get_velocity() end
 
----@param v Vector2
-function RigidbodyComponent:set_velocity(v) end
+---@param velocity Vector2
+function RigidbodyComponent:set_velocity(velocity) end
 
 ---@return Vector2
 function RigidbodyComponent:get_position() end
 
----@param p Vector2
-function RigidbodyComponent:set_position(p) end
+---@param position Vector2
+function RigidbodyComponent:set_position(position) end
 
 ---@return number
 function RigidbodyComponent:get_rotation() end
 
----@param r number
-function RigidbodyComponent:set_rotation(r) end
+---@param radians number
+function RigidbodyComponent:set_rotation(radians) end
 
 -- ColliderComponent
 ---@class ColliderComponent : Component
@@ -312,38 +312,38 @@ local ColliderComponent = {}
 ---@return number
 function ColliderComponent:get_density() end
 
----@param v number
-function ColliderComponent:set_density(v) end
+---@param density number
+function ColliderComponent:set_density(density) end
 
 ---@return number
 function ColliderComponent:get_friction() end
 
----@param v number
-function ColliderComponent:set_friction(v) end
+---@param friction number
+function ColliderComponent:set_friction(friction) end
 
 ---@return number
 function ColliderComponent:get_bounciness() end
 
----@param v number
-function ColliderComponent:set_bounciness(v) end
+---@param bounciness number
+function ColliderComponent:set_bounciness(bounciness) end
 
 ---@return integer
 function ColliderComponent:get_collision_layer() end
 
----@param v integer
-function ColliderComponent:set_collision_layer(v) end
+---@param layer integer
+function ColliderComponent:set_collision_layer(layer) end
 
 ---@return integer
 function ColliderComponent:get_collision_mask() end
 
----@param v integer
-function ColliderComponent:set_collision_mask(v) end
+---@param mask integer
+function ColliderComponent:set_collision_mask(mask) end
 
 ---@return boolean
 function ColliderComponent:is_trigger() end
 
----@param v boolean
-function ColliderComponent:set_trigger(v) end
+---@param trigger boolean
+function ColliderComponent:set_trigger(trigger) end
 
 -- BoxColliderComponent
 ---@class BoxColliderComponent : ColliderComponent
@@ -352,8 +352,8 @@ local BoxColliderComponent = {}
 ---@return AABB
 function BoxColliderComponent:get_aabb() end
 
----@param a AABB
-function BoxColliderComponent:set_aabb(a) end
+---@param aabb AABB
+function BoxColliderComponent:set_aabb(aabb) end
 
 -- CapsuleColliderComponent
 ---@class CapsuleColliderComponent : ColliderComponent
@@ -362,8 +362,8 @@ local CapsuleColliderComponent = {}
 ---@return Capsule
 function CapsuleColliderComponent:get_capsule() end
 
----@param c Capsule
-function CapsuleColliderComponent:set_capsule(c) end
+---@param capsule Capsule
+function CapsuleColliderComponent:set_capsule(capsule) end
 
 -- CharacterBodyComponent
 ---@class CharacterBodyComponent : Component
@@ -372,41 +372,42 @@ local CharacterBodyComponent = {}
 ---@return integer
 function CharacterBodyComponent:get_collision_layer() end
 
----@param v integer
-function CharacterBodyComponent:set_collision_layer(v) end
+---@param layer integer
+function CharacterBodyComponent:set_collision_layer(layer) end
 
 ---@return integer
 function CharacterBodyComponent:get_collision_mask() end
 
----@param v integer
-function CharacterBodyComponent:set_collision_mask(v) end
+---@param mask integer
+function CharacterBodyComponent:set_collision_mask(mask) end
 
 ---@return integer
 function CharacterBodyComponent:get_solver_ignore_mask() end
 
----@param v integer
-function CharacterBodyComponent:set_solver_ignore_mask(v) end
+---@param mask integer
+function CharacterBodyComponent:set_solver_ignore_mask(mask) end
 
----@param motion Vector2
-function CharacterBodyComponent:move_and_slide(motion) end
+---@param desired_velocity Vector2
+---@param fixed_dt number
+function CharacterBodyComponent:move_and_slide(desired_velocity, fixed_dt) end
 
 ---@return Vector2
 function CharacterBodyComponent:get_velocity() end
 
----@param v Vector2
-function CharacterBodyComponent:set_velocity(v) end
+---@param velocity Vector2
+function CharacterBodyComponent:set_velocity(velocity) end
 
 ---@return Vector2
 function CharacterBodyComponent:get_position() end
 
----@param p Vector2
-function CharacterBodyComponent:set_position(p) end
+---@param position Vector2
+function CharacterBodyComponent:set_position(position) end
 
 ---@return number
 function CharacterBodyComponent:get_rotation() end
 
----@param r number
-function CharacterBodyComponent:set_rotation(r) end
+---@param radians number
+function CharacterBodyComponent:set_rotation(radians) end
 
 -- InputComponent
 ---@class InputComponent : Component
@@ -422,7 +423,7 @@ function InputComponent:bind_axis(name, fn) end
 function InputComponent:unbind_axis(name, id) end
 
 ---@param name string
----@param event_type integer  # InputEventType.Pressed / Released
+---@param event_type InputEventType
 ---@param fn fun()
 ---@return integer binding_id
 function InputComponent:bind_action(name, event_type, fn) end
@@ -456,8 +457,8 @@ function Entity:is_in_play() end
 ---@return boolean
 function Entity:is_ticking() end
 
----@param v boolean
-function Entity:set_ticking(v) end
+---@param ticking boolean
+function Entity:set_ticking(ticking) end
 
 ---@return RigidbodyComponent
 function Entity:add_rigidbody() end
@@ -542,14 +543,14 @@ Timer = {}
 ---@return integer
 function Timer.get_fps() end
 
----@param v integer
-function Timer.set_fps(v) end
+---@param fps integer
+function Timer.set_fps(fps) end
 
 ---@return number
 function Timer.get_time_scale() end
 
----@param v number
-function Timer.set_time_scale(v) end
+---@param scale number
+function Timer.set_time_scale(scale) end
 
 ---@return number
 function Timer.get_play_time() end
