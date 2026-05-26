@@ -1,4 +1,6 @@
 DefineComponent.Player = {}
+---@class Player : LuaComponent
+local Player = Player
 
 function Player:init()
     self.speed = 7.0

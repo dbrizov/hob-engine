@@ -6,6 +6,9 @@
 --       __parents = { "Base" },               -- optional inheritance
 --   }
 --
+--   ---@class Player : LuaComponent           -- these 2 lines are only for intellisense to work
+--   local Player = Player
+--
 --   function Player:init() ... end            -- per-instance setup (mutable state goes here)
 --       self.speed = 10.0                     -- override the default speed
 --   }

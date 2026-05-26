@@ -1,4 +1,6 @@
 DefineComponent.ContactLogger = {}
+---@class ContactLogger : LuaComponent
+local ContactLogger = ContactLogger
 
 function ContactLogger:on_collision_enter(other)
     log("collision_enter: " .. other:get_entity():get_id())

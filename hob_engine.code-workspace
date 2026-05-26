@@ -22,7 +22,8 @@
         "Lua.diagnostics.disable": [
             "lowercase-global",
             "undefined-global",
-            "duplicate-set-field"
+            "duplicate-set-field",
+            "need-check-nil"
         ],
     },
     "extensions": {

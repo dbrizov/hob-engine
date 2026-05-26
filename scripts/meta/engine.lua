@@ -185,16 +185,51 @@ BodyType = {}
 ---@field Released integer
 InputEventType = {}
 
----@class Collision
----@field Static integer
----@field Dynamic integer
----@field Kinematic integer
----@field Trigger integer
-Collision = {}
-
 ----------------------------------------------------------------------
 -- Entity & Components
 ----------------------------------------------------------------------
+
+-- LuaComponent base class
+--
+-- Every component declared with DefineComponent.Foo = { ... } should be
+-- annotated as `---@class Foo : LuaComponent` so that self.entity and the
+-- lifecycle hooks (init/enter_play/tick/...) are typed correctly.
+---@class LuaComponent
+---@field entity Entity
+local LuaComponent = {}
+
+--- Called once when the component instance is created (before enter_play).
+function LuaComponent:init() end
+
+--- Called when the entity enters play. Bind input here.
+function LuaComponent:enter_play() end
+
+--- Called when the entity exits play. Unbind input here.
+function LuaComponent:exit_play() end
+
+--- Called every frame.
+---@param delta_time number
+function LuaComponent:tick(delta_time) end
+
+--- Called every fixed physics step. Drive movement here.
+---@param fixed_delta_time number
+function LuaComponent:physics_tick(fixed_delta_time) end
+
+--- Called when a collider begins colliding with another (solid contact).
+---@param other ColliderComponent
+function LuaComponent:on_collision_enter(other) end
+
+--- Called when a collider stops colliding with another.
+---@param other ColliderComponent
+function LuaComponent:on_collision_exit(other) end
+
+--- Called when a collider enters a trigger volume.
+---@param other ColliderComponent
+function LuaComponent:on_trigger_enter(other) end
+
+--- Called when a collider leaves a trigger volume.
+---@param other ColliderComponent
+function LuaComponent:on_trigger_exit(other) end
 
 -- Component
 ---@class Component
@@ -278,7 +313,7 @@ local RigidbodyComponent = {}
 ---@return integer
 function RigidbodyComponent:get_body_type() end
 
----@param type BodyType
+---@param type integer  # BodyType.Static, BodyType.Kinematic...
 function RigidbodyComponent:set_body_type(type) end
 
 ---@return boolean
@@ -423,7 +458,7 @@ function InputComponent:bind_axis(name, fn) end
 function InputComponent:unbind_axis(name, id) end
 
 ---@param name string
----@param event_type InputEventType
+---@param event_type integer  # InputEventType.Pressed or InputEventType.Released
 ---@param fn fun()
 ---@return integer binding_id
 function InputComponent:bind_action(name, event_type, fn) end

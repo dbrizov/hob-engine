@@ -1,6 +1,6 @@
 Collision = {
-    Static    = 1 << 0,
-    Dynamic   = 1 << 1,
+    Static = 1 << 0,
+    Dynamic = 1 << 1,
     Kinematic = 1 << 2,
-    Trigger   = 1 << 3,
+    Trigger = 1 << 3,
 }
