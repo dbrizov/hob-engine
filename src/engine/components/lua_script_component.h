@@ -10,14 +10,15 @@
 
 namespace hob {
     class LuaScriptComponent : public Component {
-        int m_priority;
         std::string m_class_name;
         sol::table m_lua_instance;
+        int m_priority;
 
     public:
         LuaScriptComponent(Entity& entity, std::string class_name);
 
         const std::string& get_class_name() const;
+        const sol::table& get_lua_instance() const;
 
         int get_priority() const override;
 

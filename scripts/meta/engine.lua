@@ -196,6 +196,7 @@ InputEventType = {}
 -- lifecycle hooks (init/enter_play/tick/...) are typed correctly.
 ---@class LuaComponent
 ---@field entity Entity
+---@field class_name string  # Name of the DefineComponent class (set automatically on instantiation).
 ---@field priority integer?  # Priority execution order for this component type. Defaults to 0 (CP_DEFAULT). Set on the class table (e.g. `Player.priority = -50`), NOT per-instance.
 local LuaComponent = {}
 
@@ -470,13 +471,6 @@ function InputComponent:unbind_action(name, id) end
 
 function InputComponent:clear_all_bindings() end
 
--- LuaScriptComponent
----@class LuaScriptComponent : Component
-local LuaScriptComponent = {}
-
----@return string
-function LuaScriptComponent:get_class_name() end
-
 -- Entity
 ---@class Entity
 local Entity = {}
@@ -512,7 +506,7 @@ function Entity:add_sprite() end
 function Entity:add_input() end
 
 ---@param class_name string
----@return LuaScriptComponent
+---@return LuaComponent
 function Entity:add_lua_component(class_name) end
 
 ---@return TransformComponent
@@ -537,10 +531,10 @@ function Entity:get_sprite() end
 function Entity:get_input() end
 
 ---@param class_name string
----@return LuaScriptComponent|nil
+---@return LuaComponent|nil
 function Entity:get_lua_component(class_name) end
 
----@return LuaScriptComponent[]
+---@return LuaComponent[]
 function Entity:get_lua_components() end
 
 ----------------------------------------------------------------------

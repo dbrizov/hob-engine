@@ -235,7 +235,14 @@ namespace hob {
             "add_character_body", &Entity::add_component<CharacterBodyComponent>,
             "add_sprite", &Entity::add_component<SpriteComponent>,
             "add_input", &Entity::add_component<InputComponent>,
-            "add_lua_component", &Entity::add_component<LuaScriptComponent, std::string>,
+            "add_lua_component", [](Entity& self, const std::string& class_name) -> sol::object {
+                LuaScriptComponent* lua_comp = self.add_component<LuaScriptComponent>(class_name);
+                if (lua_comp == nullptr) {
+                    return sol::lua_nil;
+                }
+
+                return lua_comp->get_lua_instance();
+            },
             // get_*
             "get_transform", &Entity::get_transform,
             "get_rigidbody", &Entity::get_rigidbody,
@@ -244,16 +251,23 @@ namespace hob {
             "get_character_body", &Entity::get_component<CharacterBodyComponent>,
             "get_sprite", &Entity::get_component<SpriteComponent>,
             "get_input", &Entity::get_component<InputComponent>,
-            "get_lua_component", [](Entity& self, const std::string& class_name) -> LuaScriptComponent* {
-                std::vector<LuaScriptComponent*> lua_components = self.get_components<LuaScriptComponent>();
-                for (LuaScriptComponent* lua_comp : lua_components) {
+            "get_lua_component", [](Entity& self, const std::string& class_name) -> sol::object {
+                for (LuaScriptComponent* lua_comp : self.get_components<LuaScriptComponent>()) {
                     if (lua_comp->get_class_name() == class_name) {
-                        return lua_comp;
+                        return lua_comp->get_lua_instance();
                     }
                 }
-                return nullptr;
+
+                return sol::lua_nil;
             },
-            "get_lua_components", &Entity::get_components<LuaScriptComponent>,
+            "get_lua_components", [this](Entity& self) {
+                sol::table out = m_lua.create_table();
+                for (LuaScriptComponent* lua_comp : self.get_components<LuaScriptComponent>()) {
+                    out.add(lua_comp->get_lua_instance());
+                }
+
+                return out;
+            },
             sol::meta_function::to_string, &Entity::to_string);
     }
 
@@ -410,11 +424,6 @@ namespace hob {
             },
             "clear_all_bindings", &InputComponent::clear_all_bindings);
 
-        m_lua.new_usertype<LuaScriptComponent>(
-            "LuaScriptComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "get_class_name", &LuaScriptComponent::get_class_name);
     }
 
     void LuaScriptSystem::bind_subsystems() {

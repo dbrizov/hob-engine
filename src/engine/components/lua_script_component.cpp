@@ -11,13 +11,17 @@
 namespace hob {
     LuaScriptComponent::LuaScriptComponent(Entity& entity, std::string class_name)
         : Component(entity)
-        , m_priority(component_priority::CP_DEFAULT)
         , m_class_name(std::move(class_name))
-        , m_lua_instance() {
+        , m_lua_instance()
+        , m_priority(component_priority::CP_DEFAULT) {
     }
 
     const std::string& LuaScriptComponent::get_class_name() const {
         return m_class_name;
+    }
+
+    const sol::table& LuaScriptComponent::get_lua_instance() const {
+        return m_lua_instance;
     }
 
     int LuaScriptComponent::get_priority() const {
@@ -72,6 +76,7 @@ namespace hob {
 
         m_lua_instance = inst_obj;
         m_lua_instance["entity"] = &get_entity();
+        m_lua_instance["class_name"] = m_class_name;
 
         call_hook("init");
     }

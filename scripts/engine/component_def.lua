@@ -22,7 +22,7 @@
 _G.__component_registry = _G.__component_registry or {}
 
 local function build_class(name, def)
-    local class = { __component_name = name }
+    local class = {}
 
     -- Inherit from parents first; child overrides.
     if def.__parents then
@@ -32,7 +32,7 @@ local function build_class(name, def)
                 log_error("DefineComponent." .. name .. ": parent '" .. parent_name .. "' is not registered")
             else
                 for k, v in pairs(parent) do
-                    if k ~= "__index" and k ~= "new" and k ~= "__component_name" then
+                    if k ~= "__index" and k ~= "new" then
                         class[k] = v
                     end
                 end
