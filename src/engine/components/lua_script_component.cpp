@@ -75,7 +75,7 @@ namespace hob {
         }
 
         m_lua_instance = inst_obj;
-        m_lua_instance["entity"] = &get_entity();
+        m_lua_instance["entity"] = EntityHandle(get_entity().get_id());
         m_lua_instance["class_name"] = m_class_name;
 
         call_hook("init");

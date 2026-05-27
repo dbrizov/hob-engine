@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -10,13 +11,24 @@
 namespace hob {
     class App;
 
+    constexpr size_t INVALID_ENTITY_INDEX = std::numeric_limits<size_t>::max();
+
+    // Per-id bookkeeping.
+    // - 'ptr' is valid from spawn_entity() until the entity exits play.
+    // - 'live_index' is the slot in m_entities once the entity enters play.
+    //   While the entity is still in m_entity_spawn_requests 'live_index' stays INVALID_ENTITY_INDEX.
+    struct EntityRecord {
+        Entity* ptr = nullptr;
+        size_t live_index = INVALID_ENTITY_INDEX;
+    };
+
     class EntitySpawner {
         App& m_app;
         EntityId m_camera_entity_id = INVALID_ENTITY_ID;
 
         EntityId m_next_entity_id = 0;
         std::vector<std::unique_ptr<Entity>> m_entities;
-        std::unordered_map<EntityId, size_t> m_entity_index_by_id;
+        std::unordered_map<EntityId, EntityRecord> m_entity_records;
 
         std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
         std::unordered_set<EntityId> m_entity_destroy_requests;
@@ -50,8 +62,7 @@ namespace hob {
         // Destroy every live and pending entity, calling exit_play on those in play.
         // Call this before App's other subsystems start tearing down so that
         // components which hold references into other subsystems (e.g. LuaScriptComponent
-        // owns a sol::table tied to the Lua state) are destroyed while those subsystems
-        // are still alive.
+        // owns a sol::table tied to the Lua state) are destroyed while those subsystems are still alive.
         void clear();
     };
 }

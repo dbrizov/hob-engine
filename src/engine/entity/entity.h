@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,8 +13,18 @@ namespace hob {
     class RigidbodyComponent;
     class TransformComponent;
 
-    using EntityId = int;
+    using EntityId = int64_t;
     constexpr EntityId INVALID_ENTITY_ID = -1;
+
+    // Lua-facing handle for an Entity. Carries only the id.
+    // Resolution happens at the Lua binding sites against the spawner.
+    // A stale handle (one whose entity has been destroyed) resolves to nullptr and reports !is_valid().
+    struct EntityHandle {
+        EntityId id = INVALID_ENTITY_ID;
+
+        explicit EntityHandle(EntityId _id) : id(_id) {
+        }
+    };
 
     template<typename T>
     concept ComponentType = std::derived_from<T, Component>;

@@ -479,6 +479,9 @@ local Entity = {}
 function Entity:get_id() end
 
 ---@return boolean
+function Entity:is_valid() end
+
+---@return boolean
 function Entity:is_in_play() end
 
 ---@return boolean
@@ -549,11 +552,11 @@ EntitySpawner = {}
 ---@return Entity
 function EntitySpawner.spawn_entity_c() end
 
----@param id integer
-function EntitySpawner.destroy_entity(id) end
+---@param entity Entity
+function EntitySpawner.destroy_entity(entity) end
 
 ---@param id integer
----@return Entity|nil
+---@return Entity
 function EntitySpawner.get_entity(id) end
 
 -- Input

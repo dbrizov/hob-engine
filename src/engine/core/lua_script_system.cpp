@@ -221,22 +221,62 @@ namespace hob {
     }
 
     void LuaScriptSystem::bind_entity() {
-        m_lua.new_usertype<Entity>(
+        const EntitySpawner& spawner = m_app.get_entity_spawner();
+
+        auto get_entity = [&spawner](const EntityHandle& h) -> Entity* {
+            return spawner.get_entity(h.id);
+        };
+
+        m_lua.new_usertype<EntityHandle>(
             "Entity",
             sol::no_constructor,
-            "get_id", &Entity::get_id,
-            "is_in_play", &Entity::is_in_play,
-            "is_ticking", &Entity::is_ticking,
-            "set_ticking", &Entity::set_ticking,
+            "get_id", [](const EntityHandle& h) { return h.id; },
+            "is_valid", [get_entity](const EntityHandle& h) { return get_entity(h) != nullptr; },
+            "is_in_play", [get_entity](const EntityHandle& h) {
+                Entity* e = get_entity(h);
+                return e != nullptr && e->is_in_play();
+            },
+            "is_ticking", [get_entity](const EntityHandle& h) {
+                Entity* e = get_entity(h);
+                return e != nullptr && e->is_ticking();
+            },
+            "set_ticking", [get_entity](const EntityHandle& h, bool v) {
+                if (Entity* e = get_entity(h)) {
+                    e->set_ticking(v);
+                }
+            },
             // add_*
-            "add_rigidbody", &Entity::add_component<RigidbodyComponent>,
-            "add_box_collider", &Entity::add_component<BoxColliderComponent>,
-            "add_capsule_collider", &Entity::add_component<CapsuleColliderComponent>,
-            "add_character_body", &Entity::add_component<CharacterBodyComponent>,
-            "add_sprite", &Entity::add_component<SpriteComponent>,
-            "add_input", &Entity::add_component<InputComponent>,
-            "add_lua_component", [](Entity& self, const std::string& class_name) -> sol::object {
-                LuaScriptComponent* lua_comp = self.add_component<LuaScriptComponent>(class_name);
+            "add_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->add_component<RigidbodyComponent>() : nullptr;
+            },
+            "add_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->add_component<BoxColliderComponent>() : nullptr;
+            },
+            "add_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->add_component<CapsuleColliderComponent>() : nullptr;
+            },
+            "add_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->add_component<CharacterBodyComponent>() : nullptr;
+            },
+            "add_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->add_component<SpriteComponent>() : nullptr;
+            },
+            "add_input", [get_entity](const EntityHandle& h) -> InputComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->add_component<InputComponent>() : nullptr;
+            },
+            "add_lua_component", [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
+                Entity* e = get_entity(h);
+                if (e == nullptr) {
+                    return sol::lua_nil;
+                }
+
+                LuaScriptComponent* lua_comp = e->add_component<LuaScriptComponent>(class_name);
                 if (lua_comp == nullptr) {
                     return sol::lua_nil;
                 }
@@ -244,15 +284,41 @@ namespace hob {
                 return lua_comp->get_lua_instance();
             },
             // get_*
-            "get_transform", &Entity::get_transform,
-            "get_rigidbody", &Entity::get_rigidbody,
-            "get_box_collider", &Entity::get_component<BoxColliderComponent>,
-            "get_capsule_collider", &Entity::get_component<CapsuleColliderComponent>,
-            "get_character_body", &Entity::get_component<CharacterBodyComponent>,
-            "get_sprite", &Entity::get_component<SpriteComponent>,
-            "get_input", &Entity::get_component<InputComponent>,
-            "get_lua_component", [](Entity& self, const std::string& class_name) -> sol::object {
-                for (LuaScriptComponent* lua_comp : self.get_components<LuaScriptComponent>()) {
+            "get_transform", [get_entity](const EntityHandle& h) -> TransformComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_transform() : nullptr;
+            },
+            "get_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_rigidbody() : nullptr;
+            },
+            "get_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_component<BoxColliderComponent>() : nullptr;
+            },
+            "get_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_component<CapsuleColliderComponent>() : nullptr;
+            },
+            "get_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_component<CharacterBodyComponent>() : nullptr;
+            },
+            "get_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_component<SpriteComponent>() : nullptr;
+            },
+            "get_input", [get_entity](const EntityHandle& h) -> InputComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_component<InputComponent>() : nullptr;
+            },
+            "get_lua_component", [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
+                Entity* e = get_entity(h);
+                if (e == nullptr) {
+                    return sol::lua_nil;
+                }
+
+                for (LuaScriptComponent* lua_comp : e->get_components<LuaScriptComponent>()) {
                     if (lua_comp->get_class_name() == class_name) {
                         return lua_comp->get_lua_instance();
                     }
@@ -260,22 +326,30 @@ namespace hob {
 
                 return sol::lua_nil;
             },
-            "get_lua_components", [this](Entity& self) {
+            "get_lua_components", [this, get_entity](const EntityHandle& h) {
                 sol::table out = m_lua.create_table();
-                for (LuaScriptComponent* lua_comp : self.get_components<LuaScriptComponent>()) {
+                Entity* e = get_entity(h);
+                if (e == nullptr) {
+                    return out;
+                }
+
+                for (LuaScriptComponent* lua_comp : e->get_components<LuaScriptComponent>()) {
                     out.add(lua_comp->get_lua_instance());
                 }
 
                 return out;
             },
-            sol::meta_function::to_string, &Entity::to_string);
+            sol::meta_function::to_string, [get_entity](const EntityHandle& h) {
+                Entity* e = get_entity(h);
+                return e ? e->to_string() : std::format("Entity(invalid, id = {})", h.id);
+            });
     }
 
     void LuaScriptSystem::bind_components() {
         m_lua.new_usertype<Component>(
             "Component",
             sol::no_constructor,
-            "get_entity", [](Component& c) { return &c.get_entity(); },
+            "get_entity", [](Component& c) { return EntityHandle(c.get_entity().get_id()); },
             sol::meta_function::to_string, &Component::to_string);
 
         m_lua.new_usertype<TransformComponent>(
@@ -436,9 +510,9 @@ namespace hob {
         Assets& assets = m_app.get_assets();
 
         sol::table entity_spawner_table = m_lua.create_named_table("EntitySpawner");
-        entity_spawner_table["spawn_entity_c"] = [&spawner]() { return &spawner.spawn_entity(); };
-        entity_spawner_table["destroy_entity"] = [&spawner](EntityId id) { spawner.destroy_entity(id); };
-        entity_spawner_table["get_entity"] = [&spawner](EntityId id) { return spawner.get_entity(id); };
+        entity_spawner_table["spawn_entity_c"] = [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); };
+        entity_spawner_table["destroy_entity"] = [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); };
+        entity_spawner_table["get_entity"] = [](EntityId id) { return EntityHandle(id); };
 
         sol::table input_table = m_lua.create_named_table("Input");
         input_table["get_mouse_screen_position"] = [&input]() { return input.get_mouse_screen_position(); };
@@ -458,7 +532,9 @@ namespace hob {
         };
 
         sol::table camera_table = m_lua.create_named_table("Camera");
-        camera_table["get_entity"] = [&spawner]() { return spawner.get_camera_entity(); };
+        camera_table["get_entity"] = [&spawner]() {
+            return EntityHandle(spawner.get_camera_entity()->get_id());
+        };
         camera_table["world_to_screen"] = [&spawner](const Vector2& world_pos) {
             return spawner.get_camera_entity()->get_component<CameraComponent>()->world_to_screen(world_pos);
         };

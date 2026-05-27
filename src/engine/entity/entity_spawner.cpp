@@ -27,27 +27,34 @@ namespace hob {
         entity->set_id(entity_id);
         entity->add_component<TransformComponent>();
 
+        Entity* entity_ptr = entity.get();
         m_entity_spawn_requests.push_back(std::move(entity));
+        m_entity_records[entity_id] = EntityRecord{entity_ptr, INVALID_ENTITY_INDEX};
 
-        return *m_entity_spawn_requests.back();
+        return *entity_ptr;
     }
 
     void EntitySpawner::destroy_entity(EntityId id) {
-        // Remove from pending spawns if present
-        std::erase_if(m_entity_spawn_requests, [&](const std::unique_ptr<Entity>& e) {
+        // Remove from pending spawns if present.
+        // The unique_ptr is freed here, so also drop the record to avoid leaving a dangling pointer behind.
+        const size_t erased_count = std::erase_if(m_entity_spawn_requests, [&](const std::unique_ptr<Entity>& e) {
             return e->get_id() == id;
         });
+
+        const bool was_pending = erased_count > 0;
+        if (was_pending) {
+            m_entity_records.erase(id);
+            return;
+        }
 
         // Mark for destroy if already in play
         m_entity_destroy_requests.insert(id);
     }
 
     Entity* EntitySpawner::get_entity(EntityId id) const {
-        auto it = m_entity_index_by_id.find(id);
-        if (it != m_entity_index_by_id.end()) {
-            size_t index = it->second;
-            assert(index < m_entities.size() && "Index out of range");
-            return m_entities[index].get();
+        auto it = m_entity_records.find(id);
+        if (it != m_entity_records.end()) {
+            return it->second.ptr;
         }
 
         return nullptr;
@@ -127,7 +134,7 @@ namespace hob {
 
         for (auto& entity : spawn_requests) {
             EntityId entity_id = entity->get_id();
-            m_entity_index_by_id[entity_id] = m_entities.size();
+            m_entity_records[entity_id].live_index = m_entities.size();
             m_entities.emplace_back(std::move(entity));
             m_entities.back()->enter_play();
         }
@@ -148,21 +155,23 @@ namespace hob {
 
         // Erase the entities
         for (EntityId id : destroy_requests) {
-            auto it = m_entity_index_by_id.find(id);
-            if (it == m_entity_index_by_id.end()) {
+            auto it = m_entity_records.find(id);
+            if (it == m_entity_records.end()) {
                 continue;
             }
 
-            size_t index = it->second;
-            size_t last_index = m_entities.size() - 1;
+            size_t index = it->second.live_index;
+            if (index != INVALID_ENTITY_INDEX) {
+                size_t last_index = m_entities.size() - 1;
+                if (index != last_index) {
+                    m_entities[index] = std::move(m_entities[last_index]); // move last into hole
+                    m_entity_records[m_entities[index]->get_id()].live_index = index; // fix record's index
+                }
 
-            if (index != last_index) {
-                m_entities[index] = std::move(m_entities[last_index]); // move last into hole
-                m_entity_index_by_id[m_entities[index]->get_id()] = index; // fix moved id's index
+                m_entities.pop_back();
             }
 
-            m_entities.pop_back();
-            m_entity_index_by_id.erase(it);
+            m_entity_records.erase(it);
         }
     }
 
@@ -172,7 +181,7 @@ namespace hob {
         }
 
         m_entities.clear();
-        m_entity_index_by_id.clear();
+        m_entity_records.clear();
         m_entity_spawn_requests.clear();
         m_entity_destroy_requests.clear();
         m_camera_entity_id = INVALID_ENTITY_ID;
