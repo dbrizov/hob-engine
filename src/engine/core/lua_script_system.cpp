@@ -47,9 +47,7 @@ namespace hob {
     HOB_LUA_TYPE(BodyType, "BodyType")
     HOB_LUA_TYPE(InputEventType, "InputEventType")
     // clang-format on
-}
 
-namespace hob {
     LuaScriptSystem::LuaScriptSystem(App& app)
         : m_app(app)
         , m_lua() {
