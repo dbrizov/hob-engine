@@ -8,16 +8,11 @@
 ---@field EPSILON number
 ---@field DEG_TO_RAD number
 ---@field RAD_TO_DEG number
+---@field MIN_INTEGER integer
+---@field MAX_INTEGER integer
+---@field MIN_NUMBER number
+---@field MAX_NUMBER number
 Math = {}
-
--- Numbers
----@class Numbers
----@field MIN_INT32 integer
----@field MAX_INT32 integer
----@field MAX_UINT32 integer
----@field MIN_FLOAT number
----@field MAX_FLOAT number
-Numbers = {}
 
 -- EntitySpawner
 ---@class EntitySpawner

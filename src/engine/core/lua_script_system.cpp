@@ -173,14 +173,11 @@ namespace hob {
             .constant("PI", PI)
             .constant("EPSILON", EPSILON)
             .constant("DEG_TO_RAD", DEG_TO_RAD)
-            .constant("RAD_TO_DEG", RAD_TO_DEG);
-
-        bind_table(m_lua, m_meta, "Numbers")
-            .constant("MIN_INT32", MIN_INT32)
-            .constant("MAX_INT32", MAX_INT32)
-            .constant("MAX_UINT32", MAX_UINT32)
-            .constant("MIN_FLOAT", MIN_FLOAT)
-            .constant("MAX_FLOAT", MAX_FLOAT);
+            .constant("RAD_TO_DEG", RAD_TO_DEG)
+            .constant("MIN_INTEGER", MIN_INT64)
+            .constant("MAX_INTEGER", MAX_INT64)
+            .constant("MIN_NUMBER", MIN_DOUBLE)
+            .constant("MAX_NUMBER", MAX_DOUBLE);
 
         bind_usertype<Vector2>(m_lua, m_meta, "Vector2")
             .ctors<sol::types<>, sol::types<float, float>>()
