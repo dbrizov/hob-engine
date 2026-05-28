@@ -378,13 +378,18 @@ namespace hob {
                 info.is_static = false;
                 info.args = meta_detail::arg_names<all_args>();
             }
+            else if constexpr (std::is_pointer_v<F> && std::is_function_v<std::remove_pointer_t<F>>) {
+                // Plain function pointer (free fn or static member fn): always static.
+                info.is_static = true;
+                info.args = meta_detail::arg_names<all_args>();
+            }
             else if constexpr (meta_detail::first_arg_is_self<T, all_args>()) {
-                // Free fn / lambda whose first arg is T -> instance method.
+                // Lambda / functor whose first arg is T -> instance method.
                 info.is_static = false;
                 info.args = meta_detail::arg_names<meta_detail::tail_t<all_args>>();
             }
             else {
-                // Free fn / lambda with no self -> static.
+                // Lambda / functor with no self -> static.
                 info.is_static = true;
                 info.args = meta_detail::arg_names<all_args>();
             }

@@ -3,7 +3,6 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
 end
 
 local player = EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
-local lua_components = player:get_lua_components()
 log(player)
 
 -- floor

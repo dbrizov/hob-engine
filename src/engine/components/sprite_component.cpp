@@ -42,8 +42,8 @@ namespace hob {
         return m_tint;
     }
 
-    void SpriteComponent::set_tint(const Color& tint) {
-        m_tint = tint;
+    void SpriteComponent::set_tint(const Color& color) {
+        m_tint = color;
     }
 
     int SpriteComponent::get_z_index() const {

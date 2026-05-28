@@ -450,7 +450,7 @@ namespace hob {
             .method("set_collision_mask", &CharacterBodyComponent::set_collision_mask, {"mask"})
             .method("get_solver_ignore_mask", &CharacterBodyComponent::get_solver_ignore_mask)
             .method("set_solver_ignore_mask", &CharacterBodyComponent::set_solver_ignore_mask, {"mask"})
-            .method("move_and_slide", &CharacterBodyComponent::move_and_slide, {"delta"})
+            .method("move_and_slide", &CharacterBodyComponent::move_and_slide, {"desired_velocity", "fixed_dt"})
             .method("get_velocity", &CharacterBodyComponent::get_velocity)
             .method("set_velocity", &CharacterBodyComponent::set_velocity, {"velocity"})
             .method("get_position", &CharacterBodyComponent::get_position)
@@ -466,13 +466,12 @@ namespace hob {
 
         bind_usertype<InputComponent>(m_lua, m_meta, "InputComponent", Bases<Component>{})
             .method_sig("bind_axis",
-                        [](InputComponent& self, const std::string& name, sol::protected_function fn) {
-                            std::string captured_name = name;
-                            return self.bind_axis(captured_name.c_str(), [fn, captured_name](float v) {
+                        [](InputComponent& self, const std::string& name, const sol::protected_function& fn) {
+                            return self.bind_axis(name.c_str(), [fn, name](float v) {
                                 auto result = fn(v);
                                 if (!result.valid()) {
                                     sol::error err = result;
-                                    debug::log_error("Lua error in axis '{}' handler: {}", captured_name, err.what());
+                                    debug::log_error("Lua error in axis '{}' handler: {}", name, err.what());
                                 }
                             });
                         }, "(name: string, fn: fun(value: number)): integer")
@@ -482,13 +481,12 @@ namespace hob {
                         }, "(name: string, id: integer)")
             .method_sig("bind_action",
                         [](InputComponent& self, const std::string& name, InputEventType type,
-                           sol::protected_function fn) {
-                            std::string captured_name = name;
-                            return self.bind_action(captured_name.c_str(), type, [fn, captured_name]() {
+                           const sol::protected_function& fn) {
+                            return self.bind_action(name.c_str(), type, [fn, name]() {
                                 auto result = fn();
                                 if (!result.valid()) {
                                     sol::error err = result;
-                                    debug::log_error("Lua error in action '{}' handler: {}", captured_name, err.what());
+                                    debug::log_error("Lua error in action '{}' handler: {}", name, err.what());
                                 }
                             });
                         }, "(name: string, type: InputEventType, fn: fun()): integer")

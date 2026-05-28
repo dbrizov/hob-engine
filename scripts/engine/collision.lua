@@ -1,3 +1,4 @@
+---@enum Collision
 Collision = {
     Static = 1 << 0,
     Dynamic = 1 << 1,

@@ -28,7 +28,7 @@ namespace hob {
         void set_scale(const Vector2& scale);
 
         Color get_tint() const;
-        void set_tint(const Color& tint);
+        void set_tint(const Color& color);
 
         int get_z_index() const;
         void set_z_index(int z_index);
