@@ -31,35 +31,118 @@ namespace hob {
             // method_sig override: ret holds the entire "(args): ret" tail.
             if (!m.ret.empty() && m.ret.front() == '(') {
                 // Parse "(arg1: T, arg2: U): R" into params and return type.
+                // Paren-depth aware: handles nested fun(...) in arg types.
                 const std::string& sig = m.ret;
-                auto close = sig.find(')');
-                std::string params = sig.substr(1, close - 1);
+                std::size_t close = std::string::npos;
+                int depth = 0;
+                for (std::size_t i = 0; i < sig.size(); ++i) {
+                    if (sig[i] == '(') {
+                        ++depth;
+                    }
+                    else if (sig[i] == ')') {
+                        --depth;
+                        if (depth == 0) {
+                            close = i;
+                            break;
+                        }
+                    }
+                }
+                std::string params = (close != std::string::npos) ? sig.substr(1, close - 1) : "";
                 std::string ret;
-                auto colon = sig.find(':', close);
-                if (colon != std::string::npos) {
-                    ret = sig.substr(colon + 1);
-                    // Trim leading whitespace.
-                    auto first = ret.find_first_not_of(" \t");
-                    if (first != std::string::npos) {
-                        ret.erase(0, first);
+                if (close != std::string::npos) {
+                    auto colon = sig.find(':', close);
+                    if (colon != std::string::npos) {
+                        ret = sig.substr(colon + 1);
+                        auto first = ret.find_first_not_of(" \t");
+                        if (first != std::string::npos) {
+                            ret.erase(0, first);
+                        }
                     }
                 }
 
-                // Split params on commas and emit @param lines + collect names.
+                // Split params on top-level commas (depth 0); preserve nested fun(a, b).
+                std::vector<std::string> parts;
+                {
+                    std::string cur;
+                    int d = 0;
+                    for (char c : params) {
+                        if (c == '(') {
+                            ++d;
+                            cur.push_back(c);
+                        }
+                        else if (c == ')') {
+                            --d;
+                            cur.push_back(c);
+                        }
+                        else if (c == ',' && d == 0) {
+                            parts.push_back(std::move(cur));
+                            cur.clear();
+                        }
+                        else {
+                            cur.push_back(c);
+                        }
+                    }
+                    if (!cur.empty()) {
+                        parts.push_back(std::move(cur));
+                    }
+                }
+
                 std::vector<std::string> arg_names;
-                std::stringstream pss(params);
-                std::string part;
-                while (std::getline(pss, part, ',')) {
+                for (auto& part : parts) {
                     auto first = part.find_first_not_of(" \t");
                     if (first == std::string::npos) {
                         continue;
                     }
                     part.erase(0, first);
-                    auto sep = part.find(':');
+
+                    // Trim trailing whitespace.
+                    auto last = part.find_last_not_of(" \t");
+                    if (last != std::string::npos) {
+                        part.erase(last + 1);
+                    }
+
+                    // Vararg: `...` (optionally with a `: type` suffix).
+                    if (part.rfind("...", 0) == 0) {
+                        std::string type = "any";
+                        auto sep = part.find(':');
+                        if (sep != std::string::npos) {
+                            type = part.substr(sep + 1);
+                            auto t0 = type.find_first_not_of(" \t");
+                            if (t0 != std::string::npos) {
+                                type.erase(0, t0);
+                            }
+                        }
+                        out << "---@vararg " << type << "\n";
+                        arg_names.push_back("...");
+                        continue;
+                    }
+
+                    // Find the name/type separator ':' at top-level (depth 0),
+                    // skipping any ':' nested inside fun(...).
+                    std::size_t sep = std::string::npos;
+                    {
+                        int d = 0;
+                        for (std::size_t i = 0; i < part.size(); ++i) {
+                            if (part[i] == '(') {
+                                ++d;
+                            }
+                            else if (part[i] == ')') {
+                                --d;
+                            }
+                            else if (part[i] == ':' && d == 0) {
+                                sep = i;
+                                break;
+                            }
+                        }
+                    }
                     if (sep == std::string::npos) {
                         continue;
                     }
                     std::string name = part.substr(0, sep);
+                    auto nlast = name.find_last_not_of(" \t");
+                    if (nlast != std::string::npos) {
+                        name.erase(nlast + 1);
+                    }
                     std::string type = part.substr(sep + 1);
                     auto t0 = type.find_first_not_of(" \t");
                     if (t0 != std::string::npos) {
@@ -71,8 +154,12 @@ namespace hob {
                 if (!ret.empty()) {
                     out << "---@return " << ret << "\n";
                 }
-                const char* sep_ch = m.is_static ? "." : ":";
-                out << "function " << owner << sep_ch << m.name << "(";
+                if (owner.empty()) {
+                    out << "function " << m.name << "(";
+                }
+                else {
+                    out << "function " << owner << (m.is_static ? "." : ":") << m.name << "(";
+                }
                 for (std::size_t i = 0; i < arg_names.size(); ++i) {
                     if (i > 0) {
                         out << ", ";
@@ -94,8 +181,12 @@ namespace hob {
             if (!m.ret.empty()) {
                 out << "---@return " << m.ret << "\n";
             }
-            const char* sep_ch = m.is_static ? "." : ":";
-            out << "function " << owner << sep_ch << m.name << "(";
+            if (owner.empty()) {
+                out << "function " << m.name << "(";
+            }
+            else {
+                out << "function " << owner << (m.is_static ? "." : ":") << m.name << "(";
+            }
             for (std::size_t i = 0; i < m.args.size(); ++i) {
                 if (i > 0) {
                     out << ", ";
@@ -136,11 +227,12 @@ namespace hob {
 
         void emit_enum(std::ostringstream& out, const LuaEnumInfo& e) {
             out << "-- " << e.name << "\n";
-            out << "---@class " << e.name << "\n";
+            out << "---@enum " << e.name << "\n";
+            out << e.name << " = {\n";
             for (const auto& v : e.values) {
-                out << "---@field " << v << " integer\n";
+                out << "    " << v.name << " = " << v.value << ",\n";
             }
-            out << e.name << " = {}\n\n";
+            out << "}\n\n";
         }
 
         void emit_table(std::ostringstream& out, const LuaTableInfo& t) {
@@ -150,6 +242,10 @@ namespace hob {
                 out << "---@field " << f.name << " " << f.type << "\n";
             }
             out << t.name << " = {}\n\n";
+
+            for (const auto& m : t.methods) {
+                emit_method(out, t.name, m);
+            }
         }
     }
 
@@ -167,6 +263,12 @@ namespace hob {
         }
         for (const auto& ut : m_usertypes) {
             emit_usertype(out, ut);
+        }
+        if (!m_globals.empty()) {
+            out << "-- Globals\n\n";
+            for (const auto& m : m_globals) {
+                emit_method(out, "", m);
+            }
         }
 
         std::error_code ec;

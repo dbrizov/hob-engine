@@ -33,6 +33,19 @@ namespace hob {
     HOB_LUA_TYPE(Capsule, "Capsule")
     HOB_LUA_TYPE(AABB, "AABB")
     HOB_LUA_TYPE(Color, "Color")
+    HOB_LUA_TYPE(EntityHandle, "Entity")
+    HOB_LUA_TYPE(Component, "Component")
+    HOB_LUA_TYPE(TransformComponent, "TransformComponent")
+    HOB_LUA_TYPE(SpriteComponent, "SpriteComponent")
+    HOB_LUA_TYPE(CameraComponent, "CameraComponent")
+    HOB_LUA_TYPE(RigidbodyComponent, "RigidbodyComponent")
+    HOB_LUA_TYPE(ColliderComponent, "ColliderComponent")
+    HOB_LUA_TYPE(BoxColliderComponent, "BoxColliderComponent")
+    HOB_LUA_TYPE(CapsuleColliderComponent, "CapsuleColliderComponent")
+    HOB_LUA_TYPE(CharacterBodyComponent, "CharacterBodyComponent")
+    HOB_LUA_TYPE(InputComponent, "InputComponent")
+    HOB_LUA_TYPE(BodyType, "BodyType")
+    HOB_LUA_TYPE(InputEventType, "InputEventType")
     // clang-format on
 }
 
@@ -178,7 +191,6 @@ namespace hob {
             .method("length", &Vector2::length)
             .method("length_sqr", &Vector2::length_sqr)
             .method("normalized", &Vector2::normalized)
-            .method("to_string", &Vector2::to_string)
             .op_add(&Vector2::operator+)
             .op_sub(sol::resolve<Vector2(const Vector2&) const>(&Vector2::operator-))
             .op_unm(sol::resolve<Vector2() const>(&Vector2::operator-))
@@ -238,277 +250,253 @@ namespace hob {
             return spawner.get_entity(h.id);
         };
 
-        m_lua.new_usertype<EntityHandle>(
-            "Entity",
-            sol::no_constructor,
-            "get_id", [](const EntityHandle& h) { return h.id; },
-            "is_valid", [get_entity](const EntityHandle& h) { return get_entity(h) != nullptr; },
-            "is_in_play", [get_entity](const EntityHandle& h) {
+        bind_usertype<EntityHandle>(m_lua, m_meta, "Entity")
+            .method("get_id", [](const EntityHandle& h) { return h.id; })
+            .method("is_valid", [get_entity](const EntityHandle& h) { return get_entity(h) != nullptr; })
+            .method("is_in_play", [get_entity](const EntityHandle& h) {
                 Entity* e = get_entity(h);
                 return e != nullptr && e->is_in_play();
-            },
-            "is_ticking", [get_entity](const EntityHandle& h) {
+            })
+            .method("is_ticking", [get_entity](const EntityHandle& h) {
                 Entity* e = get_entity(h);
                 return e != nullptr && e->is_ticking();
-            },
-            "set_ticking", [get_entity](const EntityHandle& h, bool v) {
+            })
+            .method("set_ticking", [get_entity](const EntityHandle& h, bool v) {
                 if (Entity* e = get_entity(h)) {
                     e->set_ticking(v);
                 }
-            },
-            // add_*
-            "add_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
+            }, {"ticking"})
+            .method("add_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<RigidbodyComponent>() : nullptr;
-            },
-            "add_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
+            })
+            .method("add_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<BoxColliderComponent>() : nullptr;
-            },
-            "add_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
+            })
+            .method("add_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<CapsuleColliderComponent>() : nullptr;
-            },
-            "add_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
+            })
+            .method("add_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<CharacterBodyComponent>() : nullptr;
-            },
-            "add_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
+            })
+            .method("add_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<SpriteComponent>() : nullptr;
-            },
-            "add_input", [get_entity](const EntityHandle& h) -> InputComponent* {
+            })
+            .method("add_input", [get_entity](const EntityHandle& h) -> InputComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<InputComponent>() : nullptr;
-            },
-            "add_lua_component", [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
-                Entity* e = get_entity(h);
-                if (e == nullptr) {
-                    return sol::lua_nil;
-                }
+            })
+            .method_sig(
+                "add_lua_component",
+                [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
+                    Entity* e = get_entity(h);
+                    if (e == nullptr) {
+                        return sol::lua_nil;
+                    }
 
-                LuaScriptComponent* lua_comp = e->add_component<LuaScriptComponent>(class_name);
-                if (lua_comp == nullptr) {
-                    return sol::lua_nil;
-                }
+                    LuaScriptComponent* lua_comp = e->add_component<LuaScriptComponent>(class_name);
+                    if (lua_comp == nullptr) {
+                        return sol::lua_nil;
+                    }
 
-                return lua_comp->get_lua_instance();
-            },
-            // get_*
-            "get_transform", [get_entity](const EntityHandle& h) -> TransformComponent* {
+                    return lua_comp->get_lua_instance();
+                }, "(class_name: string): LuaComponent?")
+            .method("get_transform", [get_entity](const EntityHandle& h) -> TransformComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_transform() : nullptr;
-            },
-            "get_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
+            })
+            .method("get_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_rigidbody() : nullptr;
-            },
-            "get_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
+            })
+            .method("get_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_component<BoxColliderComponent>() : nullptr;
-            },
-            "get_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
+            })
+            .method("get_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_component<CapsuleColliderComponent>() : nullptr;
-            },
-            "get_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
+            })
+            .method("get_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_component<CharacterBodyComponent>() : nullptr;
-            },
-            "get_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
+            })
+            .method("get_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_component<SpriteComponent>() : nullptr;
-            },
-            "get_input", [get_entity](const EntityHandle& h) -> InputComponent* {
+            })
+            .method("get_input", [get_entity](const EntityHandle& h) -> InputComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_component<InputComponent>() : nullptr;
-            },
-            "get_lua_component", [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
-                Entity* e = get_entity(h);
-                if (e == nullptr) {
-                    return sol::lua_nil;
-                }
+            })
+            .method_sig("get_lua_component",
+                        [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
+                            Entity* e = get_entity(h);
+                            if (e == nullptr) {
+                                return sol::lua_nil;
+                            }
 
-                for (LuaScriptComponent* lua_comp : e->get_components<LuaScriptComponent>()) {
-                    if (lua_comp->get_class_name() == class_name) {
-                        return lua_comp->get_lua_instance();
-                    }
-                }
+                            for (LuaScriptComponent* lua_comp : e->get_components<LuaScriptComponent>()) {
+                                if (lua_comp->get_class_name() == class_name) {
+                                    return lua_comp->get_lua_instance();
+                                }
+                            }
 
-                return sol::lua_nil;
-            },
-            "get_lua_components", [this, get_entity](const EntityHandle& h) {
-                sol::table out = m_lua.create_table();
-                Entity* e = get_entity(h);
-                if (e == nullptr) {
-                    return out;
-                }
+                            return sol::lua_nil;
+                        }, "(class_name: string): LuaComponent?")
+            .method_sig("get_lua_components",
+                        [this, get_entity](const EntityHandle& h) {
+                            sol::table out = m_lua.create_table();
+                            Entity* e = get_entity(h);
+                            if (e == nullptr) {
+                                return out;
+                            }
 
-                for (LuaScriptComponent* lua_comp : e->get_components<LuaScriptComponent>()) {
-                    out.add(lua_comp->get_lua_instance());
-                }
+                            for (LuaScriptComponent* lua_comp : e->get_components<LuaScriptComponent>()) {
+                                out.add(lua_comp->get_lua_instance());
+                            }
 
-                return out;
-            },
-            sol::meta_function::to_string, [get_entity](const EntityHandle& h) {
+                            return out;
+                        }, "(): LuaComponent[]")
+            .op_tostring([get_entity](const EntityHandle& h) {
                 Entity* e = get_entity(h);
                 return e ? e->to_string() : std::format("Entity(invalid, id = {})", h.id);
             });
     }
 
     void LuaScriptSystem::bind_components() {
-        m_lua.new_usertype<Component>(
-            "Component",
-            sol::no_constructor,
-            "get_entity", [](Component& c) { return EntityHandle(c.get_entity().get_id()); },
-            sol::meta_function::to_string, &Component::to_string);
+        bind_usertype<Component>(m_lua, m_meta, "Component")
+            .method("get_entity", [](Component& c) { return EntityHandle(c.get_entity().get_id()); })
+            .op_tostring(&Component::to_string);
 
-        m_lua.new_usertype<TransformComponent>(
-            "TransformComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "get_position", &TransformComponent::get_position,
-            "set_position", &TransformComponent::set_position,
-            "get_rotation", &TransformComponent::get_rotation,
-            "set_rotation", &TransformComponent::set_rotation,
-            "get_scale", &TransformComponent::get_scale,
-            "set_scale", &TransformComponent::set_scale);
+        bind_usertype<TransformComponent>(m_lua, m_meta, "TransformComponent", Bases<Component>{})
+            .method("get_position", &TransformComponent::get_position)
+            .method("set_position", &TransformComponent::set_position, {"position"})
+            .method("get_rotation", &TransformComponent::get_rotation)
+            .method("set_rotation", &TransformComponent::set_rotation, {"radians"})
+            .method("get_scale", &TransformComponent::get_scale)
+            .method("set_scale", &TransformComponent::set_scale, {"scale"});
 
-        m_lua.new_usertype<SpriteComponent>(
-            "SpriteComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "get_texture_id", &SpriteComponent::get_texture_id,
-            "set_texture_id", &SpriteComponent::set_texture_id,
-            "get_pivot", &SpriteComponent::get_pivot,
-            "set_pivot", &SpriteComponent::set_pivot,
-            "get_scale", &SpriteComponent::get_scale,
-            "set_scale", &SpriteComponent::set_scale,
-            "get_tint", &SpriteComponent::get_tint,
-            "set_tint", &SpriteComponent::set_tint,
-            "get_z_index", &SpriteComponent::get_z_index,
-            "set_z_index", &SpriteComponent::set_z_index);
+        bind_usertype<SpriteComponent>(m_lua, m_meta, "SpriteComponent", Bases<Component>{})
+            .method("get_texture_id", &SpriteComponent::get_texture_id)
+            .method("set_texture_id", &SpriteComponent::set_texture_id, {"id"})
+            .method("get_pivot", &SpriteComponent::get_pivot)
+            .method("set_pivot", &SpriteComponent::set_pivot, {"pivot"})
+            .method("get_scale", &SpriteComponent::get_scale)
+            .method("set_scale", &SpriteComponent::set_scale, {"scale"})
+            .method("get_tint", &SpriteComponent::get_tint)
+            .method("set_tint", &SpriteComponent::set_tint, {"color"})
+            .method("get_z_index", &SpriteComponent::get_z_index)
+            .method("set_z_index", &SpriteComponent::set_z_index, {"z_index"});
 
-        m_lua.new_usertype<CameraComponent>(
-            "CameraComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "world_to_screen", sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::world_to_screen),
-            "screen_to_world", sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::screen_to_world));
+        bind_usertype<CameraComponent>(m_lua, m_meta, "CameraComponent", Bases<Component>{})
+            .method("world_to_screen",
+                    sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::world_to_screen),
+                    {"world_pos"})
+            .method("screen_to_world",
+                    sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::screen_to_world),
+                    {"screen_pos"});
 
-        m_lua.new_enum<BodyType>(
-            "BodyType",
-            {
-                {"Static", BodyType::Static},
-                {"Dynamic", BodyType::Dynamic},
-                {"Kinematic", BodyType::Kinematic},
-            });
+        bind_enum<BodyType>(m_lua, m_meta, "BodyType", {
+                                {"Static", BodyType::Static},
+                                {"Dynamic", BodyType::Dynamic},
+                                {"Kinematic", BodyType::Kinematic},
+                            });
 
-        m_lua.new_usertype<RigidbodyComponent>(
-            "RigidbodyComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "get_body_type", &RigidbodyComponent::get_body_type,
-            "set_body_type", &RigidbodyComponent::set_body_type,
-            "has_fixed_rotation", &RigidbodyComponent::has_fixed_rotation,
-            "set_fixed_rotation", &RigidbodyComponent::set_fixed_rotation,
-            "get_velocity", &RigidbodyComponent::get_velocity,
-            "set_velocity", &RigidbodyComponent::set_velocity,
-            "get_position", &RigidbodyComponent::get_position,
-            "set_position", &RigidbodyComponent::set_position,
-            "get_rotation", &RigidbodyComponent::get_rotation,
-            "set_rotation", &RigidbodyComponent::set_rotation);
+        bind_usertype<RigidbodyComponent>(m_lua, m_meta, "RigidbodyComponent", Bases<Component>{})
+            .method("get_body_type", &RigidbodyComponent::get_body_type)
+            .method("set_body_type", &RigidbodyComponent::set_body_type, {"body_type"})
+            .method("has_fixed_rotation", &RigidbodyComponent::has_fixed_rotation)
+            .method("set_fixed_rotation", &RigidbodyComponent::set_fixed_rotation, {"fixed"})
+            .method("get_velocity", &RigidbodyComponent::get_velocity)
+            .method("set_velocity", &RigidbodyComponent::set_velocity, {"velocity"})
+            .method("get_position", &RigidbodyComponent::get_position)
+            .method("set_position", &RigidbodyComponent::set_position, {"position"})
+            .method("get_rotation", &RigidbodyComponent::get_rotation)
+            .method("set_rotation", &RigidbodyComponent::set_rotation, {"radians"});
 
-        m_lua.new_usertype<ColliderComponent>(
-            "ColliderComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "get_density", &ColliderComponent::get_density,
-            "set_density", &ColliderComponent::set_density,
-            "get_friction", &ColliderComponent::get_friction,
-            "set_friction", &ColliderComponent::set_friction,
-            "get_bounciness", &ColliderComponent::get_bounciness,
-            "set_bounciness", &ColliderComponent::set_bounciness,
-            "get_collision_layer", &ColliderComponent::get_collision_layer,
-            "set_collision_layer", &ColliderComponent::set_collision_layer,
-            "get_collision_mask", &ColliderComponent::get_collision_mask,
-            "set_collision_mask", &ColliderComponent::set_collision_mask,
-            "is_trigger", &ColliderComponent::is_trigger,
-            "set_trigger", &ColliderComponent::set_trigger);
+        bind_usertype<ColliderComponent>(m_lua, m_meta, "ColliderComponent", Bases<Component>{})
+            .method("get_density", &ColliderComponent::get_density)
+            .method("set_density", &ColliderComponent::set_density, {"density"})
+            .method("get_friction", &ColliderComponent::get_friction)
+            .method("set_friction", &ColliderComponent::set_friction, {"friction"})
+            .method("get_bounciness", &ColliderComponent::get_bounciness)
+            .method("set_bounciness", &ColliderComponent::set_bounciness, {"bounciness"})
+            .method("get_collision_layer", &ColliderComponent::get_collision_layer)
+            .method("set_collision_layer", &ColliderComponent::set_collision_layer, {"layer"})
+            .method("get_collision_mask", &ColliderComponent::get_collision_mask)
+            .method("set_collision_mask", &ColliderComponent::set_collision_mask, {"mask"})
+            .method("is_trigger", &ColliderComponent::is_trigger)
+            .method("set_trigger", &ColliderComponent::set_trigger, {"trigger"});
 
-        m_lua.new_usertype<BoxColliderComponent>(
-            "BoxColliderComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<ColliderComponent, Component>(),
-            "get_aabb", &BoxColliderComponent::get_aabb,
-            "set_aabb", &BoxColliderComponent::set_aabb);
+        bind_usertype<BoxColliderComponent>(m_lua, m_meta, "BoxColliderComponent",
+                                            Bases<ColliderComponent, Component>{})
+            .method("get_aabb", &BoxColliderComponent::get_aabb)
+            .method("set_aabb", &BoxColliderComponent::set_aabb, {"aabb"});
 
-        m_lua.new_usertype<CapsuleColliderComponent>(
-            "CapsuleColliderComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<ColliderComponent, Component>(),
-            "get_capsule", &CapsuleColliderComponent::get_capsule,
-            "set_capsule", &CapsuleColliderComponent::set_capsule);
+        bind_usertype<CapsuleColliderComponent>(m_lua, m_meta, "CapsuleColliderComponent",
+                                                Bases<ColliderComponent, Component>{})
+            .method("get_capsule", &CapsuleColliderComponent::get_capsule)
+            .method("set_capsule", &CapsuleColliderComponent::set_capsule, {"capsule"});
 
-        m_lua.new_usertype<CharacterBodyComponent>(
-            "CharacterBodyComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "get_collision_layer", &CharacterBodyComponent::get_collision_layer,
-            "set_collision_layer", &CharacterBodyComponent::set_collision_layer,
-            "get_collision_mask", &CharacterBodyComponent::get_collision_mask,
-            "set_collision_mask", &CharacterBodyComponent::set_collision_mask,
-            "get_solver_ignore_mask", &CharacterBodyComponent::get_solver_ignore_mask,
-            "set_solver_ignore_mask", &CharacterBodyComponent::set_solver_ignore_mask,
-            "move_and_slide", &CharacterBodyComponent::move_and_slide,
-            "get_velocity", &CharacterBodyComponent::get_velocity,
-            "set_velocity", &CharacterBodyComponent::set_velocity,
-            "get_position", &CharacterBodyComponent::get_position,
-            "set_position", &CharacterBodyComponent::set_position,
-            "get_rotation", &CharacterBodyComponent::get_rotation,
-            "set_rotation", &CharacterBodyComponent::set_rotation);
+        bind_usertype<CharacterBodyComponent>(m_lua, m_meta, "CharacterBodyComponent", Bases<Component>{})
+            .method("get_collision_layer", &CharacterBodyComponent::get_collision_layer)
+            .method("set_collision_layer", &CharacterBodyComponent::set_collision_layer, {"layer"})
+            .method("get_collision_mask", &CharacterBodyComponent::get_collision_mask)
+            .method("set_collision_mask", &CharacterBodyComponent::set_collision_mask, {"mask"})
+            .method("get_solver_ignore_mask", &CharacterBodyComponent::get_solver_ignore_mask)
+            .method("set_solver_ignore_mask", &CharacterBodyComponent::set_solver_ignore_mask, {"mask"})
+            .method("move_and_slide", &CharacterBodyComponent::move_and_slide, {"delta"})
+            .method("get_velocity", &CharacterBodyComponent::get_velocity)
+            .method("set_velocity", &CharacterBodyComponent::set_velocity, {"velocity"})
+            .method("get_position", &CharacterBodyComponent::get_position)
+            .method("set_position", &CharacterBodyComponent::set_position, {"position"})
+            .method("get_rotation", &CharacterBodyComponent::get_rotation)
+            .method("set_rotation", &CharacterBodyComponent::set_rotation, {"radians"});
 
-        m_lua.new_enum<InputEventType>(
-            "InputEventType",
-            {
-                {"Axis", InputEventType::Axis},
-                {"Pressed", InputEventType::Pressed},
-                {"Released", InputEventType::Released},
-            });
+        bind_enum<InputEventType>(m_lua, m_meta, "InputEventType", {
+                                      {"Axis", InputEventType::Axis},
+                                      {"Pressed", InputEventType::Pressed},
+                                      {"Released", InputEventType::Released},
+                                  });
 
-        m_lua.new_usertype<InputComponent>(
-            "InputComponent",
-            sol::no_constructor,
-            sol::base_classes, sol::bases<Component>(),
-            "bind_axis", [](InputComponent& self, const std::string& name, sol::protected_function fn) {
-                std::string captured_name = name;
-                return self.bind_axis(captured_name.c_str(), [fn, captured_name](float v) {
-                    auto result = fn(v);
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        debug::log_error("Lua error in axis '{}' handler: {}", captured_name, err.what());
-                    }
-                });
-            },
-            "unbind_axis", [](InputComponent& self, const std::string& name, BindingId id) {
-                self.unbind_axis(name.c_str(), id);
-            },
-            "bind_action", [](InputComponent& self, const std::string& name, InputEventType type,
-                              sol::protected_function fn) {
-                std::string captured_name = name;
-                return self.bind_action(captured_name.c_str(), type, [fn, captured_name]() {
-                    auto result = fn();
-                    if (!result.valid()) {
-                        sol::error err = result;
-                        debug::log_error("Lua error in action '{}' handler: {}", captured_name, err.what());
-                    }
-                });
-            },
-            "unbind_action", [](InputComponent& self, const std::string& name, BindingId id) {
-                self.unbind_action(name.c_str(), id);
-            },
-            "clear_all_bindings", &InputComponent::clear_all_bindings);
-
+        bind_usertype<InputComponent>(m_lua, m_meta, "InputComponent", Bases<Component>{})
+            .method_sig("bind_axis",
+                        [](InputComponent& self, const std::string& name, sol::protected_function fn) {
+                            std::string captured_name = name;
+                            return self.bind_axis(captured_name.c_str(), [fn, captured_name](float v) {
+                                auto result = fn(v);
+                                if (!result.valid()) {
+                                    sol::error err = result;
+                                    debug::log_error("Lua error in axis '{}' handler: {}", captured_name, err.what());
+                                }
+                            });
+                        }, "(name: string, fn: fun(value: number)): integer")
+            .method_sig("unbind_axis",
+                        [](InputComponent& self, const std::string& name, BindingId id) {
+                            self.unbind_axis(name.c_str(), id);
+                        }, "(name: string, id: integer)")
+            .method_sig("bind_action",
+                        [](InputComponent& self, const std::string& name, InputEventType type,
+                           sol::protected_function fn) {
+                            std::string captured_name = name;
+                            return self.bind_action(captured_name.c_str(), type, [fn, captured_name]() {
+                                auto result = fn();
+                                if (!result.valid()) {
+                                    sol::error err = result;
+                                    debug::log_error("Lua error in action '{}' handler: {}", captured_name, err.what());
+                                }
+                            });
+                        }, "(name: string, type: InputEventType, fn: fun()): integer")
+            .method_sig("unbind_action",
+                        [](InputComponent& self, const std::string& name, BindingId id) {
+                            self.unbind_action(name.c_str(), id);
+                        }, "(name: string, id: integer)")
+            .method("clear_all_bindings", &InputComponent::clear_all_bindings);
     }
 
     void LuaScriptSystem::bind_subsystems() {
@@ -520,44 +508,44 @@ namespace hob {
         Timer& timer = m_app.get_timer();
         Assets& assets = m_app.get_assets();
 
-        sol::table entity_spawner_table = m_lua.create_named_table("EntitySpawner");
-        entity_spawner_table["spawn_entity_c"] = [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); };
-        entity_spawner_table["destroy_entity"] = [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); };
-        entity_spawner_table["get_entity"] = [](EntityId id) { return EntityHandle(id); };
+        bind_table(m_lua, m_meta, "EntitySpawner")
+            .fn("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })
+            .fn("destroy_entity", [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); }, {"entity"})
+            .fn("get_entity", [](EntityId id) { return EntityHandle(id); }, {"id"});
 
-        sol::table input_table = m_lua.create_named_table("Input");
-        input_table["get_mouse_screen_position"] = [&input]() { return input.get_mouse_screen_position(); };
+        bind_table(m_lua, m_meta, "Input")
+            .fn("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); });
 
-        sol::table timer_table = m_lua.create_named_table("Timer");
-        timer_table["get_fps"] = [&timer]() { return timer.get_fps(); };
-        timer_table["set_fps"] = [&timer](uint32_t v) { timer.set_fps(v); };
-        timer_table["get_time_scale"] = [&timer]() { return timer.get_time_scale(); };
-        timer_table["set_time_scale"] = [&timer](float v) { timer.set_time_scale(v); };
-        timer_table["get_play_time"] = [&timer]() { return timer.get_play_time(); };
-        timer_table["get_delta_time"] = [&timer]() { return timer.get_delta_time(); };
+        bind_table(m_lua, m_meta, "Timer")
+            .fn("get_fps", [&timer]() { return timer.get_fps(); })
+            .fn("set_fps", [&timer](uint32_t v) { timer.set_fps(v); }, {"fps"})
+            .fn("get_time_scale", [&timer]() { return timer.get_time_scale(); })
+            .fn("set_time_scale", [&timer](float v) { timer.set_time_scale(v); }, {"scale"})
+            .fn("get_play_time", [&timer]() { return timer.get_play_time(); })
+            .fn("get_delta_time", [&timer]() { return timer.get_delta_time(); });
 
-        sol::table assets_table = m_lua.create_named_table("Assets");
-        assets_table["load_texture"] = [&assets](const std::string& relative_path) {
-            std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
-            return assets.load_texture(full);
-        };
+        bind_table(m_lua, m_meta, "Assets")
+            .fn("load_texture", [&assets](const std::string& relative_path) {
+                std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
+                return assets.load_texture(full);
+            }, {"relative_path"});
 
-        sol::table camera_table = m_lua.create_named_table("Camera");
-        camera_table["get_entity"] = [&spawner]() {
-            return EntityHandle(spawner.get_camera_entity()->get_id());
-        };
-        camera_table["world_to_screen"] = [&spawner](const Vector2& world_pos) {
-            return spawner.get_camera_entity()->get_component<CameraComponent>()->world_to_screen(world_pos);
-        };
-        camera_table["screen_to_world"] = [&spawner](const Vector2& screen_pos) {
-            return spawner.get_camera_entity()->get_component<CameraComponent>()->screen_to_world(screen_pos);
-        };
-        camera_table["get_position"] = [&spawner]() {
-            return spawner.get_camera_entity()->get_transform()->get_position();
-        };
-        camera_table["set_position"] = [&spawner](const Vector2& p) {
-            spawner.get_camera_entity()->get_transform()->set_position(p);
-        };
+        bind_table(m_lua, m_meta, "Camera")
+            .fn("get_entity", [&spawner]() {
+                return EntityHandle(spawner.get_camera_entity()->get_id());
+            })
+            .fn("world_to_screen", [&spawner](const Vector2& world_pos) {
+                return spawner.get_camera_entity()->get_component<CameraComponent>()->world_to_screen(world_pos);
+            }, {"world_pos"})
+            .fn("screen_to_world", [&spawner](const Vector2& screen_pos) {
+                return spawner.get_camera_entity()->get_component<CameraComponent>()->screen_to_world(screen_pos);
+            }, {"screen_pos"})
+            .fn("get_position", [&spawner]() {
+                return spawner.get_camera_entity()->get_transform()->get_position();
+            })
+            .fn("set_position", [&spawner](const Vector2& p) {
+                spawner.get_camera_entity()->get_transform()->set_position(p);
+            }, {"position"});
     }
 
     void LuaScriptSystem::bind_logging() {
@@ -578,11 +566,13 @@ namespace hob {
             }
             return out;
         };
-        m_lua.set_function("log", [stringify_args](sol::this_state ts, sol::variadic_args args) {
-            debug::log("{}", stringify_args(ts, args));
-        });
-        m_lua.set_function("log_error", [stringify_args](sol::this_state ts, sol::variadic_args args) {
-            debug::log_error("{}", stringify_args(ts, args));
-        });
+        bind_global_fn_sig(m_lua, m_meta, "log",
+                           [stringify_args](sol::this_state ts, sol::variadic_args args) {
+                               debug::log("{}", stringify_args(ts, args));
+                           }, "(...: any)");
+        bind_global_fn_sig(m_lua, m_meta, "log_error",
+                           [stringify_args](sol::this_state ts, sol::variadic_args args) {
+                               debug::log_error("{}", stringify_args(ts, args));
+                           }, "(...: any)");
     }
 }

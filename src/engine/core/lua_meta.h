@@ -52,31 +52,58 @@ namespace hob {
             return n ? n : "any";
         }
 
-        // Function traits — extracts return type and arg pack from member fn ptrs,
-        // const member fn ptrs, and plain function pointers.
-        template<typename F>
+        // Function traits — extracts return type and arg pack from function
+        // pointers, member fn pointers, and lambdas (via operator() const).
+        template<typename F, typename = void>
         struct fn_traits;
 
         template<typename R, typename... A>
         struct fn_traits<R(*)(A...)> {
             using ret = R;
             using args = std::tuple<A...>;
-            static constexpr bool is_member = false;
         };
 
         template<typename R, typename C, typename... A>
         struct fn_traits<R(C::*)(A...)> {
             using ret = R;
             using args = std::tuple<A...>;
-            static constexpr bool is_member = true;
         };
 
         template<typename R, typename C, typename... A>
         struct fn_traits<R(C::*)(A...) const> {
             using ret = R;
             using args = std::tuple<A...>;
-            static constexpr bool is_member = true;
         };
+
+        // Lambda / functor: delegate to its const call operator.
+        template<typename F>
+        struct fn_traits<F, std::void_t<decltype(&F::operator())>>
+            : fn_traits<decltype(&F::operator())> {
+        };
+
+        // Tail of a tuple (drop the first element). Undefined for empty tuples;
+        // guard with first_arg_is_self<T, Tuple>() before using.
+        template<typename Tuple>
+        struct tail_impl;
+
+        template<typename Head, typename... Tail>
+        struct tail_impl<std::tuple<Head, Tail...>> {
+            using type = std::tuple<Tail...>;
+        };
+
+        template<typename Tuple>
+        using tail_t = typename tail_impl<Tuple>::type;
+
+        template<typename T, typename Tuple>
+        constexpr bool first_arg_is_self() {
+            if constexpr (std::tuple_size_v<Tuple> == 0) {
+                return false;
+            }
+            else {
+                using first = std::tuple_element_t<0, Tuple>;
+                return std::is_same_v<strip_t<first>, T>;
+            }
+        }
 
         template<typename Tuple, std::size_t... I>
         void fill_arg_names(std::vector<std::string>& out, std::index_sequence<I...>) {
@@ -127,22 +154,32 @@ namespace hob {
         std::vector<LuaCtorInfo> ctors;
     };
 
+    struct LuaEnumEntry {
+        std::string name;
+        int value;
+    };
+
     struct LuaEnumInfo {
         std::string name;
-        std::vector<std::string> values;
+        std::vector<LuaEnumEntry> values;
     };
 
     struct LuaTableInfo {
         std::string name;
         std::vector<LuaFieldInfo> fields; // constants
+        std::vector<LuaMethodInfo> methods; // free functions (emitted as Name.fn(...))
     };
 
     class LuaMetaRegistry {
         std::vector<LuaUsertypeInfo> m_usertypes;
         std::vector<LuaEnumInfo> m_enums;
         std::vector<LuaTableInfo> m_tables;
+        std::vector<LuaMethodInfo> m_globals; // free functions in _G
 
     public:
+        std::vector<LuaMethodInfo>& globals() { return m_globals; }
+        const std::vector<LuaMethodInfo>& globals() const { return m_globals; }
+
         LuaUsertypeInfo& add_usertype(std::string name, std::string base = {}) {
             LuaUsertypeInfo info;
             info.name = std::move(name);
@@ -152,7 +189,9 @@ namespace hob {
         }
 
         LuaEnumInfo& add_enum(std::string name) {
-            m_enums.push_back({std::move(name), {}});
+            LuaEnumInfo info;
+            info.name = std::move(name);
+            m_enums.push_back(std::move(info));
             return m_enums.back();
         }
 
@@ -169,15 +208,22 @@ namespace hob {
     // records meta for the annotation generator.
     // ---------------------------------------------------------------------
 
+    // Bases<...> tag used to declare a usertype's C++ base classes for the
+    // builder. Maps to sol::base_classes and the LuaLS ---@class : Base list.
+    template<typename... B>
+    struct Bases {
+    };
+
     template<typename T>
     class UsertypeBuilder {
         sol::usertype<T> m_usertype;
         LuaUsertypeInfo* m_info;
 
     public:
-        UsertypeBuilder(sol::state& lua, LuaMetaRegistry& reg, const char* name, std::string base = {})
-            : m_usertype(lua.new_usertype<T>(name))
-            , m_info(&reg.add_usertype(name, std::move(base))) {
+        template<typename... B>
+        UsertypeBuilder(sol::state& lua, LuaMetaRegistry& reg, const char* name, Bases<B...>)
+            : m_usertype(make_usertype<B...>(lua, name))
+            , m_info(&reg.add_usertype(name, base_name<B...>())) {
         }
 
         // ----- Constructors. Pass each ctor as sol::types<Args...>. -----
@@ -185,11 +231,6 @@ namespace hob {
         UsertypeBuilder& ctors() {
             m_usertype[sol::call_constructor] = sol::factories(make_factory(Sigs{})...);
             (record_ctor(Sigs{}), ...);
-            return *this;
-        }
-
-        UsertypeBuilder& no_ctor() {
-            m_usertype[sol::meta_function::construct] = sol::no_constructor;
             return *this;
         }
 
@@ -288,6 +329,29 @@ namespace hob {
             return *this;
         }
 
+        template<typename... B>
+        static sol::usertype<T> make_usertype(sol::state& lua, const char* name) {
+            if constexpr (sizeof...(B) > 0) {
+                return lua.new_usertype<T>(name, sol::no_constructor,
+                                           sol::base_classes, sol::bases<B...>());
+            }
+            else {
+                return lua.new_usertype<T>(name, sol::no_constructor);
+            }
+        }
+
+        template<typename... B>
+        static std::string base_name() {
+            if constexpr (sizeof...(B) > 0) {
+                using first = std::tuple_element_t<0, std::tuple<B...>>;
+                const char* n = LuaTypeName<first>::value;
+                return n ? n : "";
+            }
+            else {
+                return {};
+            }
+        }
+
         template<typename... A>
         static auto make_factory(sol::types<A...>) {
             return [](A... a) { return T(a...); };
@@ -303,11 +367,28 @@ namespace hob {
         template<typename F>
         void record_method(const char* name, F /*fn*/, std::initializer_list<const char*> arg_names) {
             using traits = meta_detail::fn_traits<F>;
+            using all_args = typename traits::args;
+
             LuaMethodInfo info;
             info.name = name;
-            info.is_static = !traits::is_member;
             info.ret = meta_detail::lua_name<typename traits::ret>();
-            info.args = meta_detail::arg_names<typename traits::args>();
+
+            if constexpr (std::is_member_function_pointer_v<F>) {
+                // Real member fn pointer: always an instance method, no self in args.
+                info.is_static = false;
+                info.args = meta_detail::arg_names<all_args>();
+            }
+            else if constexpr (meta_detail::first_arg_is_self<T, all_args>()) {
+                // Free fn / lambda whose first arg is T -> instance method.
+                info.is_static = false;
+                info.args = meta_detail::arg_names<meta_detail::tail_t<all_args>>();
+            }
+            else {
+                // Free fn / lambda with no self -> static.
+                info.is_static = true;
+                info.args = meta_detail::arg_names<all_args>();
+            }
+
             for (const char* n : arg_names) {
                 info.arg_names.emplace_back(n);
             }
@@ -315,9 +396,9 @@ namespace hob {
         }
     };
 
-    template<typename T>
-    UsertypeBuilder<T> bind_usertype(sol::state& lua, LuaMetaRegistry& reg, const char* name, std::string base = {}) {
-        return UsertypeBuilder<T>(lua, reg, name, std::move(base));
+    template<typename T, typename... B>
+    UsertypeBuilder<T> bind_usertype(sol::state& lua, LuaMetaRegistry& reg, const char* name, Bases<B...> bases = {}) {
+        return UsertypeBuilder<T>(lua, reg, name, bases);
     }
 
     // ---------------------------------------------------------------------
@@ -340,9 +421,68 @@ namespace hob {
             m_info->fields.push_back({name, meta_detail::lua_name<V>()});
             return *this;
         }
+
+        // Free function on a table. Always emitted as Name.fn(...).
+        template<typename F>
+        TableBuilder& fn(const char* name, F func, std::initializer_list<const char*> arg_names = {}) {
+            m_table.set_function(name, func);
+            using traits = meta_detail::fn_traits<F>;
+            LuaMethodInfo info;
+            info.name = name;
+            info.is_static = true;
+            info.ret = meta_detail::lua_name<typename traits::ret>();
+            info.args = meta_detail::arg_names<typename traits::args>();
+            for (const char* n : arg_names) {
+                info.arg_names.emplace_back(n);
+            }
+            m_info->methods.push_back(std::move(info));
+            return *this;
+        }
+
+        // Explicit signature override (variadics, complex types). The signature
+        // uses the tail-shape: "(name1: type, name2: type): ret".
+        template<typename F>
+        TableBuilder& fn_sig(const char* name, F func, const char* sig) {
+            m_table.set_function(name, func);
+            LuaMethodInfo info;
+            info.name = name;
+            info.is_static = true;
+            info.ret = sig; // emitter recognizes leading '('
+            m_info->methods.push_back(std::move(info));
+            return *this;
+        }
     };
 
     inline TableBuilder bind_table(sol::state& lua, LuaMetaRegistry& reg, const char* name) {
         return TableBuilder(lua, reg, name);
+    }
+
+    // ---------------------------------------------------------------------
+    // Enum binding.
+    // ---------------------------------------------------------------------
+
+    // Free global function with explicit signature.
+    template<typename F>
+    void bind_global_fn_sig(sol::state& lua, LuaMetaRegistry& reg, const char* name, F func, const char* sig) {
+        lua.set_function(name, func);
+        LuaMethodInfo info;
+        info.name = name;
+        info.is_static = true;
+        info.ret = sig;
+        reg.globals().push_back(std::move(info));
+    }
+
+    template<typename E>
+    void bind_enum(sol::state& lua, LuaMetaRegistry& reg, const char* name,
+                   std::initializer_list<std::pair<const char*, E>> values) {
+        sol::table t = lua.create_named_table(name);
+        for (const auto& v : values) {
+            t[v.first] = v.second;
+        }
+
+        auto& info = reg.add_enum(name);
+        for (const auto& v : values) {
+            info.values.push_back({v.first, static_cast<int>(v.second)});
+        }
     }
 }
