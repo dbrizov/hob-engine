@@ -11,7 +11,7 @@ Scripts.run_folder("scripts", { "engine", "lib", "meta", "main.lua" })
 
 -- Resolve __parent / __mixins for every DefineComponent now that all files
 -- (and thus all DefineMixin / DefineComponent registrations) are loaded.
-finalize_components()
+build_component_classes()
 
 -- Entry point.
 Scripts.run_file("scripts/main.lua")

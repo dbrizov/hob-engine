@@ -3,12 +3,12 @@
 -- Components are built in two phases:
 --   1. DefineComponent.X = {...}  -- registers a placeholder class table immediately
 --                                    so `local X = X` and `function X:foo() end` work.
---   2. finalize_components()      -- called by bootstrap.lua after ALL user scripts have
+--   2. build_component_classes()  -- called by bootstrap.lua after ALL user scripts have
 --                                    loaded. Resolves __parent and __mixins for every
 --                                    pending component, walking the inheritance graph.
 --
 -- This means DefineMixin / DefineComponent calls can appear in ANY file in ANY order;
--- references only need to be resolvable by the time finalize_components() runs.
+-- references only need to be resolvable by the time build_component_classes() runs.
 --
 -- Usage:
 --   DefineComponent.Player = {
@@ -32,8 +32,6 @@
 
 _G.__component_registry = _G.__component_registry or {}
 _G.__component_pending = _G.__component_pending or {}
-
-local finalized = false
 
 local function build_class(name)
     if _G.__component_registry[name] then
@@ -125,9 +123,7 @@ local function build_class(name)
     return class
 end
 
--- Called by bootstrap.lua after all user scripts have run. After this point,
--- any new DefineComponent call builds eagerly.
-function _G.finalize_components()
+function _G.build_component_classes()
     local names = {}
     local n = 0
     for name in pairs(_G.__component_pending) do
@@ -140,7 +136,6 @@ function _G.finalize_components()
     end
 
     _G.__component_pending = {}
-    finalized = true
 end
 
 _G.DefineComponent = setmetatable({}, {
@@ -161,14 +156,8 @@ _G.DefineComponent = setmetatable({}, {
             end
         end
 
-        _G[name] = class
         _G.__component_pending[name] = { class = class, def = def }
-
-        -- Post-bootstrap definitions (e.g. from main.lua or a runtime callback)
-        -- build eagerly: there's no later finalize pass to catch them.
-        if finalized then
-            build_class(name)
-        end
+        _G[name] = class
     end,
     __index = function(_, name)
         local class = _G.__component_registry[name]

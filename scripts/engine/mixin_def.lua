@@ -24,6 +24,7 @@ _G.DefineMixin = setmetatable({}, {
             log_error("DefineMixin." .. tostring(name) .. " must be assigned a table")
             return
         end
+
         _G.__mixin_registry[name] = def
         _G[name] = def
     end,
