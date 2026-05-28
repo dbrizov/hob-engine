@@ -28,6 +28,15 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
+    // clang-format off
+    HOB_LUA_TYPE(Vector2, "Vector2")
+    HOB_LUA_TYPE(Capsule, "Capsule")
+    HOB_LUA_TYPE(AABB, "AABB")
+    HOB_LUA_TYPE(Color, "Color")
+    // clang-format on
+}
+
+namespace hob {
     LuaScriptSystem::LuaScriptSystem(App& app)
         : m_app(app)
         , m_lua() {
@@ -48,6 +57,9 @@ namespace hob {
         package["path"] = lib_path + ";" + package["path"].get<std::string>();
 
         register_bindings();
+#ifndef NDEBUG
+        dump_meta();
+#endif
         run_bootstrap();
     }
 
@@ -138,86 +150,85 @@ namespace hob {
         bind_logging();
     }
 
+    void LuaScriptSystem::dump_meta() {
+        const std::filesystem::path out_path = PathUtils::get_root_path() / "scripts" / "meta" / "engine.generated.lua";
+        if (m_meta.write_to_file(out_path)) {
+            debug::log("Wrote Lua meta annotations to {}", out_path.string());
+        }
+    }
+
     void LuaScriptSystem::bind_math() {
-        sol::table math_table = m_lua.create_named_table("Math");
-        math_table["PI"] = PI;
-        math_table["EPSILON"] = EPSILON;
-        math_table["DEG_TO_RAD"] = DEG_TO_RAD;
-        math_table["RAD_TO_DEG"] = RAD_TO_DEG;
+        bind_table(m_lua, m_meta, "Math")
+            .constant("PI", PI)
+            .constant("EPSILON", EPSILON)
+            .constant("DEG_TO_RAD", DEG_TO_RAD)
+            .constant("RAD_TO_DEG", RAD_TO_DEG);
 
-        sol::table numbers_table = m_lua.create_named_table("Numbers");
-        numbers_table["MIN_INT32"] = MIN_INT32;
-        numbers_table["MAX_INT32"] = MAX_INT32;
-        numbers_table["MAX_UINT32"] = MAX_UINT32;
-        numbers_table["MIN_FLOAT"] = MIN_FLOAT;
-        numbers_table["MAX_FLOAT"] = MAX_FLOAT;
+        bind_table(m_lua, m_meta, "Numbers")
+            .constant("MIN_INT32", MIN_INT32)
+            .constant("MAX_INT32", MAX_INT32)
+            .constant("MAX_UINT32", MAX_UINT32)
+            .constant("MIN_FLOAT", MIN_FLOAT)
+            .constant("MAX_FLOAT", MAX_FLOAT);
 
-        m_lua.new_usertype<Vector2>(
-            "Vector2",
-            sol::call_constructor, sol::constructors<Vector2(), Vector2(float, float)>(),
-            "x", &Vector2::x,
-            "y", &Vector2::y,
-            "length", &Vector2::length,
-            "length_sqr", &Vector2::length_sqr,
-            "normalized", &Vector2::normalized,
-            "to_string", &Vector2::to_string,
-            sol::meta_function::addition, &Vector2::operator+,
-            sol::meta_function::subtraction, sol::resolve<Vector2(const Vector2&) const>(&Vector2::operator-),
-            sol::meta_function::unary_minus, sol::resolve<Vector2() const>(&Vector2::operator-),
-            sol::meta_function::multiplication, &Vector2::operator*,
-            sol::meta_function::division, &Vector2::operator/,
-            sol::meta_function::equal_to, &Vector2::operator==,
-            sol::meta_function::to_string, &Vector2::to_string);
+        bind_usertype<Vector2>(m_lua, m_meta, "Vector2")
+            .ctors<sol::types<>, sol::types<float, float>>()
+            .field("x", &Vector2::x)
+            .field("y", &Vector2::y)
+            .method("length", &Vector2::length)
+            .method("length_sqr", &Vector2::length_sqr)
+            .method("normalized", &Vector2::normalized)
+            .method("to_string", &Vector2::to_string)
+            .op_add(&Vector2::operator+)
+            .op_sub(sol::resolve<Vector2(const Vector2&) const>(&Vector2::operator-))
+            .op_unm(sol::resolve<Vector2() const>(&Vector2::operator-))
+            .op_mul(&Vector2::operator*)
+            .op_div(&Vector2::operator/)
+            .op_eq(&Vector2::operator==)
+            .op_tostring(&Vector2::to_string)
+            .method("zero", &Vector2::zero)
+            .method("one", &Vector2::one)
+            .method("left", &Vector2::left)
+            .method("right", &Vector2::right)
+            .method("up", &Vector2::up)
+            .method("down", &Vector2::down)
+            .method("dot", &Vector2::dot, {"a", "b"})
+            .method("distance", &Vector2::distance, {"a", "b"})
+            .method("lerp", &Vector2::lerp, {"a", "b", "t"})
+            .method("rotate_around", &Vector2::rotate_around, {"point", "pivot", "radians"});
 
-        sol::table vector2_table = m_lua["Vector2"];
-        vector2_table["zero"] = &Vector2::zero;
-        vector2_table["one"] = &Vector2::one;
-        vector2_table["left"] = &Vector2::left;
-        vector2_table["right"] = &Vector2::right;
-        vector2_table["up"] = &Vector2::up;
-        vector2_table["down"] = &Vector2::down;
-        vector2_table["dot"] = &Vector2::dot;
-        vector2_table["distance"] = &Vector2::distance;
-        vector2_table["lerp"] = &Vector2::lerp;
-        vector2_table["rotate_around"] = &Vector2::rotate_around;
+        bind_usertype<Capsule>(m_lua, m_meta, "Capsule")
+            .ctors<sol::types<const Vector2&, const Vector2&, float>>()
+            .field("center_a", &Capsule::center_a)
+            .field("center_b", &Capsule::center_b)
+            .field("radius", &Capsule::radius)
+            .method("get_height", &Capsule::get_height);
 
-        m_lua.new_usertype<Capsule>(
-            "Capsule",
-            sol::call_constructor, sol::constructors<Capsule(const Vector2&, const Vector2&, float)>(),
-            "center_a", &Capsule::center_a,
-            "center_b", &Capsule::center_b,
-            "radius", &Capsule::radius,
-            "get_height", &Capsule::get_height);
+        bind_usertype<AABB>(m_lua, m_meta, "AABB")
+            .ctors<sol::types<const Vector2&, const Vector2&>>()
+            .field("center", &AABB::center)
+            .field("extents", &AABB::extents)
+            .method("min", &AABB::min)
+            .method("max", &AABB::max)
+            .method("size", &AABB::size);
 
-        m_lua.new_usertype<AABB>(
-            "AABB",
-            sol::call_constructor, sol::constructors<AABB(const Vector2&, const Vector2&)>(),
-            "center", &AABB::center,
-            "extents", &AABB::extents,
-            "min", &AABB::min,
-            "max", &AABB::max,
-            "size", &AABB::size);
-
-        m_lua.new_usertype<Color>(
-            "Color",
-            sol::call_constructor, sol::constructors<Color(), Color(float, float, float, float)>(),
-            "r", &Color::r,
-            "g", &Color::g,
-            "b", &Color::b,
-            "a", &Color::a,
-            sol::meta_function::to_string, &Color::to_string);
-
-        sol::table color_table = m_lua["Color"];
-        color_table["black"] = &Color::black;
-        color_table["white"] = &Color::white;
-        color_table["gray"] = &Color::gray;
-        color_table["red"] = &Color::red;
-        color_table["green"] = &Color::green;
-        color_table["blue"] = &Color::blue;
-        color_table["yellow"] = &Color::yellow;
-        color_table["magenta"] = &Color::magenta;
-        color_table["cyan"] = &Color::cyan;
-        color_table["orange"] = &Color::orange;
+        bind_usertype<Color>(m_lua, m_meta, "Color")
+            .ctors<sol::types<>, sol::types<float, float, float, float>>()
+            .field("r", &Color::r)
+            .field("g", &Color::g)
+            .field("b", &Color::b)
+            .field("a", &Color::a)
+            .op_tostring(&Color::to_string)
+            .method("black", &Color::black)
+            .method("white", &Color::white)
+            .method("gray", &Color::gray)
+            .method("red", &Color::red)
+            .method("green", &Color::green)
+            .method("blue", &Color::blue)
+            .method("yellow", &Color::yellow)
+            .method("magenta", &Color::magenta)
+            .method("cyan", &Color::cyan)
+            .method("orange", &Color::orange);
     }
 
     void LuaScriptSystem::bind_entity() {

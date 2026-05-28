@@ -6,12 +6,15 @@
 
 #include <sol/sol.hpp>
 
+#include "lua_meta.h"
+
 namespace hob {
     class App;
 
     class LuaScriptSystem {
         App& m_app;
         sol::state m_lua;
+        LuaMetaRegistry m_meta;
 
     public:
         explicit LuaScriptSystem(App& app);
@@ -27,6 +30,7 @@ namespace hob {
         bool run_bootstrap();
 
         void register_bindings();
+        void dump_meta();
 
         void bind_math();
         void bind_entity();
