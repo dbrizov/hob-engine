@@ -2,6 +2,18 @@ DefineComponent.ContactLogger = {}
 ---@class ContactLogger : LuaComponent
 local ContactLogger = ContactLogger
 
+function ContactLogger:init()
+    log("ContactLogger:init()")
+end
+
+function ContactLogger:enter_play()
+    log("ContactLogger:enter_play()")
+end
+
+function ContactLogger:exit_play()
+    log("ContactLogger:exit_play()")
+end
+
 function ContactLogger:on_collision_enter(other)
     log("collision_enter: " .. other:get_entity():get_id())
 end

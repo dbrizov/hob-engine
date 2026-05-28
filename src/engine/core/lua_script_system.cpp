@@ -78,8 +78,8 @@ namespace hob {
         return m_lua;
     }
 
-    bool LuaScriptSystem::run_file(const std::filesystem::path& path) {
-        const std::filesystem::path full_path = path.is_absolute() ? path : PathUtils::get_root_path() / path;
+    bool LuaScriptSystem::run_file(const std::filesystem::path& relative_path) {
+        const std::filesystem::path full_path = PathUtils::get_root_path() / relative_path;
 
         auto result = m_lua.safe_script_file(full_path.string(), sol::script_pass_on_error);
         if (!result.valid()) {
@@ -91,9 +91,9 @@ namespace hob {
         return true;
     }
 
-    bool LuaScriptSystem::run_folder(const std::filesystem::path& path,
-                                     std::initializer_list<std::string_view> excludes) {
-        const std::filesystem::path root = path.is_absolute() ? path : PathUtils::get_root_path() / path;
+    bool LuaScriptSystem::run_folder(const std::filesystem::path& relative_path,
+                                     const std::vector<std::string>& excludes) {
+        const std::filesystem::path root = PathUtils::get_root_path() / relative_path;
         if (!std::filesystem::exists(root)) {
             debug::log_error("LuaScriptSystem::run_folder: '{}' does not exist", root.string());
             return false;
@@ -142,15 +142,7 @@ namespace hob {
     }
 
     bool LuaScriptSystem::run_bootstrap() {
-        // Engine bootstrap.
-        // 1. Load engine scripts first (DefineComponent/DefinePrefab, schemas, shared globals).
-        // 2. Then everything user-defined under scripts (excluding engine, meta and main.lua).
-        // 3. Then finally main.lua as the entry point.
-        bool engine_ok = run_folder("scripts/engine");
-        bool user_ok = run_folder("scripts", {"engine", "lib", "meta", "main.lua"});
-        bool main_ok = run_file("scripts/main.lua");
-
-        return engine_ok && user_ok && main_ok;
+        return run_file("scripts/engine/bootstrap.lua");
     }
 
     void LuaScriptSystem::register_bindings() {
@@ -500,6 +492,21 @@ namespace hob {
         Input& input = m_app.get_input();
         Timer& timer = m_app.get_timer();
         Assets& assets = m_app.get_assets();
+
+        bind_table(m_lua, m_meta, "Scripts")
+            .fn("run_file", [this](const std::string& relative_path) {
+                return run_file(relative_path);
+            }, {"relative_path"})
+            .fn("run_folder", [this](const std::string& relative_path, sol::optional<sol::table> excludes) {
+                std::vector<std::string> exclude_list;
+                if (excludes) {
+                    for (const auto& kv : *excludes) {
+                        exclude_list.push_back(kv.second.as<std::string>());
+                    }
+                }
+
+                return run_folder(relative_path, exclude_list);
+            }, {"relative_path", "excludes"});
 
         bind_table(m_lua, m_meta, "EntitySpawner")
             .fn("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })

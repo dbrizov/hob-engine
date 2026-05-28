@@ -1,8 +1,13 @@
-DefineComponent.Player = {}
----@class Player : LuaComponent
+DefineComponent.Player = {
+    __parent = "Character",
+}
+---@class Player : Character
 local Player = Player
 
 function Player:init()
+    Character.init(self)
+    log("Player:init()")
+
     self.speed = 7.0
     self.camera_follow_speed = 10.0
     self.movement_input = Vector2.zero()
@@ -12,6 +17,9 @@ function Player:init()
 end
 
 function Player:enter_play()
+    Character.enter_play(self)
+    log("Player:enter_play()")
+
     local input = self.entity:get_input()
 
     self.x_axis_id = input:bind_axis("horizontal", function(axis)
@@ -29,6 +37,9 @@ function Player:enter_play()
 end
 
 function Player:exit_play()
+    Character.exit_play(self)
+    log("Player:exit_play()")
+
     local input = self.entity:get_input()
     input:unbind_axis("horizontal", self.x_axis_id)
     input:unbind_axis("vertical", self.y_axis_id)
@@ -36,14 +47,7 @@ function Player:exit_play()
 end
 
 function Player:physics_tick(fixed_delta_time)
-    local movement = self.movement_input
-    if movement:length_sqr() > 1.0 then
-        movement = movement:normalized()
-    end
-
-    local velocity = movement * self.speed
-    local character_body = self.entity:get_character_body()
-    character_body:move_and_slide(velocity, fixed_delta_time)
+    self:move(self.movement_input, fixed_delta_time)
 
     local position = self.entity:get_transform():get_position()
     self:update_camera_position(position, fixed_delta_time)

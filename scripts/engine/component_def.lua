@@ -4,11 +4,12 @@
 --   DefineComponent.Player = {
 --       speed = 7.0,                          -- scalar default; per-instance via Lua shadowing
 --       priority = 1,                         -- priority execution order for this type of component; NOT per-instance data
---       __parents = { "Base" },               -- optional inheritance
+--       __parent = "Character",               -- optional single-inheritance (must be a registered Component)
+--       __mixins = { "Damageable" },          -- optional orthogonal capabilities (see mixin_def.lua)
 --   }
 --
---   ---@class Player : LuaComponent           -- these 2 lines are only for intellisense to work
---   local Player = Player
+--   ---@class Player : Character              -- these 2 lines are a hint to the LuaLS
+--   local Player = Player                     -- so that we can see intellisense from the inherited component
 --
 --   function Player:init() ... end            -- per-instance setup (mutable state goes here)
 --       self.speed = 10.0                     -- override the default speed
@@ -24,15 +25,42 @@ _G.__component_registry = _G.__component_registry or {}
 local function build_class(name, def)
     local class = {}
 
-    -- Inherit from parents first; child overrides.
-    if def.__parents then
-        for _, parent_name in ipairs(def.__parents) do
-            local parent = _G.__component_registry[parent_name]
-            if not parent then
-                log_error("DefineComponent." .. name .. ": parent '" .. parent_name .. "' is not registered")
+    -- 1. Single parent (must be a registered Component). Subclass may freely override.
+    if def.__parent then
+        if type(def.__parent) ~= "string" then
+            log_error("DefineComponent." .. name .. ": __parent must be a string component name")
+            return class
+        end
+        local parent = _G.__component_registry[def.__parent]
+        if not parent then
+            log_error("DefineComponent." .. name .. ": parent '" .. def.__parent .. "' is not registered")
+        else
+            for k, v in pairs(parent) do
+                if k ~= "__index" and k ~= "new" then
+                    class[k] = v
+                end
+            end
+        end
+    end
+
+    -- 2. Mixins: orthogonal capabilities. Any key collision with the parent or
+    --    a previously-applied mixin is an error. The def itself may override.
+    if def.__mixins then
+        for _, mixin_name in ipairs(def.__mixins) do
+            if type(mixin_name) ~= "string" then
+                log_error("DefineComponent." .. name .. ": __mixins entries must be string mixin names")
+                return class
+            end
+            local mixin = _G.__mixin_registry and _G.__mixin_registry[mixin_name]
+            if not mixin then
+                log_error("DefineComponent." .. name .. ": mixin '" .. mixin_name .. "' is not registered")
             else
-                for k, v in pairs(parent) do
-                    if k ~= "__index" and k ~= "new" then
+                for k, v in pairs(mixin) do
+                    if class[k] ~= nil then
+                        log_error("DefineComponent." .. name ..
+                            ": mixin '" .. mixin_name .. "' key '" .. k ..
+                            "' collides with an existing definition (from parent or earlier mixin)")
+                    else
                         class[k] = v
                     end
                 end
@@ -40,9 +68,10 @@ local function build_class(name, def)
         end
     end
 
-    -- Copy def fields onto the class. Methods and shared defaults all live here.
+    -- 3. Copy def fields onto the class. Methods and shared defaults all live here.
+    --    These intentionally override anything inherited from parent or mixins.
     for k, v in pairs(def) do
-        if k ~= "__parents" then
+        if k ~= "__parent" and k ~= "__mixins" then
             class[k] = v
         end
     end

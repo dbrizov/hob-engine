@@ -1,8 +1,8 @@
 #pragma once
 
 #include <filesystem>
-#include <initializer_list>
-#include <string_view>
+#include <string>
+#include <vector>
 
 #include <sol/sol.hpp>
 
@@ -25,8 +25,8 @@ namespace hob {
         sol::state& get_lua();
 
     private:
-        bool run_file(const std::filesystem::path& path);
-        bool run_folder(const std::filesystem::path& path, std::initializer_list<std::string_view> excludes = {});
+        bool run_file(const std::filesystem::path& relative_path);
+        bool run_folder(const std::filesystem::path& relative_path, const std::vector<std::string>& excludes = {});
         bool run_bootstrap();
 
         void register_bindings();

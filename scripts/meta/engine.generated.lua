@@ -14,6 +14,19 @@
 ---@field MAX_NUMBER number
 Math = {}
 
+-- Scripts
+---@class Scripts
+Scripts = {}
+
+---@param relative_path string
+---@return boolean
+function Scripts.run_file(relative_path) end
+
+---@param relative_path string
+---@param excludes any
+---@return boolean
+function Scripts.run_folder(relative_path, excludes) end
+
 -- EntitySpawner
 ---@class EntitySpawner
 EntitySpawner = {}

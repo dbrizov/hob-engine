@@ -19,10 +19,10 @@ local LuaComponent = {}
 --- Called once when the component instance is created (before enter_play).
 function LuaComponent:init() end
 
---- Called when the entity enters play. Bind input here.
+--- Called when the entity enters play.
 function LuaComponent:enter_play() end
 
---- Called when the entity exits play. Unbind input here.
+--- Called when the entity exits play.
 function LuaComponent:exit_play() end
 
 --- Called every frame.
