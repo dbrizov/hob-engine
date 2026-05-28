@@ -55,8 +55,7 @@ function LuaComponent:on_trigger_exit(other) end
 
 --- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
 --- and creates a global `Foo`. The table may contain default fields,
---- methods (`init`, `enter_play`, `exit_play`, `tick`, ...), and an
---- optional `__parents = { "Base", ... }` list for inheritance.
+--- and methods (`init`, `enter_play`, `exit_play`, `tick`, ...).
 ---@class DefineComponent
 DefineComponent = {}
 
