@@ -1,25 +1,25 @@
 DefineComponent.Player = {
     __parent = "Character",
+    __mixins = { "Damageable", "Stunnable" },
 }
----@class Player : Character
+---@class Player : Character, Damageable, Stunnable
 local Player = Player
 
 function Player:init()
-    Character.init(self)
-    log("Player:init()")
-
     self.speed = 7.0
     self.camera_follow_speed = 10.0
     self.movement_input = Vector2.zero()
     self.x_axis_id = nil
     self.y_axis_id = nil
     self.slow_motion_action_id = nil
+
+    -- Damageable state.
+    self.hp = 100
+    -- Stunnable state.
+    self.stun_timer = 0
 end
 
 function Player:enter_play()
-    Character.enter_play(self)
-    log("Player:enter_play()")
-
     local input = self.entity:get_input()
 
     self.x_axis_id = input:bind_axis("horizontal", function(axis)
@@ -37,9 +37,6 @@ function Player:enter_play()
 end
 
 function Player:exit_play()
-    Character.exit_play(self)
-    log("Player:exit_play()")
-
     local input = self.entity:get_input()
     input:unbind_axis("horizontal", self.x_axis_id)
     input:unbind_axis("vertical", self.y_axis_id)

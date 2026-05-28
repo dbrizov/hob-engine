@@ -530,9 +530,9 @@ function CharacterBodyComponent:get_solver_ignore_mask() end
 ---@param mask integer
 function CharacterBodyComponent:set_solver_ignore_mask(mask) end
 
----@param desired_velocity Vector2
+---@param velocity Vector2
 ---@param fixed_dt number
-function CharacterBodyComponent:move_and_slide(desired_velocity, fixed_dt) end
+function CharacterBodyComponent:move_and_slide(velocity, fixed_dt) end
 
 ---@return Vector2
 function CharacterBodyComponent:get_velocity() end

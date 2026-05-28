@@ -437,7 +437,7 @@ namespace hob {
             .method("set_collision_mask", &CharacterBodyComponent::set_collision_mask, {"mask"})
             .method("get_solver_ignore_mask", &CharacterBodyComponent::get_solver_ignore_mask)
             .method("set_solver_ignore_mask", &CharacterBodyComponent::set_solver_ignore_mask, {"mask"})
-            .method("move_and_slide", &CharacterBodyComponent::move_and_slide, {"desired_velocity", "fixed_dt"})
+            .method("move_and_slide", &CharacterBodyComponent::move_and_slide, {"velocity", "fixed_dt"})
             .method("get_velocity", &CharacterBodyComponent::get_velocity)
             .method("set_velocity", &CharacterBodyComponent::set_velocity, {"velocity"})
             .method("get_position", &CharacterBodyComponent::get_position)

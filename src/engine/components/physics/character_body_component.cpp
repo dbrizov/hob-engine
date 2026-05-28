@@ -49,8 +49,8 @@ namespace hob {
         m_solver_ignore_mask = solver_ignore_mask;
     }
 
-    void CharacterBodyComponent::move_and_slide(const Vector2& desired_velocity, float delta_time) {
-        Vector2 delta_pos = desired_velocity * delta_time;
+    void CharacterBodyComponent::move_and_slide(const Vector2& velocity, float delta_time) {
+        Vector2 delta_pos = velocity * delta_time;
         if (delta_pos.length_sqr() < EPSILON) {
             b2Body_SetLinearVelocity(m_rigidbody->get_body_id(), b2Vec2_zero);
             return;

@@ -1,21 +1,17 @@
 -- Lua-side bootstrap. The C++ side runs ONLY this file; all script loading
 -- (engine modules, user scripts, main.lua) is orchestrated from here.
 
-local engine_modules = {
-    "scripts/engine/collision.lua",
-    "scripts/engine/mixin_def.lua", -- must come before component_def: build_class consults __mixin_registry
-    "scripts/engine/component_def.lua",
-    "scripts/engine/component_schemas.lua",
-    "scripts/engine/entity_def.lua",
-}
+-- Engine modules just install registries / metatables / enums.
+-- None of them consume each other at load time, so order doesn't matter.
+Scripts.run_folder("scripts/engine", { "bootstrap.lua" })
 
-for _, path in ipairs(engine_modules) do
-    Scripts.run_file(path)
-end
-
--- User scripts: everything under scripts/, excluding engine internals,
--- vendored libs, IDE-only meta, and the entry point itself.
+-- User scripts: anything outside engine/, lib/, meta/, and main.lua.
+-- Mixins, components, prefabs, and behavior scripts can live anywhere under scripts/.
 Scripts.run_folder("scripts", { "engine", "lib", "meta", "main.lua" })
+
+-- Resolve __parent / __mixins for every DefineComponent now that all files
+-- (and thus all DefineMixin / DefineComponent registrations) are loaded.
+finalize_components()
 
 -- Entry point.
 Scripts.run_file("scripts/main.lua")

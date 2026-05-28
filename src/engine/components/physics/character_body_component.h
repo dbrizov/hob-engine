@@ -42,7 +42,7 @@ namespace hob {
         uint64_t get_solver_ignore_mask() const;
         void set_solver_ignore_mask(uint64_t solver_ignore_mask);
 
-        void move_and_slide(const Vector2& desired_velocity, float delta_time);
+        void move_and_slide(const Vector2& velocity, float delta_time);
 
         Vector2 get_velocity() const;
         void set_velocity(const Vector2& velocity);
