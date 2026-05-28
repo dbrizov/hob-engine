@@ -12,7 +12,7 @@ namespace hob {
         return Vector2(x.length(), y.length());
     }
 
-    Vector2 Matrix2x3::transform_point(Vector2 p) const {
+    Vector2 Matrix2x3::transform_point(const Vector2& p) const {
         return origin + x * p.x + y * p.y;
     }
 
