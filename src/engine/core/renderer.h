@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <string>
 
@@ -40,6 +41,7 @@ namespace hob {
         SDL_Window* m_window;
         uint32_t m_logical_width;
         uint32_t m_logical_height;
+        std::array<float, 16> m_projection{};
 
         // Offscreen FBO at logical resolution.
         uint32_t m_fbo = 0;
@@ -96,14 +98,14 @@ namespace hob {
         // pivot_pixel is the rotation pivot in pixel coords relative to that top-left.
         // rotation_rad is in world-space radians (CCW in y-up).
         void draw_sprite(GlTexture texture,
-                         Vector2 screen_pos,
-                         Vector2 size,
-                         Vector2 pivot_pixel,
+                         const Vector2& screen_pos,
+                         const Vector2& size,
+                         const Vector2& pivot_pixel,
                          float rotation_rad,
-                         Color tint);
+                         const Color& tint);
 
         // Line draw in logical screen space.
-        void draw_line(Vector2 a, Vector2 b, float thickness, Color color);
+        void draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
         // Texture upload helpers used by Assets.
         static GlTexture create_texture_from_pixels(const void* rgba_pixels, int width, int height);

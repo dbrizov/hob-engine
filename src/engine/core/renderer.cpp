@@ -191,7 +191,8 @@ void main() {
     Renderer::Renderer(SDL_Window* window, const GraphicsConfig& graphics_config)
         : m_window(window)
         , m_logical_width(graphics_config.logical_resolution_width)
-        , m_logical_height(graphics_config.logical_resolution_height) {
+        , m_logical_height(graphics_config.logical_resolution_height)
+        , m_projection(ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height))) {
 
         if (!init_sprite_pipeline()) {
             return;
@@ -404,16 +405,13 @@ void main() {
     }
 
     void Renderer::draw_sprite(GlTexture texture,
-                               Vector2 screen_pos,
-                               Vector2 size,
-                               Vector2 pivot_pixel,
+                               const Vector2& screen_pos,
+                               const Vector2& size,
+                               const Vector2& pivot_pixel,
                                float rotation_rad,
-                               Color tint) {
-        const std::array<float, 16> projection =
-            ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height));
-
+                               const Color& tint) {
         glUseProgram(m_sprite_program);
-        glUniformMatrix4fv(m_u_sprite_projection, 1, GL_FALSE, projection.data());
+        glUniformMatrix4fv(m_u_sprite_projection, 1, GL_FALSE, m_projection.data());
         glUniform2f(m_u_sprite_screen_pos, screen_pos.x, screen_pos.y);
         glUniform2f(m_u_sprite_size, size.x, size.y);
         glUniform2f(m_u_sprite_pivot_pixel, pivot_pixel.x, pivot_pixel.y);
@@ -431,17 +429,14 @@ void main() {
         glBindVertexArray(0);
     }
 
-    void Renderer::draw_line(Vector2 a, Vector2 b, float thickness, Color color) {
-        const std::array<float, 16> projection =
-            ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height));
-
+    void Renderer::draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
         const float verts[] = {
             a.x, a.y, color.r, color.g, color.b, color.a,
             b.x, b.y, color.r, color.g, color.b, color.a,
         };
 
         glUseProgram(m_line_program);
-        glUniformMatrix4fv(m_u_line_projection, 1, GL_FALSE, projection.data());
+        glUniformMatrix4fv(m_u_line_projection, 1, GL_FALSE, m_projection.data());
 
         glBindVertexArray(m_line_vao);
         glBindBuffer(GL_ARRAY_BUFFER, m_line_vbo);
