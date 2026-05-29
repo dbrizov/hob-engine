@@ -8,12 +8,12 @@ local Damageable = Damageable
 
 function Damageable:take_damage(amount)
     self.hp = (self.hp or 0) - amount
-    log(self.class_name .. ": took " .. amount .. " damage, hp=" .. self.hp)
+    Debug.log(self.class_name .. ": took " .. amount .. " damage, hp=" .. self.hp)
 end
 
 function Damageable:heal(amount)
     self.hp = (self.hp or 0) + amount
-    log(self.class_name .. ": healed " .. amount .. ", hp=" .. self.hp)
+    Debug.log(self.class_name .. ": healed " .. amount .. ", hp=" .. self.hp)
 end
 
 function Damageable:is_dead()

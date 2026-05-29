@@ -8,7 +8,7 @@ local Stunnable = Stunnable
 
 function Stunnable:apply_stun(duration)
     self.stun_timer = duration
-    log(self.class_name .. ": stunned for " .. duration .. "s")
+    Debug.log(self.class_name .. ": stunned for " .. duration .. "s")
 end
 
 function Stunnable:is_stunned()
@@ -23,9 +23,9 @@ end
 
 -- Uncomment to verify the engine reports a key collision against
 -- Damageable.is_dead when both mixins are listed in __mixins.
--- Expect a log_error: "mixin 'Stunnable' key 'is_dead' collides ..."
+-- Expect a Debug.log_error: "mixin 'Stunnable' key 'is_dead' collides ..."
 --
 -- function Stunnable:is_dead()
---     log("Stunnable:is_dead()")
+--     Debug.log("Stunnable:is_dead()")
 --     return false
 -- end

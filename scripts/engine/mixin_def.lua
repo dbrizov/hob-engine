@@ -21,7 +21,7 @@ _G.__mixin_registry = _G.__mixin_registry or {}
 _G.DefineMixin = setmetatable({}, {
     __newindex = function(_, name, def)
         if type(def) ~= "table" then
-            log_error("DefineMixin." .. tostring(name) .. " must be assigned a table")
+            Debug.log_error("DefineMixin." .. tostring(name) .. " must be assigned a table")
             return
         end
 

@@ -44,7 +44,7 @@ local function build_class(name)
     end
 
     if pending.building then
-        log_error("DefineComponent." .. name .. ": cyclic inheritance detected")
+        Debug.log_error("DefineComponent." .. name .. ": cyclic inheritance detected")
         return pending.class
     end
     pending.building = true
@@ -59,12 +59,12 @@ local function build_class(name)
     local parent_keys = {}
     if def.__parent then
         if type(def.__parent) ~= "string" then
-            log_error("DefineComponent." .. name .. ": __parent must be a string component name")
+            Debug.log_error("DefineComponent." .. name .. ": __parent must be a string component name")
         else
             build_class(def.__parent)
             local parent = _G.__component_registry[def.__parent]
             if not parent then
-                log_error("DefineComponent." .. name .. ": parent '" .. def.__parent .. "' is not registered")
+                Debug.log_error("DefineComponent." .. name .. ": parent '" .. def.__parent .. "' is not registered")
             else
                 for k, v in pairs(parent) do
                     if k ~= "__index" and k ~= "new" then
@@ -87,15 +87,15 @@ local function build_class(name)
         local mixin_keys = {}
         for _, mixin_name in ipairs(def.__mixins) do
             if type(mixin_name) ~= "string" then
-                log_error("DefineComponent." .. name .. ": __mixins entries must be string mixin names")
+                Debug.log_error("DefineComponent." .. name .. ": __mixins entries must be string mixin names")
             else
                 local mixin = _G.__mixin_registry and _G.__mixin_registry[mixin_name]
                 if not mixin then
-                    log_error("DefineComponent." .. name .. ": mixin '" .. mixin_name .. "' is not registered")
+                    Debug.log_error("DefineComponent." .. name .. ": mixin '" .. mixin_name .. "' is not registered")
                 else
                     for k, v in pairs(mixin) do
                         if parent_keys[k] or mixin_keys[k] then
-                            log_error("DefineComponent." .. name ..
+                            Debug.log_error("DefineComponent." .. name ..
                                 ": mixin '" .. mixin_name .. "' key '" .. k ..
                                 "' collides with an existing definition (from parent or earlier mixin)")
                         elseif rawget(class, k) == nil then
@@ -141,7 +141,7 @@ end
 _G.DefineComponent = setmetatable({}, {
     __newindex = function(_, name, def)
         if type(def) ~= "table" then
-            log_error("DefineComponent." .. tostring(name) .. " must be assigned a table")
+            Debug.log_error("DefineComponent." .. tostring(name) .. " must be assigned a table")
             return
         end
 

@@ -36,6 +36,6 @@ namespace hob {
         void bind_entity();
         void bind_components();
         void bind_subsystems();
-        void bind_logging();
+        void bind_debug();
     };
 }

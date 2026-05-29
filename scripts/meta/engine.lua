@@ -33,6 +33,10 @@ function LuaComponent:tick(delta_time) end
 ---@param fixed_delta_time number
 function LuaComponent:physics_tick(fixed_delta_time) end
 
+--- Called every frame after all ticks, intended for debug visualization (Debug.draw_line / Debug.draw_circle).
+---@param delta_time number
+function LuaComponent:debug_draw_tick(delta_time) end
+
 --- Called when a collider begins colliding with another (solid contact).
 ---@param other ColliderComponent
 function LuaComponent:on_collision_enter(other) end

@@ -99,6 +99,29 @@ function Camera.get_position() end
 ---@param position Vector2
 function Camera.set_position(position) end
 
+-- Debug
+---@class Debug
+Debug = {}
+
+---@vararg any
+function Debug.log(...) end
+
+---@vararg any
+function Debug.log_error(...) end
+
+---@param from Vector2
+---@param to Vector2
+---@param color Color
+---@param thickness number?
+function Debug.draw_line(from, to, color, thickness) end
+
+---@param center Vector2
+---@param radius number
+---@param color Color
+---@param thickness number?
+---@param segments integer?
+function Debug.draw_circle(center, radius, color, thickness, segments) end
+
 -- BodyType
 ---@enum BodyType
 BodyType = {
@@ -580,12 +603,4 @@ function InputComponent:unbind_action(name, id) end
 function InputComponent:clear_all_bindings() end
 
 _G.InputComponent = InputComponent
-
--- Globals
-
----@vararg any
-function log(...) end
-
----@vararg any
-function log_error(...) end
 

@@ -51,6 +51,14 @@ function Player:physics_tick(fixed_delta_time)
     self:update_rotation(fixed_delta_time)
 end
 
+function Player:debug_draw_tick(delta_time)
+    local mouse_screen = Input.get_mouse_screen_position()
+    local mouse_world = Camera.screen_to_world(mouse_screen)
+    local player_pos = self.entity:get_transform():get_position()
+
+    Debug.draw_line(player_pos, mouse_world, Color.green())
+end
+
 function Player:update_camera_position(target_position, delta_time)
     local current_position = Camera.get_position()
     local new_position = Vector2.lerp(current_position, target_position, delta_time * self.camera_follow_speed)

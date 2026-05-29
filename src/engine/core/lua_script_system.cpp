@@ -5,6 +5,7 @@
 
 #include "app.h"
 #include "assets.h"
+#include "debug.h"
 #include "input.h"
 #include "logging.h"
 #include "path_utils.h"
@@ -150,7 +151,7 @@ namespace hob {
         bind_entity();
         bind_components();
         bind_subsystems();
-        bind_logging();
+        bind_debug();
     }
 
     void LuaScriptSystem::dump_meta() {
@@ -548,7 +549,7 @@ namespace hob {
             }, {"position"});
     }
 
-    void LuaScriptSystem::bind_logging() {
+    void LuaScriptSystem::bind_debug() {
         auto stringify_args = [](sol::this_state ts, sol::variadic_args args) -> std::string {
             lua_State* L = ts;
             sol::state_view sv(L);
@@ -566,13 +567,25 @@ namespace hob {
             }
             return out;
         };
-        bind_global_fn_sig(m_lua, m_meta, "log",
-                           [stringify_args](sol::this_state ts, sol::variadic_args args) {
-                               debug::log("{}", stringify_args(ts, args));
-                           }, "(...: any)");
-        bind_global_fn_sig(m_lua, m_meta, "log_error",
-                           [stringify_args](sol::this_state ts, sol::variadic_args args) {
-                               debug::log_error("{}", stringify_args(ts, args));
-                           }, "(...: any)");
+
+        bind_table(m_lua, m_meta, "Debug")
+            .fn_sig("log",
+                    [stringify_args](sol::this_state ts, sol::variadic_args args) {
+                        debug::log("{}", stringify_args(ts, args));
+                    }, "(...: any)")
+            .fn_sig("log_error",
+                    [stringify_args](sol::this_state ts, sol::variadic_args args) {
+                        debug::log_error("{}", stringify_args(ts, args));
+                    }, "(...: any)")
+            .fn_sig("draw_line",
+                    [](const Vector2& from, const Vector2& to, const Color& color,
+                       sol::optional<float> thickness) {
+                        debug::draw_line(from, to, color, thickness.value_or(2.0f));
+                    }, "(from: Vector2, to: Vector2, color: Color, thickness: number?)")
+            .fn_sig("draw_circle",
+                    [](const Vector2& center, float radius, const Color& color,
+                       sol::optional<float> thickness, sol::optional<int> segments) {
+                        debug::draw_circle(center, radius, color, thickness.value_or(2.0f), segments.value_or(16));
+                    }, "(center: Vector2, radius: number, color: Color, thickness: number?, segments: integer?)");
     }
 }
