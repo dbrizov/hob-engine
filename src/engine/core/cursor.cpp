@@ -86,7 +86,7 @@ namespace hob {
     }
 
     void Cursor::render() {
-        if (!m_is_visible || m_texture_id == INVALID_TEXTURE_ID) {
+        if (!m_is_visible || m_texture_id == INVALID_TEXTURE_ID || is_os_cursor_visible()) {
             return;
         }
 
