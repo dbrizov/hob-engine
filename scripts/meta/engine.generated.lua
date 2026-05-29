@@ -14,6 +14,22 @@
 ---@field MAX_NUMBER number
 Math = {}
 
+---@param angle_deg number
+---@return number
+function Math.normalize_angle(angle_deg) end
+
+---@param a number
+---@param b number
+---@param t number
+---@return number
+function Math.lerp(a, b, t) end
+
+---@param a_deg number
+---@param b_deg number
+---@param t number
+---@return number
+function Math.lerp_angle(a_deg, b_deg, t) end
+
 -- Scripts
 ---@class Scripts
 Scripts = {}

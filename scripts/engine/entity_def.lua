@@ -67,10 +67,10 @@ end
 
 ---@param name string
 ---@param position? Vector2
----@param rotation_degrees? number
+---@param rotation_deg? number
 ---@param scale? Vector2
 ---@return Entity|nil
-EntitySpawner.spawn_entity = function(name, position, rotation_degrees, scale)
+EntitySpawner.spawn_entity = function(name, position, rotation_deg, scale)
     local prefab = _G.__entity_prefab_registry[name]
     if not prefab then
         Debug.log_error("EntitySpawner.spawn_entity: prefab '" .. name .. "' is not registered")
@@ -83,7 +83,7 @@ EntitySpawner.spawn_entity = function(name, position, rotation_degrees, scale)
 
     local transform = entity:get_transform()
     transform:set_position(position or Vector2())
-    transform:set_rotation((rotation_degrees or 0) * Math.DEG_TO_RAD)
+    transform:set_rotation((rotation_deg or 0) * Math.DEG_TO_RAD)
     transform:set_scale(scale or Vector2.one())
 
     return entity

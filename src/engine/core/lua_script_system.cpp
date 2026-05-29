@@ -27,6 +27,7 @@
 #include "engine/math/aabb.h"
 #include "engine/math/capsule.h"
 #include "engine/math/constants.h"
+#include "engine/math/mathf.h"
 #include "engine/math/vector2.h"
 
 namespace hob {
@@ -172,7 +173,10 @@ namespace hob {
             .constant("MIN_INTEGER", MIN_INT64)
             .constant("MAX_INTEGER", MAX_INT64)
             .constant("MIN_NUMBER", MIN_DOUBLE)
-            .constant("MAX_NUMBER", MAX_DOUBLE);
+            .constant("MAX_NUMBER", MAX_DOUBLE)
+            .func("normalize_angle", &math::normalize_angle, {"angle_deg"})
+            .func("lerp", &math::lerp, {"a", "b", "t"})
+            .func("lerp_angle", &math::lerp_angle, {"a_deg", "b_deg", "t"});
 
         bind_usertype<Vector2>(m_lua, m_meta, "Vector2")
             .ctors<sol::types<>, sol::types<float, float>>()
