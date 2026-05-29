@@ -8,7 +8,7 @@ DefineEntity.Player = {
         capsule = Capsule(Vector2.zero(), Vector2.zero(), 1.2),
     },
     sprite = {
-        texture = "images/player/HJ_run01.png",
+        texture = Assets.PlayerTexture,
         z_index = 1,
     },
     lua_components = { "Player", "ContactLogger" },

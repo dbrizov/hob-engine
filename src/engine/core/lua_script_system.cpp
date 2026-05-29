@@ -160,7 +160,7 @@ namespace hob {
     void LuaScriptSystem::dump_meta() {
         const std::filesystem::path out_path = PathUtils::get_root_path() / "scripts" / "meta" / "engine.generated.lua";
         if (m_meta.write_to_file(out_path)) {
-            debug::log("Wrote Lua meta annotations to {}", out_path.string());
+            // debug::log("Wrote Lua meta annotations to {}", out_path.string());
         }
     }
 
@@ -541,7 +541,9 @@ namespace hob {
 
         bind_table(m_lua, m_meta, "Cursor")
             .func("get_texture_id", [&cursor]() { return cursor.get_texture_id(); })
-            .func("set_texture", [&cursor](const std::string& relative_path) { cursor.set_texture(relative_path); }, {"relative_path"})
+            .func("set_texture",
+                  [&cursor](const std::string& relative_path) { cursor.set_texture(relative_path); },
+                  {"relative_path"})
             .func("clear_texture", [&cursor]() { cursor.clear_texture(); })
             .func("get_pivot", [&cursor]() { return cursor.get_pivot(); })
             .func("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})

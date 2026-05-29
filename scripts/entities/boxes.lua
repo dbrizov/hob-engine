@@ -16,7 +16,7 @@ DefineEntity.DynamicBox = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
     },
     sprite = {
-        texture = "images/robot.png",
+        texture = Assets.RobotTexture,
     },
 }
 
@@ -28,7 +28,7 @@ DefineEntity.TriggerBox = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
     sprite = {
-        texture = "images/robot.png",
+        texture = Assets.RobotTexture,
     },
     lua_components = { "ContactLogger" },
 }
