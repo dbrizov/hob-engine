@@ -19,7 +19,7 @@ namespace hob {
         , m_console()
         , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
         , m_input(*this)
-        , m_assets()
+        , m_assets(*this)
         , m_physics(*this)
         , m_cursor(*this)
         , m_entity_spawner(*this)

@@ -6,6 +6,8 @@
 #include <unordered_map>
 
 namespace hob {
+    class App;
+
     using GlTextureHandle = uint32_t;
     using TextureId = int32_t;
     constexpr TextureId INVALID_TEXTURE_ID = -1;
@@ -27,11 +29,15 @@ namespace hob {
     };
 
     class Assets {
+        App& m_app;
         TextureId m_next_texture_id = 0;
         std::unordered_map<TextureId, TextureEntry> m_textures;
         std::unordered_map<std::string, TextureId> m_path_to_id;
 
+        bool m_cvar_verbose = false;
+
     public:
+        explicit Assets(App& app);
         ~Assets();
 
         GlTextureHandle get_texture(TextureId id) const;

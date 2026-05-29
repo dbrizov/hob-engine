@@ -4,10 +4,24 @@
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_surface.h>
 
+#include "app.h"
+#include "console.h"
 #include "logging.h"
 #include "renderer.h"
 
 namespace hob {
+    Assets::Assets(App& app)
+        : m_app(app) {
+        m_app.get_console().register_cvar("assets_verbose",
+                                          "Log every texture load/unload/cache-hit",
+                                          "0",
+                                          ConsoleVariableType::Bool,
+                                          ConsoleVariableFlags::None,
+                                          [this](const ConsoleVariable& cvar) {
+                                              m_cvar_verbose = cvar.bool_value();
+                                          });
+    }
+
     Assets::~Assets() {
         unload_all_textures();
     }
@@ -34,7 +48,11 @@ namespace hob {
         if (it != m_path_to_id.end()) {
             TextureEntry& entry = m_textures.at(it->second);
             entry.ref_count += 1;
-            debug::log("Assets::load_texture cache hit: '{}' (id={}, rc={})", key, it->second, entry.ref_count);
+
+            if (m_cvar_verbose) {
+                debug::log("Assets::load_texture cache hit: '{}' (id={}, rc={})", key, it->second, entry.ref_count);
+            }
+
             return it->second;
         }
 
@@ -66,7 +84,10 @@ namespace hob {
         m_textures.emplace(texture_id, TextureEntry(handle, w, h, key, ref_count));
         m_path_to_id.emplace(key, texture_id);
 
-        debug::log("Assets::load_texture loaded: '{}' (id={}, rc={})", key, texture_id, ref_count);
+        if (m_cvar_verbose) {
+            debug::log("Assets::load_texture loaded: '{}' (id={}, rc={})", key, texture_id, ref_count);
+        }
+
         return texture_id;
     }
 
@@ -81,11 +102,17 @@ namespace hob {
         entry.ref_count -= 1;
 
         if (entry.ref_count > 0) {
-            debug::log("Assets::unload_texture: '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
+            if (m_cvar_verbose) {
+                debug::log("Assets::unload_texture: '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
+            }
+
             return true;
         }
 
-        debug::log("Assets::unload_texture: '{}' (id={}, rc={}) [destroyed]", entry.path, id, entry.ref_count);
+        if (m_cvar_verbose) {
+            debug::log("Assets::unload_texture: '{}' (id={}, rc={}) [destroyed]", entry.path, id, entry.ref_count);
+        }
+
         Renderer::destroy_texture(entry.handle);
         m_path_to_id.erase(entry.path);
         m_textures.erase(it);
