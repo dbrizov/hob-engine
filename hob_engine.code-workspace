@@ -1,6 +1,9 @@
 {
     "folders": [
         {
+            "path": "assets"
+        },
+        {
             "path": "scripts"
         }
     ],
@@ -44,21 +47,21 @@
                 "request": "launch",
                 "linux": {
                     "program": {
-                        "command": "${workspaceFolder}/../build/debug/linux-gcc/hob_engine"
+                        "command": "${workspaceFolder:scripts}/../build/debug/linux-gcc/hob_engine"
                     },
-                    "cwd": "${workspaceFolder}/../build/debug/linux-gcc"
+                    "cwd": "${workspaceFolder:scripts}/../build/debug/linux-gcc"
                 },
                 "osx": {
                     "program": {
-                        "command": "${workspaceFolder}/../build/debug/macos-clang/hob_engine"
+                        "command": "${workspaceFolder:scripts}/../build/debug/macos-clang/hob_engine"
                     },
-                    "cwd": "${workspaceFolder}/../build/debug/macos-clang"
+                    "cwd": "${workspaceFolder:scripts}/../build/debug/macos-clang"
                 },
                 "windows": {
                     "program": {
-                        "command": "${workspaceFolder}/../build/debug/windows-msvc/Debug/hob_engine.exe"
+                        "command": "${workspaceFolder:scripts}/../build/debug/windows-msvc/Debug/hob_engine.exe"
                     },
-                    "cwd": "${workspaceFolder}/../build/debug/windows-msvc/Debug"
+                    "cwd": "${workspaceFolder:scripts}/../build/debug/windows-msvc/Debug"
                 }
             }
         ]

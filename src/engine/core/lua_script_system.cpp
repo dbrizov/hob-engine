@@ -5,6 +5,7 @@
 
 #include "app.h"
 #include "assets.h"
+#include "cursor.h"
 #include "debug.h"
 #include "input.h"
 #include "logging.h"
@@ -493,6 +494,7 @@ namespace hob {
         Input& input = m_app.get_input();
         Timer& timer = m_app.get_timer();
         Assets& assets = m_app.get_assets();
+        Cursor& cursor = m_app.get_cursor();
 
         bind_table(m_lua, m_meta, "Scripts")
             .fn("run_file", [this](const std::string& relative_path) {
@@ -530,6 +532,18 @@ namespace hob {
                 std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
                 return assets.load_texture(full);
             }, {"relative_path"});
+
+        bind_table(m_lua, m_meta, "Cursor")
+            .fn("get_texture_id", [&cursor]() { return cursor.get_texture_id(); })
+            .fn("set_texture_id", [&cursor](TextureId id) { cursor.set_texture_id(id); }, {"texture_id"})
+            .fn("get_pivot", [&cursor]() { return cursor.get_pivot(); })
+            .fn("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})
+            .fn("get_scale", [&cursor]() { return cursor.get_scale(); })
+            .fn("set_scale", [&cursor](const Vector2& s) { cursor.set_scale(s); }, {"scale"})
+            .fn("get_tint", [&cursor]() { return cursor.get_tint(); })
+            .fn("set_tint", [&cursor](const Color& c) { cursor.set_tint(c); }, {"tint"})
+            .fn("is_visible", [&cursor]() { return cursor.is_visible(); })
+            .fn("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"});
 
         bind_table(m_lua, m_meta, "Camera")
             .fn("get_entity", [&spawner]() {

@@ -2,6 +2,7 @@
 
 #include "assets.h"
 #include "console.h"
+#include "cursor.h"
 #include "imgui_system.h"
 #include "input.h"
 #include "lua_script_system.h"
@@ -47,6 +48,7 @@ namespace hob {
         Input m_input;
         Assets m_assets;
         Physics m_physics;
+        Cursor m_cursor;
         EntitySpawner m_entity_spawner;
         LuaScriptSystem m_lua_script_system;
 
@@ -67,6 +69,7 @@ namespace hob {
         Input& get_input();
         Assets& get_assets();
         Physics& get_physics();
+        Cursor& get_cursor();
         EntitySpawner& get_entity_spawner();
         LuaScriptSystem& get_lua_script_system();
 

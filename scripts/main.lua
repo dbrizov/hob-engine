@@ -2,6 +2,14 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
     require("lldebugger").start()
 end
 
+Cursor.config {
+    texture = "images/cursor_48px.png",
+    pivot = Vector2(0.24, 0.1),
+    scale = Vector2(0.8, 0.8),
+    tint = Color.white(),
+    visible = true,
+}
+
 EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
 
 -- floor

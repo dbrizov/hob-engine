@@ -78,6 +78,40 @@ Assets = {}
 ---@return integer
 function Assets.load_texture(relative_path) end
 
+-- Cursor
+---@class Cursor
+Cursor = {}
+
+---@return integer
+function Cursor.get_texture_id() end
+
+---@param texture_id integer
+function Cursor.set_texture_id(texture_id) end
+
+---@return Vector2
+function Cursor.get_pivot() end
+
+---@param pivot Vector2
+function Cursor.set_pivot(pivot) end
+
+---@return Vector2
+function Cursor.get_scale() end
+
+---@param scale Vector2
+function Cursor.set_scale(scale) end
+
+---@return Color
+function Cursor.get_tint() end
+
+---@param tint Color
+function Cursor.set_tint(tint) end
+
+---@return boolean
+function Cursor.is_visible() end
+
+---@param visible boolean
+function Cursor.set_visible(visible) end
+
 -- Camera
 ---@class Camera
 Camera = {}

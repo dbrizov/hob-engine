@@ -21,6 +21,7 @@ namespace hob {
         , m_input(*this)
         , m_assets()
         , m_physics(*this)
+        , m_cursor(*this)
         , m_entity_spawner(*this)
         , m_lua_script_system(*this) {
     }
@@ -88,6 +89,7 @@ namespace hob {
 
             render_entities(renderable_entities);
             render_debug_draws();
+            m_cursor.render();
 
             m_renderer.frame_end();
 
@@ -139,6 +141,10 @@ namespace hob {
 
     Physics& App::get_physics() {
         return m_physics;
+    }
+
+    Cursor& App::get_cursor() {
+        return m_cursor;
     }
 
     EntitySpawner& App::get_entity_spawner() {
