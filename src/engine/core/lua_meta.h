@@ -55,32 +55,32 @@ namespace hob {
         }
 
         // Function traits — extracts return type and arg pack from function
-        // pointers, member fn pointers, and lambdas (via operator() const).
+        // pointers, member func pointers, and lambdas (via operator() const).
         template<typename F, typename = void>
-        struct fn_traits;
+        struct func_traits;
 
         template<typename R, typename... A>
-        struct fn_traits<R(*)(A...)> {
+        struct func_traits<R(*)(A...)> {
             using ret = R;
             using args = std::tuple<A...>;
         };
 
         template<typename R, typename C, typename... A>
-        struct fn_traits<R(C::*)(A...)> {
+        struct func_traits<R(C::*)(A...)> {
             using ret = R;
             using args = std::tuple<A...>;
         };
 
         template<typename R, typename C, typename... A>
-        struct fn_traits<R(C::*)(A...) const> {
+        struct func_traits<R(C::*)(A...) const> {
             using ret = R;
             using args = std::tuple<A...>;
         };
 
         // Lambda / functor: delegate to its const call operator.
         template<typename F>
-        struct fn_traits<F, std::void_t<decltype(&F::operator())>>
-            : fn_traits<decltype(&F::operator())> {
+        struct func_traits<F, std::void_t<decltype(&F::operator())>>
+            : func_traits<decltype(&F::operator())> {
         };
 
         // Tail of a tuple (drop the first element). Undefined for empty tuples;
@@ -187,7 +187,7 @@ namespace hob {
     struct LuaTableInfo {
         std::string name;
         std::vector<LuaFieldInfo> fields; // constants
-        std::vector<LuaMethodInfo> methods; // free functions (emitted as Name.fn(...))
+        std::vector<LuaMethodInfo> methods; // free functions (emitted as Name.func(...))
     };
 
     class LuaMetaRegistry {
@@ -266,13 +266,13 @@ namespace hob {
             return *this;
         }
 
-        // ----- Methods. Member fn -> :method(), free/static fn -> .method() -----
+        // ----- Methods. Member func -> :method(), free/static func -> .method() -----
         // Optional `arg_names` provides parameter names for the generated
         // annotations; if empty, falls back to arg1, arg2, ...
         template<typename F>
-        UsertypeBuilder& method(const char* name, F fn, std::initializer_list<const char*> arg_names = {}) {
-            m_usertype[name] = fn;
-            record_method(name, fn, arg_names);
+        UsertypeBuilder& method(const char* name, F func, std::initializer_list<const char*> arg_names = {}) {
+            m_usertype[name] = func;
+            record_method(name, func, arg_names);
             return *this;
         }
 
@@ -280,8 +280,8 @@ namespace hob {
         // (lambdas, sol::variadic_args, overloads). The signature uses the
         // Annotation tail-shape: "(arg1: type, arg2: type): ret"
         template<typename F>
-        UsertypeBuilder& method_sig(const char* name, F fn, const char* sig, bool is_static = false) {
-            m_usertype[name] = fn;
+        UsertypeBuilder& method_sig(const char* name, F func, const char* sig, bool is_static = false) {
+            m_usertype[name] = func;
             LuaMethodInfo info;
             info.name = name;
             info.is_static = is_static;
@@ -291,34 +291,34 @@ namespace hob {
         }
 
         // ----- Operators that emit ---@operator lines -----
-        template<typename F> UsertypeBuilder& op_add(F fn) {
-            return binary_op(sol::meta_function::addition, "add", fn);
+        template<typename F> UsertypeBuilder& op_add(F func) {
+            return binary_op(sol::meta_function::addition, "add", func);
         }
 
-        template<typename F> UsertypeBuilder& op_sub(F fn) {
-            return binary_op(sol::meta_function::subtraction, "sub", fn);
+        template<typename F> UsertypeBuilder& op_sub(F func) {
+            return binary_op(sol::meta_function::subtraction, "sub", func);
         }
 
-        template<typename F> UsertypeBuilder& op_mul(F fn) {
-            return binary_op(sol::meta_function::multiplication, "mul", fn);
+        template<typename F> UsertypeBuilder& op_mul(F func) {
+            return binary_op(sol::meta_function::multiplication, "mul", func);
         }
 
-        template<typename F> UsertypeBuilder& op_div(F fn) {
-            return binary_op(sol::meta_function::division, "div", fn);
+        template<typename F> UsertypeBuilder& op_div(F func) {
+            return binary_op(sol::meta_function::division, "div", func);
         }
 
-        template<typename F> UsertypeBuilder& op_unm(F fn) {
-            return unary_op(sol::meta_function::unary_minus, "unm", fn);
+        template<typename F> UsertypeBuilder& op_unm(F func) {
+            return unary_op(sol::meta_function::unary_minus, "unm", func);
         }
 
         // Metamethods that have no ---@operator counterpart.
-        template<typename F> UsertypeBuilder& op_eq(F fn) {
-            m_usertype[sol::meta_function::equal_to] = fn;
+        template<typename F> UsertypeBuilder& op_eq(F func) {
+            m_usertype[sol::meta_function::equal_to] = func;
             return *this;
         }
 
-        template<typename F> UsertypeBuilder& op_tostring(F fn) {
-            m_usertype[sol::meta_function::to_string] = fn;
+        template<typename F> UsertypeBuilder& op_tostring(F func) {
+            m_usertype[sol::meta_function::to_string] = func;
             return *this;
         }
 
@@ -327,9 +327,9 @@ namespace hob {
 
     private:
         template<typename F>
-        UsertypeBuilder& binary_op(sol::meta_function mf, const char* op_name, F fn) {
-            m_usertype[mf] = fn;
-            using traits = meta_detail::fn_traits<F>;
+        UsertypeBuilder& binary_op(sol::meta_function mf, const char* op_name, F func) {
+            m_usertype[mf] = func;
+            using traits = meta_detail::func_traits<F>;
             using args_t = typename traits::args;
             static_assert(std::tuple_size_v<args_t> >= 1, "binary_op expects at least one rhs arg");
             // Member operator+ has args=(rhs); free op+(lhs, rhs) has args=(lhs, rhs).
@@ -343,9 +343,9 @@ namespace hob {
         }
 
         template<typename F>
-        UsertypeBuilder& unary_op(sol::meta_function mf, const char* op_name, F fn) {
-            m_usertype[mf] = fn;
-            using traits = meta_detail::fn_traits<F>;
+        UsertypeBuilder& unary_op(sol::meta_function mf, const char* op_name, F func) {
+            m_usertype[mf] = func;
+            using traits = meta_detail::func_traits<F>;
             LuaOperatorInfo info;
             info.op = op_name;
             info.ret = meta_detail::lua_name<typename traits::ret>();
@@ -389,8 +389,8 @@ namespace hob {
         }
 
         template<typename F>
-        void record_method(const char* name, F /*fn*/, std::initializer_list<const char*> arg_names) {
-            using traits = meta_detail::fn_traits<F>;
+        void record_method(const char* name, F /*func*/, std::initializer_list<const char*> arg_names) {
+            using traits = meta_detail::func_traits<F>;
             using all_args = typename traits::args;
 
             LuaMethodInfo info;
@@ -398,12 +398,12 @@ namespace hob {
             info.ret = meta_detail::lua_name<typename traits::ret>();
 
             if constexpr (std::is_member_function_pointer_v<F>) {
-                // Real member fn pointer: always an instance method, no self in args.
+                // Real member func pointer: always an instance method, no self in args.
                 info.is_static = false;
                 info.args = meta_detail::arg_names<all_args>();
             }
             else if constexpr (std::is_pointer_v<F> && std::is_function_v<std::remove_pointer_t<F>>) {
-                // Plain function pointer (free fn or static member fn): always static.
+                // Plain function pointer (free func or static member func): always static.
                 info.is_static = true;
                 info.args = meta_detail::arg_names<all_args>();
             }
@@ -451,11 +451,11 @@ namespace hob {
             return *this;
         }
 
-        // Free function on a table. Always emitted as Name.fn(...).
+        // Free function on a table. Always emitted as Name.func(...).
         template<typename F>
-        TableBuilder& fn(const char* name, F func, std::initializer_list<const char*> arg_names = {}) {
+        TableBuilder& func(const char* name, F func, std::initializer_list<const char*> arg_names = {}) {
             m_table.set_function(name, func);
-            using traits = meta_detail::fn_traits<F>;
+            using traits = meta_detail::func_traits<F>;
             LuaMethodInfo info;
             info.name = name;
             info.is_static = true;
@@ -471,7 +471,7 @@ namespace hob {
         // Explicit signature override (variadics, complex types). The signature
         // uses the tail-shape: "(name1: type, name2: type): ret".
         template<typename F>
-        TableBuilder& fn_sig(const char* name, F func, const char* sig) {
+        TableBuilder& func_sig(const char* name, F func, const char* sig) {
             m_table.set_function(name, func);
             LuaMethodInfo info;
             info.name = name;
@@ -492,7 +492,7 @@ namespace hob {
 
     // Free global function with explicit signature.
     template<typename F>
-    void bind_global_fn_sig(sol::state& lua, LuaMetaRegistry& reg, const char* name, F func, const char* sig) {
+    void bind_global_func_sig(sol::state& lua, LuaMetaRegistry& reg, const char* name, F func, const char* sig) {
         lua.set_function(name, func);
         LuaMethodInfo info;
         info.name = name;

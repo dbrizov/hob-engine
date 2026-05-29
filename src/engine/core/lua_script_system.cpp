@@ -498,10 +498,10 @@ namespace hob {
         Cursor& cursor = m_app.get_cursor();
 
         bind_table(m_lua, m_meta, "Scripts")
-            .fn("run_file", [this](const std::string& relative_path) {
+            .func("run_file", [this](const std::string& relative_path) {
                 return run_file(relative_path);
             }, {"relative_path"})
-            .fn("run_folder", [this](const std::string& relative_path, sol::optional<sol::table> excludes) {
+            .func("run_folder", [this](const std::string& relative_path, sol::optional<sol::table> excludes) {
                 std::vector<std::string> exclude_list;
                 if (excludes) {
                     for (const auto& kv : *excludes) {
@@ -513,25 +513,25 @@ namespace hob {
             }, {"relative_path", "excludes"});
 
         bind_table(m_lua, m_meta, "EntitySpawner")
-            .fn("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })
-            .fn("destroy_entity", [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); }, {"entity"})
-            .fn("get_entity", [](EntityId id) { return EntityHandle(id); }, {"id"});
+            .func("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })
+            .func("destroy_entity", [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); }, {"entity"})
+            .func("get_entity", [](EntityId id) { return EntityHandle(id); }, {"id"});
 
         bind_table(m_lua, m_meta, "Input")
-            .fn("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); });
+            .func("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); });
 
         bind_table(m_lua, m_meta, "Timer")
-            .fn("get_fps", [&timer]() { return timer.get_fps(); })
-            .fn("set_fps", [&timer](uint32_t v) { timer.set_fps(v); }, {"fps"})
-            .fn("get_time_scale", [&timer]() { return timer.get_time_scale(); })
-            .fn("set_time_scale", [&timer](float v) { timer.set_time_scale(v); }, {"scale"})
-            .fn("get_play_time", [&timer]() { return timer.get_play_time(); })
-            .fn("get_delta_time", [&timer]() { return timer.get_delta_time(); });
+            .func("get_fps", [&timer]() { return timer.get_fps(); })
+            .func("set_fps", [&timer](uint32_t v) { timer.set_fps(v); }, {"fps"})
+            .func("get_time_scale", [&timer]() { return timer.get_time_scale(); })
+            .func("set_time_scale", [&timer](float v) { timer.set_time_scale(v); }, {"scale"})
+            .func("get_play_time", [&timer]() { return timer.get_play_time(); })
+            .func("get_delta_time", [&timer]() { return timer.get_delta_time(); });
 
         bind_global_field(m_lua, m_meta, "INVALID_TEXTURE_ID", INVALID_TEXTURE_ID);
 
         bind_table(m_lua, m_meta, "Assets")
-            .fn("load_texture", [&assets](const std::string& relative_path) {
+            .func("load_texture", [&assets](const std::string& relative_path) {
                 std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
                 return assets.load_texture(full);
             }, {"relative_path"});
@@ -542,33 +542,33 @@ namespace hob {
                               });
 
         bind_table(m_lua, m_meta, "Cursor")
-            .fn("get_texture_id", [&cursor]() { return cursor.get_texture_id(); })
-            .fn("set_texture_id", [&cursor](TextureId id) { cursor.set_texture_id(id); }, {"texture_id"})
-            .fn("get_pivot", [&cursor]() { return cursor.get_pivot(); })
-            .fn("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})
-            .fn("get_scale", [&cursor]() { return cursor.get_scale(); })
-            .fn("set_scale", [&cursor](const Vector2& s) { cursor.set_scale(s); }, {"scale"})
-            .fn("get_tint", [&cursor]() { return cursor.get_tint(); })
-            .fn("set_tint", [&cursor](const Color& c) { cursor.set_tint(c); }, {"tint"})
-            .fn("is_visible", [&cursor]() { return cursor.is_visible(); })
-            .fn("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"})
-            .fn("get_mode", [&cursor]() { return cursor.get_mode(); })
-            .fn("set_mode", [&cursor](CursorMode m) { cursor.set_mode(m); }, {"mode"});
+            .func("get_texture_id", [&cursor]() { return cursor.get_texture_id(); })
+            .func("set_texture_id", [&cursor](TextureId id) { cursor.set_texture_id(id); }, {"texture_id"})
+            .func("get_pivot", [&cursor]() { return cursor.get_pivot(); })
+            .func("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})
+            .func("get_scale", [&cursor]() { return cursor.get_scale(); })
+            .func("set_scale", [&cursor](const Vector2& s) { cursor.set_scale(s); }, {"scale"})
+            .func("get_tint", [&cursor]() { return cursor.get_tint(); })
+            .func("set_tint", [&cursor](const Color& c) { cursor.set_tint(c); }, {"tint"})
+            .func("is_visible", [&cursor]() { return cursor.is_visible(); })
+            .func("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"})
+            .func("get_mode", [&cursor]() { return cursor.get_mode(); })
+            .func("set_mode", [&cursor](CursorMode m) { cursor.set_mode(m); }, {"mode"});
 
         bind_table(m_lua, m_meta, "Camera")
-            .fn("get_entity", [&spawner]() {
+            .func("get_entity", [&spawner]() {
                 return EntityHandle(spawner.get_camera_entity()->get_id());
             })
-            .fn("world_to_screen", [&spawner](const Vector2& world_pos) {
+            .func("world_to_screen", [&spawner](const Vector2& world_pos) {
                 return spawner.get_camera_entity()->get_component<CameraComponent>()->world_to_screen(world_pos);
             }, {"world_pos"})
-            .fn("screen_to_world", [&spawner](const Vector2& screen_pos) {
+            .func("screen_to_world", [&spawner](const Vector2& screen_pos) {
                 return spawner.get_camera_entity()->get_component<CameraComponent>()->screen_to_world(screen_pos);
             }, {"screen_pos"})
-            .fn("get_position", [&spawner]() {
+            .func("get_position", [&spawner]() {
                 return spawner.get_camera_entity()->get_transform()->get_position();
             })
-            .fn("set_position", [&spawner](const Vector2& p) {
+            .func("set_position", [&spawner](const Vector2& p) {
                 spawner.get_camera_entity()->get_transform()->set_position(p);
             }, {"position"});
     }
@@ -589,27 +589,28 @@ namespace hob {
                 out += piece;
                 first = false;
             }
+
             return out;
         };
 
         bind_table(m_lua, m_meta, "Debug")
-            .fn_sig("log",
-                    [stringify_args](sol::this_state ts, sol::variadic_args args) {
-                        debug::log("{}", stringify_args(ts, args));
-                    }, "(...: any)")
-            .fn_sig("log_error",
-                    [stringify_args](sol::this_state ts, sol::variadic_args args) {
-                        debug::log_error("{}", stringify_args(ts, args));
-                    }, "(...: any)")
-            .fn_sig("draw_line",
-                    [](const Vector2& from, const Vector2& to, const Color& color,
-                       sol::optional<float> thickness) {
-                        debug::draw_line(from, to, color, thickness.value_or(2.0f));
-                    }, "(from: Vector2, to: Vector2, color: Color, thickness: number?)")
-            .fn_sig("draw_circle",
-                    [](const Vector2& center, float radius, const Color& color,
-                       sol::optional<float> thickness, sol::optional<int> segments) {
-                        debug::draw_circle(center, radius, color, thickness.value_or(2.0f), segments.value_or(16));
-                    }, "(center: Vector2, radius: number, color: Color, thickness: number?, segments: integer?)");
+            .func_sig("log",
+                      [stringify_args](sol::this_state ts, sol::variadic_args args) {
+                          debug::log("{}", stringify_args(ts, args));
+                      }, "(...: any)")
+            .func_sig("log_error",
+                      [stringify_args](sol::this_state ts, sol::variadic_args args) {
+                          debug::log_error("{}", stringify_args(ts, args));
+                      }, "(...: any)")
+            .func_sig("draw_line",
+                      [](const Vector2& from, const Vector2& to, const Color& color,
+                         sol::optional<float> thickness) {
+                          debug::draw_line(from, to, color, thickness.value_or(2.0f));
+                      }, "(from: Vector2, to: Vector2, color: Color, thickness: number?)")
+            .func_sig("draw_circle",
+                      [](const Vector2& center, float radius, const Color& color,
+                         sol::optional<float> thickness, sol::optional<int> segments) {
+                          debug::draw_circle(center, radius, color, thickness.value_or(2.0f), segments.value_or(16));
+                      }, "(center: Vector2, radius: number, color: Color, thickness: number?, segments: integer?)");
     }
 }
