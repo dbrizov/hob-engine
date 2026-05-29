@@ -10,21 +10,32 @@ namespace hob {
     using TextureId = int32_t;
     constexpr TextureId INVALID_TEXTURE_ID = -1;
 
+    struct TextureEntry {
+        GlTextureHandle handle;
+        int width;
+        int height;
+        std::string path;
+        int ref_count;
+
+        TextureEntry(GlTextureHandle _handle, int _width, int _height, std::string _path, int _ref_count) {
+            handle = _handle;
+            width = _width;
+            height = _height;
+            path = std::move(_path);
+            ref_count = _ref_count;
+        }
+    };
+
     class Assets {
-        mutable TextureId m_next_texture_id;
-        mutable std::unordered_map<TextureId, GlTextureHandle> m_textures;
-        mutable std::unordered_map<TextureId, int> m_texture_widths;
-        mutable std::unordered_map<TextureId, int> m_texture_heights;
-        mutable std::unordered_map<std::string, TextureId> m_path_to_id;
-        mutable std::unordered_map<TextureId, std::string> m_id_to_path;
-        mutable std::unordered_map<TextureId, int> m_ref_counts;
+        TextureId m_next_texture_id = 0;
+        std::unordered_map<TextureId, TextureEntry> m_textures;
+        std::unordered_map<std::string, TextureId> m_path_to_id;
 
     public:
-        Assets();
         ~Assets();
 
         GlTextureHandle get_texture(TextureId id) const;
-        TextureId load_texture(const std::filesystem::path& path);
+        TextureId load_texture(const std::filesystem::path& full_path);
         bool unload_texture(TextureId id);
 
         void get_texture_size(TextureId id, int& out_width, int& out_height) const;

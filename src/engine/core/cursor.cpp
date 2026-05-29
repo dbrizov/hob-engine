@@ -33,14 +33,14 @@ namespace hob {
         }
 
         m_texture_id = new_id;
-        set_visible(m_is_visible); // Trigger the OS cursor fallback if the texture id is invalid
+        set_visible(m_is_visible); // trigger the OS cursor fallback if the texture id is invalid
     }
 
     void Cursor::clear_texture() {
         if (m_texture_id != INVALID_TEXTURE_ID) {
             m_app.get_assets().unload_texture(m_texture_id);
             m_texture_id = INVALID_TEXTURE_ID;
-            set_visible(m_is_visible); // Trigger the OS cursor fallback because the texture is invalid
+            set_visible(m_is_visible); // trigger the OS cursor fallback because the texture id is invalid
         }
     }
 
