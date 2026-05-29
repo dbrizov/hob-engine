@@ -2,12 +2,18 @@
 
 #include <format>
 
+#include "engine/core/app.h"
+#include "engine/core/path_utils.h"
 #include "engine/entity/entity.h"
 #include "transform_component.h"
 
 namespace hob {
     SpriteComponent::SpriteComponent(Entity& entity)
         : Component(entity) {
+    }
+
+    SpriteComponent::~SpriteComponent() {
+        clear_texture();
     }
 
     std::string SpriteComponent::to_string() const {
@@ -18,8 +24,23 @@ namespace hob {
         return m_texture_id;
     }
 
-    void SpriteComponent::set_texture_id(TextureId texture_id) {
-        m_texture_id = texture_id;
+    void SpriteComponent::set_texture(const std::string& relative_path) {
+        Assets& assets = get_app().get_assets();
+        const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
+        const TextureId new_id = assets.load_texture(full_path);
+
+        if (m_texture_id != INVALID_TEXTURE_ID) {
+            assets.unload_texture(m_texture_id);
+        }
+
+        m_texture_id = new_id;
+    }
+
+    void SpriteComponent::clear_texture() {
+        if (m_texture_id != INVALID_TEXTURE_ID) {
+            get_app().get_assets().unload_texture(m_texture_id);
+            m_texture_id = INVALID_TEXTURE_ID;
+        }
     }
 
     Vector2 SpriteComponent::get_pivot() const {

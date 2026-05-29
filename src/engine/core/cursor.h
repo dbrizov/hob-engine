@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "assets.h"
 #include "renderer.h"
 #include "engine/math/vector2.h"
@@ -25,12 +27,14 @@ namespace hob {
 
     public:
         explicit Cursor(App& app);
+        ~Cursor();
 
         Cursor(const Cursor&) = delete;
         Cursor& operator=(const Cursor&) = delete;
 
         TextureId get_texture_id() const;
-        void set_texture_id(TextureId id);
+        void set_texture(const std::string& relative_path);
+        void clear_texture();
 
         Vector2 get_pivot() const;
         void set_pivot(const Vector2& pivot);

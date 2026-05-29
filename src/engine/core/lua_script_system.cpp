@@ -377,7 +377,8 @@ namespace hob {
 
         bind_usertype<SpriteComponent>(m_lua, m_meta, "SpriteComponent", Bases<Component>{})
             .method("get_texture_id", &SpriteComponent::get_texture_id)
-            .method("set_texture_id", &SpriteComponent::set_texture_id, {"id"})
+            .method("set_texture", &SpriteComponent::set_texture, {"relative_path"})
+            .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_pivot", &SpriteComponent::get_pivot)
             .method("set_pivot", &SpriteComponent::set_pivot, {"pivot"})
             .method("get_scale", &SpriteComponent::get_scale)
@@ -498,7 +499,6 @@ namespace hob {
         EntitySpawner& spawner = m_app.get_entity_spawner();
         Input& input = m_app.get_input();
         Timer& timer = m_app.get_timer();
-        Assets& assets = m_app.get_assets();
         Cursor& cursor = m_app.get_cursor();
 
         bind_table(m_lua, m_meta, "Scripts")
@@ -534,12 +534,6 @@ namespace hob {
 
         bind_global_field(m_lua, m_meta, "INVALID_TEXTURE_ID", INVALID_TEXTURE_ID);
 
-        bind_table(m_lua, m_meta, "Assets")
-            .func("load_texture", [&assets](const std::string& relative_path) {
-                std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
-                return assets.load_texture(full);
-            }, {"relative_path"});
-
         bind_enum<CursorMode>(m_lua, m_meta, "CursorMode", {
                                   {"Default", CursorMode::Default},
                                   {"Confined", CursorMode::Confined},
@@ -547,7 +541,8 @@ namespace hob {
 
         bind_table(m_lua, m_meta, "Cursor")
             .func("get_texture_id", [&cursor]() { return cursor.get_texture_id(); })
-            .func("set_texture_id", [&cursor](TextureId id) { cursor.set_texture_id(id); }, {"texture_id"})
+            .func("set_texture", [&cursor](const std::string& relative_path) { cursor.set_texture(relative_path); }, {"relative_path"})
+            .func("clear_texture", [&cursor]() { cursor.clear_texture(); })
             .func("get_pivot", [&cursor]() { return cursor.get_pivot(); })
             .func("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})
             .func("get_scale", [&cursor]() { return cursor.get_scale(); })

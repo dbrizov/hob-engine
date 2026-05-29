@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <string>
 #include <unordered_map>
 
 namespace hob {
@@ -14,6 +15,9 @@ namespace hob {
         mutable std::unordered_map<TextureId, GlTextureHandle> m_textures;
         mutable std::unordered_map<TextureId, int> m_texture_widths;
         mutable std::unordered_map<TextureId, int> m_texture_heights;
+        mutable std::unordered_map<std::string, TextureId> m_path_to_id;
+        mutable std::unordered_map<TextureId, std::string> m_id_to_path;
+        mutable std::unordered_map<TextureId, int> m_ref_counts;
 
     public:
         Assets();

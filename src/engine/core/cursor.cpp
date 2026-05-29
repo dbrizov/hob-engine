@@ -5,6 +5,7 @@
 #include "app.h"
 #include "assets.h"
 #include "input.h"
+#include "path_utils.h"
 #include "renderer.h"
 
 namespace hob {
@@ -14,13 +15,33 @@ namespace hob {
         set_visible(m_is_visible);
     }
 
+    Cursor::~Cursor() {
+        clear_texture();
+    }
+
     TextureId Cursor::get_texture_id() const {
         return m_texture_id;
     }
 
-    void Cursor::set_texture_id(TextureId id) {
-        m_texture_id = id;
+    void Cursor::set_texture(const std::string& relative_path) {
+        Assets& assets = m_app.get_assets();
+        const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
+        const TextureId new_id = assets.load_texture(full_path);
+
+        if (m_texture_id != INVALID_TEXTURE_ID) {
+            assets.unload_texture(m_texture_id);
+        }
+
+        m_texture_id = new_id;
         set_visible(m_is_visible); // Trigger the OS cursor fallback if the texture id is invalid
+    }
+
+    void Cursor::clear_texture() {
+        if (m_texture_id != INVALID_TEXTURE_ID) {
+            m_app.get_assets().unload_texture(m_texture_id);
+            m_texture_id = INVALID_TEXTURE_ID;
+            set_visible(m_is_visible); // Trigger the OS cursor fallback because the texture is invalid
+        }
     }
 
     Vector2 Cursor::get_pivot() const {

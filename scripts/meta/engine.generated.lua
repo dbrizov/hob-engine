@@ -86,14 +86,6 @@ function Timer.get_play_time() end
 ---@return number
 function Timer.get_delta_time() end
 
--- Assets
----@class Assets
-Assets = {}
-
----@param relative_path string
----@return integer
-function Assets.load_texture(relative_path) end
-
 -- Cursor
 ---@class Cursor
 Cursor = {}
@@ -101,8 +93,10 @@ Cursor = {}
 ---@return integer
 function Cursor.get_texture_id() end
 
----@param texture_id integer
-function Cursor.set_texture_id(texture_id) end
+---@param relative_path string
+function Cursor.set_texture(relative_path) end
+
+function Cursor.clear_texture() end
 
 ---@return Vector2
 function Cursor.get_pivot() end
@@ -449,8 +443,10 @@ local SpriteComponent = {}
 ---@return integer
 function SpriteComponent:get_texture_id() end
 
----@param id integer
-function SpriteComponent:set_texture_id(id) end
+---@param relative_path string
+function SpriteComponent:set_texture(relative_path) end
+
+function SpriteComponent:clear_texture() end
 
 ---@return Vector2
 function SpriteComponent:get_pivot() end

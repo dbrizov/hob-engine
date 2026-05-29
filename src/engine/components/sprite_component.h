@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "component.h"
 #include "engine/core/assets.h"
 #include "engine/core/renderer.h"
@@ -15,11 +17,13 @@ namespace hob {
 
     public:
         explicit SpriteComponent(Entity& entity);
+        ~SpriteComponent() override;
 
         std::string to_string() const override;
 
         TextureId get_texture_id() const;
-        void set_texture_id(TextureId texture_id);
+        void set_texture(const std::string& relative_path);
+        void clear_texture();
 
         Vector2 get_pivot() const;
         void set_pivot(const Vector2& pivot);
