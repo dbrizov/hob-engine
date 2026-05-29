@@ -5,9 +5,7 @@ end
 Cursor.config {
     texture = "images/cursor_48px.png",
     pivot = Vector2(0.24, 0.1),
-    scale = Vector2(0.8, 0.8),
-    tint = Color.white(),
-    visible = true,
+    scale = Vector2(0.8, 0.8)
 }
 
 EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))

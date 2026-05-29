@@ -103,7 +103,7 @@ namespace hob {
         static constexpr ImColor LOG_ENTRY_COLOR_ORANGE = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
         static constexpr size_t INPUT_BUFFER_SIZE = 256;
 
-        bool m_open = false;
+        bool m_is_open = false;
         char m_input_buffer[INPUT_BUFFER_SIZE] = {};
         std::vector<std::string> m_log;
         bool m_scroll_to_bottom = true;

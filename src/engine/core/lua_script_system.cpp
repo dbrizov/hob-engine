@@ -48,6 +48,7 @@ namespace hob {
     HOB_LUA_TYPE(InputComponent, "InputComponent")
     HOB_LUA_TYPE(BodyType, "BodyType")
     HOB_LUA_TYPE(InputEventType, "InputEventType")
+    HOB_LUA_TYPE(CursorMode, "CursorMode")
     // clang-format on
 
     LuaScriptSystem::LuaScriptSystem(App& app)
@@ -527,11 +528,18 @@ namespace hob {
             .fn("get_play_time", [&timer]() { return timer.get_play_time(); })
             .fn("get_delta_time", [&timer]() { return timer.get_delta_time(); });
 
+        bind_global_field(m_lua, m_meta, "INVALID_TEXTURE_ID", INVALID_TEXTURE_ID);
+
         bind_table(m_lua, m_meta, "Assets")
             .fn("load_texture", [&assets](const std::string& relative_path) {
                 std::filesystem::path full = PathUtils::get_assets_root_path() / relative_path;
                 return assets.load_texture(full);
             }, {"relative_path"});
+
+        bind_enum<CursorMode>(m_lua, m_meta, "CursorMode", {
+                                  {"Default", CursorMode::Default},
+                                  {"Confined", CursorMode::Confined},
+                              });
 
         bind_table(m_lua, m_meta, "Cursor")
             .fn("get_texture_id", [&cursor]() { return cursor.get_texture_id(); })
@@ -543,7 +551,9 @@ namespace hob {
             .fn("get_tint", [&cursor]() { return cursor.get_tint(); })
             .fn("set_tint", [&cursor](const Color& c) { cursor.set_tint(c); }, {"tint"})
             .fn("is_visible", [&cursor]() { return cursor.is_visible(); })
-            .fn("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"});
+            .fn("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"})
+            .fn("get_mode", [&cursor]() { return cursor.get_mode(); })
+            .fn("set_mode", [&cursor](CursorMode m) { cursor.set_mode(m); }, {"mode"});
 
         bind_table(m_lua, m_meta, "Camera")
             .fn("get_entity", [&spawner]() {

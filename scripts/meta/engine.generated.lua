@@ -112,6 +112,12 @@ function Cursor.is_visible() end
 ---@param visible boolean
 function Cursor.set_visible(visible) end
 
+---@return CursorMode
+function Cursor.get_mode() end
+
+---@param mode CursorMode
+function Cursor.set_mode(mode) end
+
 -- Camera
 ---@class Camera
 Camera = {}
@@ -170,6 +176,13 @@ InputEventType = {
     Axis = 0,
     Pressed = 1,
     Released = 2,
+}
+
+-- CursorMode
+---@enum CursorMode
+CursorMode = {
+    Default = 0,
+    Confined = 1,
 }
 
 -- Vector2
@@ -637,4 +650,8 @@ function InputComponent:unbind_action(name, id) end
 function InputComponent:clear_all_bindings() end
 
 _G.InputComponent = InputComponent
+
+-- Globals
+---@type integer
+INVALID_TEXTURE_ID = -1
 

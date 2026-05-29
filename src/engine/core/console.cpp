@@ -441,11 +441,11 @@ namespace hob {
     }
 
     bool Console::is_open() const {
-        return m_open;
+        return m_is_open;
     }
 
     void Console::toggle_open() {
-        m_open = !m_open;
+        m_is_open = !m_is_open;
         clear_input_buffer();
     }
 

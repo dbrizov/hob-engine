@@ -52,6 +52,8 @@ namespace hob {
         EntitySpawner m_entity_spawner;
         LuaScriptSystem m_lua_script_system;
 
+        bool m_is_os_cursor_visible_before_console_opened = false;
+
     public:
         explicit App(const AppConfig& config);
         ~App();

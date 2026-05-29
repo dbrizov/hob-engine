@@ -10,11 +10,8 @@
 namespace hob {
     Cursor::Cursor(App& app)
         : m_app(app) {
-        SDL_HideCursor();
-    }
-
-    Cursor::~Cursor() {
-        SDL_ShowCursor();
+        set_mode(m_mode);
+        set_visible(m_is_visible);
     }
 
     TextureId Cursor::get_texture_id() const {
@@ -23,6 +20,7 @@ namespace hob {
 
     void Cursor::set_texture_id(TextureId id) {
         m_texture_id = id;
+        set_visible(m_is_visible); // Trigger the OS cursor fallback if the texture id is invalid
     }
 
     Vector2 Cursor::get_pivot() const {
@@ -49,16 +47,46 @@ namespace hob {
         m_tint = tint;
     }
 
+    CursorMode Cursor::get_mode() const {
+        return m_mode;
+    }
+
+    void Cursor::set_mode(CursorMode mode) {
+        if (m_mode == mode) {
+            return;
+        }
+
+        m_mode = mode;
+        SDL_SetWindowMouseGrab(m_app.get_sdl_context().get_window(), m_mode == CursorMode::Confined);
+    }
+
     bool Cursor::is_visible() const {
-        return m_visible;
+        return m_is_visible;
     }
 
     void Cursor::set_visible(bool visible) {
-        m_visible = visible;
+        m_is_visible = visible;
+
+        // OS cursor is the fallback when our cursor is on but has no texture;
+        // otherwise it stays hidden (the engine owns cursor presentation).
+        set_os_cursor_visible(m_is_visible && m_texture_id == INVALID_TEXTURE_ID);
+    }
+
+    bool Cursor::is_os_cursor_visible() const {
+        return SDL_CursorVisible();
+    }
+
+    void Cursor::set_os_cursor_visible(bool visible) {
+        if (visible) {
+            SDL_ShowCursor();
+        }
+        else {
+            SDL_HideCursor();
+        }
     }
 
     void Cursor::render() {
-        if (!m_visible || m_texture_id == INVALID_TEXTURE_ID) {
+        if (!m_is_visible || m_texture_id == INVALID_TEXTURE_ID) {
             return;
         }
 

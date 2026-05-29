@@ -53,6 +53,14 @@ namespace hob {
                 }
                 else if (event.type == SDL_EVENT_KEY_DOWN) {
                     if (event.key.key == SDLK_GRAVE) {
+                        if (!m_console.is_open()) {
+                            m_is_os_cursor_visible_before_console_opened = m_cursor.is_os_cursor_visible();
+                            m_cursor.set_os_cursor_visible(true);
+                        }
+                        else {
+                            m_cursor.set_os_cursor_visible(m_is_os_cursor_visible_before_console_opened);
+                        }
+
                         m_console.toggle_open();
                     }
                 }

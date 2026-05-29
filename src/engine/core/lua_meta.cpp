@@ -15,6 +15,7 @@ namespace hob {
                     if (i > 0) {
                         out << ", ";
                     }
+
                     if (use_field_names) {
                         out << ut.fields[i].name;
                     }
@@ -23,6 +24,7 @@ namespace hob {
                     }
                     out << ": " << c.args[i];
                 }
+
                 out << "): " << ut.name << "\n";
             }
         }
@@ -82,6 +84,7 @@ namespace hob {
                             cur.push_back(c);
                         }
                     }
+
                     if (!cur.empty()) {
                         parts.push_back(std::move(cur));
                     }
@@ -112,6 +115,7 @@ namespace hob {
                                 type.erase(0, t0);
                             }
                         }
+
                         out << "---@vararg " << type << "\n";
                         arg_names.push_back("...");
                         continue;
@@ -138,34 +142,40 @@ namespace hob {
                     if (sep == std::string::npos) {
                         continue;
                     }
+
                     std::string name = part.substr(0, sep);
                     auto nlast = name.find_last_not_of(" \t");
                     if (nlast != std::string::npos) {
                         name.erase(nlast + 1);
                     }
+
                     std::string type = part.substr(sep + 1);
                     auto t0 = type.find_first_not_of(" \t");
                     if (t0 != std::string::npos) {
                         type.erase(0, t0);
                     }
+
                     out << "---@param " << name << " " << type << "\n";
                     arg_names.push_back(name);
                 }
                 if (!ret.empty()) {
                     out << "---@return " << ret << "\n";
                 }
+
                 if (owner.empty()) {
                     out << "function " << m.name << "(";
                 }
                 else {
                     out << "function " << owner << (m.is_static ? "." : ":") << m.name << "(";
                 }
+
                 for (std::size_t i = 0; i < arg_names.size(); ++i) {
                     if (i > 0) {
                         out << ", ";
                     }
                     out << arg_names[i];
                 }
+
                 out << ") end\n\n";
                 return;
             }
@@ -175,24 +185,29 @@ namespace hob {
             auto name_at = [&](std::size_t i) -> std::string {
                 return have_names ? m.arg_names[i] : ("arg" + std::to_string(i + 1));
             };
+
             for (std::size_t i = 0; i < m.args.size(); ++i) {
                 out << "---@param " << name_at(i) << " " << m.args[i] << "\n";
             }
+
             if (!m.ret.empty()) {
                 out << "---@return " << m.ret << "\n";
             }
+
             if (owner.empty()) {
                 out << "function " << m.name << "(";
             }
             else {
                 out << "function " << owner << (m.is_static ? "." : ":") << m.name << "(";
             }
+
             for (std::size_t i = 0; i < m.args.size(); ++i) {
                 if (i > 0) {
                     out << ", ";
                 }
                 out << name_at(i);
             }
+
             out << ") end\n\n";
         }
 
@@ -204,9 +219,11 @@ namespace hob {
             else {
                 out << "---@class " << ut.name << " : " << ut.base << "\n";
             }
+
             for (const auto& f : ut.fields) {
                 out << "---@field " << f.name << " " << f.type << "\n";
             }
+
             for (const auto& op : ut.operators) {
                 if (op.rhs.empty()) {
                     out << "---@operator " << op.op << ": " << op.ret << "\n";
@@ -232,6 +249,7 @@ namespace hob {
             for (const auto& v : e.values) {
                 out << "    " << v.name << " = " << v.value << ",\n";
             }
+
             out << "}\n\n";
         }
 
@@ -258,15 +276,23 @@ namespace hob {
         for (const auto& t : m_tables) {
             emit_table(out, t);
         }
+
         for (const auto& e : m_enums) {
             emit_enum(out, e);
         }
+
         for (const auto& ut : m_usertypes) {
             emit_usertype(out, ut);
         }
-        if (!m_globals.empty()) {
-            out << "-- Globals\n\n";
-            for (const auto& m : m_globals) {
+
+        if (!m_global_fields.empty() || !m_global_funcs.empty()) {
+            out << "-- Globals\n";
+            for (const auto& g : m_global_fields) {
+                out << "---@type " << g.type << "\n";
+                out << g.name << " = " << (g.value.empty() ? "nil" : g.value) << "\n\n";
+            }
+
+            for (const auto& m : m_global_funcs) {
                 emit_method(out, "", m);
             }
         }
@@ -279,8 +305,10 @@ namespace hob {
             debug::log_error("LuaMetaRegistry: failed to open '{}' for writing", path.string());
             return false;
         }
+
         const std::string str = out.str();
         f.write(str.data(), static_cast<std::streamsize>(str.size()));
+
         return f.good();
     }
 }

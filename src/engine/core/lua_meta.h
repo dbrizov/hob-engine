@@ -1,7 +1,9 @@
 #pragma once
 
 #include <filesystem>
+#include <format>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -116,6 +118,23 @@ namespace hob {
             fill_arg_names<Tuple>(out, std::make_index_sequence<std::tuple_size_v<Tuple>>{});
             return out;
         }
+
+        template<typename V>
+        std::string to_lua_literal(const V& value) {
+            if constexpr (std::is_same_v<V, bool>) {
+                return value ? "true" : "false";
+            }
+            else if constexpr (std::is_arithmetic_v<V>) {
+                return std::format("{}", value);
+            }
+            else if constexpr (std::is_convertible_v<V, std::string_view>) {
+                // No escaping; assumes engine-provided literals don't contain quotes/backslashes.
+                return std::format("\"{}\"", std::string_view(value));
+            }
+            else {
+                return "nil";
+            }
+        }
     }
 
     // ---------------------------------------------------------------------
@@ -133,6 +152,7 @@ namespace hob {
     struct LuaFieldInfo {
         std::string name;
         std::string type;
+        std::string value; // only used for global fields; empty for usertype/table fields
     };
 
     struct LuaOperatorInfo {
@@ -174,11 +194,15 @@ namespace hob {
         std::vector<LuaUsertypeInfo> m_usertypes;
         std::vector<LuaEnumInfo> m_enums;
         std::vector<LuaTableInfo> m_tables;
-        std::vector<LuaMethodInfo> m_globals; // free functions in _G
+        std::vector<LuaMethodInfo> m_global_funcs; // free functions in _G
+        std::vector<LuaFieldInfo> m_global_fields; // fields in _G
 
     public:
-        std::vector<LuaMethodInfo>& globals() { return m_globals; }
-        const std::vector<LuaMethodInfo>& globals() const { return m_globals; }
+        std::vector<LuaMethodInfo>& global_funcs() { return m_global_funcs; }
+        const std::vector<LuaMethodInfo>& global_funcs() const { return m_global_funcs; }
+
+        std::vector<LuaFieldInfo>& global_fields() { return m_global_fields; }
+        const std::vector<LuaFieldInfo>& global_fields() const { return m_global_fields; }
 
         LuaUsertypeInfo& add_usertype(std::string name, std::string base = {}) {
             LuaUsertypeInfo info;
@@ -474,7 +498,14 @@ namespace hob {
         info.name = name;
         info.is_static = true;
         info.ret = sig;
-        reg.globals().push_back(std::move(info));
+        reg.global_funcs().push_back(std::move(info));
+    }
+
+    // Global field in _G. The annotation generator emits a `---@type <T>` for it along with the literal value.
+    template<typename V>
+    void bind_global_field(sol::state& lua, LuaMetaRegistry& reg, const char* name, V value) {
+        lua[name] = value;
+        reg.global_fields().push_back({name, meta_detail::lua_name<V>(), meta_detail::to_lua_literal(value)});
     }
 
     template<typename E>
