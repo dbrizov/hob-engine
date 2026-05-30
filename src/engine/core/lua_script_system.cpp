@@ -375,7 +375,7 @@ namespace hob {
             .method("set_scale", &TransformComponent::set_scale, {"scale"});
 
         bind_usertype<SpriteComponent>(m_lua, m_meta, "SpriteComponent", Bases<Component>{})
-            .method("get_texture_id", &SpriteComponent::get_texture_id)
+            .method("has_texture", &SpriteComponent::has_texture)
             .method("set_texture", &SpriteComponent::set_texture, {"relative_path"})
             .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_pivot", &SpriteComponent::get_pivot)
@@ -531,15 +531,13 @@ namespace hob {
             .func("get_play_time", [&timer]() { return timer.get_play_time(); })
             .func("get_delta_time", [&timer]() { return timer.get_delta_time(); });
 
-        bind_global_field(m_lua, m_meta, "INVALID_TEXTURE_ID", INVALID_TEXTURE_ID);
-
         bind_enum<CursorMode>(m_lua, m_meta, "CursorMode", {
                                   {"Default", CursorMode::Default},
                                   {"Confined", CursorMode::Confined},
                               });
 
         bind_table(m_lua, m_meta, "Cursor")
-            .func("get_texture_id", [&cursor]() { return cursor.get_texture_id(); })
+            .func("has_texture", [&cursor]() { return cursor.has_texture(); })
             .func("set_texture",
                   [&cursor](const std::string& relative_path) { cursor.set_texture(relative_path); },
                   {"relative_path"})

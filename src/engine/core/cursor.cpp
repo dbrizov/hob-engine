@@ -16,8 +16,8 @@ namespace hob {
         set_visible(m_is_visible);
     }
 
-    TextureId Cursor::get_texture_id() const {
-        return m_texture.get_id();
+    bool Cursor::has_texture() const {
+        return m_texture.is_valid();
     }
 
     void Cursor::set_texture(const std::string& relative_path) {

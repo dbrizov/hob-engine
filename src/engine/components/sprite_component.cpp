@@ -16,8 +16,8 @@ namespace hob {
         return std::format("SpriteComponent(entity_id = {})", get_entity().get_id());
     }
 
-    TextureId SpriteComponent::get_texture_id() const {
-        return m_texture.get_id();
+    bool SpriteComponent::has_texture() const {
+        return m_texture.is_valid();
     }
 
     const TextureRef& SpriteComponent::get_texture() const {
