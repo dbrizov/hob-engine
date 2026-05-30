@@ -11,6 +11,7 @@
 #include "app.h"
 #include "console.h"
 #include "logging.h"
+#include "sdl_context.h"
 
 namespace hob {
     Color::Color()
@@ -192,10 +193,11 @@ void main() {
         }
     }
 
-    Renderer::Renderer(App& app)
-        : m_window(app.get_sdl_context().get_window())
-        , m_logical_width(app.get_config().graphics_config.logical_resolution_width)
-        , m_logical_height(app.get_config().graphics_config.logical_resolution_height)
+    Renderer::Renderer(const AppConfig& config, const SdlContext& sdl_context, Console& console)
+        : m_sdl_context(sdl_context)
+        , m_logical_width(config.graphics_config.logical_resolution_width)
+        , m_logical_height(config.graphics_config.logical_resolution_height)
+        , m_pixels_per_meter(config.graphics_config.pixels_per_meter)
         , m_projection(ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height))) {
 
         if (!init_sprite_pipeline()) {
@@ -219,7 +221,7 @@ void main() {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
-        register_cvars(app.get_console());
+        register_cvars(console);
 
         m_is_initialized = true;
         debug::log("Renderer initialized ({}x{} FBO)", m_logical_width, m_logical_height);
@@ -267,6 +269,22 @@ void main() {
 
     uint32_t Renderer::get_logical_height() const {
         return m_logical_height;
+    }
+
+    float Renderer::get_logical_width_f() const {
+        return static_cast<float>(get_logical_width());
+    }
+
+    float Renderer::get_logical_height_f() const {
+        return static_cast<float>(get_logical_height());
+    }
+
+    uint32_t Renderer::get_pixels_per_meter() const {
+        return m_pixels_per_meter;
+    }
+
+    float Renderer::get_pixels_per_meter_f() const {
+        return static_cast<float>(get_pixels_per_meter());
     }
 
     bool Renderer::init_sprite_pipeline() {
@@ -368,10 +386,15 @@ void main() {
 
         glGenTextures(1, &m_fbo_color_texture);
         glBindTexture(GL_TEXTURE_2D, m_fbo_color_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-                     static_cast<GLsizei>(m_logical_width),
-                     static_cast<GLsizei>(m_logical_height),
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA8,
+                     static_cast<GLsizei>(get_logical_width()),
+                     static_cast<GLsizei>(get_logical_height()),
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -391,7 +414,7 @@ void main() {
 
     void Renderer::frame_start() {
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-        glViewport(0, 0, static_cast<GLsizei>(m_logical_width), static_cast<GLsizei>(m_logical_height));
+        glViewport(0, 0, static_cast<GLsizei>(get_logical_width()), static_cast<GLsizei>(get_logical_height()));
         glClearColor(0.17f, 0.18f, 0.47f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -401,7 +424,7 @@ void main() {
 
         int window_w = 0;
         int window_h = 0;
-        SDL_GetWindowSizeInPixels(m_window, &window_w, &window_h);
+        SDL_GetWindowSizeInPixels(m_sdl_context.get_window(), &window_w, &window_h);
         glViewport(0, 0, window_w, window_h);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

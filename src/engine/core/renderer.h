@@ -9,12 +9,10 @@
 #include "engine/math/constants.h"
 #include "engine/math/vector2.h"
 
-struct SDL_Window;
-
 namespace hob {
-    class App;
+    struct AppConfig;
+    class SdlContext;
     class Console;
-    struct GraphicsConfig;
 
     using TextureId = uint32_t;
     constexpr TextureId INVALID_TEXTURE_ID = MAX_UINT32;
@@ -59,9 +57,10 @@ namespace hob {
             }
         };
 
-        SDL_Window* m_window;
+        const SdlContext& m_sdl_context;
         uint32_t m_logical_width;
         uint32_t m_logical_height;
+        uint32_t m_pixels_per_meter;
         std::array<float, 16> m_projection{};
 
         // Offscreen FBO at logical resolution.
@@ -98,7 +97,7 @@ namespace hob {
         bool m_is_initialized = false;
 
     public:
-        explicit Renderer(App& app);
+        Renderer(const AppConfig& config, const SdlContext& sdl_context, Console& console);
         ~Renderer();
 
         Renderer(const Renderer&) = delete;
@@ -111,6 +110,11 @@ namespace hob {
 
         uint32_t get_logical_width() const;
         uint32_t get_logical_height() const;
+        float get_logical_width_f() const;
+        float get_logical_height_f() const;
+
+        uint32_t get_pixels_per_meter() const;
+        float get_pixels_per_meter_f() const;
 
         // Begin a frame: bind FBO, set logical viewport, clear.
         void frame_start();

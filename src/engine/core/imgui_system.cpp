@@ -6,12 +6,14 @@
 
 #include "logging.h"
 #include "renderer.h"
+#include "sdl_context.h"
 
 namespace hob {
-    ImGuiSystem::ImGuiSystem(SDL_Window* window, SDL_GLContext gl_context)
-        : m_window(window)
-        , m_gl_context(gl_context) {
-        if (!m_window || !m_gl_context) {
+    ImGuiSystem::ImGuiSystem(const SdlContext& sdl_context) {
+        SDL_Window* window = sdl_context.get_window();
+        SDL_GLContext gl_context = sdl_context.get_gl_context();
+
+        if (!window || !gl_context) {
             debug::log_error("ImGuiSystem init failed: window/GL context is null");
             return;
         }
@@ -33,7 +35,7 @@ namespace hob {
 
         ImGui::StyleColorsDark();
 
-        if (!ImGui_ImplSDL3_InitForOpenGL(m_window, m_gl_context)) {
+        if (!ImGui_ImplSDL3_InitForOpenGL(window, gl_context)) {
             debug::log_error("ImGui_ImplSDL3_InitForOpenGL failed");
             ImGui::DestroyContext(m_context);
             return;

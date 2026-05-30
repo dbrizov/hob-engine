@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "app.h"
+#include "console.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"
@@ -33,14 +34,14 @@ namespace hob {
         return m_id;
     }
 
-    Physics::Physics(App& app)
-        : m_physics_world(app.get_config().physics_config.gravity)
+    Physics::Physics(const AppConfig& config, Console& console)
+        : m_physics_world(config.physics_config.gravity)
         , m_accumulator(0.0f)
-        , m_fixed_delta_time(delta_time_from_ticks(app.get_config().physics_config.ticks_per_second))
-        , m_sub_steps_per_tick(app.get_config().physics_config.sub_steps_per_tick)
+        , m_fixed_delta_time(delta_time_from_ticks(config.physics_config.ticks_per_second))
+        , m_sub_steps_per_tick(config.physics_config.sub_steps_per_tick)
         , m_interpolation_fraction(0.0f)
-        , m_interpolation_enabled(app.get_config().physics_config.interpolation_enabled) {
-        register_cvars(app.get_console());
+        , m_interpolation_enabled(config.physics_config.interpolation_enabled) {
+        register_cvars(console);
     }
 
     void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {

@@ -3,6 +3,8 @@
 #include <cstdint>
 
 namespace hob {
+    struct AppConfig;
+
     class Timer {
         uint32_t m_target_fps;
         bool m_vsync_enabled;
@@ -20,7 +22,7 @@ namespace hob {
         friend class App;
 
     public:
-        Timer(uint32_t fps, bool vsync_enabled);
+        explicit Timer(const AppConfig& config);
 
         uint32_t get_fps() const;
         void set_fps(uint32_t fps);

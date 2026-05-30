@@ -10,7 +10,8 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    class App;
+    class SdlContext;
+    class Renderer;
 
     enum class InputEventType {
         Axis,
@@ -46,7 +47,8 @@ namespace hob {
     };
 
     class Input {
-        App& m_app;
+        const SdlContext& m_sdl_context;
+        const Renderer& m_renderer;
 
         struct HandlerEntry {
             InputEventHandlerId handler_id;
@@ -66,7 +68,7 @@ namespace hob {
         Vector2 m_mouse_screen_position;
 
     public:
-        explicit Input(App& app);
+        Input(const SdlContext& sdl_context, const Renderer& renderer);
 
         void tick(float delta_time);
 

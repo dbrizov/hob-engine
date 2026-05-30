@@ -3,17 +3,16 @@
 #include <SDL3/SDL_events.h>
 
 struct ImGuiContext;
-struct SDL_Window;
 
 namespace hob {
+    class SdlContext;
+
     class ImGuiSystem {
         bool m_is_initialized = false;
         ImGuiContext* m_context = nullptr;
-        SDL_Window* m_window = nullptr;
-        SDL_GLContext m_gl_context = nullptr;
 
     public:
-        ImGuiSystem(SDL_Window* window, SDL_GLContext gl_context);
+        explicit ImGuiSystem(const SdlContext& sdl_context);
         ~ImGuiSystem();
 
         ImGuiSystem(const ImGuiSystem&) = delete;

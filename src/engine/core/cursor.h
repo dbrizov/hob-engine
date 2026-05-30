@@ -6,7 +6,8 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    class App;
+    class Input;
+    class SdlContext;
 
     enum class CursorMode {
         Default, // Free movement; cursor can leave the window
@@ -16,7 +17,9 @@ namespace hob {
     // Owns the custom in-game cursor. Hides the OS cursor at construction.
     // Eliminates lag between the engine's mouse position and the OS' mouse position.
     class Cursor {
-        App& m_app;
+        const SdlContext& m_sdl_context;
+        Renderer& m_renderer;
+        const Input& m_input;
         TextureId m_texture_id = INVALID_TEXTURE_ID;
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
@@ -25,7 +28,7 @@ namespace hob {
         bool m_is_visible = true;
 
     public:
-        explicit Cursor(App& app);
+        Cursor(const SdlContext& sdl_context, Renderer& renderer, const Input& input);
         ~Cursor();
 
         Cursor(const Cursor&) = delete;

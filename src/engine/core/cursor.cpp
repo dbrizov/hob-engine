@@ -2,14 +2,16 @@
 
 #include <SDL3/SDL_mouse.h>
 
-#include "app.h"
 #include "input.h"
 #include "path_utils.h"
 #include "renderer.h"
+#include "sdl_context.h"
 
 namespace hob {
-    Cursor::Cursor(App& app)
-        : m_app(app) {
+    Cursor::Cursor(const SdlContext& sdl_context, Renderer& renderer, const Input& input)
+        : m_sdl_context(sdl_context)
+        , m_renderer(renderer)
+        , m_input(input) {
         set_mode(m_mode);
         set_visible(m_is_visible);
     }
@@ -23,12 +25,11 @@ namespace hob {
     }
 
     void Cursor::set_texture(const std::string& relative_path) {
-        Renderer& renderer = m_app.get_renderer();
         const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
-        const TextureId new_id = renderer.load_texture(full_path);
+        const TextureId new_id = m_renderer.load_texture(full_path);
 
         if (m_texture_id != INVALID_TEXTURE_ID) {
-            renderer.unload_texture(m_texture_id);
+            m_renderer.unload_texture(m_texture_id);
         }
 
         m_texture_id = new_id;
@@ -37,7 +38,7 @@ namespace hob {
 
     void Cursor::clear_texture() {
         if (m_texture_id != INVALID_TEXTURE_ID) {
-            m_app.get_renderer().unload_texture(m_texture_id);
+            m_renderer.unload_texture(m_texture_id);
             m_texture_id = INVALID_TEXTURE_ID;
             set_visible(m_is_visible); // trigger the OS cursor fallback because the texture id is invalid
         }
@@ -77,7 +78,7 @@ namespace hob {
         }
 
         m_mode = mode;
-        SDL_SetWindowMouseGrab(m_app.get_sdl_context().get_window(), m_mode == CursorMode::Confined);
+        SDL_SetWindowMouseGrab(m_sdl_context.get_window(), m_mode == CursorMode::Confined);
     }
 
     bool Cursor::is_visible() const {
@@ -110,24 +111,23 @@ namespace hob {
             return;
         }
 
-        Renderer& renderer = m_app.get_renderer();
         int texture_width = 0;
         int texture_height = 0;
-        renderer.get_texture_size(m_texture_id, texture_width, texture_height);
+        m_renderer.get_texture_size(m_texture_id, texture_width, texture_height);
 
         const float f_w = static_cast<float>(texture_width);
         const float f_h = static_cast<float>(texture_height);
         const Vector2 size(f_w * m_scale.x, f_h * m_scale.y);
         const Vector2 pivot_pixel(size.x * m_pivot.x, size.y * m_pivot.y);
 
-        Vector2 mouse_screen = m_app.get_input().get_mouse_screen_position();
+        Vector2 mouse_screen = m_input.get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot_pixel.x, mouse_screen.y - pivot_pixel.y);
 
-        renderer.draw_sprite(m_texture_id,
-                             screen_pos,
-                             size,
-                             pivot_pixel,
-                             0.0f,
-                             m_tint);
+        m_renderer.draw_sprite(m_texture_id,
+                               screen_pos,
+                               size,
+                               pivot_pixel,
+                               0.0f,
+                               m_tint);
     }
 }

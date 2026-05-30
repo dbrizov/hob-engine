@@ -8,19 +8,17 @@
 #include "engine/components/camera_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
-#include "engine/math/constants.h"
 
 namespace hob {
     App::App(const AppConfig& config)
-        : m_config(config)
-        , m_sdl_context(config.graphics_config)
-        , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_gl_context())
+        : m_sdl_context(config.graphics_config)
+        , m_imgui_system(m_sdl_context)
         , m_console()
-        , m_renderer(*this)
-        , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
-        , m_input(*this)
-        , m_physics(*this)
-        , m_cursor(*this)
+        , m_renderer(config, m_sdl_context, m_console)
+        , m_timer(config)
+        , m_input(m_sdl_context, m_renderer)
+        , m_physics(config, m_console)
+        , m_cursor(m_sdl_context, m_renderer, m_input)
         , m_entity_spawner(*this)
         , m_lua_script_system(*this) {
     }
@@ -118,20 +116,16 @@ namespace hob {
                m_imgui_system.is_initialized();
     }
 
-    const AppConfig& App::get_config() const {
-        return m_config;
-    }
-
     SdlContext& App::get_sdl_context() {
         return m_sdl_context;
     }
 
-    Renderer& App::get_renderer() {
-        return m_renderer;
-    }
-
     Console& App::get_console() {
         return m_console;
+    }
+
+    Renderer& App::get_renderer() {
+        return m_renderer;
     }
 
     Timer& App::get_timer() {

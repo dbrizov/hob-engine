@@ -36,8 +36,6 @@ namespace hob {
     };
 
     class App {
-        AppConfig m_config;
-
         // Order matters
         SdlContext m_sdl_context;
         ImGuiSystem m_imgui_system;
@@ -60,11 +58,9 @@ namespace hob {
 
         bool is_initialized() const;
 
-        const AppConfig& get_config() const;
-
         SdlContext& get_sdl_context();
-        Renderer& get_renderer();
         Console& get_console();
+        Renderer& get_renderer();
         Timer& get_timer();
         Input& get_input();
         Physics& get_physics();

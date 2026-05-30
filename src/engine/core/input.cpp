@@ -6,10 +6,10 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 
-#include "app.h"
 #include "logging.h"
 #include "path_utils.h"
 #include "renderer.h"
+#include "sdl_context.h"
 
 namespace hob {
     // ---------------- InputMappings ----------------
@@ -108,8 +108,9 @@ namespace hob {
     }
 
     // ---------------- Input ----------------
-    Input::Input(App& app)
-        : m_app(app) {
+    Input::Input(const SdlContext& sdl_context, const Renderer& renderer)
+        : m_sdl_context(sdl_context)
+        , m_renderer(renderer) {
         m_input_mappings = load_input_mappings(PathUtils::get_input_config_path());
         m_relevant_keys = m_input_mappings.relevant_keys();
 
@@ -215,11 +216,10 @@ namespace hob {
         // uniform STRETCH (no letterboxing today), so the mapping is just an axis-wise scale.
         int window_w = 0;
         int window_h = 0;
-        SDL_GetWindowSize(m_app.get_sdl_context().get_window(), &window_w, &window_h);
+        SDL_GetWindowSize(m_sdl_context.get_window(), &window_w, &window_h);
 
-        const Renderer& renderer = m_app.get_renderer();
-        const float logical_w = static_cast<float>(renderer.get_logical_width());
-        const float logical_h = static_cast<float>(renderer.get_logical_height());
+        const float logical_w = m_renderer.get_logical_width_f();
+        const float logical_h = m_renderer.get_logical_height_f();
 
         if (window_w > 0 && window_h > 0) {
             x = x * (logical_w / static_cast<float>(window_w));
