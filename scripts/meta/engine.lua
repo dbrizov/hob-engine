@@ -54,14 +54,8 @@ function LuaComponent:on_trigger_enter(other) end
 function LuaComponent:on_trigger_exit(other) end
 
 ----------------------------------------------------------------------
--- DefineComponent / DefineEntity (Lua-side, scripts/engine/*.lua)
+-- Engine Defs
 ----------------------------------------------------------------------
-
---- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
---- and creates a global `Foo`. The table may contain default fields,
---- and methods (`init`, `enter_play`, `exit_play`, `tick`, ...).
----@class DefineComponent
-DefineComponent = {}
 
 --- Assigning `DefineEntity.Foo = { ... }` registers a prefab usable via
 --- `EntitySpawner.spawn_entity("Foo", ...)`. Recognized keys: `ticking`,
@@ -69,3 +63,37 @@ DefineComponent = {}
 --- `sprite`, `input`, `lua_components` (list of component class names).
 ---@class DefineEntity
 DefineEntity = {}
+
+--- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
+--- and creates a global `Foo`. The table may contain default fields,
+--- and methods (`init`, `enter_play`, `exit_play`, `tick`, ...).
+---@class DefineComponent
+DefineComponent = {}
+
+--- Assigning `DefineMixin.Foo = { ... }` registers an orthogonal capability
+--- bag that can be merged into a Component class via `__mixins = { "Foo" }`.
+--- Mixins are NOT components: no lifecycle hooks, no inheritance, no `new`.
+--- Keys must not collide with the parent or other mixins; the def's own keys
+--- may override a mixin key.
+---@class DefineMixin
+DefineMixin = {}
+
+--- Assigning `DefineAsset.Foo = "path/under/assets"` registers a named alias
+--- for an asset path. Reference it as `Assets.Foo` in prefabs and config;
+--- the lookup is deferred and resolved at dispatch time, so DefineAsset calls
+--- can live in any file in any load order. When passing `Assets.Foo` directly
+--- to a C++ setter, unwrap with `Assets.resolve(...)` or `tostring(...)`.
+---@class DefineAsset
+DefineAsset = {}
+
+--- Registry of asset aliases declared via `DefineAsset`. `Assets.Foo` returns
+--- a deferred reference that resolves to the registered path via __tostring.
+---@class Assets
+Assets = {}
+
+--- Unwrap an `Assets.X` deferred reference into its underlying path string.
+--- Non-asset values are returned unchanged. Use this when passing an asset to
+--- a C++ setter that expects a plain string.
+---@param value any
+---@return any
+function Assets.resolve(value) end
