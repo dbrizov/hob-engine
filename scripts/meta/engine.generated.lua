@@ -603,6 +603,11 @@ function ColliderComponent:is_trigger() end
 ---@param trigger boolean
 function ColliderComponent:set_trigger(trigger) end
 
+---@return Vector2
+function ColliderComponent:get_baked_scale() end
+
+function ColliderComponent:on_scale_changed() end
+
 _G.ColliderComponent = ColliderComponent
 
 -- BoxColliderComponent
@@ -614,6 +619,9 @@ function BoxColliderComponent:get_aabb() end
 
 ---@param aabb AABB
 function BoxColliderComponent:set_aabb(aabb) end
+
+---@return AABB
+function BoxColliderComponent:get_scaled_aabb() end
 
 _G.BoxColliderComponent = BoxColliderComponent
 
@@ -627,6 +635,9 @@ function CapsuleColliderComponent:get_capsule() end
 ---@param capsule Capsule
 function CapsuleColliderComponent:set_capsule(capsule) end
 
+---@return Capsule
+function CapsuleColliderComponent:get_scaled_capsule() end
+
 _G.CapsuleColliderComponent = CapsuleColliderComponent
 
 -- CircleColliderComponent
@@ -638,6 +649,9 @@ function CircleColliderComponent:get_circle() end
 
 ---@param circle Circle
 function CircleColliderComponent:set_circle(circle) end
+
+---@return Circle
+function CircleColliderComponent:get_scaled_circle() end
 
 _G.CircleColliderComponent = CircleColliderComponent
 

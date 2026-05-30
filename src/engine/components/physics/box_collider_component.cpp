@@ -29,14 +29,19 @@ namespace hob {
     }
 
     AABB BoxColliderComponent::get_scaled_aabb() const {
-        return scale_aabb(m_aabb, get_initial_scale());
+        return scale_aabb(m_aabb, get_baked_scale());
     }
 
     b2ShapeId BoxColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
         AABB scaled = scale_aabb(m_aabb, scale);
         b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
-        b2ShapeId shape_id = b2CreatePolygonShape(get_body_id(), &shape_def, &box);
-        return shape_id;
+        return b2CreatePolygonShape(get_body_id(), &shape_def, &box);
+    }
+
+    void BoxColliderComponent::rebake_shape(const Vector2& scale) {
+        AABB scaled = scale_aabb(m_aabb, scale);
+        b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
+        b2Shape_SetPolygon(get_shape_id(), &box);
     }
 
     void BoxColliderComponent::debug_draw_shape(const Color& color, const Vector2& scale) const {

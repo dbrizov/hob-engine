@@ -29,19 +29,25 @@ namespace hob {
     }
 
     Capsule CapsuleColliderComponent::get_scaled_capsule() const {
-        return scale_capsule(m_capsule, get_initial_scale());
+        return scale_capsule(m_capsule, get_baked_scale());
     }
 
     b2ShapeId CapsuleColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
         Capsule scaled = scale_capsule(m_capsule, scale);
-
         b2Capsule b2_capsule;
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
         b2_capsule.center2 = Physics::vec2_to_b2Vec2(scaled.center_b);
         b2_capsule.radius = scaled.radius;
+        return b2CreateCapsuleShape(get_body_id(), &shape_def, &b2_capsule);
+    }
 
-        b2ShapeId shape_id = b2CreateCapsuleShape(get_body_id(), &shape_def, &b2_capsule);
-        return shape_id;
+    void CapsuleColliderComponent::rebake_shape(const Vector2& scale) {
+        Capsule scaled = scale_capsule(m_capsule, scale);
+        b2Capsule b2_capsule;
+        b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
+        b2_capsule.center2 = Physics::vec2_to_b2Vec2(scaled.center_b);
+        b2_capsule.radius = scaled.radius;
+        b2Shape_SetCapsule(get_shape_id(), &b2_capsule);
     }
 
     void CapsuleColliderComponent::debug_draw_shape(const Color& color, const Vector2& scale) const {

@@ -18,9 +18,8 @@ namespace hob {
         uint64_t m_collision_mask = ~0ull; // What this collider collides with
         bool m_is_trigger = false;
 
-        // Modifying the transform's scale doesn't resize the colliders at runtime.
-        // This is the initial scale of transform cached on enter_play().
-        Vector2 m_initial_scale = Vector2(1.0f, 1.0f);
+        // Transform scale baked into the physics shape; refreshed on enter_play / on_scale_changed.
+        Vector2 m_baked_scale = Vector2(1.0f, 1.0f);
 
     public:
         explicit ColliderComponent(Entity& entity);
@@ -52,12 +51,15 @@ namespace hob {
         bool is_trigger() const;
         void set_trigger(bool trigger);
 
-        // The transform scale baked into the physics shape at enter_play().
-        // Box2D doesn't support resizing shapes, so this is the scale that's actually in effect.
-        Vector2 get_initial_scale() const;
+        Vector2 get_baked_scale() const;
+
+        // Rebuilds the physics shape if the transform's scale changed.
+        // Auto-invoked by TransformComponent::set_scale.
+        void on_scale_changed();
 
     protected:
         virtual b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) = 0;
+        virtual void rebake_shape(const Vector2& scale) = 0;
         virtual void debug_draw_shape(const Color& color, const Vector2& scale) const = 0;
     };
 }

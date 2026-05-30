@@ -446,22 +446,27 @@ namespace hob {
             .method("get_collision_mask", &ColliderComponent::get_collision_mask)
             .method("set_collision_mask", &ColliderComponent::set_collision_mask, {"mask"})
             .method("is_trigger", &ColliderComponent::is_trigger)
-            .method("set_trigger", &ColliderComponent::set_trigger, {"trigger"});
+            .method("set_trigger", &ColliderComponent::set_trigger, {"trigger"})
+            .method("get_baked_scale", &ColliderComponent::get_baked_scale)
+            .method("on_scale_changed", &ColliderComponent::on_scale_changed);
 
         bind_usertype<BoxColliderComponent>(m_lua, m_meta, "BoxColliderComponent",
                                             Bases<ColliderComponent, Component>{})
             .method("get_aabb", &BoxColliderComponent::get_aabb)
-            .method("set_aabb", &BoxColliderComponent::set_aabb, {"aabb"});
+            .method("set_aabb", &BoxColliderComponent::set_aabb, {"aabb"})
+            .method("get_scaled_aabb", &BoxColliderComponent::get_scaled_aabb);
 
         bind_usertype<CapsuleColliderComponent>(m_lua, m_meta, "CapsuleColliderComponent",
                                                 Bases<ColliderComponent, Component>{})
             .method("get_capsule", &CapsuleColliderComponent::get_capsule)
-            .method("set_capsule", &CapsuleColliderComponent::set_capsule, {"capsule"});
+            .method("set_capsule", &CapsuleColliderComponent::set_capsule, {"capsule"})
+            .method("get_scaled_capsule", &CapsuleColliderComponent::get_scaled_capsule);
 
         bind_usertype<CircleColliderComponent>(m_lua, m_meta, "CircleColliderComponent",
                                                Bases<ColliderComponent, Component>{})
             .method("get_circle", &CircleColliderComponent::get_circle)
-            .method("set_circle", &CircleColliderComponent::set_circle, {"circle"});
+            .method("set_circle", &CircleColliderComponent::set_circle, {"circle"})
+            .method("get_scaled_circle", &CircleColliderComponent::get_scaled_circle);
 
         bind_usertype<CharacterBodyComponent>(m_lua, m_meta, "CharacterBodyComponent", Bases<Component>{})
             .method("get_collision_layer", &CharacterBodyComponent::get_collision_layer)

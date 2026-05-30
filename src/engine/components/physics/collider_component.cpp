@@ -27,8 +27,8 @@ namespace hob {
         shape_def.filter.maskBits = m_collision_mask;
         shape_def.isSensor = m_is_trigger;
 
-        m_initial_scale = get_entity().get_transform()->get_scale();
-        m_shape_id = create_shape(shape_def, m_initial_scale);
+        m_baked_scale = get_entity().get_transform()->get_scale();
+        m_shape_id = create_shape(shape_def, m_baked_scale);
 
         b2Shape_SetUserData(m_shape_id, this);
         b2Shape_EnableSensorEvents(m_shape_id, true);
@@ -63,7 +63,7 @@ namespace hob {
         }
 
         if (get_engine().get_physics().cvar_debug_draw) {
-            debug_draw_shape(color, m_initial_scale);
+            debug_draw_shape(color, m_baked_scale);
         }
     }
 
@@ -128,7 +128,21 @@ namespace hob {
         m_is_trigger = trigger;
     }
 
-    Vector2 ColliderComponent::get_initial_scale() const {
-        return m_initial_scale;
+    Vector2 ColliderComponent::get_baked_scale() const {
+        return m_baked_scale;
+    }
+
+    void ColliderComponent::on_scale_changed() {
+        if (!b2Shape_IsValid(m_shape_id)) {
+            return; // not in play yet; enter_play() will bake the scale.
+        }
+
+        Vector2 current_scale = get_entity().get_transform()->get_scale();
+        if (current_scale == m_baked_scale) {
+            return;
+        }
+
+        m_baked_scale = current_scale;
+        rebake_shape(m_baked_scale);
     }
 }

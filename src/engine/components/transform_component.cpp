@@ -3,6 +3,7 @@
 #include <cmath>
 #include <format>
 
+#include "engine/components/physics/collider_component.h"
 #include "engine/entity/entity.h"
 
 namespace hob {
@@ -45,6 +46,11 @@ namespace hob {
     void TransformComponent::set_scale(const Vector2& scale) {
         m_scale = scale;
         rebuild_local_matrix();
+
+        // Physics shapes can't be resized in place; have each collider rebuild.
+        for (ColliderComponent* collider : get_entity().get_components<ColliderComponent>()) {
+            collider->on_scale_changed();
+        }
     }
 
     const Matrix2x3& TransformComponent::get_local_matrix() const {

@@ -30,18 +30,23 @@ namespace hob {
     }
 
     Circle CircleColliderComponent::get_scaled_circle() const {
-        return scale_circle(m_circle, get_initial_scale());
+        return scale_circle(m_circle, get_baked_scale());
     }
 
     b2ShapeId CircleColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
         Circle scaled = scale_circle(m_circle, scale);
-
         b2Circle b2_circle;
         b2_circle.center = Physics::vec2_to_b2Vec2(scaled.center);
         b2_circle.radius = scaled.radius;
+        return b2CreateCircleShape(get_body_id(), &shape_def, &b2_circle);
+    }
 
-        b2ShapeId shape_id = b2CreateCircleShape(get_body_id(), &shape_def, &b2_circle);
-        return shape_id;
+    void CircleColliderComponent::rebake_shape(const Vector2& scale) {
+        Circle scaled = scale_circle(m_circle, scale);
+        b2Circle b2_circle;
+        b2_circle.center = Physics::vec2_to_b2Vec2(scaled.center);
+        b2_circle.radius = scaled.radius;
+        b2Shape_SetCircle(get_shape_id(), &b2_circle);
     }
 
     void CircleColliderComponent::debug_draw_shape(const Color& color, const Vector2& scale) const {

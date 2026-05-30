@@ -18,12 +18,11 @@ namespace hob {
         Circle get_circle() const;
         void set_circle(const Circle& circle);
 
-        // The local circle with the collider's initial scale baked in -
-        // matches the actual shape registered with Box2D.
         Circle get_scaled_circle() const;
 
     protected:
         virtual b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) override;
+        virtual void rebake_shape(const Vector2& scale) override;
         virtual void debug_draw_shape(const Color& color, const Vector2& scale) const override;
 
     private:

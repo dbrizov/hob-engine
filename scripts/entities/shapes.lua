@@ -67,3 +67,24 @@ DefineEntity.TriggerCircle = {
     },
     lua_components = { "ContactLogger" },
 }
+
+DefineEntity.PulsingStaticCircle = {
+    ticking = true,
+    rigidbody = {},
+    circle_collider = {
+        collision_layer = Collision.Static,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
+    },
+    lua_components = { "PulseScale" },
+}
+
+DefineEntity.PulsingTriggerCircle = {
+    ticking = true,
+    rigidbody = {},
+    circle_collider = {
+        trigger = true,
+        collision_layer = Collision.Trigger,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
+    },
+    lua_components = { "PulseScale", "ContactLogger" },
+}

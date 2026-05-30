@@ -46,3 +46,8 @@ EntitySpawner.spawn_entity("StaticCircle", Vector2( 5.0 * SCALE, 0.0), 0, S)
 -- Checkpoint triggers (top and bottom of the arena)
 EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0,  4.0 * SCALE), 0, S)
 EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0, -4.0 * SCALE), 0, S)
+
+-- Live-rescale test: a box that pulses its scale with a sin wave.
+-- Walk into it to verify the player gets pushed out as it grows.
+EntitySpawner.spawn_entity("PulsingStaticCircle", Vector2(-4.0, 0.0))
+EntitySpawner.spawn_entity("PulsingTriggerCircle", Vector2(4.0, 0.0))

@@ -18,12 +18,11 @@ namespace hob {
         Capsule get_capsule() const;
         void set_capsule(const Capsule& capsule);
 
-        // The local capsule with the collider's initial scale baked in -
-        // matches the actual shape registered with Box2D.
         Capsule get_scaled_capsule() const;
 
     protected:
         virtual b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) override;
+        virtual void rebake_shape(const Vector2& scale) override;
         virtual void debug_draw_shape(const Color& color, const Vector2& scale) const override;
 
     private:
