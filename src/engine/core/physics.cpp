@@ -180,6 +180,12 @@ namespace hob {
                 return 1.0f; // continue
             }
 
+            // Skip initial-overlap hits (ray origin is inside this shape).
+            // b2World_CastRayClosest already does this; mirror it for consistency.
+            if (fraction <= 0.0f) {
+                return 1.0f; // continue
+            }
+
             auto* collider = static_cast<ColliderComponent*>(b2Shape_GetUserData(shape_id));
             if (collider == nullptr) {
                 return 1.0f; // continue
