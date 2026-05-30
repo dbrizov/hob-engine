@@ -277,19 +277,6 @@ function Vector2.rotate_around(point, pivot, radians) end
 
 _G.Vector2 = Vector2
 
--- Capsule
----@class Capsule
----@field center_a Vector2
----@field center_b Vector2
----@field radius number
----@overload fun(center_a: Vector2, center_b: Vector2, radius: number): Capsule
-local Capsule = {}
-
----@return number
-function Capsule:get_height() end
-
-_G.Capsule = Capsule
-
 -- AABB
 ---@class AABB
 ---@field center Vector2
@@ -307,6 +294,28 @@ function AABB:max() end
 function AABB:size() end
 
 _G.AABB = AABB
+
+-- Capsule
+---@class Capsule
+---@field center_a Vector2
+---@field center_b Vector2
+---@field radius number
+---@overload fun(center_a: Vector2, center_b: Vector2, radius: number): Capsule
+local Capsule = {}
+
+---@return number
+function Capsule:get_height() end
+
+_G.Capsule = Capsule
+
+-- Circle
+---@class Circle
+---@field center Vector2
+---@field radius number
+---@overload fun(center: Vector2, radius: number): Circle
+local Circle = {}
+
+_G.Circle = Circle
 
 -- Color
 ---@class Color
@@ -378,6 +387,9 @@ function Entity:add_box_collider() end
 ---@return CapsuleColliderComponent?
 function Entity:add_capsule_collider() end
 
+---@return CircleColliderComponent?
+function Entity:add_circle_collider() end
+
 ---@return CharacterBodyComponent?
 function Entity:add_character_body() end
 
@@ -402,6 +414,9 @@ function Entity:get_box_collider() end
 
 ---@return CapsuleColliderComponent?
 function Entity:get_capsule_collider() end
+
+---@return CircleColliderComponent?
+function Entity:get_circle_collider() end
 
 ---@return CharacterBodyComponent?
 function Entity:get_character_body() end
@@ -607,6 +622,18 @@ function CapsuleColliderComponent:get_capsule() end
 function CapsuleColliderComponent:set_capsule(capsule) end
 
 _G.CapsuleColliderComponent = CapsuleColliderComponent
+
+-- CircleColliderComponent
+---@class CircleColliderComponent : ColliderComponent
+local CircleColliderComponent = {}
+
+---@return Circle
+function CircleColliderComponent:get_circle() end
+
+---@param circle Circle
+function CircleColliderComponent:set_circle(circle) end
+
+_G.CircleColliderComponent = CircleColliderComponent
 
 -- CharacterBodyComponent
 ---@class CharacterBodyComponent : Component

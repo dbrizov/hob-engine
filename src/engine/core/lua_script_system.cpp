@@ -17,6 +17,7 @@
 #include "engine/components/lua_script_component.h"
 #include "engine/components/physics/box_collider_component.h"
 #include "engine/components/physics/capsule_collider_component.h"
+#include "engine/components/physics/circle_collider_component.h"
 #include "engine/components/physics/character_body_component.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
@@ -26,6 +27,7 @@
 #include "engine/entity/entity_spawner.h"
 #include "engine/math/aabb.h"
 #include "engine/math/capsule.h"
+#include "engine/math/circle.h"
 #include "engine/math/constants.h"
 #include "engine/math/mathf.h"
 #include "engine/math/vector2.h"
@@ -33,8 +35,9 @@
 namespace hob {
     // clang-format off
     HOB_LUA_TYPE(Vector2, "Vector2")
-    HOB_LUA_TYPE(Capsule, "Capsule")
     HOB_LUA_TYPE(AABB, "AABB")
+    HOB_LUA_TYPE(Capsule, "Capsule")
+    HOB_LUA_TYPE(Circle, "Circle")
     HOB_LUA_TYPE(Color, "Color")
     HOB_LUA_TYPE(EntityHandle, "Entity")
     HOB_LUA_TYPE(Component, "Component")
@@ -45,6 +48,7 @@ namespace hob {
     HOB_LUA_TYPE(ColliderComponent, "ColliderComponent")
     HOB_LUA_TYPE(BoxColliderComponent, "BoxColliderComponent")
     HOB_LUA_TYPE(CapsuleColliderComponent, "CapsuleColliderComponent")
+    HOB_LUA_TYPE(CircleColliderComponent, "CircleColliderComponent")
     HOB_LUA_TYPE(CharacterBodyComponent, "CharacterBodyComponent")
     HOB_LUA_TYPE(InputComponent, "InputComponent")
     HOB_LUA_TYPE(BodyType, "BodyType")
@@ -204,13 +208,6 @@ namespace hob {
             .method("lerp", &Vector2::lerp, {"a", "b", "t"})
             .method("rotate_around", &Vector2::rotate_around, {"point", "pivot", "radians"});
 
-        bind_usertype<Capsule>(m_lua, m_meta, "Capsule")
-            .ctors<sol::types<const Vector2&, const Vector2&, float>>()
-            .field("center_a", &Capsule::center_a)
-            .field("center_b", &Capsule::center_b)
-            .field("radius", &Capsule::radius)
-            .method("get_height", &Capsule::get_height);
-
         bind_usertype<AABB>(m_lua, m_meta, "AABB")
             .ctors<sol::types<const Vector2&, const Vector2&>>()
             .field("center", &AABB::center)
@@ -218,6 +215,18 @@ namespace hob {
             .method("min", &AABB::min)
             .method("max", &AABB::max)
             .method("size", &AABB::size);
+
+        bind_usertype<Capsule>(m_lua, m_meta, "Capsule")
+            .ctors<sol::types<const Vector2&, const Vector2&, float>>()
+            .field("center_a", &Capsule::center_a)
+            .field("center_b", &Capsule::center_b)
+            .field("radius", &Capsule::radius)
+            .method("get_height", &Capsule::get_height);
+
+        bind_usertype<Circle>(m_lua, m_meta, "Circle")
+            .ctors<sol::types<const Vector2&, float>>()
+            .field("center", &Circle::center)
+            .field("radius", &Circle::radius);
 
         bind_usertype<Color>(m_lua, m_meta, "Color")
             .ctors<sol::types<>, sol::types<float, float, float, float>>()
@@ -273,6 +282,10 @@ namespace hob {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<CapsuleColliderComponent>() : nullptr;
             })
+            .method("add_circle_collider", [get_entity](const EntityHandle& h) -> CircleColliderComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->add_component<CircleColliderComponent>() : nullptr;
+            })
             .method("add_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->add_component<CharacterBodyComponent>() : nullptr;
@@ -315,6 +328,10 @@ namespace hob {
             .method("get_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_component<CapsuleColliderComponent>() : nullptr;
+            })
+            .method("get_circle_collider", [get_entity](const EntityHandle& h) -> CircleColliderComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_component<CircleColliderComponent>() : nullptr;
             })
             .method("get_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
                 Entity* e = get_entity(h);
@@ -438,6 +455,11 @@ namespace hob {
                                                 Bases<ColliderComponent, Component>{})
             .method("get_capsule", &CapsuleColliderComponent::get_capsule)
             .method("set_capsule", &CapsuleColliderComponent::set_capsule, {"capsule"});
+
+        bind_usertype<CircleColliderComponent>(m_lua, m_meta, "CircleColliderComponent",
+                                               Bases<ColliderComponent, Component>{})
+            .method("get_circle", &CircleColliderComponent::get_circle)
+            .method("set_circle", &CircleColliderComponent::set_circle, {"circle"});
 
         bind_usertype<CharacterBodyComponent>(m_lua, m_meta, "CharacterBodyComponent", Bases<Component>{})
             .method("get_collision_layer", &CharacterBodyComponent::get_collision_layer)

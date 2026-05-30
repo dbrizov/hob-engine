@@ -79,11 +79,11 @@ namespace hob {
             std::string path;
             int ref_count;
 
-            TextureEntry(uint32_t _width, uint32_t _height, std::string _path, int _ref_count)
-                : width(_width)
-                , height(_height)
-                , path(std::move(_path))
-                , ref_count(_ref_count) {
+            TextureEntry(uint32_t width_, uint32_t height_, std::string path_, int ref_count_)
+                : width(width_)
+                , height(height_)
+                , path(std::move(path_))
+                , ref_count(ref_count_) {
             }
         };
 

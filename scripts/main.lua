@@ -22,9 +22,14 @@ for y = -3, 4 do
     EntitySpawner.spawn_entity("StaticBox", Vector2(-5.0, y))
 end
 
+-- trigger boxes
+EntitySpawner.spawn_entity("TriggerBox", Vector2(0.0, 2.0))
+
 -- dynamic boxes
 EntitySpawner.spawn_entity("DynamicBox", Vector2(-3.0, 3.0), 60.0)
 EntitySpawner.spawn_entity("DynamicBox", Vector2(-2.0, 0.0), 0.0)
 
--- trigger boxes
-EntitySpawner.spawn_entity("TriggerBox", Vector2(0.0, 2.0))
+-- dynamic circles
+EntitySpawner.spawn_entity("DynamicCircle", Vector2(7.25, 2.0))
+EntitySpawner.spawn_entity("DynamicCircle", Vector2(6.5, 4.0))
+EntitySpawner.spawn_entity("DynamicCircle", Vector2(10.3, 4.0))

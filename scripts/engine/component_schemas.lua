@@ -60,6 +60,19 @@ local schemas = {
         },
     },
 
+    circle_collider = {
+        add = "add_circle_collider",
+        setters = {
+            circle = "set_circle",
+            density = "set_density",
+            friction = "set_friction",
+            bounciness = "set_bounciness",
+            collision_layer = "set_collision_layer",
+            collision_mask = "set_collision_mask",
+            trigger = "set_trigger",
+        },
+    },
+
     sprite = {
         add = "add_sprite",
         setters = {
@@ -88,6 +101,7 @@ schemas.__order = {
     "character_body",
     "box_collider",
     "capsule_collider",
+    "circle_collider",
     "sprite",
     "input",
     "camera",
