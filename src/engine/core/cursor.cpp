@@ -3,7 +3,6 @@
 #include <SDL3/SDL_mouse.h>
 
 #include "app.h"
-#include "assets.h"
 #include "input.h"
 #include "path_utils.h"
 #include "renderer.h"
@@ -24,12 +23,12 @@ namespace hob {
     }
 
     void Cursor::set_texture(const std::string& relative_path) {
-        Assets& assets = m_app.get_assets();
+        Renderer& renderer = m_app.get_renderer();
         const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
-        const TextureId new_id = assets.load_texture(full_path);
+        const TextureId new_id = renderer.load_texture(full_path);
 
         if (m_texture_id != INVALID_TEXTURE_ID) {
-            assets.unload_texture(m_texture_id);
+            renderer.unload_texture(m_texture_id);
         }
 
         m_texture_id = new_id;
@@ -38,7 +37,7 @@ namespace hob {
 
     void Cursor::clear_texture() {
         if (m_texture_id != INVALID_TEXTURE_ID) {
-            m_app.get_assets().unload_texture(m_texture_id);
+            m_app.get_renderer().unload_texture(m_texture_id);
             m_texture_id = INVALID_TEXTURE_ID;
             set_visible(m_is_visible); // trigger the OS cursor fallback because the texture id is invalid
         }
@@ -111,10 +110,10 @@ namespace hob {
             return;
         }
 
-        const Assets& assets = m_app.get_assets();
+        Renderer& renderer = m_app.get_renderer();
         int texture_width = 0;
         int texture_height = 0;
-        assets.get_texture_size(m_texture_id, texture_width, texture_height);
+        renderer.get_texture_size(m_texture_id, texture_width, texture_height);
 
         const float f_w = static_cast<float>(texture_width);
         const float f_h = static_cast<float>(texture_height);
@@ -124,11 +123,11 @@ namespace hob {
         Vector2 mouse_screen = m_app.get_input().get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot_pixel.x, mouse_screen.y - pivot_pixel.y);
 
-        m_app.get_renderer().draw_sprite(assets.get_texture(m_texture_id),
-                                         screen_pos,
-                                         size,
-                                         pivot_pixel,
-                                         0.0f,
-                                         m_tint);
+        renderer.draw_sprite(m_texture_id,
+                             screen_pos,
+                             size,
+                             pivot_pixel,
+                             0.0f,
+                             m_tint);
     }
 }

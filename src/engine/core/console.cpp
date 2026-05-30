@@ -174,7 +174,11 @@ namespace hob {
         cvar.default_value = std::string(default_value);
         cvar.on_changed = std::move(on_changed);
 
-        bool registered = m_cvars.emplace(std::move(key), std::move(cvar)).second;
+        auto [it, registered] = m_cvars.emplace(std::move(key), std::move(cvar));
+        if (registered && it->second.on_changed) {
+            it->second.on_changed(it->second);
+        }
+
         return registered;
     }
 

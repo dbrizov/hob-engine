@@ -4,8 +4,12 @@
 #include <format>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_surface.h>
+#include <SDL3_image/SDL_image.h>
 
 #include "app.h"
+#include "console.h"
 #include "logging.h"
 
 namespace hob {
@@ -188,21 +192,24 @@ void main() {
         }
     }
 
-    Renderer::Renderer(SDL_Window* window, const GraphicsConfig& graphics_config)
-        : m_window(window)
-        , m_logical_width(graphics_config.logical_resolution_width)
-        , m_logical_height(graphics_config.logical_resolution_height)
+    Renderer::Renderer(App& app)
+        : m_window(app.get_sdl_context().get_window())
+        , m_logical_width(app.get_config().graphics_config.logical_resolution_width)
+        , m_logical_height(app.get_config().graphics_config.logical_resolution_height)
         , m_projection(ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height))) {
 
         if (!init_sprite_pipeline()) {
             return;
         }
+
         if (!init_line_pipeline()) {
             return;
         }
+
         if (!init_blit_pipeline()) {
             return;
         }
+
         if (!init_fbo()) {
             return;
         }
@@ -212,11 +219,15 @@ void main() {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
+        register_cvars(app.get_console());
+
         m_is_initialized = true;
         debug::log("Renderer initialized ({}x{} FBO)", m_logical_width, m_logical_height);
     }
 
     Renderer::~Renderer() {
+        unload_all_textures();
+
         if (m_quad_vbo)
             glDeleteBuffers(1, &m_quad_vbo);
         if (m_quad_vao)
@@ -404,7 +415,7 @@ void main() {
         glBindVertexArray(0);
     }
 
-    void Renderer::draw_sprite(GlTexture texture,
+    void Renderer::draw_sprite(TextureId texture_id,
                                const Vector2& screen_pos,
                                const Vector2& size,
                                const Vector2& pivot_pixel,
@@ -423,7 +434,7 @@ void main() {
         glUniform4f(m_u_sprite_tint, tint.r, tint.g, tint.b, tint.a);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
         glBindVertexArray(m_quad_vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
@@ -447,7 +458,7 @@ void main() {
         glBindVertexArray(0);
     }
 
-    GlTexture Renderer::create_texture_from_pixels(const void* rgba_pixels, int width, int height) {
+    TextureId Renderer::create_texture_from_pixels(const void* rgba_pixels, int width, int height) {
         GLuint texture = 0;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -459,20 +470,122 @@ void main() {
         return texture;
     }
 
-    void Renderer::destroy_texture(GlTexture texture) {
-        if (texture != 0) {
-            GLuint id = texture;
+    void Renderer::destroy_texture(TextureId id) {
+        if (id != 0 && id != INVALID_TEXTURE_ID) {
             glDeleteTextures(1, &id);
         }
     }
 
-    void Renderer::get_texture_size(GlTexture texture, int& out_width, int& out_height) {
-        GLint w = 0;
-        GLint h = 0;
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
-        out_width = w;
-        out_height = h;
+    TextureId Renderer::load_texture(const std::filesystem::path& full_path) {
+        std::error_code error_code;
+        std::filesystem::path canonical = std::filesystem::weakly_canonical(full_path, error_code);
+        if (error_code) {
+            canonical = full_path.lexically_normal();
+        }
+        const std::string key = canonical.string();
+
+        auto it = m_path_to_id.find(key);
+        if (it != m_path_to_id.end()) {
+            TextureEntry& entry = m_textures.at(it->second);
+            entry.ref_count += 1;
+
+            if (m_cvar_log_textures) {
+                debug::log("Renderer::load_texture cache hit: '{}' (id={}, rc={})", key, it->second, entry.ref_count);
+            }
+
+            return it->second;
+        }
+
+        SDL_Surface* surface = IMG_Load(full_path.string().c_str());
+        if (!surface) {
+            debug::log_error("IMG_Load failed: {}", SDL_GetError());
+            return INVALID_TEXTURE_ID;
+        }
+
+        SDL_Surface* rgba = surface;
+        if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+            rgba = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+            SDL_DestroySurface(surface);
+            if (!rgba) {
+                debug::log_error("SDL_ConvertSurface failed: {}", SDL_GetError());
+                return INVALID_TEXTURE_ID;
+            }
+        }
+
+        const TextureId texture_id = create_texture_from_pixels(rgba->pixels, rgba->w, rgba->h);
+        const int w = rgba->w;
+        const int h = rgba->h;
+        const int ref_count = 1;
+        SDL_DestroySurface(rgba);
+
+        m_textures.emplace(texture_id, TextureEntry(w, h, key, ref_count));
+        m_path_to_id.emplace(key, texture_id);
+
+        if (m_cvar_log_textures) {
+            debug::log("Renderer::load_texture loaded: '{}' (id={}, rc={})", key, texture_id, ref_count);
+        }
+
+        return texture_id;
+    }
+
+    bool Renderer::unload_texture(TextureId id) {
+        auto it = m_textures.find(id);
+        if (it == m_textures.end()) {
+            debug::log_error("Renderer::unload_texture: 'unknown' (id={})", id);
+            return false;
+        }
+
+        TextureEntry& entry = it->second;
+        entry.ref_count -= 1;
+
+        if (entry.ref_count > 0) {
+            if (m_cvar_log_textures) {
+                debug::log("Renderer::unload_texture: '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
+            }
+
+            return true;
+        }
+
+        if (m_cvar_log_textures) {
+            debug::log("Renderer::unload_texture: '{}' (id={}, rc={}) [destroyed]", entry.path, id, entry.ref_count);
+        }
+
+        destroy_texture(id);
+        m_path_to_id.erase(entry.path);
+        m_textures.erase(it);
+        return true;
+    }
+
+    void Renderer::get_texture_size(TextureId id, int& out_width, int& out_height) const {
+        auto it = m_textures.find(id);
+        if (it != m_textures.end()) {
+            out_width = it->second.width;
+            out_height = it->second.height;
+        }
+        else {
+            out_width = 0;
+            out_height = 0;
+        }
+    }
+
+    void Renderer::unload_all_textures() {
+        for (auto& [id, entry] : m_textures) {
+            debug::log_error("Renderer: leaked texture '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
+            destroy_texture(id);
+        }
+
+        m_textures.clear();
+        m_path_to_id.clear();
+    }
+
+    void Renderer::register_cvars(Console& console) {
+        console.register_cvar("rend_log_textures",
+                              "Log every texture load/unload/cache-hit",
+                              "0",
+                              ConsoleVariableType::Bool,
+                              ConsoleVariableFlags::None,
+                              [this](const ConsoleVariable& cvar) {
+                                  m_cvar_log_textures = cvar.bool_value();
+                              });
     }
 }

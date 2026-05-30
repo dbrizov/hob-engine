@@ -25,12 +25,12 @@ namespace hob {
     }
 
     void SpriteComponent::set_texture(const std::string& relative_path) {
-        Assets& assets = get_app().get_assets();
+        Renderer& renderer = get_app().get_renderer();
         const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
-        const TextureId new_id = assets.load_texture(full_path);
+        const TextureId new_id = renderer.load_texture(full_path);
 
         if (m_texture_id != INVALID_TEXTURE_ID) {
-            assets.unload_texture(m_texture_id);
+            renderer.unload_texture(m_texture_id);
         }
 
         m_texture_id = new_id;
@@ -38,7 +38,7 @@ namespace hob {
 
     void SpriteComponent::clear_texture() {
         if (m_texture_id != INVALID_TEXTURE_ID) {
-            get_app().get_assets().unload_texture(m_texture_id);
+            get_app().get_renderer().unload_texture(m_texture_id);
             m_texture_id = INVALID_TEXTURE_ID;
         }
     }

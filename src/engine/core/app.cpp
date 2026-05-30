@@ -14,12 +14,11 @@ namespace hob {
     App::App(const AppConfig& config)
         : m_config(config)
         , m_sdl_context(config.graphics_config)
-        , m_renderer(m_sdl_context.get_window(), config.graphics_config)
         , m_imgui_system(m_sdl_context.get_window(), m_sdl_context.get_gl_context())
         , m_console()
+        , m_renderer(*this)
         , m_timer(config.graphics_config.target_fps, config.graphics_config.vsync_enabled)
         , m_input(*this)
-        , m_assets(*this)
         , m_physics(*this)
         , m_cursor(*this)
         , m_entity_spawner(*this)
@@ -143,10 +142,6 @@ namespace hob {
         return m_input;
     }
 
-    Assets& App::get_assets() {
-        return m_assets;
-    }
-
     Physics& App::get_physics() {
         return m_physics;
     }
@@ -183,7 +178,7 @@ namespace hob {
 
             int texture_width = 0;
             int texture_height = 0;
-            m_assets.get_texture_size(sprite_comp->get_texture_id(), texture_width, texture_height);
+            m_renderer.get_texture_size(sprite_comp->get_texture_id(), texture_width, texture_height);
 
             const Matrix2x3 matrix = Matrix2x3::lerp(transform_comp->get_prev_local_matrix(),
                                                      transform_comp->get_local_matrix(),
@@ -208,7 +203,7 @@ namespace hob {
             const float rotation_rad = matrix.get_rotation();
 
             m_renderer.draw_sprite(
-                m_assets.get_texture(sprite_comp->get_texture_id()),
+                sprite_comp->get_texture_id(),
                 screen_position,
                 size,
                 pivot_pixel,

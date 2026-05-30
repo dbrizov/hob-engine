@@ -665,5 +665,5 @@ _G.InputComponent = InputComponent
 
 -- Globals
 ---@type integer
-INVALID_TEXTURE_ID = -1
+INVALID_TEXTURE_ID = 4294967295
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <vector>
 #include <box2d/box2d.h>
 
@@ -8,6 +7,7 @@
 
 namespace hob {
     class App;
+    class Console;
     class Entity;
 
     class PhysicsWorld {
@@ -53,5 +53,7 @@ namespace hob {
         void dispatch_trigger_events() const;
 
         static float delta_time_from_ticks(uint32_t ticks_per_second);
+
+        void register_cvars(Console& console);
     };
 }

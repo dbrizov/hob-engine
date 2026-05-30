@@ -1,6 +1,5 @@
 #pragma once
 
-#include "assets.h"
 #include "console.h"
 #include "cursor.h"
 #include "imgui_system.h"
@@ -41,12 +40,11 @@ namespace hob {
 
         // Order matters
         SdlContext m_sdl_context;
-        Renderer m_renderer;
         ImGuiSystem m_imgui_system;
         Console m_console;
+        Renderer m_renderer;
         Timer m_timer;
         Input m_input;
-        Assets m_assets;
         Physics m_physics;
         Cursor m_cursor;
         EntitySpawner m_entity_spawner;
@@ -69,7 +67,6 @@ namespace hob {
         Console& get_console();
         Timer& get_timer();
         Input& get_input();
-        Assets& get_assets();
         Physics& get_physics();
         Cursor& get_cursor();
         EntitySpawner& get_entity_spawner();

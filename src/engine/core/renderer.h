@@ -2,15 +2,22 @@
 
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <string>
+#include <unordered_map>
 
+#include "engine/math/constants.h"
 #include "engine/math/vector2.h"
 
 struct SDL_Window;
 
 namespace hob {
+    class App;
+    class Console;
     struct GraphicsConfig;
-    using GlTexture = uint32_t;
+
+    using TextureId = uint32_t;
+    constexpr TextureId INVALID_TEXTURE_ID = MAX_UINT32;
 
     constexpr const char* GLSL_VERSION = "#version 330 core\n";
 
@@ -38,6 +45,20 @@ namespace hob {
     };
 
     class Renderer {
+        struct TextureEntry {
+            int width;
+            int height;
+            std::string path;
+            int ref_count;
+
+            TextureEntry(int _width, int _height, std::string _path, int _ref_count)
+                : width(_width)
+                , height(_height)
+                , path(std::move(_path))
+                , ref_count(_ref_count) {
+            }
+        };
+
         SDL_Window* m_window;
         uint32_t m_logical_width;
         uint32_t m_logical_height;
@@ -69,10 +90,15 @@ namespace hob {
         uint32_t m_blit_vao = 0;
         uint32_t m_blit_vbo = 0;
 
+        // Texture cache.
+        std::unordered_map<TextureId, TextureEntry> m_textures;
+        std::unordered_map<std::string, TextureId> m_path_to_id;
+        bool m_cvar_log_textures = false;
+
         bool m_is_initialized = false;
 
     public:
-        Renderer(SDL_Window* window, const GraphicsConfig& graphics_config);
+        explicit Renderer(App& app);
         ~Renderer();
 
         Renderer(const Renderer&) = delete;
@@ -90,14 +116,13 @@ namespace hob {
         void frame_start();
 
         // End a frame: unbind FBO, blit to window back-buffer.
-        // After this, ImGui can render to the default framebuffer.
         void frame_end();
 
         // Sprite draw in logical screen space (top-left origin, y-down).
         // screen_pos is the unrotated top-left of the rect.
         // pivot_pixel is the rotation pivot in pixel coords relative to that top-left.
         // rotation_rad is in world-space radians (CCW in y-up).
-        void draw_sprite(GlTexture texture,
+        void draw_sprite(TextureId texture_id,
                          const Vector2& screen_pos,
                          const Vector2& size,
                          const Vector2& pivot_pixel,
@@ -107,15 +132,23 @@ namespace hob {
         // Line draw in logical screen space.
         void draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
-        // Texture upload helpers used by Assets.
-        static GlTexture create_texture_from_pixels(const void* rgba_pixels, int width, int height);
-        static void destroy_texture(GlTexture texture);
-        static void get_texture_size(GlTexture texture, int& out_width, int& out_height);
+        // Texture cache.
+        TextureId load_texture(const std::filesystem::path& full_path);
+        bool unload_texture(TextureId id);
+        void get_texture_size(TextureId id, int& out_width, int& out_height) const;
 
     private:
         bool init_sprite_pipeline();
         bool init_line_pipeline();
         bool init_blit_pipeline();
         bool init_fbo();
+
+        // Low-level GL texture helpers (do not touch the cache).
+        static TextureId create_texture_from_pixels(const void* rgba_pixels, int width, int height);
+        static void destroy_texture(TextureId id);
+
+        void unload_all_textures();
+
+        void register_cvars(Console& console);
     };
 }

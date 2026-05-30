@@ -40,14 +40,7 @@ namespace hob {
         , m_sub_steps_per_tick(app.get_config().physics_config.sub_steps_per_tick)
         , m_interpolation_fraction(0.0f)
         , m_interpolation_enabled(app.get_config().physics_config.interpolation_enabled) {
-        app.get_console().register_cvar("phys_debug_draw",
-                                        "Debug draw physics colliders",
-                                        "1",
-                                        ConsoleVariableType::Bool,
-                                        ConsoleVariableFlags::None,
-                                        [this](const ConsoleVariable& cvar) {
-                                            cvar_debug_draw = cvar.bool_value();
-                                        });
+        register_cvars(app.get_console());
     }
 
     void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {
@@ -204,5 +197,16 @@ namespace hob {
     float Physics::delta_time_from_ticks(uint32_t ticks_per_second) {
         assert(ticks_per_second > 0 && "Division by zero");
         return 1.0f / static_cast<float>(ticks_per_second);
+    }
+
+    void Physics::register_cvars(Console& console) {
+        console.register_cvar("phys_debug_draw",
+                              "Debug draw physics colliders",
+                              "1",
+                              ConsoleVariableType::Bool,
+                              ConsoleVariableFlags::None,
+                              [this](const ConsoleVariable& cvar) {
+                                  cvar_debug_draw = cvar.bool_value();
+                              });
     }
 }

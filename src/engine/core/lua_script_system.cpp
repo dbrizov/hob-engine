@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "app.h"
-#include "assets.h"
 #include "cursor.h"
 #include "debug.h"
 #include "input.h"

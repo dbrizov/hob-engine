@@ -2,7 +2,6 @@
 
 #include <string>
 
-#include "assets.h"
 #include "renderer.h"
 #include "engine/math/vector2.h"
 
