@@ -61,7 +61,7 @@ namespace hob {
         collision_filter.categoryBits = get_collision_layer();
         collision_filter.maskBits = get_collision_mask() & ~m_solver_ignore_mask;
 
-        Capsule local_capsule = m_capsule_collider->get_capsule();
+        Capsule local_capsule = m_capsule_collider->get_scaled_capsule();
 
         b2BodyId body_id = m_rigidbody->get_body_id();
         b2WorldId world_id = get_engine().get_physics().get_physics_world().get_id();

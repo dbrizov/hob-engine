@@ -4,6 +4,7 @@
 #include <box2d/types.h>
 
 #include "engine/components/component.h"
+#include "engine/math/vector2.h"
 
 namespace hob {
     struct Color;
@@ -16,6 +17,10 @@ namespace hob {
         uint64_t m_collision_layer = 1u; // The collision layer of this collider
         uint64_t m_collision_mask = ~0ull; // What this collider collides with
         bool m_is_trigger = false;
+
+        // Modifying the transform's scale doesn't resize the colliders at runtime.
+        // This is the initial scale of transform cached on enter_play().
+        Vector2 m_initial_scale = Vector2(1.0f, 1.0f);
 
     public:
         explicit ColliderComponent(Entity& entity);
@@ -47,8 +52,12 @@ namespace hob {
         bool is_trigger() const;
         void set_trigger(bool trigger);
 
+        // The transform scale baked into the physics shape at enter_play().
+        // Box2D doesn't support resizing shapes, so this is the scale that's actually in effect.
+        Vector2 get_initial_scale() const;
+
     protected:
-        virtual b2ShapeId create_shape(const b2ShapeDef& shape_def) = 0;
-        virtual void debug_draw_shape(const Color& color) const = 0;
+        virtual b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) = 0;
+        virtual void debug_draw_shape(const Color& color, const Vector2& scale) const = 0;
     };
 }

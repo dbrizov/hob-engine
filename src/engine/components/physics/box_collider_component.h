@@ -18,8 +18,15 @@ namespace hob {
         AABB get_aabb() const;
         void set_aabb(const AABB& aabb);
 
+        // The local AABB with the collider's initial scale baked in -
+        // matches the actual shape registered with Box2D.
+        AABB get_scaled_aabb() const;
+
     protected:
-        virtual b2ShapeId create_shape(const b2ShapeDef& shape_def) override;
-        virtual void debug_draw_shape(const Color& color) const override;
+        virtual b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) override;
+        virtual void debug_draw_shape(const Color& color, const Vector2& scale) const override;
+
+    private:
+        static AABB scale_aabb(const AABB& local, const Vector2& scale);
     };
 }

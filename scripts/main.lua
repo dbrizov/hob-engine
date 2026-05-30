@@ -4,32 +4,45 @@ Cursor.config {
     scale = Vector2(0.8, 0.8)
 }
 
+-- Top-down shooter arena. Same layout as before, scaled up so the
+-- player (capsule radius 1.2 -> 2.4m diameter) fits through corridors.
+-- All positions and per-entity transform scales multiply by SCALE, so
+-- walls stay continuous and feature spacing grows proportionally.
+local SCALE = 2.0
+local ARENA_HALF_W = 10
+local ARENA_HALF_H = 6
+local S = Vector2(SCALE, SCALE)
+
+-- Player at the center
 EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
 
--- floor
-for x = -4, 4 do
-    EntitySpawner.spawn_entity("StaticBox", Vector2(x, -3.0))
+-- Perimeter walls
+for x = -ARENA_HALF_W, ARENA_HALF_W do
+    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE,  ARENA_HALF_H * SCALE), 0, S) -- top
+    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE, -ARENA_HALF_H * SCALE), 0, S) -- bottom
+end
+for y = -ARENA_HALF_H + 1, ARENA_HALF_H - 1 do
+    EntitySpawner.spawn_entity("StaticBox", Vector2(-ARENA_HALF_W * SCALE, y * SCALE), 0, S) -- left
+    EntitySpawner.spawn_entity("StaticBox", Vector2( ARENA_HALF_W * SCALE, y * SCALE), 0, S) -- right
 end
 
--- stairs
-local stair_heights = { -2.7, -2.4, -2.1, -1.8, -1.5, -1.2, -0.9, -0.6, -0.3 }
-for i, y in ipairs(stair_heights) do
-    EntitySpawner.spawn_entity("StaticBox", Vector2(4 + i, y))
+-- Interior crates: two cover lines (top and bottom)
+local crate_xs = { -3, -2, 2, 3 }
+for _, x in ipairs(crate_xs) do
+    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE,  2.0 * SCALE), 0, S)
+    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE, -2.0 * SCALE), 0, S)
 end
 
--- left wall
-for y = -3, 4 do
-    EntitySpawner.spawn_entity("StaticBox", Vector2(-5.0, y))
-end
+-- Corner pillars (circles)
+EntitySpawner.spawn_entity("StaticCircle", Vector2(-7.0 * SCALE,  4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity("StaticCircle", Vector2( 7.0 * SCALE,  4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity("StaticCircle", Vector2(-7.0 * SCALE, -4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity("StaticCircle", Vector2( 7.0 * SCALE, -4.0 * SCALE), 0, S)
 
--- trigger boxes
-EntitySpawner.spawn_entity("TriggerBox", Vector2(0.0, 2.0))
+-- Mid-line pillars (gives the center extra cover to weave around)
+EntitySpawner.spawn_entity("StaticCircle", Vector2(-5.0 * SCALE, 0.0), 0, S)
+EntitySpawner.spawn_entity("StaticCircle", Vector2( 5.0 * SCALE, 0.0), 0, S)
 
--- dynamic boxes
-EntitySpawner.spawn_entity("DynamicBox", Vector2(-3.0, 3.0), 60.0)
-EntitySpawner.spawn_entity("DynamicBox", Vector2(-2.0, 0.0), 0.0)
-
--- dynamic circles
-EntitySpawner.spawn_entity("DynamicCircle", Vector2(7.25, 2.0))
-EntitySpawner.spawn_entity("DynamicCircle", Vector2(6.5, 4.0))
-EntitySpawner.spawn_entity("DynamicCircle", Vector2(10.3, 4.0))
+-- Checkpoint triggers (top and bottom of the arena)
+EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0,  4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0, -4.0 * SCALE), 0, S)

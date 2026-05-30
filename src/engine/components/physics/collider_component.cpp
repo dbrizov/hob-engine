@@ -5,6 +5,7 @@
 #include <box2d/box2d.h>
 
 #include "rigidbody_component.h"
+#include "engine/components/transform_component.h"
 #include "engine/core/engine.h"
 #include "engine/core/renderer.h"
 #include "engine/entity/entity.h"
@@ -26,7 +27,8 @@ namespace hob {
         shape_def.filter.maskBits = m_collision_mask;
         shape_def.isSensor = m_is_trigger;
 
-        m_shape_id = create_shape(shape_def);
+        m_initial_scale = get_entity().get_transform()->get_scale();
+        m_shape_id = create_shape(shape_def, m_initial_scale);
 
         b2Shape_SetUserData(m_shape_id, this);
         b2Shape_EnableSensorEvents(m_shape_id, true);
@@ -61,7 +63,7 @@ namespace hob {
         }
 
         if (get_engine().get_physics().cvar_debug_draw) {
-            debug_draw_shape(color);
+            debug_draw_shape(color, m_initial_scale);
         }
     }
 
@@ -124,5 +126,9 @@ namespace hob {
 
     void ColliderComponent::set_trigger(bool trigger) {
         m_is_trigger = trigger;
+    }
+
+    Vector2 ColliderComponent::get_initial_scale() const {
+        return m_initial_scale;
     }
 }

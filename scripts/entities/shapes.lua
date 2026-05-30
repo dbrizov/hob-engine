@@ -33,6 +33,14 @@ DefineEntity.TriggerBox = {
     lua_components = { "ContactLogger" },
 }
 
+DefineEntity.StaticCircle = {
+    rigidbody = {},
+    circle_collider = {
+        collision_layer = Collision.Static,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
+    },
+}
+
 DefineEntity.DynamicCircle = {
     ticking = true,
     rigidbody = {
@@ -45,4 +53,17 @@ DefineEntity.DynamicCircle = {
     sprite = {
         texture = Assets.RobotTexture,
     },
+}
+
+DefineEntity.TriggerCircle = {
+    rigidbody = {},
+    circle_collider = {
+        trigger = true,
+        collision_layer = Collision.Trigger,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
+    },
+    sprite = {
+        texture = Assets.RobotTexture,
+    },
+    lua_components = { "ContactLogger" },
 }
