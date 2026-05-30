@@ -41,7 +41,7 @@ namespace hob {
         return b2CreateCapsuleShape(get_body_id(), &shape_def, &b2_capsule);
     }
 
-    void CapsuleColliderComponent::rebake_shape(const Vector2& scale) {
+    void CapsuleColliderComponent::rebuild_shape(const Vector2& scale) {
         Capsule scaled = scale_capsule(m_capsule, scale);
         b2Capsule b2_capsule;
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);

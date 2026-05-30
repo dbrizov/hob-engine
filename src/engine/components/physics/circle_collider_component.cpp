@@ -41,7 +41,7 @@ namespace hob {
         return b2CreateCircleShape(get_body_id(), &shape_def, &b2_circle);
     }
 
-    void CircleColliderComponent::rebake_shape(const Vector2& scale) {
+    void CircleColliderComponent::rebuild_shape(const Vector2& scale) {
         Circle scaled = scale_circle(m_circle, scale);
         b2Circle b2_circle;
         b2_circle.center = Physics::vec2_to_b2Vec2(scaled.center);

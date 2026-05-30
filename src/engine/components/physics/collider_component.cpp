@@ -143,6 +143,6 @@ namespace hob {
         }
 
         m_baked_scale = current_scale;
-        rebake_shape(m_baked_scale);
+        rebuild_shape(m_baked_scale);
     }
 }

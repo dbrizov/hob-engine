@@ -59,7 +59,7 @@ namespace hob {
 
     protected:
         virtual b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) = 0;
-        virtual void rebake_shape(const Vector2& scale) = 0;
+        virtual void rebuild_shape(const Vector2& scale) = 0;
         virtual void debug_draw_shape(const Color& color, const Vector2& scale) const = 0;
     };
 }

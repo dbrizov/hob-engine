@@ -38,7 +38,7 @@ namespace hob {
         return b2CreatePolygonShape(get_body_id(), &shape_def, &box);
     }
 
-    void BoxColliderComponent::rebake_shape(const Vector2& scale) {
+    void BoxColliderComponent::rebuild_shape(const Vector2& scale) {
         AABB scaled = scale_aabb(m_aabb, scale);
         b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
         b2Shape_SetPolygon(get_shape_id(), &box);
