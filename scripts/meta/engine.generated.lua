@@ -90,8 +90,8 @@ function Timer.get_delta_time() end
 ---@class Cursor
 Cursor = {}
 
----@return integer
-function Cursor.get_texture_id() end
+---@return boolean
+function Cursor.has_texture() end
 
 ---@param relative_path string
 function Cursor.set_texture(relative_path) end
@@ -440,8 +440,8 @@ _G.TransformComponent = TransformComponent
 ---@class SpriteComponent : Component
 local SpriteComponent = {}
 
----@return integer
-function SpriteComponent:get_texture_id() end
+---@return boolean
+function SpriteComponent:has_texture() end
 
 ---@param relative_path string
 function SpriteComponent:set_texture(relative_path) end
@@ -662,8 +662,4 @@ function InputComponent:unbind_action(name, id) end
 function InputComponent:clear_all_bindings() end
 
 _G.InputComponent = InputComponent
-
--- Globals
----@type integer
-INVALID_TEXTURE_ID = 4294967295
 
