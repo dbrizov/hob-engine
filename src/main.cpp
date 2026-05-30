@@ -1,15 +1,15 @@
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 #include "engine/core/path_utils.h"
 
 int main(int argc, char* argv[]) {
     hob::EngineConfig config(hob::PathUtils::get_engine_config_path());
-    hob::App app(config);
+    hob::Engine engine(config);
 
-    if (!app.is_initialized()) {
+    if (!engine.is_initialized()) {
         return 1;
     }
 
-    app.run();
+    engine.run();
 
     return 0;
 }

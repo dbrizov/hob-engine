@@ -6,7 +6,7 @@
 
 #include "capsule_collider_component.h"
 #include "rigidbody_component.h"
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 #include "engine/core/physics.h"
 #include "engine/entity/entity.h"
 #include "engine/math/constants.h"
@@ -64,7 +64,7 @@ namespace hob {
         Capsule local_capsule = m_capsule_collider->get_capsule();
 
         b2BodyId body_id = m_rigidbody->get_body_id();
-        b2WorldId world_id = get_app().get_physics().get_physics_world().get_id();
+        b2WorldId world_id = get_engine().get_physics().get_physics_world().get_id();
 
         b2Vec2 b2_start_pos = b2Body_GetPosition(body_id);
         b2Rot b2_rot = b2Body_GetRotation(body_id);

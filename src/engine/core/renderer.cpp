@@ -8,7 +8,7 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3_image/SDL_image.h>
 
-#include "app.h"
+#include "engine.h"
 #include "console.h"
 #include "logging.h"
 #include "sdl_context.h"

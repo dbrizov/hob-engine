@@ -5,7 +5,7 @@
 #include <box2d/box2d.h>
 
 #include "rigidbody_component.h"
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 #include "engine/core/renderer.h"
 #include "engine/entity/entity.h"
 
@@ -60,7 +60,7 @@ namespace hob {
             }
         }
 
-        if (get_app().get_physics().cvar_debug_draw) {
+        if (get_engine().get_physics().cvar_debug_draw) {
             debug_draw_shape(color);
         }
     }

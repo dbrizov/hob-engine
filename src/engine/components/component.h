@@ -3,7 +3,7 @@
 #include <string>
 
 namespace hob {
-    class App;
+    class Engine;
     class ColliderComponent;
     class Entity;
 
@@ -21,7 +21,7 @@ namespace hob {
     public:
         virtual ~Component() = default;
 
-        App& get_app() const;
+        Engine& get_engine() const;
         Entity& get_entity() const;
 
         virtual int get_priority() const;

@@ -40,7 +40,7 @@ namespace hob {
         explicit EngineConfig(const std::filesystem::path& json_path);
     };
 
-    class App {
+    class Engine {
         // Order matters
         SdlContext m_sdl_context;
         ImGuiSystem m_imgui_system;
@@ -56,8 +56,8 @@ namespace hob {
         bool m_is_os_cursor_visible_before_console_opened = false;
 
     public:
-        explicit App(const EngineConfig& config);
-        ~App();
+        explicit Engine(const EngineConfig& config);
+        ~Engine();
 
         void run();
 

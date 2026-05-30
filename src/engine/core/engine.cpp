@@ -1,4 +1,4 @@
-#include "app.h"
+#include "engine.h"
 
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -59,7 +59,7 @@ namespace hob {
         }
     }
 
-    App::App(const EngineConfig& config)
+    Engine::Engine(const EngineConfig& config)
         : m_sdl_context(config.graphics_config)
         , m_imgui_system(m_sdl_context)
         , m_console()
@@ -72,7 +72,7 @@ namespace hob {
         , m_lua_script_system(*this) {
     }
 
-    App::~App() {
+    Engine::~Engine() {
         // Tear down entities (and their components) while every subsystem is still alive.
         // Avoids dangling references during member destruction.
         // In particular - LuaScriptComponent's sol::table must release its Lua registry slot before
@@ -80,7 +80,7 @@ namespace hob {
         m_entity_spawner.clear();
     }
 
-    void App::run() {
+    void Engine::run() {
         bool is_running = true;
         std::vector<Entity*> entities;
         std::vector<Entity*> ticking_entities;
@@ -159,49 +159,49 @@ namespace hob {
         }
     }
 
-    bool App::is_initialized() const {
+    bool Engine::is_initialized() const {
         return m_sdl_context.is_initialized() &&
                m_renderer.is_initialized() &&
                m_imgui_system.is_initialized();
     }
 
-    SdlContext& App::get_sdl_context() {
+    SdlContext& Engine::get_sdl_context() {
         return m_sdl_context;
     }
 
-    Console& App::get_console() {
+    Console& Engine::get_console() {
         return m_console;
     }
 
-    Renderer& App::get_renderer() {
+    Renderer& Engine::get_renderer() {
         return m_renderer;
     }
 
-    Timer& App::get_timer() {
+    Timer& Engine::get_timer() {
         return m_timer;
     }
 
-    Input& App::get_input() {
+    Input& Engine::get_input() {
         return m_input;
     }
 
-    Physics& App::get_physics() {
+    Physics& Engine::get_physics() {
         return m_physics;
     }
 
-    Cursor& App::get_cursor() {
+    Cursor& Engine::get_cursor() {
         return m_cursor;
     }
 
-    EntitySpawner& App::get_entity_spawner() {
+    EntitySpawner& Engine::get_entity_spawner() {
         return m_entity_spawner;
     }
 
-    LuaScriptSystem& App::get_lua_script_system() {
+    LuaScriptSystem& Engine::get_lua_script_system() {
         return m_lua_script_system;
     }
 
-    void App::render_entities(std::vector<const Entity*>& entities) {
+    void Engine::render_entities(std::vector<const Entity*>& entities) {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
         TransformComponent* camera_transform = camera_entity->get_transform();
@@ -256,7 +256,7 @@ namespace hob {
         }
     }
 
-    void App::render_debug_draws() {
+    void Engine::render_debug_draws() {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
 

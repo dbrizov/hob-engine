@@ -7,11 +7,11 @@
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 
 namespace hob {
-    EntitySpawner::EntitySpawner(App& app)
-        : m_app(app) {
+    EntitySpawner::EntitySpawner(Engine& engine)
+        : m_engine(engine) {
         spawn_camera_entity();
     }
 
@@ -20,7 +20,7 @@ namespace hob {
     }
 
     Entity& EntitySpawner::spawn_entity() {
-        std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity(m_app));
+        std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity(m_engine));
 
         EntityId entity_id = m_next_entity_id;
         m_next_entity_id += 1;

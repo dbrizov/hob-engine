@@ -8,7 +8,7 @@
 #include "engine/components/component.h"
 
 namespace hob {
-    class App;
+    class Engine;
     class ColliderComponent;
     class RigidbodyComponent;
     class TransformComponent;
@@ -30,7 +30,7 @@ namespace hob {
     concept ComponentType = std::derived_from<T, Component>;
 
     class Entity final {
-        App& m_app;
+        Engine& m_engine;
         EntityId m_id = 0;
         bool m_is_in_play = false;
         bool m_is_ticking = false;
@@ -41,7 +41,7 @@ namespace hob {
         // EntitySpawner is a friend of Entity.
         // - Only the EntitySpawner can create entities.
         friend class EntitySpawner;
-        explicit Entity(App& app);
+        explicit Entity(Engine& engine);
 
     public:
         Entity(const Entity&) = delete;
@@ -62,7 +62,7 @@ namespace hob {
 
         std::string to_string() const;
 
-        App& get_app() const;
+        Engine& get_engine() const;
 
         EntityId get_id() const;
         void set_id(EntityId id);

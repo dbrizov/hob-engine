@@ -5,7 +5,7 @@
 #include <box2d/box2d.h>
 
 #include "engine//components/transform_component.h"
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 #include "engine/entity/entity.h"
 
 namespace hob {
@@ -36,7 +36,7 @@ namespace hob {
 
         body_def.fixedRotation = m_has_fixed_rotation;
 
-        const PhysicsWorld& physics_world = get_app().get_physics().get_physics_world();
+        const PhysicsWorld& physics_world = get_engine().get_physics().get_physics_world();
         m_body_id = b2CreateBody(physics_world.get_id(), &body_def);
 
         b2Body_SetUserData(m_body_id, this);

@@ -3,7 +3,7 @@
 #include <format>
 
 #include "transform_component.h"
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 #include "engine/core/renderer.h"
 #include "engine/entity/entity.h"
 
@@ -25,7 +25,7 @@ namespace hob {
     }
 
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position, const Vector2& camera_position) const {
-        const Renderer& renderer = get_app().get_renderer();
+        const Renderer& renderer = get_engine().get_renderer();
 
         float half_width = renderer.get_logical_width_f() * 0.5f;
         float half_height = renderer.get_logical_height_f() * 0.5f;
@@ -55,7 +55,7 @@ namespace hob {
     }
 
     Vector2 CameraComponent::screen_to_world(const Vector2& screen_position, const Vector2& camera_position) const {
-        const Renderer& renderer = get_app().get_renderer();
+        const Renderer& renderer = get_engine().get_renderer();
 
         float half_width = renderer.get_logical_width_f() * 0.5f;
         float half_height = renderer.get_logical_height_f() * 0.5f;

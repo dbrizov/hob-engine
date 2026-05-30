@@ -10,8 +10,6 @@
 #include <vector>
 
 namespace hob {
-    class App;
-
     using CommandArgs = std::span<const std::string>;
     using CommandFunc = std::function<void(CommandArgs)>;
 

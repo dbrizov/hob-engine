@@ -7,8 +7,8 @@
 #include "engine/components/transform_component.h"
 
 namespace hob {
-    Entity::Entity(App& app)
-        : m_app(app) {
+    Entity::Entity(Engine& engine)
+        : m_engine(engine) {
     }
 
     void Entity::enter_play() {
@@ -88,8 +88,8 @@ namespace hob {
         return result;
     }
 
-    App& Entity::get_app() const {
-        return m_app;
+    Engine& Entity::get_engine() const {
+        return m_engine;
     }
 
     EntityId Entity::get_id() const {

@@ -9,8 +9,8 @@ namespace hob {
         : m_entity(entity) {
     }
 
-    App& Component::get_app() const {
-        return m_entity.get_app();
+    Engine& Component::get_engine() const {
+        return m_entity.get_engine();
     }
 
     Entity& Component::get_entity() const {

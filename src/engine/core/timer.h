@@ -17,9 +17,9 @@ namespace hob {
         uint64_t m_frame_start_ticks;
         uint64_t m_last_frame_start_ticks;
 
-        // App is a friend class of Timer.
-        // - App uses frame_start() and frame_end() to limit FPS
-        friend class App;
+        // Engine is a friend class of Timer.
+        // - Engine uses frame_start() and frame_end() to limit FPS
+        friend class Engine;
 
     public:
         explicit Timer(const EngineConfig& config);

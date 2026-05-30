@@ -2,7 +2,7 @@
 
 #include <SDL3/SDL_timer.h>
 
-#include "app.h"
+#include "engine.h"
 
 namespace hob {
     Timer::Timer(const EngineConfig& config)

@@ -2,7 +2,7 @@
 
 #include <format>
 
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 #include "engine/entity/entity.h"
 
 namespace hob {
@@ -15,14 +15,14 @@ namespace hob {
     }
 
     void InputComponent::enter_play() {
-        m_input_event_handler_id = get_app().get_input().add_input_event_handler(
+        m_input_event_handler_id = get_engine().get_input().add_input_event_handler(
             [this](const InputEvent& event) {
                 this->on_input_event(event);
             });
     }
 
     void InputComponent::exit_play() {
-        get_app().get_input().remove_input_event_handler(m_input_event_handler_id);
+        get_engine().get_input().remove_input_event_handler(m_input_event_handler_id);
     }
 
     std::string InputComponent::to_string() const {

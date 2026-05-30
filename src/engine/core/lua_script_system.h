@@ -9,15 +9,15 @@
 #include "lua_meta.h"
 
 namespace hob {
-    class App;
+    class Engine;
 
     class LuaScriptSystem {
-        App& m_app;
+        Engine& m_engine;
         sol::state m_lua;
         LuaMetaRegistry m_meta;
 
     public:
-        explicit LuaScriptSystem(App& app);
+        explicit LuaScriptSystem(Engine& engine);
 
         LuaScriptSystem(const LuaScriptSystem&) = delete;
         LuaScriptSystem& operator=(const LuaScriptSystem&) = delete;

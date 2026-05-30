@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "app.h"
+#include "engine.h"
 #include "cursor.h"
 #include "debug.h"
 #include "input.h"
@@ -57,8 +57,8 @@ namespace hob {
     HOB_LUA_TYPE(RaycastHit, "RaycastHit")
     // clang-format on
 
-    LuaScriptSystem::LuaScriptSystem(App& app)
-        : m_app(app)
+    LuaScriptSystem::LuaScriptSystem(Engine& engine)
+        : m_engine(engine)
         , m_lua() {
         m_lua.open_libraries(
             sol::lib::base,
@@ -248,7 +248,7 @@ namespace hob {
     }
 
     void LuaScriptSystem::bind_entity() {
-        const EntitySpawner& spawner = m_app.get_entity_spawner();
+        const EntitySpawner& spawner = m_engine.get_entity_spawner();
 
         auto get_entity = [&spawner](const EntityHandle& h) -> Entity* {
             return spawner.get_entity(h.id);
@@ -516,14 +516,14 @@ namespace hob {
     }
 
     void LuaScriptSystem::bind_subsystems() {
-        // Capturing subsystems by reference is safe: App's destructor clears all
+        // Capturing subsystems by reference is safe: Engine's destructor clears all
         // entities before any member destructor runs, so these lambdas can never be
         // invoked through Lua against a half-destroyed subsystem.
-        EntitySpawner& spawner = m_app.get_entity_spawner();
-        Input& input = m_app.get_input();
-        Timer& timer = m_app.get_timer();
-        Cursor& cursor = m_app.get_cursor();
-        Physics& physics = m_app.get_physics();
+        EntitySpawner& spawner = m_engine.get_entity_spawner();
+        Input& input = m_engine.get_input();
+        Timer& timer = m_engine.get_timer();
+        Cursor& cursor = m_engine.get_cursor();
+        Physics& physics = m_engine.get_physics();
 
         // Scripts
         bind_table(m_lua, m_meta, "Scripts")

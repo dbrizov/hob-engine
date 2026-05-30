@@ -3,7 +3,7 @@
 #include <format>
 
 #include "engine/components/physics/collider_component.h"
-#include "engine/core/app.h"
+#include "engine/core/engine.h"
 #include "engine/core/logging.h"
 #include "engine/core/lua_script_system.h"
 #include "engine/entity/entity.h"
@@ -34,7 +34,7 @@ namespace hob {
             return;
         }
 
-        sol::state& lua = get_app().get_lua_script_system().get_lua();
+        sol::state& lua = get_engine().get_lua_script_system().get_lua();
 
         sol::object registry_obj = lua["__component_registry"];
         if (!registry_obj.is<sol::table>()) {

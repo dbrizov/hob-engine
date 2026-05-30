@@ -9,7 +9,7 @@
 #include "entity.h"
 
 namespace hob {
-    class App;
+    class Engine;
 
     constexpr size_t INVALID_ENTITY_INDEX = std::numeric_limits<size_t>::max();
 
@@ -23,7 +23,7 @@ namespace hob {
     };
 
     class EntitySpawner {
-        App& m_app;
+        Engine& m_engine;
         EntityId m_camera_entity_id = INVALID_ENTITY_ID;
 
         EntityId m_next_entity_id = 0;
@@ -33,12 +33,12 @@ namespace hob {
         std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
         std::unordered_set<EntityId> m_entity_destroy_requests;
 
-        // App is a friend of EntitySpawner so that:
+        // Engine is a friend of EntitySpawner so that:
         // - It can handle the lifecycle of entities
-        friend class App;
+        friend class Engine;
 
     public:
-        explicit EntitySpawner(App& app);
+        explicit EntitySpawner(Engine& engine);
         ~EntitySpawner();
 
         Entity& spawn_entity();
@@ -60,7 +60,7 @@ namespace hob {
         void resolve_destroy_requests();
 
         // Destroy every live and pending entity, calling exit_play on those in play.
-        // Call this before App's other subsystems start tearing down so that
+        // Call this before Engine's other subsystems start tearing down so that
         // components which hold references into other subsystems (e.g. LuaScriptComponent
         // owns a sol::table tied to the Lua state) are destroyed while those subsystems are still alive.
         void clear();
