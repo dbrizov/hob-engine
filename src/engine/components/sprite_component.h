@@ -8,7 +8,7 @@
 
 namespace hob {
     class SpriteComponent : public Component {
-        TextureId m_texture_id = INVALID_TEXTURE_ID;
+        TextureRef m_texture;
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
         Color m_tint = Color::white();
@@ -16,11 +16,11 @@ namespace hob {
 
     public:
         explicit SpriteComponent(Entity& entity);
-        ~SpriteComponent() override;
 
         std::string to_string() const override;
 
         TextureId get_texture_id() const;
+        const TextureRef& get_texture() const;
         void set_texture(const std::string& relative_path);
         void clear_texture();
 

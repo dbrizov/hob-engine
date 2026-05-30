@@ -170,9 +170,10 @@ namespace hob {
             const TransformComponent* transform_comp = entity->get_transform();
             const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
 
-            int texture_width = 0;
-            int texture_height = 0;
-            m_renderer.get_texture_size(sprite_comp->get_texture_id(), texture_width, texture_height);
+            const TextureRef& texture = sprite_comp->get_texture();
+            if (!texture.is_valid()) {
+                continue;
+            }
 
             const Matrix2x3 matrix = Matrix2x3::lerp(transform_comp->get_prev_local_matrix(),
                                                      transform_comp->get_local_matrix(),
@@ -184,20 +185,20 @@ namespace hob {
             const Vector2 sprite_scale = sprite_comp->get_scale();
             const Vector2 scale = Vector2(transform_scale.x * sprite_scale.x, transform_scale.y * sprite_scale.y);
 
-            const float f_texture_width = static_cast<float>(texture_width);
-            const float f_texture_height = static_cast<float>(texture_height);
+            const float texture_width = static_cast<float>(texture.get_width());
+            const float texture_height = static_cast<float>(texture.get_height());
             const Vector2 world_position = matrix.origin;
             Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
-            screen_position.x -= f_texture_width * sprite_pivot.x * scale.x;
-            screen_position.y -= f_texture_height * sprite_pivot.y * scale.y;
+            screen_position.x -= texture_width * sprite_pivot.x * scale.x;
+            screen_position.y -= texture_height * sprite_pivot.y * scale.y;
 
-            const Vector2 size = Vector2(f_texture_width * scale.x, f_texture_height * scale.y);
+            const Vector2 size = Vector2(texture_width * scale.x, texture_height * scale.y);
             const Vector2 pivot_pixel(size.x * sprite_pivot.x, size.y * sprite_pivot.y);
 
             const float rotation_rad = matrix.get_rotation();
 
             m_renderer.draw_sprite(
-                sprite_comp->get_texture_id(),
+                texture.get_id(),
                 screen_position,
                 size,
                 pivot_pixel,

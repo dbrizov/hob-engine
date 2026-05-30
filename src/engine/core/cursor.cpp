@@ -16,32 +16,19 @@ namespace hob {
         set_visible(m_is_visible);
     }
 
-    Cursor::~Cursor() {
-        clear_texture();
-    }
-
     TextureId Cursor::get_texture_id() const {
-        return m_texture_id;
+        return m_texture.get_id();
     }
 
     void Cursor::set_texture(const std::string& relative_path) {
         const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
-        const TextureId new_id = m_renderer.load_texture(full_path);
-
-        if (m_texture_id != INVALID_TEXTURE_ID) {
-            m_renderer.unload_texture(m_texture_id);
-        }
-
-        m_texture_id = new_id;
-        set_visible(m_is_visible); // trigger the OS cursor fallback if the texture id is invalid
+        m_texture = m_renderer.load_texture(full_path);
+        set_visible(m_is_visible); // trigger the OS cursor fallback if the load failed
     }
 
     void Cursor::clear_texture() {
-        if (m_texture_id != INVALID_TEXTURE_ID) {
-            m_renderer.unload_texture(m_texture_id);
-            m_texture_id = INVALID_TEXTURE_ID;
-            set_visible(m_is_visible); // trigger the OS cursor fallback because the texture id is invalid
-        }
+        m_texture.reset();
+        set_visible(m_is_visible); // trigger the OS cursor fallback because the texture is gone
     }
 
     Vector2 Cursor::get_pivot() const {
@@ -90,7 +77,7 @@ namespace hob {
 
         // OS cursor is the fallback when our cursor is on but has no texture;
         // otherwise it stays hidden (the engine owns cursor presentation).
-        set_os_cursor_visible(m_is_visible && m_texture_id == INVALID_TEXTURE_ID);
+        set_os_cursor_visible(m_is_visible && !m_texture.is_valid());
     }
 
     bool Cursor::is_os_cursor_visible() const {
@@ -107,23 +94,19 @@ namespace hob {
     }
 
     void Cursor::render() {
-        if (!m_is_visible || m_texture_id == INVALID_TEXTURE_ID || is_os_cursor_visible()) {
+        if (!m_is_visible || !m_texture.is_valid() || is_os_cursor_visible()) {
             return;
         }
 
-        int texture_width = 0;
-        int texture_height = 0;
-        m_renderer.get_texture_size(m_texture_id, texture_width, texture_height);
-
-        const float f_w = static_cast<float>(texture_width);
-        const float f_h = static_cast<float>(texture_height);
-        const Vector2 size(f_w * m_scale.x, f_h * m_scale.y);
+        const float width = static_cast<float>(m_texture.get_width());
+        const float height = static_cast<float>(m_texture.get_height());
+        const Vector2 size(width * m_scale.x, height * m_scale.y);
         const Vector2 pivot_pixel(size.x * m_pivot.x, size.y * m_pivot.y);
 
         Vector2 mouse_screen = m_input.get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot_pixel.x, mouse_screen.y - pivot_pixel.y);
 
-        m_renderer.draw_sprite(m_texture_id,
+        m_renderer.draw_sprite(m_texture.get_id(),
                                screen_pos,
                                size,
                                pivot_pixel,

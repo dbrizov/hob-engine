@@ -12,35 +12,25 @@ namespace hob {
         : Component(entity) {
     }
 
-    SpriteComponent::~SpriteComponent() {
-        clear_texture();
-    }
-
     std::string SpriteComponent::to_string() const {
         return std::format("SpriteComponent(entity_id = {})", get_entity().get_id());
     }
 
     TextureId SpriteComponent::get_texture_id() const {
-        return m_texture_id;
+        return m_texture.get_id();
+    }
+
+    const TextureRef& SpriteComponent::get_texture() const {
+        return m_texture;
     }
 
     void SpriteComponent::set_texture(const std::string& relative_path) {
-        Renderer& renderer = get_app().get_renderer();
         const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
-        const TextureId new_id = renderer.load_texture(full_path);
-
-        if (m_texture_id != INVALID_TEXTURE_ID) {
-            renderer.unload_texture(m_texture_id);
-        }
-
-        m_texture_id = new_id;
+        m_texture = get_app().get_renderer().load_texture(full_path);
     }
 
     void SpriteComponent::clear_texture() {
-        if (m_texture_id != INVALID_TEXTURE_ID) {
-            get_app().get_renderer().unload_texture(m_texture_id);
-            m_texture_id = INVALID_TEXTURE_ID;
-        }
+        m_texture.reset();
     }
 
     Vector2 SpriteComponent::get_pivot() const {

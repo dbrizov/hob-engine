@@ -14,34 +14,6 @@
 #include "sdl_context.h"
 
 namespace hob {
-    Color::Color()
-        : Color(0.0f, 0.0f, 0.0f, 0.0f) {
-    }
-
-    Color::Color(float r_, float g_, float b_, float a_)
-        : r(r_)
-        , g(g_)
-        , b(b_)
-        , a(a_) {
-    }
-
-    Color Color::black() { return Color(0.0f, 0.0f, 0.0f); }
-    Color Color::white() { return Color(1.0f, 1.0f, 1.0f); }
-    Color Color::gray() { return Color(0.5f, 0.5f, 0.5f); }
-    Color Color::red() { return Color(1.0f, 0.0f, 0.0f); }
-    Color Color::green() { return Color(0.0f, 1.0f, 0.0f); }
-    Color Color::blue() { return Color(0.0f, 0.0f, 1.0f); }
-    Color Color::yellow() { return Color(1.0f, 1.0f, 0.0f); }
-    Color Color::magenta() { return Color(1.0f, 0.0f, 1.0f); }
-    Color Color::cyan() { return Color(0.0f, 1.0f, 1.0f); }
-    Color Color::orange() { return Color(1.0f, 0.647f, 0.0f); }
-
-    std::string Color::to_string() const {
-        return std::format("({}, {}, {}, {})", r, g, b, a);
-    }
-}
-
-namespace hob {
     namespace {
         const char* SPRITE_VS = R"(
 layout(location = 0) in vec2 a_pos;
@@ -193,6 +165,100 @@ void main() {
         }
     }
 
+    // TextureRef
+    TextureRef::TextureRef(Renderer& renderer, TextureId id, uint32_t width, uint32_t height)
+        : m_renderer(&renderer)
+        , m_id(id)
+        , m_width(width)
+        , m_height(height) {
+    }
+
+    TextureRef::~TextureRef() {
+        reset();
+    }
+
+    TextureRef::TextureRef(TextureRef&& other) noexcept
+        : m_renderer(other.m_renderer)
+        , m_id(other.m_id)
+        , m_width(other.m_width)
+        , m_height(other.m_height) {
+        other.m_renderer = nullptr;
+        other.m_id = INVALID_TEXTURE_ID;
+        other.m_width = 0;
+        other.m_height = 0;
+    }
+
+    TextureRef& TextureRef::operator=(TextureRef&& other) noexcept {
+        if (this != &other) {
+            reset();
+            m_renderer = other.m_renderer;
+            m_id = other.m_id;
+            m_width = other.m_width;
+            m_height = other.m_height;
+
+            other.m_renderer = nullptr;
+            other.m_id = INVALID_TEXTURE_ID;
+            other.m_width = 0;
+            other.m_height = 0;
+        }
+
+        return *this;
+    }
+
+    void TextureRef::reset() {
+        if (m_renderer != nullptr) {
+            m_renderer->unload_texture(m_id);
+            m_renderer = nullptr;
+            m_id = INVALID_TEXTURE_ID;
+            m_width = 0;
+            m_height = 0;
+        }
+    }
+
+    bool TextureRef::is_valid() const {
+        return m_renderer != nullptr;
+    }
+
+    TextureId TextureRef::get_id() const {
+        return m_id;
+    }
+
+    uint32_t TextureRef::get_width() const {
+        return m_width;
+    }
+
+    uint32_t TextureRef::get_height() const {
+        return m_height;
+    }
+
+    // Color
+    Color::Color()
+        : Color(0.0f, 0.0f, 0.0f, 0.0f) {
+    }
+
+    Color::Color(float r_, float g_, float b_, float a_)
+        : r(r_)
+        , g(g_)
+        , b(b_)
+        , a(a_) {
+    }
+
+    Color Color::black() { return Color(0.0f, 0.0f, 0.0f); }
+    Color Color::white() { return Color(1.0f, 1.0f, 1.0f); }
+    Color Color::gray() { return Color(0.5f, 0.5f, 0.5f); }
+    Color Color::red() { return Color(1.0f, 0.0f, 0.0f); }
+    Color Color::green() { return Color(0.0f, 1.0f, 0.0f); }
+    Color Color::blue() { return Color(0.0f, 0.0f, 1.0f); }
+    Color Color::yellow() { return Color(1.0f, 1.0f, 0.0f); }
+    Color Color::magenta() { return Color(1.0f, 0.0f, 1.0f); }
+    Color Color::cyan() { return Color(0.0f, 1.0f, 1.0f); }
+    Color Color::orange() { return Color(1.0f, 0.647f, 0.0f); }
+
+    std::string Color::to_string() const {
+        return std::format("({}, {}, {}, {})", r, g, b, a);
+    }
+
+    // Renderer
     Renderer::Renderer(const AppConfig& config, const SdlContext& sdl_context, Console& console)
         : m_sdl_context(sdl_context)
         , m_logical_width(config.graphics_config.logical_resolution_width)
@@ -499,7 +565,7 @@ void main() {
         }
     }
 
-    TextureId Renderer::load_texture(const std::filesystem::path& full_path) {
+    TextureRef Renderer::load_texture(const std::filesystem::path& full_path) {
         std::error_code error_code;
         std::filesystem::path canonical = std::filesystem::weakly_canonical(full_path, error_code);
         if (error_code) {
@@ -516,13 +582,13 @@ void main() {
                 debug::log("Renderer::load_texture cache hit: '{}' (id={}, rc={})", key, it->second, entry.ref_count);
             }
 
-            return it->second;
+            return TextureRef(*this, it->second, entry.width, entry.height);
         }
 
         SDL_Surface* surface = IMG_Load(full_path.string().c_str());
         if (!surface) {
             debug::log_error("IMG_Load failed: {}", SDL_GetError());
-            return INVALID_TEXTURE_ID;
+            return TextureRef();
         }
 
         SDL_Surface* rgba = surface;
@@ -531,13 +597,13 @@ void main() {
             SDL_DestroySurface(surface);
             if (!rgba) {
                 debug::log_error("SDL_ConvertSurface failed: {}", SDL_GetError());
-                return INVALID_TEXTURE_ID;
+                return TextureRef();
             }
         }
 
         const TextureId texture_id = create_texture_from_pixels(rgba->pixels, rgba->w, rgba->h);
-        const int w = rgba->w;
-        const int h = rgba->h;
+        const uint32_t w = static_cast<uint32_t>(rgba->w);
+        const uint32_t h = static_cast<uint32_t>(rgba->h);
         const int ref_count = 1;
         SDL_DestroySurface(rgba);
 
@@ -548,7 +614,7 @@ void main() {
             debug::log("Renderer::load_texture loaded: '{}' (id={}, rc={})", key, texture_id, ref_count);
         }
 
-        return texture_id;
+        return TextureRef(*this, texture_id, w, h);
     }
 
     bool Renderer::unload_texture(TextureId id) {
@@ -577,18 +643,6 @@ void main() {
         m_path_to_id.erase(entry.path);
         m_textures.erase(it);
         return true;
-    }
-
-    void Renderer::get_texture_size(TextureId id, int& out_width, int& out_height) const {
-        auto it = m_textures.find(id);
-        if (it != m_textures.end()) {
-            out_width = it->second.width;
-            out_height = it->second.height;
-        }
-        else {
-            out_width = 0;
-            out_height = 0;
-        }
     }
 
     void Renderer::unload_all_textures() {

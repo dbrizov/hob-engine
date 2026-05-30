@@ -12,12 +12,42 @@
 namespace hob {
     struct AppConfig;
     class SdlContext;
+    class Renderer;
     class Console;
+
+    constexpr const char* GLSL_VERSION = "#version 330 core\n";
 
     using TextureId = uint32_t;
     constexpr TextureId INVALID_TEXTURE_ID = MAX_UINT32;
 
-    constexpr const char* GLSL_VERSION = "#version 330 core\n";
+    // Move-only RAII handle owning one ref count contribution in the Renderer's texture cache.
+    // Obtain via Renderer::load_texture; destructor releases.
+    class TextureRef {
+        Renderer* m_renderer = nullptr;
+        TextureId m_id = INVALID_TEXTURE_ID;
+        uint32_t m_width = 0;
+        uint32_t m_height = 0;
+
+        friend class Renderer;
+        TextureRef(Renderer& renderer, TextureId id, uint32_t width, uint32_t height);
+
+    public:
+        TextureRef() = default;
+        ~TextureRef();
+
+        TextureRef(const TextureRef&) = delete;
+        TextureRef& operator=(const TextureRef&) = delete;
+
+        TextureRef(TextureRef&& other) noexcept;
+        TextureRef& operator=(TextureRef&& other) noexcept;
+
+        void reset();
+
+        bool is_valid() const;
+        TextureId get_id() const;
+        uint32_t get_width() const;
+        uint32_t get_height() const;
+    };
 
     struct Color {
         float r;
@@ -44,12 +74,12 @@ namespace hob {
 
     class Renderer {
         struct TextureEntry {
-            int width;
-            int height;
+            uint32_t width;
+            uint32_t height;
             std::string path;
             int ref_count;
 
-            TextureEntry(int _width, int _height, std::string _path, int _ref_count)
+            TextureEntry(uint32_t _width, uint32_t _height, std::string _path, int _ref_count)
                 : width(_width)
                 , height(_height)
                 , path(std::move(_path))
@@ -137,11 +167,12 @@ namespace hob {
         void draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
         // Texture cache.
-        TextureId load_texture(const std::filesystem::path& full_path);
-        bool unload_texture(TextureId id);
-        void get_texture_size(TextureId id, int& out_width, int& out_height) const;
+        TextureRef load_texture(const std::filesystem::path& full_path);
 
     private:
+        friend class TextureRef;
+        bool unload_texture(TextureId id);
+
         bool init_sprite_pipeline();
         bool init_line_pipeline();
         bool init_blit_pipeline();

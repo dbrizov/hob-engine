@@ -20,7 +20,8 @@ namespace hob {
         const SdlContext& m_sdl_context;
         Renderer& m_renderer;
         const Input& m_input;
-        TextureId m_texture_id = INVALID_TEXTURE_ID;
+
+        TextureRef m_texture;
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
         Color m_tint = Color::white();
@@ -29,7 +30,6 @@ namespace hob {
 
     public:
         Cursor(const SdlContext& sdl_context, Renderer& renderer, const Input& input);
-        ~Cursor();
 
         Cursor(const Cursor&) = delete;
         Cursor& operator=(const Cursor&) = delete;
