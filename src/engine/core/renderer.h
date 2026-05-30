@@ -152,18 +152,29 @@ namespace hob {
         // End a frame: unbind FBO, blit to window back-buffer.
         void frame_end();
 
-        // Sprite draw in logical screen space (top-left origin, y-down).
-        // screen_pos is the unrotated top-left of the rect.
-        // pivot_pixel is the rotation pivot in pixel coords relative to that top-left.
-        // rotation_rad is in world-space radians (CCW in y-up).
+        /// Draws a textured quad in logical screen space (top-left origin, y-down).
+        /// All pixel-valued parameters are in logical pixels — the same space the
+        /// orthographic projection is configured in, NOT window pixels.
+        /// @param texture_id   Texture to sample. Must be a valid id from load_texture().
+        /// @param screen_pos   Unrotated top-left corner of the destination rect, in logical pixels.
+        /// @param size_pixels  Destination rect size in logical pixels (width, height).
+        /// @param pivot_pixel  Rotation pivot in logical pixels, relative to screen_pos (top-left).
+        /// @param rotation_rad World-space rotation in radians (CCW in y-up world). Internally
+        ///                     negated to keep visual CCW under the y-down screen projection.
+        /// @param tint         RGBA multiplied with the sampled texel.
         void draw_sprite(TextureId texture_id,
                          const Vector2& screen_pos,
-                         const Vector2& size,
+                         const Vector2& size_pixels,
                          const Vector2& pivot_pixel,
                          float rotation_rad,
                          const Color& tint);
 
-        // Line draw in logical screen space.
+        /// Draws a line segment in logical screen space (top-left origin, y-down).
+        /// @param a         Start point in logical pixels.
+        /// @param b         End point in logical pixels.
+        /// @param color     RGBA line color.
+        /// @param thickness Line width in pixels. Values below 1.0 are clamped to 1.0
+        ///                  (the GL minimum); driver support above ~1.0 is not guaranteed.
         void draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
         // Texture cache.

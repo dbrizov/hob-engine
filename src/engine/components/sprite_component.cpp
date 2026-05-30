@@ -12,6 +12,10 @@ namespace hob {
         : Component(entity) {
     }
 
+    void SpriteComponent::init() {
+        m_pixels_per_meter = get_engine().get_renderer().get_pixels_per_meter();
+    }
+
     std::string SpriteComponent::to_string() const {
         return std::format("SpriteComponent(entity_id = {})", get_entity().get_id());
     }
@@ -63,5 +67,17 @@ namespace hob {
 
     void SpriteComponent::set_z_index(int z_index) {
         m_z_index = z_index;
+    }
+
+    uint32_t SpriteComponent::get_pixels_per_meter() const {
+        return m_pixels_per_meter;
+    }
+
+    float SpriteComponent::get_pixels_per_meter_f() const {
+        return static_cast<float>(m_pixels_per_meter);
+    }
+
+    void SpriteComponent::set_pixels_per_meter(uint32_t value) {
+        m_pixels_per_meter = value;
     }
 }

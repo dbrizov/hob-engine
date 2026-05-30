@@ -81,6 +81,7 @@ local schemas = {
             scale = "set_scale",
             tint = "set_tint",
             z_index = "set_z_index",
+            pixels_per_meter = "set_pixels_per_meter",
         },
     },
 

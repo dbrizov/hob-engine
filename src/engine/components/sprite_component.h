@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 #include "component.h"
@@ -13,9 +14,12 @@ namespace hob {
         Vector2 m_scale = Vector2(1.0f, 1.0f);
         Color m_tint = Color::white();
         int m_z_index = 0;
+        uint32_t m_pixels_per_meter = 0;
 
     public:
         explicit SpriteComponent(Entity& entity);
+
+        void init() override;
 
         std::string to_string() const override;
 
@@ -35,5 +39,9 @@ namespace hob {
 
         int get_z_index() const;
         void set_z_index(int z_index);
+
+        uint32_t get_pixels_per_meter() const;
+        float get_pixels_per_meter_f() const;
+        void set_pixels_per_meter(uint32_t value);
     };
 }

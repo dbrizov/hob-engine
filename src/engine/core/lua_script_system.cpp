@@ -404,7 +404,9 @@ namespace hob {
             .method("get_tint", &SpriteComponent::get_tint)
             .method("set_tint", &SpriteComponent::set_tint, {"color"})
             .method("get_z_index", &SpriteComponent::get_z_index)
-            .method("set_z_index", &SpriteComponent::set_z_index, {"z_index"});
+            .method("set_z_index", &SpriteComponent::set_z_index, {"z_index"})
+            .method("get_pixels_per_meter", &SpriteComponent::get_pixels_per_meter)
+            .method("set_pixels_per_meter", &SpriteComponent::set_pixels_per_meter, {"value"});
 
         bind_usertype<CameraComponent>(m_lua, m_meta, "CameraComponent", Bases<Component>{})
             .method("world_to_screen",

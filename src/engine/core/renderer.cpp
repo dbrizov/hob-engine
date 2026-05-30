@@ -506,14 +506,14 @@ void main() {
 
     void Renderer::draw_sprite(TextureId texture_id,
                                const Vector2& screen_pos,
-                               const Vector2& size,
+                               const Vector2& size_pixels,
                                const Vector2& pivot_pixel,
                                float rotation_rad,
                                const Color& tint) {
         glUseProgram(m_sprite_program);
         glUniformMatrix4fv(m_u_sprite_projection, 1, GL_FALSE, m_projection.data());
         glUniform2f(m_u_sprite_screen_pos, screen_pos.x, screen_pos.y);
-        glUniform2f(m_u_sprite_size, size.x, size.y);
+        glUniform2f(m_u_sprite_size, size_pixels.x, size_pixels.y);
         glUniform2f(m_u_sprite_pivot_pixel, pivot_pixel.x, pivot_pixel.y);
 
         // World space is y-up; screen projection is y-down. Negate so positive world rotation

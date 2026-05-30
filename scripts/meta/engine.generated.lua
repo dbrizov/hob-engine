@@ -505,6 +505,12 @@ function SpriteComponent:get_z_index() end
 ---@param z_index integer
 function SpriteComponent:set_z_index(z_index) end
 
+---@return integer
+function SpriteComponent:get_pixels_per_meter() end
+
+---@param value integer
+function SpriteComponent:set_pixels_per_meter(value) end
+
 _G.SpriteComponent = SpriteComponent
 
 -- CameraComponent

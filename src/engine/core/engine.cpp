@@ -228,30 +228,31 @@ namespace hob {
                                                      transform_comp->get_local_matrix(),
                                                      m_physics.get_interpolation_fraction());
 
-            const Vector2 sprite_pivot = sprite_comp->get_pivot();
-
-            const Vector2 transform_scale = transform_comp->get_scale();
-            const Vector2 sprite_scale = sprite_comp->get_scale();
-            const Vector2 scale = Vector2(transform_scale.x * sprite_scale.x, transform_scale.y * sprite_scale.y);
+            const Vector2 tr_scale = transform_comp->get_scale();
+            const Vector2 sp_scale = sprite_comp->get_scale();
+            const Vector2 scale = Vector2(tr_scale.x * sp_scale.x, tr_scale.y * sp_scale.y);
 
             const float texture_width = static_cast<float>(texture.get_width());
             const float texture_height = static_cast<float>(texture.get_height());
+            const float runtime_ppm = m_renderer.get_pixels_per_meter_f();
+            const float sprite_ppm = sprite_comp->get_pixels_per_meter_f();
+            const Vector2 size_pixels = Vector2((texture_width / sprite_ppm) * runtime_ppm * scale.x,
+                                                (texture_height / sprite_ppm) * runtime_ppm * scale.y);
+
+            const Vector2 sprite_pivot = sprite_comp->get_pivot();
             const Vector2 world_position = matrix.origin;
-            Vector2 screen_position = camera_component->world_to_screen(world_position, camera_position);
-            screen_position.x -= texture_width * sprite_pivot.x * scale.x;
-            screen_position.y -= texture_height * sprite_pivot.y * scale.y;
+            Vector2 screen_pos = camera_component->world_to_screen(world_position, camera_position);
+            screen_pos.x -= size_pixels.x * sprite_pivot.x;
+            screen_pos.y -= size_pixels.y * sprite_pivot.y;
 
-            const Vector2 size = Vector2(texture_width * scale.x, texture_height * scale.y);
-            const Vector2 pivot_pixel(size.x * sprite_pivot.x, size.y * sprite_pivot.y);
-
-            const float rotation_rad = matrix.get_rotation();
+            const Vector2 pivot_pixel(size_pixels.x * sprite_pivot.x, size_pixels.y * sprite_pivot.y);
 
             m_renderer.draw_sprite(
                 texture.get_id(),
-                screen_position,
-                size,
+                screen_pos,
+                size_pixels,
                 pivot_pixel,
-                rotation_rad,
+                matrix.get_rotation(),
                 sprite_comp->get_tint());
         }
     }
