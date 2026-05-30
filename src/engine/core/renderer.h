@@ -10,7 +10,7 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    struct AppConfig;
+    struct EngineConfig;
     class SdlContext;
     class Renderer;
     class Console;
@@ -127,7 +127,7 @@ namespace hob {
         bool m_is_initialized = false;
 
     public:
-        Renderer(const AppConfig& config, const SdlContext& sdl_context, Console& console);
+        Renderer(const EngineConfig& config, const SdlContext& sdl_context, Console& console);
         ~Renderer();
 
         Renderer(const Renderer&) = delete;

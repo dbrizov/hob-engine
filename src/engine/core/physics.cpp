@@ -34,7 +34,7 @@ namespace hob {
         return m_id;
     }
 
-    Physics::Physics(const AppConfig& config, Console& console)
+    Physics::Physics(const EngineConfig& config, Console& console)
         : m_physics_world(config.physics_config.gravity)
         , m_accumulator(0.0f)
         , m_fixed_delta_time(delta_time_from_ticks(config.physics_config.ticks_per_second))

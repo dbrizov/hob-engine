@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "console.h"
 #include "cursor.h"
 #include "imgui_system.h"
@@ -13,7 +15,7 @@
 
 namespace hob {
     struct GraphicsConfig {
-        std::string window_title = "SDL2 Window";
+        std::string window_title = "Hob Engine";
         uint32_t window_width = 1152;
         uint32_t window_height = 648;
         uint32_t logical_resolution_width = 1152;
@@ -30,9 +32,12 @@ namespace hob {
         bool interpolation_enabled = true;
     };
 
-    struct AppConfig {
+    struct EngineConfig {
         GraphicsConfig graphics_config;
         PhysicsConfig physics_config;
+
+        EngineConfig() = default;
+        explicit EngineConfig(const std::filesystem::path& json_path);
     };
 
     class App {
@@ -51,7 +56,7 @@ namespace hob {
         bool m_is_os_cursor_visible_before_console_opened = false;
 
     public:
-        explicit App(const AppConfig& config);
+        explicit App(const EngineConfig& config);
         ~App();
 
         void run();

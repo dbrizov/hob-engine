@@ -259,7 +259,7 @@ void main() {
     }
 
     // Renderer
-    Renderer::Renderer(const AppConfig& config, const SdlContext& sdl_context, Console& console)
+    Renderer::Renderer(const EngineConfig& config, const SdlContext& sdl_context, Console& console)
         : m_sdl_context(sdl_context)
         , m_logical_width(config.graphics_config.logical_resolution_width)
         , m_logical_height(config.graphics_config.logical_resolution_height)

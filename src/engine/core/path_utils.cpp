@@ -27,6 +27,12 @@ namespace hob {
         return assets_root_path;
     }
 
+    std::filesystem::path PathUtils::get_engine_config_path() {
+        std::filesystem::path root_path = get_root_path();
+        std::filesystem::path engine_config_path = root_path / "config" / "engine_config.json";
+        return engine_config_path;
+    }
+
     std::filesystem::path PathUtils::get_input_config_path() {
         std::filesystem::path root_path = get_root_path();
         std::filesystem::path input_config_path = root_path / "config" / "input_config.json";

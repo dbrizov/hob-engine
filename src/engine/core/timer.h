@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace hob {
-    struct AppConfig;
+    struct EngineConfig;
 
     class Timer {
         uint32_t m_target_fps;
@@ -22,7 +22,7 @@ namespace hob {
         friend class App;
 
     public:
-        explicit Timer(const AppConfig& config);
+        explicit Timer(const EngineConfig& config);
 
         uint32_t get_fps() const;
         void set_fps(uint32_t fps);

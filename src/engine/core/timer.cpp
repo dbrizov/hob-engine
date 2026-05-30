@@ -5,7 +5,7 @@
 #include "app.h"
 
 namespace hob {
-    Timer::Timer(const AppConfig& config)
+    Timer::Timer(const EngineConfig& config)
         : m_target_fps(config.graphics_config.target_fps)
         , m_vsync_enabled(config.graphics_config.vsync_enabled)
         , m_time_scale(1.0f)

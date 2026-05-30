@@ -6,7 +6,7 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    struct AppConfig;
+    struct EngineConfig;
     class Console;
     class Entity;
     class ColliderComponent;
@@ -42,7 +42,7 @@ namespace hob {
     public:
         bool cvar_debug_draw = true;
 
-        Physics(const AppConfig& config, Console& console);
+        Physics(const EngineConfig& config, Console& console);
 
         void tick_entities(float frame_delta_time, const std::vector<Entity*>& entities);
 
