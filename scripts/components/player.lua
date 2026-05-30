@@ -56,7 +56,16 @@ function Player:debug_draw_tick(delta_time)
     local mouse_world = Camera.screen_to_world(mouse_screen)
     local player_pos = self.entity:get_transform():get_position()
 
-    Debug.draw_line(player_pos, mouse_world, Color.green())
+    local direction = mouse_world - player_pos
+    local distance = direction:length()
+    local hit = Physics.raycast(player_pos, direction, distance)
+
+    if hit.hit then
+        Debug.draw_line(player_pos, hit.point, Color.red())
+        Debug.draw_circle(hit.point, 0.1, Color.red())
+    else
+        Debug.draw_line(player_pos, mouse_world, Color.green())
+    end
 end
 
 function Player:update_camera_position(target_position, delta_time)

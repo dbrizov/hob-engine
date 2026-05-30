@@ -42,6 +42,7 @@ namespace hob {
     HOB_LUA_TYPE(double, "number")
     HOB_LUA_TYPE(std::string, "string")
     HOB_LUA_TYPE(const char*, "string")
+    HOB_LUA_TYPE(sol::table, "table")
     // clang-format on
 
     namespace meta_detail {
@@ -49,9 +50,52 @@ namespace hob {
         using strip_t = std::remove_cv_t<std::remove_reference_t<std::remove_pointer_t<std::remove_cv_t<T>>>>;
 
         template<typename T>
+        struct is_sol_optional : std::false_type {
+        };
+
+        template<typename T>
+        struct is_sol_optional<sol::optional<T>> : std::true_type {
+        };
+
+        template<typename T>
+        struct is_std_vector : std::false_type {
+        };
+
+        template<typename T, typename A>
+        struct is_std_vector<std::vector<T, A>> : std::true_type {
+        };
+
+        template<typename T>
         const char* lua_name() {
-            constexpr const char* n = LuaTypeName<strip_t<T>>::value;
-            return n ? n : "any";
+            using no_cv_ref = std::remove_cv_t<std::remove_reference_t<T>>;
+
+            // Direct hit on the (cv/ref-stripped) type first. Catches `const char*`
+            // → "string" before the pointer branch below would turn it into "string?".
+            if constexpr (LuaTypeName<no_cv_ref>::value != nullptr) {
+                return LuaTypeName<no_cv_ref>::value;
+            }
+            // Raw pointer to a usertype → nullable in Lua (sol2 converts nullptr to nil).
+            else if constexpr (std::is_pointer_v<no_cv_ref>) {
+                using pointee = strip_t<no_cv_ref>;
+                static const std::string s =
+                    std::string(LuaTypeName<pointee>::value ? LuaTypeName<pointee>::value : "any") + "?";
+                return s.c_str();
+            }
+            else if constexpr (is_sol_optional<no_cv_ref>::value) {
+                using inner = strip_t<typename no_cv_ref::value_type>;
+                static const std::string s =
+                    std::string(LuaTypeName<inner>::value ? LuaTypeName<inner>::value : "any") + "?";
+                return s.c_str();
+            }
+            else if constexpr (is_std_vector<no_cv_ref>::value) {
+                using inner = strip_t<typename no_cv_ref::value_type>;
+                static const std::string s =
+                    std::string(LuaTypeName<inner>::value ? LuaTypeName<inner>::value : "any") + "[]";
+                return s.c_str();
+            }
+            else {
+                return "any";
+            }
         }
 
         // Function traits — extracts return type and arg pack from function
@@ -263,6 +307,25 @@ namespace hob {
         UsertypeBuilder& field(const char* name, M C::* ptr) {
             m_usertype[name] = ptr;
             m_info->fields.push_back({name, meta_detail::lua_name<M>()});
+            return *this;
+        }
+
+        // ----- Computed property (read-only). Exposed to Lua as `obj.name`. -----
+        template<typename G>
+        UsertypeBuilder& property(const char* name, G getter) {
+            m_usertype[name] = sol::property(getter);
+            using traits = meta_detail::func_traits<G>;
+            m_info->fields.push_back({name, meta_detail::lua_name<typename traits::ret>()});
+            return *this;
+        }
+
+        // Explicit type override for cases the trait can't deduce
+        // (getters returning sol::object, etc.). `type` is the LuaCATS type
+        // name to emit, e.g. "Entity?" or "RaycastHit[]".
+        template<typename G>
+        UsertypeBuilder& property_sig(const char* name, G getter, const char* type) {
+            m_usertype[name] = sol::property(getter);
+            m_info->fields.push_back({name, type});
             return *this;
         }
 

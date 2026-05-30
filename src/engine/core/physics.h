@@ -9,6 +9,15 @@ namespace hob {
     struct AppConfig;
     class Console;
     class Entity;
+    class ColliderComponent;
+
+    struct RaycastHit {
+        ColliderComponent* collider = nullptr;
+        Vector2 point;
+        Vector2 normal;
+        float distance = 0.0f;
+        bool hit = false;
+    };
 
     class PhysicsWorld {
         b2WorldId m_id;
@@ -41,6 +50,16 @@ namespace hob {
 
         float get_fixed_delta_time() const;
         float get_interpolation_fraction() const;
+
+        RaycastHit raycast(const Vector2& origin,
+                           const Vector2& direction,
+                           float distance,
+                           uint64_t layer_mask = ~0ull) const;
+
+        std::vector<RaycastHit> raycast_all(const Vector2& origin,
+                                            const Vector2& direction,
+                                            float distance,
+                                            uint64_t layer_mask = ~0ull) const;
 
         static Vector2 b2Vec2_to_vec2(const b2Vec2& vec);
         static b2Vec2 vec2_to_b2Vec2(const Vector2& vec);

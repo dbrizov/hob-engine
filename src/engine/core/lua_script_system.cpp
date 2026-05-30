@@ -9,6 +9,7 @@
 #include "input.h"
 #include "logging.h"
 #include "path_utils.h"
+#include "physics.h"
 #include "renderer.h"
 #include "timer.h"
 #include "engine/components/camera_component.h"
@@ -49,6 +50,7 @@ namespace hob {
     HOB_LUA_TYPE(BodyType, "BodyType")
     HOB_LUA_TYPE(InputEventType, "InputEventType")
     HOB_LUA_TYPE(CursorMode, "CursorMode")
+    HOB_LUA_TYPE(RaycastHit, "RaycastHit")
     // clang-format on
 
     LuaScriptSystem::LuaScriptSystem(App& app)
@@ -499,12 +501,14 @@ namespace hob {
         Input& input = m_app.get_input();
         Timer& timer = m_app.get_timer();
         Cursor& cursor = m_app.get_cursor();
+        Physics& physics = m_app.get_physics();
 
+        // Scripts
         bind_table(m_lua, m_meta, "Scripts")
             .func("run_file", [this](const std::string& relative_path) {
                 return run_file(relative_path);
             }, {"relative_path"})
-            .func("run_folder", [this](const std::string& relative_path, sol::optional<sol::table> excludes) {
+            .func_sig("run_folder", [this](const std::string& relative_path, sol::optional<sol::table> excludes) {
                 std::vector<std::string> exclude_list;
                 if (excludes) {
                     for (const auto& kv : *excludes) {
@@ -513,16 +517,19 @@ namespace hob {
                 }
 
                 return run_folder(relative_path, exclude_list);
-            }, {"relative_path", "excludes"});
+            }, "(relative_path: string, excludes: string[]?): boolean");
 
+        // EntitySpawner
         bind_table(m_lua, m_meta, "EntitySpawner")
             .func("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })
             .func("destroy_entity", [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); }, {"entity"})
             .func("get_entity", [](EntityId id) { return EntityHandle(id); }, {"id"});
 
+        // Input
         bind_table(m_lua, m_meta, "Input")
             .func("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); });
 
+        // Timer
         bind_table(m_lua, m_meta, "Timer")
             .func("get_fps", [&timer]() { return timer.get_fps(); })
             .func("set_fps", [&timer](uint32_t v) { timer.set_fps(v); }, {"fps"})
@@ -531,6 +538,7 @@ namespace hob {
             .func("get_play_time", [&timer]() { return timer.get_play_time(); })
             .func("get_delta_time", [&timer]() { return timer.get_delta_time(); });
 
+        // Cursor
         bind_enum<CursorMode>(m_lua, m_meta, "CursorMode", {
                                   {"Default", CursorMode::Default},
                                   {"Confined", CursorMode::Confined},
@@ -552,6 +560,36 @@ namespace hob {
             .func("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"})
             .func("get_mode", [&cursor]() { return cursor.get_mode(); })
             .func("set_mode", [&cursor](CursorMode m) { cursor.set_mode(m); }, {"mode"});
+
+        // Physics
+        bind_usertype<RaycastHit>(m_lua, m_meta, "RaycastHit")
+            .field("collider", &RaycastHit::collider)
+            .field("point", &RaycastHit::point)
+            .field("normal", &RaycastHit::normal)
+            .field("distance", &RaycastHit::distance)
+            .field("hit", &RaycastHit::hit)
+            .property_sig("entity", [](const RaycastHit& h, sol::this_state ts) -> sol::object {
+                sol::state_view sv(ts);
+                if (h.collider == nullptr) {
+                    return sol::nil;
+                }
+
+                return sol::make_object(sv, EntityHandle(h.collider->get_entity().get_id()));
+            }, "Entity?");
+
+        bind_table(m_lua, m_meta, "Physics")
+            .func("raycast",
+                  [&physics](const Vector2& origin, const Vector2& direction, float distance,
+                             sol::optional<uint64_t> layer_mask) {
+                      return physics.raycast(origin, direction, distance, layer_mask.value_or(~0ull));
+                  },
+                  {"origin", "direction", "distance", "layer_mask"})
+            .func("raycast_all",
+                  [&physics](const Vector2& origin, const Vector2& direction, float distance,
+                             sol::optional<uint64_t> layer_mask) {
+                      return physics.raycast_all(origin, direction, distance, layer_mask.value_or(~0ull));
+                  },
+                  {"origin", "direction", "distance", "layer_mask"});
 
         bind_table(m_lua, m_meta, "Camera")
             .func("get_entity", [&spawner]() {

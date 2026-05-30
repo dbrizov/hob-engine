@@ -39,7 +39,7 @@ Scripts = {}
 function Scripts.run_file(relative_path) end
 
 ---@param relative_path string
----@param excludes any
+---@param excludes string[]?
 ---@return boolean
 function Scripts.run_folder(relative_path, excludes) end
 
@@ -127,6 +127,24 @@ function Cursor.get_mode() end
 
 ---@param mode CursorMode
 function Cursor.set_mode(mode) end
+
+-- Physics
+---@class Physics
+Physics = {}
+
+---@param origin Vector2
+---@param direction Vector2
+---@param distance number
+---@param layer_mask integer?
+---@return RaycastHit
+function Physics.raycast(origin, direction, distance, layer_mask) end
+
+---@param origin Vector2
+---@param direction Vector2
+---@param distance number
+---@param layer_mask integer?
+---@return RaycastHit[]
+function Physics.raycast_all(origin, direction, distance, layer_mask) end
 
 -- Camera
 ---@class Camera
@@ -351,47 +369,47 @@ function Entity:is_ticking() end
 ---@param ticking boolean
 function Entity:set_ticking(ticking) end
 
----@return RigidbodyComponent
+---@return RigidbodyComponent?
 function Entity:add_rigidbody() end
 
----@return BoxColliderComponent
+---@return BoxColliderComponent?
 function Entity:add_box_collider() end
 
----@return CapsuleColliderComponent
+---@return CapsuleColliderComponent?
 function Entity:add_capsule_collider() end
 
----@return CharacterBodyComponent
+---@return CharacterBodyComponent?
 function Entity:add_character_body() end
 
----@return SpriteComponent
+---@return SpriteComponent?
 function Entity:add_sprite() end
 
----@return InputComponent
+---@return InputComponent?
 function Entity:add_input() end
 
 ---@param class_name string
 ---@return LuaComponent?
 function Entity:add_lua_component(class_name) end
 
----@return TransformComponent
+---@return TransformComponent?
 function Entity:get_transform() end
 
----@return RigidbodyComponent
+---@return RigidbodyComponent?
 function Entity:get_rigidbody() end
 
----@return BoxColliderComponent
+---@return BoxColliderComponent?
 function Entity:get_box_collider() end
 
----@return CapsuleColliderComponent
+---@return CapsuleColliderComponent?
 function Entity:get_capsule_collider() end
 
----@return CharacterBodyComponent
+---@return CharacterBodyComponent?
 function Entity:get_character_body() end
 
----@return SpriteComponent
+---@return SpriteComponent?
 function Entity:get_sprite() end
 
----@return InputComponent
+---@return InputComponent?
 function Entity:get_input() end
 
 ---@param class_name string
@@ -662,4 +680,16 @@ function InputComponent:unbind_action(name, id) end
 function InputComponent:clear_all_bindings() end
 
 _G.InputComponent = InputComponent
+
+-- RaycastHit
+---@class RaycastHit
+---@field collider ColliderComponent?
+---@field point Vector2
+---@field normal Vector2
+---@field distance number
+---@field hit boolean
+---@field entity Entity?
+local RaycastHit = {}
+
+_G.RaycastHit = RaycastHit
 

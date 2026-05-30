@@ -73,8 +73,8 @@ namespace hob {
                 b2Vec2 b2_position = b2Body_GetPosition(rigidbody->get_body_id());
                 b2Rot b2_rotation = b2Body_GetRotation(rigidbody->get_body_id());
 
-                Vector2 position = Physics::b2Vec2_to_vec2(b2_position);
-                float radians = Physics::b2Rot_to_radians(b2_rotation);
+                Vector2 position = b2Vec2_to_vec2(b2_position);
+                float radians = b2Rot_to_radians(b2_rotation);
 
                 TransformComponent* transform = entity->get_transform();
                 transform->set_position(position);
@@ -97,6 +97,113 @@ namespace hob {
 
     float Physics::get_interpolation_fraction() const {
         return m_interpolation_fraction;
+    }
+
+    RaycastHit Physics::raycast(const Vector2& origin,
+                                const Vector2& direction,
+                                float distance,
+                                uint64_t layer_mask) const {
+        RaycastHit result;
+
+        if (distance <= 0.0f) {
+            return result;
+        }
+
+        const float dir_length = direction.length();
+        if (dir_length <= 0.0f) {
+            return result;
+        }
+
+        const Vector2 translation = direction * (distance / dir_length);
+
+        b2QueryFilter filter = b2DefaultQueryFilter();
+        filter.maskBits = layer_mask;
+
+        b2RayResult ray = b2World_CastRayClosest(m_physics_world.get_id(),
+                                                 vec2_to_b2Vec2(origin),
+                                                 vec2_to_b2Vec2(translation),
+                                                 filter);
+
+        if (!ray.hit) {
+            return result;
+        }
+
+        if (!b2Shape_IsValid(ray.shapeId)) {
+            return result;
+        }
+
+        auto* collider = static_cast<ColliderComponent*>(b2Shape_GetUserData(ray.shapeId));
+        if (collider == nullptr) {
+            return result;
+        }
+
+        result.collider = collider;
+        result.point = b2Vec2_to_vec2(ray.point);
+        result.normal = b2Vec2_to_vec2(ray.normal);
+        result.distance = ray.fraction * distance;
+        result.hit = true;
+
+        return result;
+    }
+
+    std::vector<RaycastHit> Physics::raycast_all(const Vector2& origin,
+                                                 const Vector2& direction,
+                                                 float distance,
+                                                 uint64_t layer_mask) const {
+        std::vector<RaycastHit> hits;
+
+        if (distance <= 0.0f) {
+            return hits;
+        }
+
+        const float dir_length = direction.length();
+        if (dir_length <= 0.0f) {
+            return hits;
+        }
+
+        const Vector2 translation = direction * (distance / dir_length);
+
+        b2QueryFilter filter = b2DefaultQueryFilter();
+        filter.maskBits = layer_mask;
+
+        struct CallbackContext {
+            std::vector<RaycastHit>* hits;
+            float distance;
+        };
+
+        CallbackContext ctx{&hits, distance};
+
+        auto callback = [](b2ShapeId shape_id, b2Vec2 point, b2Vec2 normal, float fraction, void* user_data) -> float {
+            auto* c = static_cast<CallbackContext*>(user_data);
+
+            if (!b2Shape_IsValid(shape_id)) {
+                return 1.0f; // continue
+            }
+
+            auto* collider = static_cast<ColliderComponent*>(b2Shape_GetUserData(shape_id));
+            if (collider == nullptr) {
+                return 1.0f; // continue
+            }
+
+            RaycastHit hit;
+            hit.collider = collider;
+            hit.point = b2Vec2_to_vec2(point);
+            hit.normal = b2Vec2_to_vec2(normal);
+            hit.distance = fraction * c->distance;
+            hit.hit = true;
+            c->hits->push_back(hit);
+
+            return 1.0f; // continue past this hit
+        };
+
+        b2World_CastRay(m_physics_world.get_id(),
+                        vec2_to_b2Vec2(origin),
+                        vec2_to_b2Vec2(translation),
+                        filter,
+                        callback,
+                        &ctx);
+
+        return hits;
     }
 
     Vector2 Physics::b2Vec2_to_vec2(const b2Vec2& vec) {
