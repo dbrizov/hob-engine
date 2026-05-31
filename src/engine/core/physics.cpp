@@ -3,8 +3,8 @@
 #include <cassert>
 #include <cmath>
 
-#include "engine.h"
 #include "console.h"
+#include "engine_config.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"

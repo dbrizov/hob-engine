@@ -1,4 +1,5 @@
 #include "engine/core/engine.h"
+#include "engine/core/engine_config.h"
 #include "engine/core/path_utils.h"
 
 int main(int argc, char* argv[]) {
