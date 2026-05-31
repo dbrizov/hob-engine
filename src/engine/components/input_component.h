@@ -31,10 +31,10 @@ namespace hob {
     public:
         explicit InputComponent(Entity& entity);
 
-        virtual int get_priority() const override;
+        int get_priority() const override;
 
-        virtual void enter_play() override;
-        virtual void exit_play() override;
+        void enter_play() override;
+        void exit_play() override;
 
         std::string to_string() const override;
 
