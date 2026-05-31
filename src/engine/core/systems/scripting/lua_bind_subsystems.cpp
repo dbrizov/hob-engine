@@ -67,7 +67,7 @@ namespace hob {
             .func("get_delta_time", [&timer]() { return timer.get_delta_time(); });
 
         // Cursor
-        bind_enum<CursorMode>(m_lua, m_meta, "CursorMode", {
+        bind_enum<CursorMode>(m_lua, m_meta, {
                                   {"Default", CursorMode::Default},
                                   {"Confined", CursorMode::Confined},
                               });
@@ -90,7 +90,7 @@ namespace hob {
             .func("set_mode", [&cursor](CursorMode m) { cursor.set_mode(m); }, {"mode"});
 
         // Physics
-        bind_usertype<RaycastHit>(m_lua, m_meta, "RaycastHit")
+        bind_usertype<RaycastHit>(m_lua, m_meta)
             .field("collider", &RaycastHit::collider)
             .field("point", &RaycastHit::point)
             .field("normal", &RaycastHit::normal)

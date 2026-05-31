@@ -31,7 +31,7 @@ namespace hob {
             return spawner.get_entity(h.id);
         };
 
-        bind_usertype<EntityHandle>(m_lua, m_meta, "Entity")
+        bind_usertype<EntityHandle>(m_lua, m_meta)
             .method("get_id", [](const EntityHandle& h) { return h.id; })
             .method("is_valid", [get_entity](const EntityHandle& h) { return get_entity(h) != nullptr; })
             .method("is_in_play", [get_entity](const EntityHandle& h) {

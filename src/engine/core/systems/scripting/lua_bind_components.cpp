@@ -30,11 +30,11 @@ namespace hob {
         LuaComponentSchemaRegistry& m_schemas = m_impl->component_schemas;
         const EntitySpawner& m_spawner = m_engine.get_entity_spawner();
 
-        bind_usertype<Component>(m_lua, m_meta, "Component")
+        bind_usertype<Component>(m_lua, m_meta)
             .method("get_entity", [](Component& c) { return EntityHandle(c.get_entity().get_id()); })
             .op_tostring(&Component::to_string);
 
-        bind_usertype<TransformComponent>(m_lua, m_meta, "TransformComponent", Bases<Component>{})
+        bind_usertype<TransformComponent>(m_lua, m_meta, Bases<Component>{})
             .method("get_position", &TransformComponent::get_position)
             .method("set_position", &TransformComponent::set_position, {"position"})
             .method("get_rotation", &TransformComponent::get_rotation)
@@ -42,7 +42,7 @@ namespace hob {
             .method("get_scale", &TransformComponent::get_scale)
             .method("set_scale", &TransformComponent::set_scale, {"scale"});
 
-        bind_usertype<SpriteComponent>(m_lua, m_meta, "SpriteComponent", Bases<Component>{})
+        bind_usertype<SpriteComponent>(m_lua, m_meta, Bases<Component>{})
             .method("has_texture", &SpriteComponent::has_texture)
             .method("set_texture", &SpriteComponent::set_texture, {"relative_path"})
             .method("clear_texture", &SpriteComponent::clear_texture)
@@ -57,7 +57,7 @@ namespace hob {
             .method("get_pixels_per_meter", &SpriteComponent::get_pixels_per_meter)
             .method("set_pixels_per_meter", &SpriteComponent::set_pixels_per_meter, {"value"});
 
-        bind_usertype<CameraComponent>(m_lua, m_meta, "CameraComponent", Bases<Component>{})
+        bind_usertype<CameraComponent>(m_lua, m_meta, Bases<Component>{})
             .method("world_to_screen",
                     sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::world_to_screen),
                     {"world_pos"})
@@ -65,13 +65,13 @@ namespace hob {
                     sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::screen_to_world),
                     {"screen_pos"});
 
-        bind_enum<BodyType>(m_lua, m_meta, "BodyType", {
+        bind_enum<BodyType>(m_lua, m_meta, {
                                 {"Static", BodyType::Static},
                                 {"Dynamic", BodyType::Dynamic},
                                 {"Kinematic", BodyType::Kinematic},
                             });
 
-        bind_usertype<RigidbodyComponent>(m_lua, m_meta, "RigidbodyComponent", Bases<Component>{})
+        bind_usertype<RigidbodyComponent>(m_lua, m_meta, Bases<Component>{})
             .method("get_body_type", &RigidbodyComponent::get_body_type)
             .method("set_body_type", &RigidbodyComponent::set_body_type, {"body_type"})
             .method("has_fixed_rotation", &RigidbodyComponent::has_fixed_rotation)
@@ -83,7 +83,7 @@ namespace hob {
             .method("get_rotation", &RigidbodyComponent::get_rotation)
             .method("set_rotation", &RigidbodyComponent::set_rotation, {"radians"});
 
-        bind_usertype<ColliderComponent>(m_lua, m_meta, "ColliderComponent", Bases<Component>{})
+        bind_usertype<ColliderComponent>(m_lua, m_meta, Bases<Component>{})
             .method("get_density", &ColliderComponent::get_density)
             .method("set_density", &ColliderComponent::set_density, {"density"})
             .method("get_friction", &ColliderComponent::get_friction)
@@ -99,25 +99,22 @@ namespace hob {
             .method("get_baked_scale", &ColliderComponent::get_baked_scale)
             .method("on_scale_changed", &ColliderComponent::on_scale_changed);
 
-        bind_usertype<BoxColliderComponent>(m_lua, m_meta, "BoxColliderComponent",
-                                            Bases<ColliderComponent, Component>{})
+        bind_usertype<BoxColliderComponent>(m_lua, m_meta, Bases<ColliderComponent, Component>{})
             .method("get_aabb", &BoxColliderComponent::get_aabb)
             .method("set_aabb", &BoxColliderComponent::set_aabb, {"aabb"})
             .method("get_scaled_aabb", &BoxColliderComponent::get_scaled_aabb);
 
-        bind_usertype<CapsuleColliderComponent>(m_lua, m_meta, "CapsuleColliderComponent",
-                                                Bases<ColliderComponent, Component>{})
+        bind_usertype<CapsuleColliderComponent>(m_lua, m_meta, Bases<ColliderComponent, Component>{})
             .method("get_capsule", &CapsuleColliderComponent::get_capsule)
             .method("set_capsule", &CapsuleColliderComponent::set_capsule, {"capsule"})
             .method("get_scaled_capsule", &CapsuleColliderComponent::get_scaled_capsule);
 
-        bind_usertype<CircleColliderComponent>(m_lua, m_meta, "CircleColliderComponent",
-                                               Bases<ColliderComponent, Component>{})
+        bind_usertype<CircleColliderComponent>(m_lua, m_meta, Bases<ColliderComponent, Component>{})
             .method("get_circle", &CircleColliderComponent::get_circle)
             .method("set_circle", &CircleColliderComponent::set_circle, {"circle"})
             .method("get_scaled_circle", &CircleColliderComponent::get_scaled_circle);
 
-        bind_usertype<CharacterBodyComponent>(m_lua, m_meta, "CharacterBodyComponent", Bases<Component>{})
+        bind_usertype<CharacterBodyComponent>(m_lua, m_meta, Bases<Component>{})
             .method("get_collision_layer", &CharacterBodyComponent::get_collision_layer)
             .method("set_collision_layer", &CharacterBodyComponent::set_collision_layer, {"layer"})
             .method("get_collision_mask", &CharacterBodyComponent::get_collision_mask)
@@ -133,13 +130,13 @@ namespace hob {
             .method("get_rotation", &CharacterBodyComponent::get_rotation)
             .method("set_rotation", &CharacterBodyComponent::set_rotation, {"radians"});
 
-        bind_enum<InputEventType>(m_lua, m_meta, "InputEventType", {
+        bind_enum<InputEventType>(m_lua, m_meta, {
                                       {"Axis", InputEventType::Axis},
                                       {"Pressed", InputEventType::Pressed},
                                       {"Released", InputEventType::Released},
                                   });
 
-        bind_usertype<InputComponent>(m_lua, m_meta, "InputComponent", Bases<Component>{})
+        bind_usertype<InputComponent>(m_lua, m_meta, Bases<Component>{})
             .method_sig("bind_axis",
                         [](InputComponent& self, const std::string& name, const sol::protected_function& fn) {
                             return self.bind_axis(name.c_str(), [fn, name](float v) {

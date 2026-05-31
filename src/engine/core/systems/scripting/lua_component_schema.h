@@ -9,6 +9,7 @@
 #include <sol/sol.hpp>
 
 #include "lua_meta.h"
+#include "lua_type_names.h"
 #include "engine/entity/entity_spawner.h"
 
 namespace hob {
@@ -47,13 +48,14 @@ namespace hob {
                                const char* key,
                                const char* add_method,
                                std::initializer_list<std::pair<const char*, const char*>> setters) {
-        sol::table entity_ut = lua["Entity"];
+        const char* entity_lua_name = LuaTypeName<EntityHandle>::value;
+        sol::table entity_ut = lua[entity_lua_name];
         entity_ut[add_method] = [&spawner](const EntityHandle& h) -> T* {
             Entity* e = spawner.get_entity(h.id);
             return e ? e->add_component<T>() : nullptr;
         };
 
-        if (LuaUsertypeInfo* entity_info = meta.find_usertype("Entity")) {
+        if (LuaUsertypeInfo* entity_info = meta.find_usertype(entity_lua_name)) {
             LuaMethodInfo info;
             info.name = add_method;
             info.ret = meta_detail::lua_name<T*>();

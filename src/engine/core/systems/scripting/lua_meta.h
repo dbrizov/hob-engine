@@ -299,9 +299,11 @@ namespace hob {
 
     public:
         template<typename... B>
-        UsertypeBuilder(sol::state& lua, LuaMetaRegistry& reg, const char* name, Bases<B...>)
-            : m_usertype(make_usertype<B...>(lua, name))
-            , m_info(&reg.add_usertype(name, base_name<B...>())) {
+        UsertypeBuilder(sol::state& lua, LuaMetaRegistry& reg, Bases<B...>)
+            : m_usertype(make_usertype<B...>(lua, LuaTypeName<T>::value))
+            , m_info(&reg.add_usertype(LuaTypeName<T>::value, base_name<B...>())) {
+            static_assert(LuaTypeName<T>::value != nullptr,
+                          "Missing HOB_LUA_TYPE specialization for this usertype; declare it in lua_type_names.h");
         }
 
         // ----- Constructors. Pass each ctor as sol::types<Args...>. -----
@@ -499,8 +501,8 @@ namespace hob {
     };
 
     template<typename T, typename... B>
-    UsertypeBuilder<T> bind_usertype(sol::state& lua, LuaMetaRegistry& reg, const char* name, Bases<B...> bases = {}) {
-        return UsertypeBuilder<T>(lua, reg, name, bases);
+    UsertypeBuilder<T> bind_usertype(sol::state& lua, LuaMetaRegistry& reg, Bases<B...> bases = {}) {
+        return UsertypeBuilder<T>(lua, reg, bases);
     }
 
     // ---------------------------------------------------------------------
@@ -582,8 +584,11 @@ namespace hob {
     }
 
     template<typename E>
-    void bind_enum(sol::state& lua, LuaMetaRegistry& reg, const char* name,
-                   std::initializer_list<std::pair<const char*, E>> values) {
+    void bind_enum(sol::state& lua, LuaMetaRegistry& reg, std::initializer_list<std::pair<const char*, E>> values) {
+        static_assert(LuaTypeName<E>::value != nullptr,
+                      "Missing HOB_LUA_TYPE specialization for this enum; declare it in lua_type_names.h");
+
+        const char* name = LuaTypeName<E>::value;
         sol::table t = lua.create_named_table(name);
         for (const auto& v : values) {
             t[v.first] = v.second;

@@ -29,7 +29,7 @@ namespace hob {
             .func("lerp", &math::lerp, {"a", "b", "t"})
             .func("lerp_angle", &math::lerp_angle, {"a_deg", "b_deg", "t"});
 
-        bind_usertype<Vector2>(m_lua, m_meta, "Vector2")
+        bind_usertype<Vector2>(m_lua, m_meta)
             .ctors<sol::types<>, sol::types<float, float>>()
             .field("x", &Vector2::x)
             .field("y", &Vector2::y)
@@ -54,7 +54,7 @@ namespace hob {
             .method("lerp", &Vector2::lerp, {"a", "b", "t"})
             .method("rotate_around", &Vector2::rotate_around, {"point", "pivot", "radians"});
 
-        bind_usertype<AABB>(m_lua, m_meta, "AABB")
+        bind_usertype<AABB>(m_lua, m_meta)
             .ctors<sol::types<const Vector2&, const Vector2&>>()
             .field("center", &AABB::center)
             .field("extents", &AABB::extents)
@@ -62,19 +62,19 @@ namespace hob {
             .method("max", &AABB::max)
             .method("size", &AABB::size);
 
-        bind_usertype<Capsule>(m_lua, m_meta, "Capsule")
+        bind_usertype<Capsule>(m_lua, m_meta)
             .ctors<sol::types<const Vector2&, const Vector2&, float>>()
             .field("center_a", &Capsule::center_a)
             .field("center_b", &Capsule::center_b)
             .field("radius", &Capsule::radius)
             .method("get_height", &Capsule::get_height);
 
-        bind_usertype<Circle>(m_lua, m_meta, "Circle")
+        bind_usertype<Circle>(m_lua, m_meta)
             .ctors<sol::types<const Vector2&, float>>()
             .field("center", &Circle::center)
             .field("radius", &Circle::radius);
 
-        bind_usertype<Color>(m_lua, m_meta, "Color")
+        bind_usertype<Color>(m_lua, m_meta)
             .ctors<sol::types<>, sol::types<float, float, float, float>>()
             .field("r", &Color::r)
             .field("g", &Color::g)
