@@ -1,24 +1,26 @@
 #pragma once
 
+#include <memory>
 #include <string>
-#include <utility>
-
-#include <sol/sol.hpp>
 
 #include "component.h"
-#include "engine/core/logging.h"
 
 namespace hob {
+    struct LuaScriptComponentImpl;
+
     class LuaScriptComponent : public Component {
         std::string m_class_name;
-        sol::table m_lua_instance;
+        std::unique_ptr<LuaScriptComponentImpl> m_impl;
         int m_priority;
 
     public:
         LuaScriptComponent(Entity& entity, std::string class_name);
+        ~LuaScriptComponent() override;
 
         const std::string& get_class_name() const;
-        const sol::table& get_lua_instance() const;
+
+        LuaScriptComponentImpl& impl();
+        const LuaScriptComponentImpl& impl() const;
 
         int get_priority() const override;
 
@@ -34,25 +36,5 @@ namespace hob {
         void on_trigger_exit(const ColliderComponent* other_collider) override;
 
         std::string to_string() const override;
-
-    private:
-        template<typename... Args>
-        void call_hook(const char* method, Args&&... args) {
-            if (!m_lua_instance.valid()) {
-                return;
-            }
-
-            sol::object fn = m_lua_instance[method];
-            if (!fn.is<sol::protected_function>()) {
-                return;
-            }
-
-            sol::protected_function pfn = fn;
-            sol::protected_function_result result = pfn(m_lua_instance, std::forward<Args>(args)...);
-            if (!result.valid()) {
-                sol::error err = result;
-                debug::log_error("Lua error in {}: {}", method, err.what());
-            }
-        }
     };
 }

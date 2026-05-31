@@ -93,3 +93,38 @@ target_link_libraries(${PROJECT_NAME} PRIVATE sol2::sol2)
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
 endif ()
+
+# Precompiled header.
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        # Standard library — slow parsers first.
+        <filesystem>
+        <format>
+        <algorithm>
+        <functional>
+        <memory>
+        <optional>
+        <string>
+        <string_view>
+        <utility>
+        <vector>
+        <unordered_map>
+        <unordered_set>
+        <cstdint>
+
+        # Graphics / windowing. glad must precede any GL-pulling header.
+        <glad/glad.h>
+        <SDL3/SDL.h>
+        <SDL3_image/SDL_image.h>
+        <SDL3_ttf/SDL_ttf.h>
+
+        # UI.
+        <imgui.h>
+        <imgui_impl_sdl3.h>
+        <imgui_impl_opengl3.h>
+
+        # Physics.
+        <box2d/box2d.h>
+
+        # Scripting (heaviest single header in the project).
+        <sol/sol.hpp>
+)

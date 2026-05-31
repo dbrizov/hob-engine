@@ -6,7 +6,7 @@
 #include "cursor.h"
 #include "imgui_system.h"
 #include "input.h"
-#include "lua_script_system.h"
+#include "scripting/lua_script_system.h"
 #include "physics.h"
 #include "renderer.h"
 #include "sdl_context.h"

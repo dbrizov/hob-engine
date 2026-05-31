@@ -1,23 +1,25 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include <sol/sol.hpp>
-
-#include "lua_meta.h"
+namespace sol {
+    class state;
+}
 
 namespace hob {
     class Engine;
+    struct LuaScriptSystemImpl;
 
     class LuaScriptSystem {
         Engine& m_engine;
-        sol::state m_lua;
-        LuaMetaRegistry m_meta;
+        std::unique_ptr<LuaScriptSystemImpl> m_impl;
 
     public:
         explicit LuaScriptSystem(Engine& engine);
+        ~LuaScriptSystem();
 
         LuaScriptSystem(const LuaScriptSystem&) = delete;
         LuaScriptSystem& operator=(const LuaScriptSystem&) = delete;

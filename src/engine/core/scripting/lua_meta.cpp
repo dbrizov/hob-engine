@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "logging.h"
+#include "engine/core/logging.h"
 
 namespace hob {
     namespace {

@@ -1,27 +1,57 @@
 #include "lua_script_component.h"
+#include "lua_script_component_impl.h"
 
 #include <format>
+#include <utility>
 
 #include "engine/components/physics/collider_component.h"
 #include "engine/core/engine.h"
 #include "engine/core/logging.h"
-#include "engine/core/lua_script_system.h"
+#include "engine/core/scripting/lua_script_system.h"
 #include "engine/entity/entity.h"
 
 namespace hob {
+    namespace {
+        template<typename... Args>
+        void call_hook(LuaScriptComponentImpl& impl, const char* method, Args&&... args) {
+            sol::table& inst = impl.lua_instance;
+            if (!inst.valid()) {
+                return;
+            }
+
+            sol::object fn = inst[method];
+            if (!fn.is<sol::protected_function>()) {
+                return;
+            }
+
+            sol::protected_function pfn = fn;
+            sol::protected_function_result result = pfn(inst, std::forward<Args>(args)...);
+            if (!result.valid()) {
+                sol::error err = result;
+                debug::log_error("Lua error in {}: {}", method, err.what());
+            }
+        }
+    }
+
     LuaScriptComponent::LuaScriptComponent(Entity& entity, std::string class_name)
         : Component(entity)
         , m_class_name(std::move(class_name))
-        , m_lua_instance()
+        , m_impl(std::make_unique<LuaScriptComponentImpl>())
         , m_priority(component_priority::CP_DEFAULT) {
     }
+
+    LuaScriptComponent::~LuaScriptComponent() = default;
 
     const std::string& LuaScriptComponent::get_class_name() const {
         return m_class_name;
     }
 
-    const sol::table& LuaScriptComponent::get_lua_instance() const {
-        return m_lua_instance;
+    LuaScriptComponentImpl& LuaScriptComponent::impl() {
+        return *m_impl;
+    }
+
+    const LuaScriptComponentImpl& LuaScriptComponent::impl() const {
+        return *m_impl;
     }
 
     int LuaScriptComponent::get_priority() const {
@@ -74,47 +104,47 @@ namespace hob {
             return;
         }
 
-        m_lua_instance = inst_obj;
-        m_lua_instance["entity"] = EntityHandle(get_entity().get_id());
-        m_lua_instance["class_name"] = m_class_name;
+        m_impl->lua_instance = inst_obj;
+        m_impl->lua_instance["entity"] = EntityHandle(get_entity().get_id());
+        m_impl->lua_instance["class_name"] = m_class_name;
 
-        call_hook("init");
+        call_hook(*m_impl, "init");
     }
 
     void LuaScriptComponent::enter_play() {
-        call_hook("enter_play");
+        call_hook(*m_impl, "enter_play");
     }
 
     void LuaScriptComponent::exit_play() {
-        call_hook("exit_play");
+        call_hook(*m_impl, "exit_play");
     }
 
     void LuaScriptComponent::tick(float delta_time) {
-        call_hook("tick", delta_time);
+        call_hook(*m_impl, "tick", delta_time);
     }
 
     void LuaScriptComponent::physics_tick(float fixed_delta_time) {
-        call_hook("physics_tick", fixed_delta_time);
+        call_hook(*m_impl, "physics_tick", fixed_delta_time);
     }
 
     void LuaScriptComponent::debug_draw_tick(float delta_time) {
-        call_hook("debug_draw_tick", delta_time);
+        call_hook(*m_impl, "debug_draw_tick", delta_time);
     }
 
     void LuaScriptComponent::on_collision_enter(const ColliderComponent* other_collider) {
-        call_hook("on_collision_enter", other_collider);
+        call_hook(*m_impl, "on_collision_enter", other_collider);
     }
 
     void LuaScriptComponent::on_collision_exit(const ColliderComponent* other_collider) {
-        call_hook("on_collision_exit", other_collider);
+        call_hook(*m_impl, "on_collision_exit", other_collider);
     }
 
     void LuaScriptComponent::on_trigger_enter(const ColliderComponent* other_collider) {
-        call_hook("on_trigger_enter", other_collider);
+        call_hook(*m_impl, "on_trigger_enter", other_collider);
     }
 
     void LuaScriptComponent::on_trigger_exit(const ColliderComponent* other_collider) {
-        call_hook("on_trigger_exit", other_collider);
+        call_hook(*m_impl, "on_trigger_exit", other_collider);
     }
 
     std::string LuaScriptComponent::to_string() const {
