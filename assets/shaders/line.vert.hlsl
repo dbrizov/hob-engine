@@ -14,14 +14,14 @@ struct VSInput
 
 struct VSOutput
 {
-    float4 position : SV_Position;
-    float4 color    : TEXCOORD0;
+    float4 pos   : SV_Position;
+    float4 color : TEXCOORD0;
 };
 
 VSOutput main(VSInput input)
 {
     VSOutput o;
-    o.position = mul(proj, float4(input.pos, 0.0, 1.0));
+    o.pos = mul(proj, float4(input.pos, 0.0, 1.0));
     o.color = input.color;
     return o;
 }

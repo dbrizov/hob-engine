@@ -23,8 +23,8 @@ struct VSInput
 
 struct VSOutput
 {
-    float4 position : SV_Position;
-    float2 uv       : TEXCOORD0;
+    float4 pos : SV_Position;
+    float2 uv  : TEXCOORD0;
 };
 
 VSOutput main(VSInput input)
@@ -37,7 +37,7 @@ VSOutput main(VSInput input)
     float2 screen = screen_pos + pivot + r;
 
     VSOutput o;
-    o.position = mul(proj, float4(screen, 0.0, 1.0));
+    o.pos = mul(proj, float4(screen, 0.0, 1.0));
     o.uv = input.uv;
     return o;
 }
