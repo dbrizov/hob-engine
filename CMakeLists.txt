@@ -88,6 +88,17 @@ if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
 endif ()
 
+# GCC/Clang optimization levels:
+#   -O0  no optimization; every variable in memory, nothing inlined — best for stepping, slowest runtime.
+#   -Og  optimize for debugging; inlines/folds what doesn't hurt debug info — fast and still steppable.
+#   -O1  light optimization; some locals get optimized out, some breakpoints stop hitting.
+#   -O2  standard release; aggressive inlining, instruction scheduling — debugger jumps around.
+#   -O3  -O2 plus vectorization and more inlining; bigger binary, not always faster.
+#   -Os  optimize for size; like -O2 minus size-increasing passes.
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:-Og>)
+endif ()
+
 # Precompiled header.
 target_precompile_headers(${PROJECT_NAME} PRIVATE
         # Standard library — slow parsers first.
