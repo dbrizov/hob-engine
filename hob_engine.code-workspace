@@ -23,7 +23,7 @@
         "Lua.hint.enable": true,
         "Lua.workspace.checkThirdParty": false,
         "Lua.workspace.library": [
-            "meta"
+            "engine/meta"
         ],
         "Lua.diagnostics.disable": [
             "lowercase-global",

@@ -7,11 +7,12 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
 end
 
 -- Engine modules just install registries / metatables / enums.
-Scripts.run_folder("scripts/engine", { "bootstrap.lua" })
+-- lib/ is `require`d on demand (vendored lldebugger); meta/ is LuaCATS annotations.
+Scripts.run_folder("scripts/engine", { "bootstrap.lua", "lib", "meta" })
 
--- User scripts: anything outside engine/, lib/, meta/, and main.lua.
+-- User scripts: anything outside engine/ and main.lua.
 -- Mixins, components, prefabs, and behavior scripts can live anywhere under scripts/.
-Scripts.run_folder("scripts", { "engine", "lib", "meta", "main.lua" })
+Scripts.run_folder("scripts", { "engine", "main.lua" })
 
 -- Resolve __parent / __mixins for every DefineComponent now that all files
 -- (and thus all DefineMixin / DefineComponent registrations) are loaded.

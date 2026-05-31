@@ -23,8 +23,8 @@ namespace hob {
             sol::lib::coroutine,
             sol::lib::debug);
 
-        // Make `require` find modules in scripts/lib (e.g. vendored lldebugger).
-        const std::string lib_path = (PathUtils::get_root_path() / "scripts" / "lib" / "?.lua").string();
+        // Make `require` find modules in scripts/engine/lib (e.g. vendored lldebugger).
+        const std::string lib_path = (PathUtils::get_root_path() / "scripts" / "engine" / "lib" / "?.lua").string();
         sol::table package = lua["package"];
         package["path"] = lib_path + ";" + package["path"].get<std::string>();
 
@@ -117,7 +117,9 @@ namespace hob {
     }
 
     void LuaScriptSystem::dump_meta() {
-        const std::filesystem::path out_path = PathUtils::get_root_path() / "scripts" / "meta" / "engine.generated.lua";
+        const std::filesystem::path out_path =
+            PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "engine.generated.lua";
+
         if (!m_impl->meta.write_to_file(out_path)) {
             debug::log_error("LuaScriptSystem::dump_meta: failed to write '{}'", out_path.string());
         }
