@@ -60,6 +60,8 @@ namespace hob {
             return;
         }
 
+        debug::log("SDL_ClaimWindowForGPUDevice");
+
         const SDL_GPUPresentMode present_mode = graphics_config.vsync_enabled
                                                     ? SDL_GPU_PRESENTMODE_VSYNC
                                                     : SDL_GPU_PRESENTMODE_MAILBOX;

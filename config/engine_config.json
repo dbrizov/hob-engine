@@ -7,7 +7,7 @@
     "logical_resolution_height": 1080,
     "pixels_per_meter": 64,
     "target_fps": 60,
-    "vsync_enabled": true
+    "vsync_enabled": false
   },
   "physics": {
     "gravity": {

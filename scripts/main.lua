@@ -50,8 +50,8 @@ EntitySpawner.spawn_entity("PulsingTriggerCircle", Vector2(4.0, 0.0))
 
 -- Dynamic entities for collision testing. With Y-up gravity these fall
 -- and pile up on the bottom wall and crates.
-local dyn_y = (ARENA_HALF_H - 1) * SCALE
-for x = -8, 8, 2 do
-    EntitySpawner.spawn_entity("DynamicBox", Vector2(x, dyn_y))
-    EntitySpawner.spawn_entity("DynamicCircle", Vector2(x + 1.0, dyn_y - 2.0))
-end
+-- local dyn_y = (ARENA_HALF_H - 1) * SCALE
+-- for x = -8, 8, 2 do
+--     EntitySpawner.spawn_entity("DynamicBox", Vector2(x, dyn_y))
+--     EntitySpawner.spawn_entity("DynamicCircle", Vector2(x + 1.0, dyn_y - 2.0))
+-- end
