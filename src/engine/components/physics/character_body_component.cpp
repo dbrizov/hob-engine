@@ -5,11 +5,11 @@
 #include <box2d/box2d.h>
 
 #include "capsule_collider_component.h"
-#include "rigidbody_component.h"
 #include "engine/core/engine.h"
-#include "engine/core/physics.h"
+#include "engine/core/systems/physics.h"
 #include "engine/entity/entity.h"
 #include "engine/math/constants.h"
+#include "rigidbody_component.h"
 
 namespace hob {
     CharacterBodyComponent::CharacterBodyComponent(Entity& entity)

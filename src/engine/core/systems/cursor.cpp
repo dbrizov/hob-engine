@@ -2,8 +2,8 @@
 
 #include <SDL3/SDL_mouse.h>
 
+#include "engine/core/path_utils.h"
 #include "input.h"
-#include "path_utils.h"
 #include "renderer.h"
 #include "sdl_context.h"
 

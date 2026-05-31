@@ -1,10 +1,10 @@
 #include "imgui_system.h"
 
 #include <imgui.h>
-#include <imgui_impl_sdl3.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl3.h>
 
-#include "logging.h"
+#include "engine/core/logging.h"
 #include "renderer.h"
 #include "sdl_context.h"
 

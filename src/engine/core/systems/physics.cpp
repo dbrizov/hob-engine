@@ -4,10 +4,10 @@
 #include <cmath>
 
 #include "console.h"
-#include "engine_config.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"
+#include "engine/core/engine_config.h"
 #include "engine/entity/entity.h"
 
 namespace hob {

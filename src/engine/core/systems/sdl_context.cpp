@@ -3,8 +3,8 @@
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 
-#include "engine_config.h"
-#include "logging.h"
+#include "engine/core/engine_config.h"
+#include "engine/core/logging.h"
 
 namespace hob {
     SdlContext::SdlContext(const GraphicsConfig& graphics_config) {

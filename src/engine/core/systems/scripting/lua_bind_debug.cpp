@@ -7,7 +7,7 @@
 
 #include "engine/core/debug.h"
 #include "engine/core/logging.h"
-#include "engine/core/renderer.h"
+#include "engine/core/systems/renderer.h"
 #include "engine/math/vector2.h"
 
 namespace hob {

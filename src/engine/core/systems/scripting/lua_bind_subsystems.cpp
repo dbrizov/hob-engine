@@ -6,14 +6,14 @@
 #include <string>
 #include <vector>
 
-#include "engine/core/cursor.h"
-#include "engine/core/engine.h"
-#include "engine/core/input.h"
-#include "engine/core/physics.h"
-#include "engine/core/timer.h"
 #include "engine/components/camera_component.h"
-#include "engine/components/transform_component.h"
 #include "engine/components/physics/collider_component.h"
+#include "engine/components/transform_component.h"
+#include "engine/core/engine.h"
+#include "engine/core/systems/cursor.h"
+#include "engine/core/systems/input.h"
+#include "engine/core/systems/physics.h"
+#include "engine/core/systems/timer.h"
 #include "engine/entity/entity.h"
 #include "engine/entity/entity_spawner.h"
 

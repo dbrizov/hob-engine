@@ -7,7 +7,7 @@
 #include <optional>
 #include <ranges>
 
-#include "engine.h"
+#include "engine/core/engine.h"
 
 namespace hob {
     // Helper functions

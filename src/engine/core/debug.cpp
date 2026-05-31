@@ -3,9 +3,9 @@
 #include <cmath>
 #include <vector>
 
-#include "renderer.h"
 #include "engine/components/camera_component.h"
 #include "engine/math/constants.h"
+#include "systems/renderer.h"
 
 namespace hob::debug {
     namespace {

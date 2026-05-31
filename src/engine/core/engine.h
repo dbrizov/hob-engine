@@ -1,15 +1,15 @@
 #pragma once
 
-#include "console.h"
-#include "cursor.h"
-#include "imgui_system.h"
-#include "input.h"
-#include "scripting/lua_script_system.h"
-#include "physics.h"
-#include "renderer.h"
-#include "sdl_context.h"
-#include "timer.h"
 #include "engine/entity/entity_spawner.h"
+#include "systems/console.h"
+#include "systems/cursor.h"
+#include "systems/imgui_system.h"
+#include "systems/input.h"
+#include "systems/physics.h"
+#include "systems/renderer.h"
+#include "systems/scripting/lua_script_system.h"
+#include "systems/sdl_context.h"
+#include "systems/timer.h"
 
 namespace hob {
     struct EngineConfig;

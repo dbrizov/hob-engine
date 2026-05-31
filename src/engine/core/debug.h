@@ -1,7 +1,7 @@
 #pragma once
 
-#include "renderer.h"
 #include "engine/math/vector2.h"
+#include "systems/renderer.h"
 
 namespace hob {
     class CameraComponent;

@@ -7,7 +7,7 @@
 
 #include "engine/components/transform_component.h"
 #include "engine/core/debug.h"
-#include "engine/core/physics.h"
+#include "engine/core/systems/physics.h"
 #include "engine/entity/entity.h"
 #include "engine/math/constants.h"
 

@@ -8,9 +8,9 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3_image/SDL_image.h>
 
-#include "engine_config.h"
 #include "console.h"
-#include "logging.h"
+#include "engine/core/engine_config.h"
+#include "engine/core/logging.h"
 #include "sdl_context.h"
 
 namespace hob {

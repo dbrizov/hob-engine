@@ -4,7 +4,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 
-#include "path_utils.h"
+#include "engine/core/path_utils.h"
 #include "renderer.h"
 #include "sdl_context.h"
 

@@ -5,19 +5,19 @@
 
 #include <string>
 
-#include "engine/core/debug.h"
-#include "engine/core/input.h"
-#include "engine/core/logging.h"
 #include "engine/components/camera_component.h"
 #include "engine/components/input_component.h"
-#include "engine/components/sprite_component.h"
-#include "engine/components/transform_component.h"
 #include "engine/components/physics/box_collider_component.h"
 #include "engine/components/physics/capsule_collider_component.h"
 #include "engine/components/physics/character_body_component.h"
 #include "engine/components/physics/circle_collider_component.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
+#include "engine/components/sprite_component.h"
+#include "engine/components/transform_component.h"
+#include "engine/core/debug.h"
+#include "engine/core/logging.h"
+#include "engine/core/systems/input.h"
 #include "engine/entity/entity.h"
 
 namespace hob {

@@ -7,7 +7,7 @@
 #include "engine/components/physics/collider_component.h"
 #include "engine/core/engine.h"
 #include "engine/core/logging.h"
-#include "engine/core/scripting/lua_script_system.h"
+#include "engine/core/systems/scripting/lua_script_system.h"
 #include "engine/entity/entity.h"
 
 namespace hob {

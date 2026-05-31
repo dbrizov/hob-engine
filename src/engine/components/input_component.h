@@ -1,7 +1,7 @@
 #pragma once
 
 #include "component.h"
-#include "engine/core/input.h"
+#include "engine/core/systems/input.h"
 
 namespace hob {
     using BindingId = int;
