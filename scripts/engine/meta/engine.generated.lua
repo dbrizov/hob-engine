@@ -378,27 +378,6 @@ function Entity:is_ticking() end
 ---@param ticking boolean
 function Entity:set_ticking(ticking) end
 
----@return RigidbodyComponent?
-function Entity:add_rigidbody() end
-
----@return BoxColliderComponent?
-function Entity:add_box_collider() end
-
----@return CapsuleColliderComponent?
-function Entity:add_capsule_collider() end
-
----@return CircleColliderComponent?
-function Entity:add_circle_collider() end
-
----@return CharacterBodyComponent?
-function Entity:add_character_body() end
-
----@return SpriteComponent?
-function Entity:add_sprite() end
-
----@return InputComponent?
-function Entity:add_input() end
-
 ---@param class_name string
 ---@return LuaComponent?
 function Entity:add_lua_component(class_name) end
@@ -433,6 +412,30 @@ function Entity:get_lua_component(class_name) end
 
 ---@return LuaComponent[]
 function Entity:get_lua_components() end
+
+---@return RigidbodyComponent?
+function Entity:add_rigidbody() end
+
+---@return CharacterBodyComponent?
+function Entity:add_character_body() end
+
+---@return BoxColliderComponent?
+function Entity:add_box_collider() end
+
+---@return CapsuleColliderComponent?
+function Entity:add_capsule_collider() end
+
+---@return CircleColliderComponent?
+function Entity:add_circle_collider() end
+
+---@return SpriteComponent?
+function Entity:add_sprite() end
+
+---@return InputComponent?
+function Entity:add_input() end
+
+---@return CameraComponent?
+function Entity:add_camera() end
 
 _G.Entity = Entity
 
@@ -676,6 +679,9 @@ function CharacterBodyComponent:get_solver_ignore_mask() end
 
 ---@param mask integer
 function CharacterBodyComponent:set_solver_ignore_mask(mask) end
+
+---@param capsule Capsule
+function CharacterBodyComponent:set_capsule(capsule) end
 
 ---@param velocity Vector2
 ---@param fixed_dt number

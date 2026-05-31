@@ -32,6 +32,7 @@ namespace hob {
 #ifndef NDEBUG
         dump_meta();
 #endif
+        dump_component_schemas();
         run_bootstrap();
     }
 
@@ -122,6 +123,15 @@ namespace hob {
 
         if (!m_impl->meta.write_to_file(out_path)) {
             debug::log_error("LuaScriptSystem::dump_meta: failed to write '{}'", out_path.string());
+        }
+    }
+
+    void LuaScriptSystem::dump_component_schemas() {
+        const std::filesystem::path out_path =
+            PathUtils::get_root_path() / "scripts" / "engine" / "component_schemas.generated.lua";
+
+        if (!m_impl->component_schemas.write_to_file(out_path)) {
+            debug::log_error("LuaScriptSystem::dump_component_schemas: failed to write '{}'", out_path.string());
         }
     }
 }

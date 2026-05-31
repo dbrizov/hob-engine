@@ -268,6 +268,16 @@ namespace hob {
             return m_tables.back();
         }
 
+        LuaUsertypeInfo* find_usertype(std::string_view name) {
+            for (auto& ut : m_usertypes) {
+                if (ut.name == name) {
+                    return &ut;
+                }
+            }
+
+            return nullptr;
+        }
+
         bool write_to_file(const std::filesystem::path& path) const;
     };
 

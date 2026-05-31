@@ -33,6 +33,7 @@ namespace hob {
 
         void register_bindings();
         void dump_meta();
+        void dump_component_schemas();
 
         void bind_math();
         void bind_entity();

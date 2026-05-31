@@ -47,34 +47,6 @@ namespace hob {
                     e->set_ticking(v);
                 }
             }, {"ticking"})
-            .method("add_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
-                Entity* e = get_entity(h);
-                return e ? e->add_component<RigidbodyComponent>() : nullptr;
-            })
-            .method("add_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
-                Entity* e = get_entity(h);
-                return e ? e->add_component<BoxColliderComponent>() : nullptr;
-            })
-            .method("add_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
-                Entity* e = get_entity(h);
-                return e ? e->add_component<CapsuleColliderComponent>() : nullptr;
-            })
-            .method("add_circle_collider", [get_entity](const EntityHandle& h) -> CircleColliderComponent* {
-                Entity* e = get_entity(h);
-                return e ? e->add_component<CircleColliderComponent>() : nullptr;
-            })
-            .method("add_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
-                Entity* e = get_entity(h);
-                return e ? e->add_component<CharacterBodyComponent>() : nullptr;
-            })
-            .method("add_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
-                Entity* e = get_entity(h);
-                return e ? e->add_component<SpriteComponent>() : nullptr;
-            })
-            .method("add_input", [get_entity](const EntityHandle& h) -> InputComponent* {
-                Entity* e = get_entity(h);
-                return e ? e->add_component<InputComponent>() : nullptr;
-            })
             .method_sig(
                 "add_lua_component",
                 [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {

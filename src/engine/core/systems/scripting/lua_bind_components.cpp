@@ -1,5 +1,6 @@
 #include "lua_script_system.h"
 #include "lua_script_system_impl.h"
+#include "lua_component_schema.h"
 #include "lua_meta.h"
 #include "lua_type_names.h" // IWYU pragma: keep
 
@@ -16,14 +17,18 @@
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/debug.h"
+#include "engine/core/engine.h"
 #include "engine/core/logging.h"
 #include "engine/core/systems/input.h"
 #include "engine/entity/entity.h"
+#include "engine/entity/entity_spawner.h"
 
 namespace hob {
     void LuaScriptSystem::bind_components() {
         sol::state& m_lua = m_impl->lua;
         LuaMetaRegistry& m_meta = m_impl->meta;
+        LuaComponentSchemaRegistry& m_schemas = m_impl->component_schemas;
+        const EntitySpawner& m_spawner = m_engine.get_entity_spawner();
 
         bind_usertype<Component>(m_lua, m_meta, "Component")
             .method("get_entity", [](Component& c) { return EntityHandle(c.get_entity().get_id()); })
@@ -119,6 +124,7 @@ namespace hob {
             .method("set_collision_mask", &CharacterBodyComponent::set_collision_mask, {"mask"})
             .method("get_solver_ignore_mask", &CharacterBodyComponent::get_solver_ignore_mask)
             .method("set_solver_ignore_mask", &CharacterBodyComponent::set_solver_ignore_mask, {"mask"})
+            .method("set_capsule", &CharacterBodyComponent::set_capsule, {"capsule"})
             .method("move_and_slide", &CharacterBodyComponent::move_and_slide, {"velocity", "fixed_dt"})
             .method("get_velocity", &CharacterBodyComponent::get_velocity)
             .method("set_velocity", &CharacterBodyComponent::set_velocity, {"velocity"})
@@ -164,5 +170,72 @@ namespace hob {
                             self.unbind_action(name.c_str(), id);
                         }, "(name: string, id: integer)")
             .method("clear_all_bindings", &InputComponent::clear_all_bindings);
+
+        // Authorable-from-prefab registration. Each call registers (1) the
+        // entity:add_<key>() method on the already-bound Entity usertype,
+        // (2) the autocomplete entry, and (3) the prefab schema in one shot.
+        // Order is load-bearing: Box2D bodies must be attached before colliders.
+        bind_component_schema<RigidbodyComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "rigidbody", "add_rigidbody", {
+                {"body_type", "set_body_type"},
+                {"fixed_rotation", "set_fixed_rotation"},
+            });
+
+        bind_component_schema<CharacterBodyComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "character_body", "add_character_body", {
+                {"collision_layer", "set_collision_layer"},
+                {"collision_mask", "set_collision_mask"},
+                {"solver_ignore_mask", "set_solver_ignore_mask"},
+                {"capsule", "set_capsule"},
+            });
+
+        bind_component_schema<BoxColliderComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "box_collider", "add_box_collider", {
+                {"aabb", "set_aabb"},
+                {"density", "set_density"},
+                {"friction", "set_friction"},
+                {"bounciness", "set_bounciness"},
+                {"collision_layer", "set_collision_layer"},
+                {"collision_mask", "set_collision_mask"},
+                {"trigger", "set_trigger"},
+            });
+
+        bind_component_schema<CapsuleColliderComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "capsule_collider", "add_capsule_collider", {
+                {"capsule", "set_capsule"},
+                {"density", "set_density"},
+                {"friction", "set_friction"},
+                {"bounciness", "set_bounciness"},
+                {"collision_layer", "set_collision_layer"},
+                {"collision_mask", "set_collision_mask"},
+                {"trigger", "set_trigger"},
+            });
+
+        bind_component_schema<CircleColliderComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "circle_collider", "add_circle_collider", {
+                {"circle", "set_circle"},
+                {"density", "set_density"},
+                {"friction", "set_friction"},
+                {"bounciness", "set_bounciness"},
+                {"collision_layer", "set_collision_layer"},
+                {"collision_mask", "set_collision_mask"},
+                {"trigger", "set_trigger"},
+            });
+
+        bind_component_schema<SpriteComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "sprite", "add_sprite", {
+                {"texture", "set_texture"},
+                {"pivot", "set_pivot"},
+                {"scale", "set_scale"},
+                {"tint", "set_tint"},
+                {"z_index", "set_z_index"},
+                {"pixels_per_meter", "set_pixels_per_meter"},
+            });
+
+        bind_component_schema<InputComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "input", "add_input", {});
+
+        bind_component_schema<CameraComponent>(
+            m_lua, m_meta, m_schemas, m_spawner, "camera", "add_camera", {});
     }
 }

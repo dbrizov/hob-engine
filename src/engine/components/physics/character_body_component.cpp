@@ -25,6 +25,10 @@ namespace hob {
         return std::format("CharacterBodyComponent(entity_id = {})", get_entity().get_id());
     }
 
+    void CharacterBodyComponent::set_capsule(const Capsule& capsule) {
+        m_capsule_collider->set_capsule(capsule);
+    }
+
     uint64_t CharacterBodyComponent::get_collision_layer() const {
         return m_capsule_collider->get_collision_layer();
     }
