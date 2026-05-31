@@ -8,6 +8,7 @@
 #include <SDL3/SDL_scancode.h>
 
 #include "engine/math/vector2.h"
+#include "input_config.h"
 
 namespace hob {
     class SdlContext;
@@ -32,20 +33,6 @@ namespace hob {
 
     constexpr InputEventHandlerId INVALID_INPUT_EVENT_HANDLER_ID = -1;
 
-    struct AxisMapping {
-        float acceleration;
-        float deceleration;
-        std::vector<SDL_Scancode> positive;
-        std::vector<SDL_Scancode> negative;
-    };
-
-    struct InputMappings {
-        std::unordered_map<std::string, std::vector<SDL_Scancode>> actions;
-        std::unordered_map<std::string, AxisMapping> axes;
-
-        std::vector<SDL_Scancode> relevant_keys() const;
-    };
-
     class Input {
         const SdlContext& m_sdl_context;
         const Renderer& m_renderer;
@@ -59,7 +46,7 @@ namespace hob {
         std::vector<HandlerEntry> m_handlers;
         std::unordered_map<InputEventHandlerId, size_t> m_handler_index_by_id;
 
-        InputMappings m_input_mappings;
+        InputConfig m_input_config;
         std::unordered_map<std::string, float> m_axis_values;
         std::vector<SDL_Scancode> m_relevant_keys;
         std::bitset<SDL_SCANCODE_COUNT> m_pressed_keys_this_frame{};

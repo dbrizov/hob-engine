@@ -1,120 +1,27 @@
 #include "input.h"
 
-#include <fstream>
-#include <nlohmann/json.hpp>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 
-#include "logging.h"
 #include "path_utils.h"
 #include "renderer.h"
 #include "sdl_context.h"
 
 namespace hob {
-    // ---------------- InputMappings ----------------
-    static SDL_Scancode scancode_from_name(const std::string& name) {
-        SDL_Scancode scancode = SDL_GetScancodeFromName(name.c_str());
-        if (scancode == SDL_SCANCODE_UNKNOWN) {
-            debug::log_error("Unknown key: {}", name);
-        }
-
-        return scancode;
-    }
-
-    static InputMappings load_input_mappings(const std::filesystem::path& path) {
-        InputMappings input_mappings;
-
-        std::ifstream file(path);
-        if (!file.is_open()) {
-            debug::log_error("Cannot open input config file: {}", path.string());
-            return input_mappings;
-        }
-
-        nlohmann::json json = nlohmann::json::parse(file);
-
-        // Actions
-        for (auto& [action, keys] : json["action_mappings"].items()) {
-            std::vector<SDL_Scancode> scancodes;
-            for (auto& key : keys) {
-                SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-                if (scancode != SDL_SCANCODE_UNKNOWN) {
-                    scancodes.push_back(scancode);
-                }
-            }
-
-            input_mappings.actions[action] = scancodes;
-        }
-
-        // Axes
-        for (auto& [axis, cfg] : json["axis_mappings"].items()) {
-            AxisMapping axis_mappings;
-            axis_mappings.acceleration = cfg["acceleration"].get<float>();
-            axis_mappings.deceleration = cfg["deceleration"].get<float>();
-
-            for (auto& key : cfg["positive"]) {
-                SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-                if (scancode != SDL_SCANCODE_UNKNOWN) {
-                    axis_mappings.positive.push_back(scancode);
-                }
-            }
-
-            for (auto& key : cfg["negative"]) {
-                SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-                if (scancode != SDL_SCANCODE_UNKNOWN) {
-                    axis_mappings.negative.push_back(scancode);
-                }
-            }
-
-            input_mappings.axes[axis] = axis_mappings;
-        }
-
-        return input_mappings;
-    }
-
     InputEvent::InputEvent(const char* ev_name, InputEventType ev_type, float ev_axis_value)
         : name(ev_name)
         , type(ev_type)
         , axis_value(ev_axis_value) {
     }
 
-    std::vector<SDL_Scancode> InputMappings::relevant_keys() const {
-        std::vector<SDL_Scancode> keys;
-        keys.reserve(32);
-
-        auto add_key = [&keys](SDL_Scancode key) {
-            if (std::find(keys.begin(), keys.end(), key) == keys.end()) {
-                keys.push_back(key);
-            }
-        };
-
-        for (const auto& pair : actions) {
-            for (auto key : pair.second) {
-                add_key(key);
-            }
-        }
-
-        for (const auto& pair : axes) {
-            for (auto key : pair.second.positive) {
-                add_key(key);
-            }
-
-            for (auto key : pair.second.negative) {
-                add_key(key);
-            }
-        }
-
-        return keys;
-    }
-
-    // ---------------- Input ----------------
     Input::Input(const SdlContext& sdl_context, const Renderer& renderer)
         : m_sdl_context(sdl_context)
         , m_renderer(renderer) {
-        m_input_mappings = load_input_mappings(PathUtils::get_input_config_path());
-        m_relevant_keys = m_input_mappings.relevant_keys();
+        m_input_config = InputConfig(PathUtils::get_input_config_path());
+        m_relevant_keys = m_input_config.relevant_keys();
 
-        for (const auto& [axis, _] : m_input_mappings.axes) {
+        for (const auto& [axis, _] : m_input_config.axes) {
             m_axis_values[axis] = 0.0f;
         }
     }
@@ -124,8 +31,8 @@ namespace hob {
         update_pressed_keys();
 
         // Dispatch action events
-        for (auto& [action, keys] : m_input_mappings.actions) {
-            for (auto key : keys) {
+        for (auto& [action, mapping] : m_input_config.actions) {
+            for (auto key : mapping.keys) {
                 bool pressed_now = m_pressed_keys_this_frame.test(key);
                 bool pressed_before = m_pressed_keys_last_frame.test(key);
 
@@ -149,9 +56,9 @@ namespace hob {
             return false;
         };
 
-        for (auto& [axis, mapping] : m_input_mappings.axes) {
-            bool any_positive = any_pressed(mapping.positive);
-            bool any_negative = any_pressed(mapping.negative);
+        for (auto& [axis, mapping] : m_input_config.axes) {
+            bool any_positive = any_pressed(mapping.positive_keys);
+            bool any_negative = any_pressed(mapping.negative_keys);
 
             float& axis_value = m_axis_values[axis];
 
