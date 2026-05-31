@@ -23,31 +23,25 @@ add_executable(${PROJECT_NAME} ${CPP_FILES} ${HEADER_FILES})
 # Since the headers are also in /src we are adding it as an include directory.
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-# Copy the assets folder next to the executable after every build.
+# Sync the assets/ folder next to the executable after every build.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
-        COMMAND ${CMAKE_COMMAND} -E echo
-        "Copied assets to $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+        COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+        COMMAND ${CMAKE_COMMAND} -E echo "Synced assets to $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
 )
 
-# Copy the config folder next to the executable after every build.
+# Sync the config/ folder next to the executable after every build.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/config"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
-        COMMAND ${CMAKE_COMMAND} -E echo
-        "Copied config to $<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
+        COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/config" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
+        COMMAND ${CMAKE_COMMAND} -E echo "Synced config to $<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
 )
 
-# Copy the scripts folder next to the executable after every build.
+# Sync the scripts/ folder next to the executable after every build.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/scripts"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/scripts"
-        COMMAND ${CMAKE_COMMAND} -E echo
-        "Copied scripts to $<TARGET_FILE_DIR:${PROJECT_NAME}>/scripts"
+        COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:${PROJECT_NAME}>/scripts"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/scripts"
+        COMMAND ${CMAKE_COMMAND} -E echo "Synced scripts to $<TARGET_FILE_DIR:${PROJECT_NAME}>/scripts"
 )
 
 # Find and link nlohmann-json.
