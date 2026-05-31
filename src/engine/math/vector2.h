@@ -10,6 +10,8 @@ namespace hob {
         Vector2();
         Vector2(float x_, float y_);
 
+        std::string to_string() const;
+
         float length() const;
         float length_sqr() const;
         Vector2 normalized() const;
@@ -27,18 +29,16 @@ namespace hob {
         bool operator==(const Vector2& right) const;
         bool operator!=(const Vector2& right) const;
 
+        static float dot(const Vector2& a, const Vector2& b);
+        static float distance(const Vector2& a, const Vector2& b);
+        static Vector2 lerp(const Vector2& a, const Vector2& b, float t);
+        static Vector2 rotate_around(const Vector2& point, const Vector2& pivot, float radians);
+
         static Vector2 zero();
         static Vector2 one();
         static Vector2 left();
         static Vector2 right();
         static Vector2 up();
         static Vector2 down();
-
-        static float dot(const Vector2& a, const Vector2& b);
-        static float distance(const Vector2& a, const Vector2& b);
-        static Vector2 lerp(const Vector2& a, const Vector2& b, float t);
-        static Vector2 rotate_around(const Vector2& point, const Vector2& pivot, float radians);
-
-        std::string to_string() const;
     };
 }

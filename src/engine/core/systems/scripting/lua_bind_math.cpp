@@ -3,9 +3,9 @@
 #include "lua_meta.h"
 #include "lua_type_names.h" // IWYU pragma: keep
 
-#include "engine/core/systems/renderer.h"
 #include "engine/math/aabb.h"
 #include "engine/math/capsule.h"
+#include "engine/math/color.h"
 #include "engine/math/circle.h"
 #include "engine/math/constants.h"
 #include "engine/math/mathf.h"

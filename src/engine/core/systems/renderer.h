@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "engine/math/color.h"
 #include "engine/math/constants.h"
 #include "engine/math/vector2.h"
 
@@ -47,29 +48,6 @@ namespace hob {
         TextureId get_id() const;
         uint32_t get_width() const;
         uint32_t get_height() const;
-    };
-
-    struct Color {
-        float r;
-        float g;
-        float b;
-        float a;
-
-        Color();
-        Color(float r_, float g_, float b_, float a_ = 1.0f);
-
-        static Color black();
-        static Color white();
-        static Color gray();
-        static Color red();
-        static Color green();
-        static Color blue();
-        static Color yellow();
-        static Color magenta();
-        static Color cyan();
-        static Color orange();
-
-        std::string to_string() const;
     };
 
     class Renderer {

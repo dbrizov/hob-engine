@@ -17,6 +17,10 @@ namespace hob {
         , y(y_) {
     }
 
+    std::string Vector2::to_string() const {
+        return std::format("({:.2f}, {:.2f})", x, y);
+    }
+
     float Vector2::length() const {
         return sqrtf(x * x + y * y);
     }
@@ -77,30 +81,6 @@ namespace hob {
         return !operator==(right);
     }
 
-    Vector2 Vector2::zero() {
-        return Vector2();
-    }
-
-    Vector2 Vector2::one() {
-        return Vector2(1.0f, 1.0f);
-    }
-
-    Vector2 Vector2::left() {
-        return Vector2(-1.0f, 0.0f);
-    }
-
-    Vector2 Vector2::right() {
-        return Vector2(1.0f, 0.0f);
-    }
-
-    Vector2 Vector2::up() {
-        return Vector2(0.0f, 1.0f);
-    }
-
-    Vector2 Vector2::down() {
-        return Vector2(0.0f, -1.0f);
-    }
-
     float Vector2::dot(const Vector2& a, const Vector2& b) {
         return a.x * b.x + a.y * b.y;
     }
@@ -120,7 +100,10 @@ namespace hob {
         return rotated_point;
     }
 
-    std::string Vector2::to_string() const {
-        return std::format("({:.2f}, {:.2f})", x, y);
-    }
+    Vector2 Vector2::zero() { return Vector2(); }
+    Vector2 Vector2::one() { return Vector2(1.0f, 1.0f); }
+    Vector2 Vector2::left() { return Vector2(-1.0f, 0.0f); }
+    Vector2 Vector2::right() { return Vector2(1.0f, 0.0f); }
+    Vector2 Vector2::up() { return Vector2(0.0f, 1.0f); }
+    Vector2 Vector2::down() { return Vector2(0.0f, -1.0f); }
 }
