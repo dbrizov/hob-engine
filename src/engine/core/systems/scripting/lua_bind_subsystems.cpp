@@ -99,7 +99,7 @@ namespace hob {
             .property_sig("entity", [](const RaycastHit& h, sol::this_state ts) -> sol::object {
                 sol::state_view sv(ts);
                 if (h.collider == nullptr) {
-                    return sol::nil;
+                    return sol::lua_nil;
                 }
 
                 return sol::make_object(sv, EntityHandle(h.collider->get_entity().get_id()));

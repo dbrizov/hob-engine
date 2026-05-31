@@ -138,7 +138,7 @@ namespace hob {
         };
 
         template<typename Tuple>
-        using tail_t = typename tail_impl<Tuple>::type;
+        using tail_t = tail_impl<Tuple>::type;
 
         template<typename T, typename Tuple>
         constexpr bool first_arg_is_self() {
@@ -405,7 +405,7 @@ namespace hob {
         UsertypeBuilder& binary_op(sol::meta_function mf, const char* op_name, F func) {
             m_usertype[mf] = func;
             using traits = meta_detail::func_traits<F>;
-            using args_t = typename traits::args;
+            using args_t = traits::args;
             static_assert(std::tuple_size_v<args_t> >= 1, "binary_op expects at least one rhs arg");
             // Member operator+ has args=(rhs); free op+(lhs, rhs) has args=(lhs, rhs).
             constexpr std::size_t rhs_idx = std::tuple_size_v<args_t> - 1;
@@ -466,7 +466,7 @@ namespace hob {
         template<typename F>
         void record_method(const char* name, F /*func*/, std::initializer_list<const char*> arg_names) {
             using traits = meta_detail::func_traits<F>;
-            using all_args = typename traits::args;
+            using all_args = traits::args;
 
             LuaMethodInfo info;
             info.name = name;
