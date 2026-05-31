@@ -3,7 +3,12 @@
   "version": "1.0",
   "dependencies": [
     "nlohmann-json",
-    "sdl3",
+    {
+      "name": "sdl3",
+      "features": [
+        "vulkan"
+      ]
+    },
     {
       "name": "sdl3-image",
       "features": [
@@ -11,18 +16,13 @@
       ]
     },
     "sdl3-ttf",
+    "sdl3-shadercross",
     "box2d",
-    {
-      "name": "glad",
-      "features": [
-        "gl-api-33"
-      ]
-    },
     {
       "name": "imgui",
       "features": [
         "sdl3-binding",
-        "opengl3-binding"
+        "sdlgpu3-binding"
       ]
     },
     "lua",

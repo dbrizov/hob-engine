@@ -1,167 +1,108 @@
 #include "renderer.h"
 
-#include <array>
-#include <format>
-#include <glad/glad.h>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_surface.h>
-#include <SDL3_image/SDL_image.h>
+#include <fstream>
 
-#include "console.h"
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_shadercross/SDL_shadercross.h>
+
 #include "engine/core/engine_config.h"
 #include "engine/core/logging.h"
-#include "sdl_context.h"
+#include "engine/core/path_utils.h"
+#include "engine/core/systems/console.h"
+#include "engine/core/systems/sdl_context.h"
 
 namespace hob {
     namespace {
-        const char* SPRITE_VS = R"(
-layout(location = 0) in vec2 a_pos;
-layout(location = 1) in vec2 a_uv;
-
-uniform mat4 u_projection;
-uniform vec2 u_screen_pos;
-uniform vec2 u_size;
-uniform vec2 u_pivot_pixel;
-uniform float u_rotation;
-
-out vec2 v_uv;
-
-void main() {
-    vec2 p = a_pos * u_size;
-    vec2 d = p - u_pivot_pixel;
-    float c = cos(u_rotation);
-    float s = sin(u_rotation);
-    vec2 r = vec2(c * d.x - s * d.y, s * d.x + c * d.y);
-    vec2 screen = u_screen_pos + u_pivot_pixel + r;
-    gl_Position = u_projection * vec4(screen, 0.0, 1.0);
-    v_uv = a_uv;
-}
-)";
-
-        const char* SPRITE_FS = R"(
-in vec2 v_uv;
-out vec4 frag_color;
-
-uniform sampler2D u_texture;
-uniform vec4 u_tint;
-
-void main() {
-    frag_color = texture(u_texture, v_uv) * u_tint;
-}
-)";
-
-        const char* LINE_VS = R"(
-layout(location = 0) in vec2 a_pos;
-layout(location = 1) in vec4 a_color;
-
-uniform mat4 u_projection;
-
-out vec4 v_color;
-
-void main() {
-    gl_Position = u_projection * vec4(a_pos, 0.0, 1.0);
-    v_color = a_color;
-}
-)";
-
-        const char* LINE_FS = R"(
-in vec4 v_color;
-out vec4 frag_color;
-
-void main() {
-    frag_color = v_color;
-}
-)";
-
-        const char* BLIT_VS = R"(
-layout(location = 0) in vec2 a_pos;
-layout(location = 1) in vec2 a_uv;
-
-out vec2 v_uv;
-
-void main() {
-    gl_Position = vec4(a_pos, 0.0, 1.0);
-    v_uv = a_uv;
-}
-)";
-
-        const char* BLIT_FS = R"(
-in vec2 v_uv;
-out vec4 frag_color;
-
-uniform sampler2D u_texture;
-
-void main() {
-    frag_color = texture(u_texture, v_uv);
-}
-)";
-
-        bool compile_shader(GLenum type, const char* source, GLuint& out_shader) {
-            GLuint shader = glCreateShader(type);
-            const char* sources[] = {GLSL_VERSION, source};
-            glShaderSource(shader, 2, sources, nullptr);
-            glCompileShader(shader);
-
-            GLint status = GL_FALSE;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-            if (status != GL_TRUE) {
-                char log[1024] = {};
-                glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-                debug::log_error("Shader compile failed: {}", log);
-                glDeleteShader(shader);
-                return false;
-            }
-
-            out_shader = shader;
-            return true;
-        }
-
-        bool link_program(const char* vs_source, const char* fs_source, GLuint& out_program) {
-            GLuint vs = 0;
-            GLuint fs = 0;
-            if (!compile_shader(GL_VERTEX_SHADER, vs_source, vs)) {
-                return false;
-            }
-
-            if (!compile_shader(GL_FRAGMENT_SHADER, fs_source, fs)) {
-                glDeleteShader(vs);
-                return false;
-            }
-
-            GLuint program = glCreateProgram();
-            glAttachShader(program, vs);
-            glAttachShader(program, fs);
-            glLinkProgram(program);
-
-            GLint status = GL_FALSE;
-            glGetProgramiv(program, GL_LINK_STATUS, &status);
-            glDeleteShader(vs);
-            glDeleteShader(fs);
-
-            if (status != GL_TRUE) {
-                char log[1024] = {};
-                glGetProgramInfoLog(program, sizeof(log), nullptr, log);
-                debug::log_error("Program link failed: {}", log);
-                glDeleteProgram(program);
-                return false;
-            }
-
-            out_program = program;
-            return true;
-        }
-
-        // Top-left origin ortho: x in [0, w], y in [0, h] mapping to clip space.
-        // Y is flipped: y=0 -> top of screen (clip y = +1), y=h -> bottom (clip y = -1).
+        // SDL_GPU clip space is y-down (Vulkan/D3D convention). Logical screen space is also
+        // y-down (top-left origin), so we map x:[0,w]->[-1,+1] and y:[0,h]->[-1,+1]
         std::array<float, 16> ortho_top_left(float w, float h) {
             std::array<float, 16> m{};
             m[0] = 2.0f / w;
-            m[5] = -2.0f / h;
-            m[10] = -1.0f;
+            m[5] = 2.0f / h;
+            m[10] = 1.0f;
             m[12] = -1.0f;
-            m[13] = 1.0f;
+            m[13] = -1.0f;
             m[15] = 1.0f;
             return m;
+        }
+
+        // Must match the HLSL cbuffer layout in sprite.vert.hlsl (cbuffer @ b0, space1).
+        // HLSL default packing: each non-vector member can't cross a 16-byte boundary;
+        // float2 pairs pack into a single 16-byte slot.
+        struct SpriteVSUniforms {
+            float proj[16]; // 0..64
+            float screen_pos[2]; // 64..72
+            float size[2]; // 72..80   (packs with screen_pos)
+            float pivot[2]; // 80..88
+            float rotation; // 88..92
+            float _pad; // 92..96
+        };
+
+        static_assert(sizeof(SpriteVSUniforms) == 96);
+
+        std::string read_text_file(const std::filesystem::path& path) {
+            std::ifstream f(path, std::ios::binary | std::ios::ate);
+            if (!f) {
+                return {};
+            }
+
+            const std::streamsize size = f.tellg();
+            f.seekg(0);
+            std::string contents(static_cast<size_t>(size), '\0');
+            f.read(contents.data(), size);
+            return contents;
+        }
+
+        SDL_GPUShader* load_shader(SDL_GPUDevice* device,
+                                   const std::filesystem::path& hlsl_path,
+                                   SDL_ShaderCross_ShaderStage stage) {
+            const std::string source = read_text_file(hlsl_path);
+            if (source.empty()) {
+                debug::log_error("Failed to read shader: {}", hlsl_path.string());
+                return nullptr;
+            }
+
+            SDL_ShaderCross_HLSL_Info hlsl_info{};
+            hlsl_info.source = source.c_str();
+            hlsl_info.entrypoint = "main";
+            hlsl_info.shader_stage = stage;
+
+            size_t spirv_size = 0;
+            void* spirv = SDL_ShaderCross_CompileSPIRVFromHLSL(&hlsl_info, &spirv_size);
+            if (!spirv) {
+                debug::log_error("CompileSPIRVFromHLSL failed for {}: {}", hlsl_path.string(), SDL_GetError());
+                return nullptr;
+            }
+
+            SDL_ShaderCross_GraphicsShaderMetadata* meta =
+                SDL_ShaderCross_ReflectGraphicsSPIRV(static_cast<Uint8*>(spirv), spirv_size, 0);
+            if (!meta) {
+                debug::log_error("ReflectGraphicsSPIRV failed for {}: {}", hlsl_path.string(), SDL_GetError());
+                SDL_free(spirv);
+                return nullptr;
+            }
+
+            SDL_ShaderCross_SPIRV_Info sp_info{};
+            sp_info.bytecode = static_cast<Uint8*>(spirv);
+            sp_info.bytecode_size = spirv_size;
+            sp_info.entrypoint = "main";
+            sp_info.shader_stage = stage;
+
+            SDL_GPUShader* shader =
+                SDL_ShaderCross_CompileGraphicsShaderFromSPIRV(device, &sp_info, &meta->resource_info, 0);
+
+            SDL_free(spirv);
+            SDL_free(meta);
+
+            if (!shader) {
+                debug::log_error("CompileGraphicsShaderFromSPIRV failed for {}: {}",
+                                 hlsl_path.string(),
+                                 SDL_GetError());
+                return nullptr;
+            }
+
+            return shader;
         }
     }
 
@@ -191,6 +132,7 @@ void main() {
     TextureRef& TextureRef::operator=(TextureRef&& other) noexcept {
         if (this != &other) {
             reset();
+
             m_renderer = other.m_renderer;
             m_id = other.m_id;
             m_width = other.m_width;
@@ -234,68 +176,78 @@ void main() {
     // Renderer
     Renderer::Renderer(const EngineConfig& config, const SdlContext& sdl_context, Console& console)
         : m_sdl_context(sdl_context)
+        , m_gpu_device(sdl_context.get_gpu_device())
         , m_logical_width(config.graphics_config.logical_resolution_width)
         , m_logical_height(config.graphics_config.logical_resolution_height)
         , m_pixels_per_meter(config.graphics_config.pixels_per_meter)
-        , m_projection(ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height))) {
-
-        if (!init_sprite_pipeline()) {
+        , m_projection(ortho_top_left(static_cast<float>(m_logical_width),
+                                      static_cast<float>(m_logical_height))) {
+        if (!m_gpu_device) {
+            debug::log_error("Renderer init failed: GPU device is null");
             return;
         }
 
-        if (!init_line_pipeline()) {
+        if (!SDL_ShaderCross_Init()) {
+            debug::log_error("SDL_ShaderCross_Init failed: {}", SDL_GetError());
+            return;
+        }
+        m_shadercross_initialized = true;
+
+        if (!init_offscreen_target()) {
             return;
         }
 
-        if (!init_blit_pipeline()) {
+        if (!init_samplers())
             return;
-        }
-
-        if (!init_fbo()) {
+        if (!init_quad_vbo())
             return;
-        }
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
+        if (!init_sprite_pipeline())
+            return;
+        if (!init_blit_pipeline())
+            return;
+        if (!init_line_pipeline())
+            return;
 
         register_cvars(console);
 
         m_is_initialized = true;
-        debug::log("Renderer initialized ({}x{} FBO)", m_logical_width, m_logical_height);
+        debug::log("Renderer initialized (logical {}x{})", m_logical_width, m_logical_height);
     }
 
     Renderer::~Renderer() {
-        unload_all_textures();
+        // Release all cached textures first.
+        for (auto& [id, entry] : m_textures) {
+            if (entry.texture) {
+                SDL_ReleaseGPUTexture(m_gpu_device, entry.texture);
+            }
+        }
+        m_textures.clear();
+        m_path_to_id.clear();
 
-        if (m_quad_vbo)
-            glDeleteBuffers(1, &m_quad_vbo);
-        if (m_quad_vao)
-            glDeleteVertexArrays(1, &m_quad_vao);
-        if (m_sprite_program)
-            glDeleteProgram(m_sprite_program);
-
+        if (m_line_transfer_buffer)
+            SDL_ReleaseGPUTransferBuffer(m_gpu_device, m_line_transfer_buffer);
         if (m_line_vbo)
-            glDeleteBuffers(1, &m_line_vbo);
-        if (m_line_vao)
-            glDeleteVertexArrays(1, &m_line_vao);
-        if (m_line_program)
-            glDeleteProgram(m_line_program);
+            SDL_ReleaseGPUBuffer(m_gpu_device, m_line_vbo);
+        if (m_line_pipeline)
+            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_line_pipeline);
+        if (m_blit_pipeline)
+            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_blit_pipeline);
+        if (m_sprite_pipeline)
+            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_sprite_pipeline);
+        if (m_quad_vbo)
+            SDL_ReleaseGPUBuffer(m_gpu_device, m_quad_vbo);
+        if (m_blit_sampler)
+            SDL_ReleaseGPUSampler(m_gpu_device, m_blit_sampler);
+        if (m_sprite_sampler)
+            SDL_ReleaseGPUSampler(m_gpu_device, m_sprite_sampler);
+        if (m_offscreen_color)
+            SDL_ReleaseGPUTexture(m_gpu_device, m_offscreen_color);
 
-        if (m_blit_vbo)
-            glDeleteBuffers(1, &m_blit_vbo);
-        if (m_blit_vao)
-            glDeleteVertexArrays(1, &m_blit_vao);
-        if (m_blit_program)
-            glDeleteProgram(m_blit_program);
+        if (m_shadercross_initialized) {
+            SDL_ShaderCross_Quit();
+        }
 
-        if (m_fbo_color_texture)
-            glDeleteTextures(1, &m_fbo_color_texture);
-        if (m_fbo)
-            glDeleteFramebuffers(1, &m_fbo);
-
-        debug::log("Renderer uninitialized ({}x{} FBO)", m_logical_width, m_logical_height);
+        debug::log("Renderer uninitialized");
     }
 
     bool Renderer::is_initialized() const {
@@ -311,11 +263,11 @@ void main() {
     }
 
     float Renderer::get_logical_width_f() const {
-        return static_cast<float>(get_logical_width());
+        return static_cast<float>(m_logical_width);
     }
 
     float Renderer::get_logical_height_f() const {
-        return static_cast<float>(get_logical_height());
+        return static_cast<float>(m_logical_height);
     }
 
     uint32_t Renderer::get_pixels_per_meter() const {
@@ -323,219 +275,21 @@ void main() {
     }
 
     float Renderer::get_pixels_per_meter_f() const {
-        return static_cast<float>(get_pixels_per_meter());
+        return static_cast<float>(m_pixels_per_meter);
     }
 
-    bool Renderer::init_sprite_pipeline() {
-        if (!link_program(SPRITE_VS, SPRITE_FS, m_sprite_program)) {
-            return false;
-        }
-
-        m_u_sprite_projection = glGetUniformLocation(m_sprite_program, "u_projection");
-        m_u_sprite_screen_pos = glGetUniformLocation(m_sprite_program, "u_screen_pos");
-        m_u_sprite_size = glGetUniformLocation(m_sprite_program, "u_size");
-        m_u_sprite_pivot_pixel = glGetUniformLocation(m_sprite_program, "u_pivot_pixel");
-        m_u_sprite_rotation = glGetUniformLocation(m_sprite_program, "u_rotation");
-        m_u_sprite_tint = glGetUniformLocation(m_sprite_program, "u_tint");
-
-        // Unit quad. Identity UVs: quad-local (0,0) is the top-left in screen space (because
-        // the projection maps screen y=0 to clip y=+1), and SDL_image-loaded pixels have row 0
-        // at the visual top, which OpenGL stores at texel y=0. So the top vertex samples UV y=0.
-        const float verts[] = {
-            // pos        uv
-            0.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f,
-
-            0.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-        };
-
-        glGenVertexArrays(1, &m_quad_vao);
-        glGenBuffers(1, &m_quad_vbo);
-        glBindVertexArray(m_quad_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_quad_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(0));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
-        glBindVertexArray(0);
-
-        return true;
+    void Renderer::render_sprite(TextureId texture_id,
+                                 const Vector2& screen_pos,
+                                 const Vector2& size_pixels,
+                                 const Vector2& pivot_pixel,
+                                 float rotation_rad,
+                                 const Color& tint) {
+        m_pending_sprites.push_back({texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, tint});
     }
 
-    bool Renderer::init_line_pipeline() {
-        if (!link_program(LINE_VS, LINE_FS, m_line_program)) {
-            return false;
-        }
-
-        m_u_line_projection = glGetUniformLocation(m_line_program, "u_projection");
-
-        glGenVertexArrays(1, &m_line_vao);
-        glGenBuffers(1, &m_line_vbo);
-        glBindVertexArray(m_line_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_line_vbo);
-        // Reserve room for two vertices: pos(2f) + color(4f) = 6f * 2 = 48 bytes.
-        glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(0));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
-        glBindVertexArray(0);
-
-        return true;
-    }
-
-    bool Renderer::init_blit_pipeline() {
-        if (!link_program(BLIT_VS, BLIT_FS, m_blit_program)) {
-            return false;
-        }
-
-        // Fullscreen triangle pair in NDC; UVs flipped so the FBO's y-up texture appears
-        // with y-down screen orientation matching what was rendered into it.
-        const float verts[] = {
-            -1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f,
-
-            -1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, 0.0f, 1.0f,
-        };
-
-        glGenVertexArrays(1, &m_blit_vao);
-        glGenBuffers(1, &m_blit_vbo);
-        glBindVertexArray(m_blit_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_blit_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(0));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
-        glBindVertexArray(0);
-
-        return true;
-    }
-
-    bool Renderer::init_fbo() {
-        glGenFramebuffers(1, &m_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
-        glGenTextures(1, &m_fbo_color_texture);
-        glBindTexture(GL_TEXTURE_2D, m_fbo_color_texture);
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGBA8,
-                     static_cast<GLsizei>(get_logical_width()),
-                     static_cast<GLsizei>(get_logical_height()),
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_fbo_color_texture, 0);
-
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE) {
-            debug::log_error("FBO incomplete: 0x{:x}", static_cast<unsigned int>(status));
-            return false;
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        return true;
-    }
-
-    void Renderer::frame_start() {
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-        glViewport(0, 0, static_cast<GLsizei>(get_logical_width()), static_cast<GLsizei>(get_logical_height()));
-        glClearColor(0.17f, 0.18f, 0.47f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-
-    void Renderer::frame_end() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        int window_w = 0;
-        int window_h = 0;
-        SDL_GetWindowSizeInPixels(m_sdl_context.get_window(), &window_w, &window_h);
-        glViewport(0, 0, window_w, window_h);
-
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(m_blit_program);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_fbo_color_texture);
-        glBindVertexArray(m_blit_vao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-    }
-
-    void Renderer::draw_sprite(TextureId texture_id,
-                               const Vector2& screen_pos,
-                               const Vector2& size_pixels,
-                               const Vector2& pivot_pixel,
-                               float rotation_rad,
-                               const Color& tint) {
-        glUseProgram(m_sprite_program);
-        glUniformMatrix4fv(m_u_sprite_projection, 1, GL_FALSE, m_projection.data());
-        glUniform2f(m_u_sprite_screen_pos, screen_pos.x, screen_pos.y);
-        glUniform2f(m_u_sprite_size, size_pixels.x, size_pixels.y);
-        glUniform2f(m_u_sprite_pivot_pixel, pivot_pixel.x, pivot_pixel.y);
-
-        // World space is y-up; screen projection is y-down. Negate so positive world rotation
-        // remains visually counter-clockwise.
-        glUniform1f(m_u_sprite_rotation, -rotation_rad);
-
-        glUniform4f(m_u_sprite_tint, tint.r, tint.g, tint.b, tint.a);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        glBindVertexArray(m_quad_vao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-    }
-
-    void Renderer::draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
-        const float verts[] = {
-            a.x, a.y, color.r, color.g, color.b, color.a,
-            b.x, b.y, color.r, color.g, color.b, color.a,
-        };
-
-        glUseProgram(m_line_program);
-        glUniformMatrix4fv(m_u_line_projection, 1, GL_FALSE, m_projection.data());
-
-        glBindVertexArray(m_line_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_line_vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
-
-        glLineWidth(thickness < 1.0f ? 1.0f : thickness);
-        glDrawArrays(GL_LINES, 0, 2);
-        glBindVertexArray(0);
-    }
-
-    TextureId Renderer::create_texture_from_pixels(const void* rgba_pixels, int width, int height) {
-        GLuint texture = 0;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_pixels);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        return texture;
-    }
-
-    void Renderer::destroy_texture(TextureId id) {
-        if (id != 0 && id != INVALID_TEXTURE_ID) {
-            glDeleteTextures(1, &id);
-        }
+    void Renderer::render_line(const Vector2& a, const Vector2& b, const Color& color, float /*thickness*/) {
+        m_pending_lines.push_back({a, color});
+        m_pending_lines.push_back({b, color});
     }
 
     TextureRef Renderer::load_texture(const std::filesystem::path& full_path) {
@@ -574,17 +328,40 @@ void main() {
             }
         }
 
-        const TextureId texture_id = create_texture_from_pixels(rgba->pixels, rgba->w, rgba->h);
         const uint32_t w = static_cast<uint32_t>(rgba->w);
         const uint32_t h = static_cast<uint32_t>(rgba->h);
-        const int ref_count = 1;
+
+        SDL_GPUTextureCreateInfo tci{};
+        tci.type = SDL_GPU_TEXTURETYPE_2D;
+        tci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+        tci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+        tci.width = w;
+        tci.height = h;
+        tci.layer_count_or_depth = 1;
+        tci.num_levels = 1;
+        tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+
+        SDL_GPUTexture* gpu_tex = SDL_CreateGPUTexture(m_gpu_device, &tci);
+        if (!gpu_tex) {
+            debug::log_error("SDL_CreateGPUTexture failed: {}", SDL_GetError());
+            SDL_DestroySurface(rgba);
+            return TextureRef();
+        }
+
+        if (!upload_texture_rgba(gpu_tex, rgba->pixels, w, h)) {
+            SDL_ReleaseGPUTexture(m_gpu_device, gpu_tex);
+            SDL_DestroySurface(rgba);
+            return TextureRef();
+        }
+
         SDL_DestroySurface(rgba);
 
-        m_textures.emplace(texture_id, TextureEntry(w, h, key, ref_count));
+        const TextureId texture_id = m_next_texture_id++;
+        m_textures.emplace(texture_id, TextureEntry{gpu_tex, w, h, key, 1});
         m_path_to_id.emplace(key, texture_id);
 
         if (m_cvar_log_textures) {
-            debug::log("Renderer::load_texture loaded: '{}' (id={}, rc={})", key, texture_id, ref_count);
+            debug::log("Renderer::load_texture loaded: '{}' (id={}, rc=1)", key, texture_id);
         }
 
         return TextureRef(*this, texture_id, w, h);
@@ -604,28 +381,424 @@ void main() {
             if (m_cvar_log_textures) {
                 debug::log("Renderer::unload_texture: '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
             }
-
             return true;
         }
 
         if (m_cvar_log_textures) {
-            debug::log("Renderer::unload_texture: '{}' (id={}, rc={}) [destroyed]", entry.path, id, entry.ref_count);
+            debug::log("Renderer::unload_texture: '{}' (id={}, rc=0) [destroyed]", entry.path, id);
         }
 
-        destroy_texture(id);
         m_path_to_id.erase(entry.path);
+        if (entry.texture) {
+            SDL_ReleaseGPUTexture(m_gpu_device, entry.texture);
+        }
         m_textures.erase(it);
         return true;
     }
 
-    void Renderer::unload_all_textures() {
-        for (auto& [id, entry] : m_textures) {
-            debug::log_error("Renderer: leaked texture '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
-            destroy_texture(id);
+    void Renderer::record_world(SDL_GPUCommandBuffer* cmd) {
+        // Upload pending line vertices into the persistent line VBO before the render
+        // pass starts (copy passes can't run inside a graphics render pass).
+        const uint32_t line_vertex_count = static_cast<uint32_t>(
+            std::min<size_t>(m_pending_lines.size(), MAX_LINE_VERTICES));
+
+        if (line_vertex_count > 0) {
+            const uint32_t bytes = line_vertex_count * sizeof(LineVertex);
+            void* map = SDL_MapGPUTransferBuffer(m_gpu_device, m_line_transfer_buffer, true);
+            if (map) {
+                std::memcpy(map, m_pending_lines.data(), bytes);
+                SDL_UnmapGPUTransferBuffer(m_gpu_device, m_line_transfer_buffer);
+
+                SDL_GPUCopyPass* copy = SDL_BeginGPUCopyPass(cmd);
+                SDL_GPUTransferBufferLocation src{};
+                src.transfer_buffer = m_line_transfer_buffer;
+                src.offset = 0;
+                SDL_GPUBufferRegion dst{};
+                dst.buffer = m_line_vbo;
+                dst.offset = 0;
+                dst.size = bytes;
+                SDL_UploadToGPUBuffer(copy, &src, &dst, true);
+                SDL_EndGPUCopyPass(copy);
+            }
         }
 
-        m_textures.clear();
-        m_path_to_id.clear();
+        SDL_GPUColorTargetInfo ct{};
+        ct.texture = m_offscreen_color;
+        ct.clear_color = CLEAR_COLOR;
+        ct.load_op = SDL_GPU_LOADOP_CLEAR;
+        ct.store_op = SDL_GPU_STOREOP_STORE;
+
+        SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
+        if (!pass) {
+            m_pending_sprites.clear();
+            m_pending_lines.clear();
+            return;
+        }
+
+        if (!m_pending_sprites.empty()) {
+            SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipeline);
+
+            SDL_GPUBufferBinding vb{};
+            vb.buffer = m_quad_vbo;
+            vb.offset = 0;
+            SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+
+            for (const Sprite& sp : m_pending_sprites) {
+                auto it = m_textures.find(sp.texture_id);
+                if (it == m_textures.end() || !it->second.texture) {
+                    continue;
+                }
+
+                SpriteVSUniforms vsu{};
+                std::memcpy(vsu.proj, m_projection.data(), sizeof(vsu.proj));
+                vsu.screen_pos[0] = sp.screen_pos.x;
+                vsu.screen_pos[1] = sp.screen_pos.y;
+                vsu.size[0] = sp.size_pixels.x;
+                vsu.size[1] = sp.size_pixels.y;
+                vsu.pivot[0] = sp.pivot_pixel.x;
+                vsu.pivot[1] = sp.pivot_pixel.y;
+                // World rotation is y-up CCW; logical screen is y-down. Negate so positive
+                // world rotation remains visually CCW.
+                vsu.rotation = -sp.rotation_rad;
+                SDL_PushGPUVertexUniformData(cmd, 0, &vsu, sizeof(vsu));
+
+                SDL_PushGPUFragmentUniformData(cmd, 0, &sp.tint, sizeof(Color));
+
+                SDL_GPUTextureSamplerBinding ts{};
+                ts.texture = it->second.texture;
+                ts.sampler = m_sprite_sampler;
+                SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
+
+                SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+            }
+        }
+
+        if (line_vertex_count > 0) {
+            SDL_BindGPUGraphicsPipeline(pass, m_line_pipeline);
+
+            SDL_GPUBufferBinding vb{};
+            vb.buffer = m_line_vbo;
+            vb.offset = 0;
+            SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+
+            SDL_PushGPUVertexUniformData(cmd,
+                                         0,
+                                         m_projection.data(),
+                                         static_cast<uint32_t>(m_projection.size() * sizeof(float)));
+
+            SDL_DrawGPUPrimitives(pass, line_vertex_count, 1, 0, 0);
+        }
+
+        SDL_EndGPURenderPass(pass);
+
+        m_pending_sprites.clear();
+        m_pending_lines.clear();
+    }
+
+    void Renderer::record_blit(SDL_GPURenderPass* swap_pass) {
+        SDL_BindGPUGraphicsPipeline(swap_pass, m_blit_pipeline);
+
+        SDL_GPUTextureSamplerBinding ts{};
+        ts.texture = m_offscreen_color;
+        ts.sampler = m_blit_sampler;
+        SDL_BindGPUFragmentSamplers(swap_pass, 0, &ts, 1);
+
+        SDL_DrawGPUPrimitives(swap_pass, 3, 1, 0, 0);
+    }
+
+    bool Renderer::init_offscreen_target() {
+        SDL_GPUTextureCreateInfo tci{};
+        tci.type = SDL_GPU_TEXTURETYPE_2D;
+        tci.format = m_offscreen_format;
+        tci.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+        tci.width = m_logical_width;
+        tci.height = m_logical_height;
+        tci.layer_count_or_depth = 1;
+        tci.num_levels = 1;
+        tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+
+        m_offscreen_color = SDL_CreateGPUTexture(m_gpu_device, &tci);
+        if (!m_offscreen_color) {
+            debug::log_error("SDL_CreateGPUTexture (offscreen) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_samplers() {
+        SDL_GPUSamplerCreateInfo sprite_info{};
+        sprite_info.min_filter = SDL_GPU_FILTER_LINEAR;
+        sprite_info.mag_filter = SDL_GPU_FILTER_NEAREST;
+        sprite_info.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+        sprite_info.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+        sprite_info.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+        sprite_info.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+
+        m_sprite_sampler = SDL_CreateGPUSampler(m_gpu_device, &sprite_info);
+        if (!m_sprite_sampler) {
+            debug::log_error("SDL_CreateGPUSampler (sprite) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUSamplerCreateInfo blit_info = sprite_info;
+        blit_info.min_filter = SDL_GPU_FILTER_LINEAR;
+        blit_info.mag_filter = SDL_GPU_FILTER_LINEAR;
+
+        m_blit_sampler = SDL_CreateGPUSampler(m_gpu_device, &blit_info);
+        if (!m_blit_sampler) {
+            debug::log_error("SDL_CreateGPUSampler (blit) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_quad_vbo() {
+        // 6 vertices for two triangles covering the unit square [0,1] x [0,1].
+        // Layout per vertex: float2 pos, float2 uv.
+        const float verts[] = {
+            0.0f, 0.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, 1.0f,
+        };
+
+        SDL_GPUBufferCreateInfo bci{};
+        bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+        bci.size = sizeof(verts);
+        m_quad_vbo = SDL_CreateGPUBuffer(m_gpu_device, &bci);
+        if (!m_quad_vbo) {
+            debug::log_error("SDL_CreateGPUBuffer (quad) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return upload_buffer(m_quad_vbo, verts, sizeof(verts));
+    }
+
+    bool Renderer::init_sprite_pipeline() {
+        // TODO non-hardcoded shader paths
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "shaders";
+
+        SDL_GPUShader* vs = load_shader(m_gpu_device,
+                                        shader_dir / "sprite.vert.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+
+        if (!vs) {
+            return false;
+        }
+
+        SDL_GPUShader* fs = load_shader(m_gpu_device,
+                                        shader_dir / "sprite.frag.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+
+        if (!fs) {
+            SDL_ReleaseGPUShader(m_gpu_device, vs);
+            return false;
+        }
+
+        SDL_GPUVertexBufferDescription vbd{};
+        vbd.slot = 0;
+        vbd.pitch = 4 * sizeof(float);
+        vbd.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+        vbd.instance_step_rate = 0;
+
+        SDL_GPUVertexAttribute attrs[2]{};
+        attrs[0].location = 0;
+        attrs[0].buffer_slot = 0;
+        attrs[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[0].offset = 0;
+        attrs[1].location = 1;
+        attrs[1].buffer_slot = 0;
+        attrs[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[1].offset = 2 * sizeof(float);
+
+        SDL_GPUColorTargetDescription ctd{};
+        ctd.format = m_offscreen_format;
+        ctd.blend_state.enable_blend = true;
+        ctd.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+        ctd.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+        ctd.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+        ctd.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+
+        SDL_GPUGraphicsPipelineCreateInfo gci{};
+        gci.vertex_shader = vs;
+        gci.fragment_shader = fs;
+        gci.vertex_input_state.vertex_buffer_descriptions = &vbd;
+        gci.vertex_input_state.num_vertex_buffers = 1;
+        gci.vertex_input_state.vertex_attributes = attrs;
+        gci.vertex_input_state.num_vertex_attributes = 2;
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+        gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+        gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+        gci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        gci.target_info.color_target_descriptions = &ctd;
+        gci.target_info.num_color_targets = 1;
+        gci.target_info.has_depth_stencil_target = false;
+
+        m_sprite_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+
+        SDL_ReleaseGPUShader(m_gpu_device, vs);
+        SDL_ReleaseGPUShader(m_gpu_device, fs);
+
+        if (!m_sprite_pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (sprite) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_blit_pipeline() {
+        // TODO non-hardcoded shader paths.
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "shaders";
+
+        SDL_GPUShader* vs = load_shader(m_gpu_device,
+                                        shader_dir / "blit.vert.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+
+        if (!vs) {
+            return false;
+        }
+
+        SDL_GPUShader* fs = load_shader(m_gpu_device,
+                                        shader_dir / "blit.frag.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+
+        if (!fs) {
+            SDL_ReleaseGPUShader(m_gpu_device, vs);
+            return false;
+        }
+
+        SDL_GPUColorTargetDescription ctd{};
+        ctd.format = SDL_GetGPUSwapchainTextureFormat(m_gpu_device, m_sdl_context.get_window());
+        ctd.blend_state.enable_blend = false;
+
+        SDL_GPUGraphicsPipelineCreateInfo gci{};
+        gci.vertex_shader = vs;
+        gci.fragment_shader = fs;
+        // No vertex buffers — blit VS synthesizes verts from SV_VertexID.
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+        gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+        gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+        gci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        gci.target_info.color_target_descriptions = &ctd;
+        gci.target_info.num_color_targets = 1;
+        gci.target_info.has_depth_stencil_target = false;
+
+        m_blit_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+
+        SDL_ReleaseGPUShader(m_gpu_device, vs);
+        SDL_ReleaseGPUShader(m_gpu_device, fs);
+
+        if (!m_blit_pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (blit) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_line_pipeline() {
+        // TODO non-hardcoded shader paths.
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "shaders";
+
+        SDL_GPUShader* vs = load_shader(m_gpu_device,
+                                        shader_dir / "line.vert.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+
+        if (!vs) {
+            return false;
+        }
+
+        SDL_GPUShader* fs = load_shader(m_gpu_device,
+                                        shader_dir / "line.frag.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+
+        if (!fs) {
+            SDL_ReleaseGPUShader(m_gpu_device, vs);
+            return false;
+        }
+
+        // LineVertex layout: float2 pos (offset 0), float4 color (offset 8).
+        SDL_GPUVertexBufferDescription vbd{};
+        vbd.slot = 0;
+        vbd.pitch = sizeof(LineVertex);
+        vbd.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+
+        SDL_GPUVertexAttribute attrs[2]{};
+        attrs[0].location = 0;
+        attrs[0].buffer_slot = 0;
+        attrs[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[0].offset = 0;
+        attrs[1].location = 1;
+        attrs[1].buffer_slot = 0;
+        attrs[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
+        attrs[1].offset = sizeof(Vector2);
+
+        SDL_GPUColorTargetDescription ctd{};
+        ctd.format = m_offscreen_format;
+        ctd.blend_state.enable_blend = true;
+        ctd.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+        ctd.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+        ctd.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+        ctd.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+
+        SDL_GPUGraphicsPipelineCreateInfo gci{};
+        gci.vertex_shader = vs;
+        gci.fragment_shader = fs;
+        gci.vertex_input_state.vertex_buffer_descriptions = &vbd;
+        gci.vertex_input_state.num_vertex_buffers = 1;
+        gci.vertex_input_state.vertex_attributes = attrs;
+        gci.vertex_input_state.num_vertex_attributes = 2;
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_LINELIST;
+        gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+        gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+        gci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        gci.target_info.color_target_descriptions = &ctd;
+        gci.target_info.num_color_targets = 1;
+        gci.target_info.has_depth_stencil_target = false;
+
+        m_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+
+        SDL_ReleaseGPUShader(m_gpu_device, vs);
+        SDL_ReleaseGPUShader(m_gpu_device, fs);
+
+        if (!m_line_pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (line) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        const uint32_t buffer_bytes = MAX_LINE_VERTICES * sizeof(LineVertex);
+
+        SDL_GPUBufferCreateInfo bci{};
+        bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+        bci.size = buffer_bytes;
+        m_line_vbo = SDL_CreateGPUBuffer(m_gpu_device, &bci);
+        if (!m_line_vbo) {
+            debug::log_error("SDL_CreateGPUBuffer (line) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUTransferBufferCreateInfo tbi{};
+        tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        tbi.size = buffer_bytes;
+        m_line_transfer_buffer = SDL_CreateGPUTransferBuffer(m_gpu_device, &tbi);
+        if (!m_line_transfer_buffer) {
+            debug::log_error("SDL_CreateGPUTransferBuffer (line) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
     }
 
     void Renderer::register_cvars(Console& console) {
@@ -637,5 +810,104 @@ void main() {
                               [this](const ConsoleVariable& cvar) {
                                   m_cvar_log_textures = cvar.bool_value();
                               });
+    }
+
+    bool Renderer::upload_buffer(SDL_GPUBuffer* dst_buffer, const void* data, uint32_t size) {
+        SDL_GPUTransferBufferCreateInfo tbi{};
+        tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        tbi.size = size;
+        SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(m_gpu_device, &tbi);
+        if (!tb) {
+            debug::log_error("SDL_CreateGPUTransferBuffer failed: {}", SDL_GetError());
+            return false;
+        }
+
+        void* map = SDL_MapGPUTransferBuffer(m_gpu_device, tb, false);
+        if (!map) {
+            debug::log_error("SDL_MapGPUTransferBuffer failed: {}", SDL_GetError());
+            SDL_ReleaseGPUTransferBuffer(m_gpu_device, tb);
+            return false;
+        }
+        std::memcpy(map, data, size);
+        SDL_UnmapGPUTransferBuffer(m_gpu_device, tb);
+
+        SDL_GPUCommandBuffer* upload_cmd = SDL_AcquireGPUCommandBuffer(m_gpu_device);
+        SDL_GPUCopyPass* copy = SDL_BeginGPUCopyPass(upload_cmd);
+
+        SDL_GPUTransferBufferLocation src{};
+        src.transfer_buffer = tb;
+        src.offset = 0;
+        SDL_GPUBufferRegion dst{};
+        dst.buffer = dst_buffer;
+        dst.offset = 0;
+        dst.size = size;
+        SDL_UploadToGPUBuffer(copy, &src, &dst, false);
+
+        SDL_EndGPUCopyPass(copy);
+
+        SDL_GPUFence* fence = SDL_SubmitGPUCommandBufferAndAcquireFence(upload_cmd);
+        if (fence) {
+            SDL_WaitForGPUFences(m_gpu_device, true, &fence, 1);
+            SDL_ReleaseGPUFence(m_gpu_device, fence);
+        }
+        SDL_ReleaseGPUTransferBuffer(m_gpu_device, tb);
+        return true;
+    }
+
+    bool Renderer::upload_texture_rgba(SDL_GPUTexture* dst_texture,
+                                       const void* pixels,
+                                       uint32_t width,
+                                       uint32_t height) {
+        const uint32_t size = width * height * 4;
+
+        SDL_GPUTransferBufferCreateInfo tbi{};
+        tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        tbi.size = size;
+        SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(m_gpu_device, &tbi);
+        if (!tb) {
+            debug::log_error("SDL_CreateGPUTransferBuffer (texture) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        void* map = SDL_MapGPUTransferBuffer(m_gpu_device, tb, false);
+        if (!map) {
+            debug::log_error("SDL_MapGPUTransferBuffer (texture) failed: {}", SDL_GetError());
+            SDL_ReleaseGPUTransferBuffer(m_gpu_device, tb);
+            return false;
+        }
+        std::memcpy(map, pixels, size);
+        SDL_UnmapGPUTransferBuffer(m_gpu_device, tb);
+
+        SDL_GPUCommandBuffer* upload_cmd = SDL_AcquireGPUCommandBuffer(m_gpu_device);
+        SDL_GPUCopyPass* copy = SDL_BeginGPUCopyPass(upload_cmd);
+
+        SDL_GPUTextureTransferInfo src{};
+        src.transfer_buffer = tb;
+        src.offset = 0;
+        src.pixels_per_row = width;
+        src.rows_per_layer = height;
+
+        SDL_GPUTextureRegion dst{};
+        dst.texture = dst_texture;
+        dst.mip_level = 0;
+        dst.layer = 0;
+        dst.x = 0;
+        dst.y = 0;
+        dst.z = 0;
+        dst.w = width;
+        dst.h = height;
+        dst.d = 1;
+
+        SDL_UploadToGPUTexture(copy, &src, &dst, false);
+
+        SDL_EndGPUCopyPass(copy);
+
+        SDL_GPUFence* fence = SDL_SubmitGPUCommandBufferAndAcquireFence(upload_cmd);
+        if (fence) {
+            SDL_WaitForGPUFences(m_gpu_device, true, &fence, 1);
+            SDL_ReleaseGPUFence(m_gpu_device, fence);
+        }
+        SDL_ReleaseGPUTransferBuffer(m_gpu_device, tb);
+        return true;
     }
 }

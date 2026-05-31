@@ -15,7 +15,7 @@ namespace hob::debug {
         void gl_draw_line(Renderer& renderer, const CameraComponent* camera, const DebugLine& line) {
             Vector2 a = camera->world_to_screen(line.start);
             Vector2 b = camera->world_to_screen(line.end);
-            renderer.draw_line(a, b, line.color, line.thickness);
+            renderer.render_line(a, b, line.color, line.thickness);
         }
 
         void gl_draw_circle(Renderer& renderer, const CameraComponent* camera, const DebugCircle& circle) {

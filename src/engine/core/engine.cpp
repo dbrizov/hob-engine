@@ -63,7 +63,7 @@ namespace hob {
                 }
             }
 
-            m_imgui_system.frame_start();
+            m_imgui_system.new_frame();
 
             m_entity_spawner.resolve_requests();
             m_entity_spawner.get_entities(entities);
@@ -90,21 +90,44 @@ namespace hob {
             }
 #endif
 
-            m_renderer.frame_start();
-
             render_entities(renderable_entities);
             render_debug_draws();
             m_cursor.render();
-
-            m_renderer.frame_end();
 
             if (m_console.is_open()) {
                 m_console.render();
             }
 
-            m_imgui_system.frame_end();
+            SDL_GPUDevice* device = m_sdl_context.get_gpu_device();
+            SDL_Window* window = m_sdl_context.get_window();
+            SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(device);
 
-            m_sdl_context.swap();
+            SDL_GPUTexture* swap_tex = nullptr;
+            const bool acquired = SDL_WaitAndAcquireGPUSwapchainTexture(cmd, window, &swap_tex, nullptr, nullptr)
+                                  && swap_tex != nullptr;
+
+            m_renderer.record_world(cmd);
+
+            if (acquired) {
+                m_imgui_system.prepare_draw_data(cmd);
+
+                SDL_GPUColorTargetInfo swap_color_info{};
+                swap_color_info.texture = swap_tex;
+                swap_color_info.load_op = SDL_GPU_LOADOP_CLEAR;
+                swap_color_info.store_op = SDL_GPU_STOREOP_STORE;
+                swap_color_info.clear_color = CLEAR_COLOR;
+
+                SDL_GPURenderPass* swap_pass = SDL_BeginGPURenderPass(cmd, &swap_color_info, 1, nullptr);
+                m_renderer.record_blit(swap_pass);
+                m_imgui_system.record_draw_data(swap_pass, cmd);
+                SDL_EndGPURenderPass(swap_pass);
+
+                SDL_SubmitGPUCommandBuffer(cmd);
+            }
+            else {
+                m_imgui_system.discard_frame();
+                SDL_CancelGPUCommandBuffer(cmd);
+            }
 
             m_timer.frame_end();
         }
@@ -198,7 +221,7 @@ namespace hob {
 
             const Vector2 pivot_pixel(size_pixels.x * sprite_pivot.x, size_pixels.y * sprite_pivot.y);
 
-            m_renderer.draw_sprite(
+            m_renderer.render_sprite(
                 texture.get_id(),
                 screen_pos,
                 size_pixels,

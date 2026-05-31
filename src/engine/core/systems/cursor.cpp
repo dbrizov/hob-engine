@@ -106,11 +106,11 @@ namespace hob {
         Vector2 mouse_screen = m_input.get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot_pixel.x, mouse_screen.y - pivot_pixel.y);
 
-        m_renderer.draw_sprite(m_texture.get_id(),
-                               screen_pos,
-                               size,
-                               pivot_pixel,
-                               0.0f,
-                               m_tint);
+        m_renderer.render_sprite(m_texture.get_id(),
+                                 screen_pos,
+                                 size,
+                                 pivot_pixel,
+                                 0.0f,
+                                 m_tint);
     }
 }

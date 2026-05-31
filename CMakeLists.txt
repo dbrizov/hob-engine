@@ -60,16 +60,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SDL3_image::SDL3_image)
 find_package(SDL3_ttf CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3_ttf::SDL3_ttf)
 
+# Find and link SDL3_shadercross (runtime HLSL -> DXIL/SPIR-V/MSL).
+find_package(SDL3_shadercross CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3_shadercross::SDL3_shadercross)
+
 # Find and link box2d.
 find_package(box2d CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE box2d::box2d)
-
-# Find and link OpenGL + glad.
-find_package(OpenGL REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
-
-find_package(glad CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE glad::glad)
 
 # Find and link imgui
 find_package(imgui CONFIG REQUIRED)
@@ -105,8 +102,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
         <unordered_set>
         <cstdint>
 
-        # Graphics / windowing. glad must precede any GL-pulling header.
-        <glad/glad.h>
+        # Graphics / windowing.
         <SDL3/SDL.h>
         <SDL3_image/SDL_image.h>
         <SDL3_ttf/SDL_ttf.h>
@@ -114,7 +110,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
         # UI.
         <imgui.h>
         <imgui_impl_sdl3.h>
-        <imgui_impl_opengl3.h>
+        <imgui_impl_sdlgpu3.h>
 
         # Physics.
         <box2d/box2d.h>

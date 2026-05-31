@@ -1,6 +1,5 @@
 #include "sdl_context.h"
 
-#include <glad/glad.h>
 #include <SDL3/SDL.h>
 
 #include "engine/core/engine_config.h"
@@ -15,18 +14,11 @@ namespace hob {
 
         debug::log("SDL_Init");
 
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
-
         m_window = SDL_CreateWindow(
             graphics_config.window_title.c_str(),
             static_cast<int>(graphics_config.window_width),
             static_cast<int>(graphics_config.window_height),
-            SDL_WINDOW_OPENGL);
+            0);
 
         if (!m_window) {
             debug::log_error("SDL_CreateWindow Error: {}", SDL_GetError());
@@ -36,39 +28,71 @@ namespace hob {
 
         debug::log("SDL_CreateWindow");
 
-        m_gl_context = SDL_GL_CreateContext(m_window);
-        if (!m_gl_context) {
-            debug::log_error("SDL_GL_CreateContext Error: {}", SDL_GetError());
+        const SDL_GPUShaderFormat shader_formats =
+            SDL_GPU_SHADERFORMAT_SPIRV |
+            SDL_GPU_SHADERFORMAT_DXIL |
+            SDL_GPU_SHADERFORMAT_MSL;
+
+#ifndef NDEBUG
+        const bool debug_mode = true;
+#else
+        const bool debug_mode = false;
+#endif
+
+        m_gpu_device = SDL_CreateGPUDevice(shader_formats, debug_mode, nullptr);
+        if (!m_gpu_device) {
+            debug::log_error("SDL_CreateGPUDevice Error: {}", SDL_GetError());
             SDL_DestroyWindow(m_window);
+            m_window = nullptr;
             SDL_Quit();
             return;
         }
 
-        SDL_GL_MakeCurrent(m_window, m_gl_context);
+        debug::log("SDL_CreateGPUDevice ({})", SDL_GetGPUDeviceDriver(m_gpu_device));
 
-        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
-            debug::log_error("gladLoadGLLoader failed");
-            SDL_GL_DestroyContext(m_gl_context);
+        if (!SDL_ClaimWindowForGPUDevice(m_gpu_device, m_window)) {
+            debug::log_error("SDL_ClaimWindowForGPUDevice Error: {}", SDL_GetError());
+            SDL_DestroyGPUDevice(m_gpu_device);
+            m_gpu_device = nullptr;
             SDL_DestroyWindow(m_window);
+            m_window = nullptr;
             SDL_Quit();
             return;
         }
 
-        SDL_GL_SetSwapInterval(graphics_config.vsync_enabled ? 1 : 0);
+        const SDL_GPUPresentMode present_mode = graphics_config.vsync_enabled
+                                                    ? SDL_GPU_PRESENTMODE_VSYNC
+                                                    : SDL_GPU_PRESENTMODE_MAILBOX;
 
-        debug::log("OpenGL {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+        if (!SDL_SetGPUSwapchainParameters(m_gpu_device,
+                                           m_window,
+                                           SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
+                                           present_mode)) {
+            // MAILBOX may not be supported on all drivers; fall back to VSYNC, which is mandatory.
+            SDL_SetGPUSwapchainParameters(m_gpu_device,
+                                          m_window,
+                                          SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
+                                          SDL_GPU_PRESENTMODE_VSYNC);
+        }
 
         m_is_initialized = true;
     }
 
     SdlContext::~SdlContext() {
-        if (m_gl_context) {
-            SDL_GL_DestroyContext(m_gl_context);
-            debug::log("SDL_GL_DestroyContext");
+        if (m_gpu_device && m_window) {
+            SDL_ReleaseWindowFromGPUDevice(m_gpu_device, m_window);
+            debug::log("SDL_ReleaseWindowFromGPUDevice");
+        }
+
+        if (m_gpu_device) {
+            SDL_DestroyGPUDevice(m_gpu_device);
+            m_gpu_device = nullptr;
+            debug::log("SDL_DestroyGPUDevice");
         }
 
         if (m_window) {
             SDL_DestroyWindow(m_window);
+            m_window = nullptr;
             debug::log("SDL_DestroyWindow");
         }
 
@@ -84,11 +108,7 @@ namespace hob {
         return m_window;
     }
 
-    SDL_GLContext SdlContext::get_gl_context() const {
-        return m_gl_context;
-    }
-
-    void SdlContext::swap() {
-        SDL_GL_SwapWindow(m_window);
+    SDL_GPUDevice* SdlContext::get_gpu_device() const {
+        return m_gpu_device;
     }
 }

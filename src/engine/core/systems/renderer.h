@@ -5,9 +5,11 @@
 #include <filesystem>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+#include <SDL3/SDL_gpu.h>
 
 #include "engine/math/color.h"
-#include "engine/math/constants.h"
 #include "engine/math/vector2.h"
 
 namespace hob {
@@ -16,10 +18,10 @@ namespace hob {
     class Renderer;
     class Console;
 
-    constexpr const char* GLSL_VERSION = "#version 330 core\n";
+    using TextureId = int64_t;
+    constexpr TextureId INVALID_TEXTURE_ID = -1;
 
-    using TextureId = uint32_t;
-    constexpr TextureId INVALID_TEXTURE_ID = MAX_UINT32;
+    constexpr SDL_FColor CLEAR_COLOR = SDL_FColor{0.17f, 0.18f, 0.47f, 1.0f};
 
     // Move-only RAII handle owning one ref count contribution in the Renderer's texture cache.
     // Obtain via Renderer::load_texture; destructor releases.
@@ -51,57 +53,74 @@ namespace hob {
     };
 
     class Renderer {
+        struct Sprite {
+            TextureId texture_id = INVALID_TEXTURE_ID;
+            Vector2 screen_pos;
+            Vector2 size_pixels;
+            Vector2 pivot_pixel;
+            float rotation_rad = 0.0;
+            Color tint;
+        };
+
+        struct LineVertex {
+            Vector2 pos;
+            Color color;
+        };
+
         struct TextureEntry {
+            SDL_GPUTexture* texture;
             uint32_t width;
             uint32_t height;
             std::string path;
             int ref_count;
-
-            TextureEntry(uint32_t width_, uint32_t height_, std::string path_, int ref_count_)
-                : width(width_)
-                , height(height_)
-                , path(std::move(path_))
-                , ref_count(ref_count_) {
-            }
         };
 
         const SdlContext& m_sdl_context;
+        SDL_GPUDevice* m_gpu_device = nullptr;
         uint32_t m_logical_width;
         uint32_t m_logical_height;
         uint32_t m_pixels_per_meter;
+
+        // SDL_GPU clip-space ortho mapping (0,0)..(w,h) -> (-1,-1)..(+1,+1) with y-down.
         std::array<float, 16> m_projection{};
 
-        // Offscreen FBO at logical resolution.
-        uint32_t m_fbo = 0;
-        uint32_t m_fbo_color_texture = 0;
+        // Per-frame batches.
+        std::vector<Sprite> m_pending_sprites;
+        std::vector<LineVertex> m_pending_lines;
 
-        // Sprite pipeline.
-        uint32_t m_sprite_program = 0;
-        int32_t m_u_sprite_projection = -1;
-        int32_t m_u_sprite_screen_pos = -1;
-        int32_t m_u_sprite_size = -1;
-        int32_t m_u_sprite_pivot_pixel = -1;
-        int32_t m_u_sprite_rotation = -1;
-        int32_t m_u_sprite_tint = -1;
-        uint32_t m_quad_vao = 0;
-        uint32_t m_quad_vbo = 0;
+        // Offscreen color target at logical resolution. Sprite pass renders into this;
+        // blit pass samples it into the swapchain at window resolution.
+        SDL_GPUTexture* m_offscreen_color = nullptr;
+        SDL_GPUTextureFormat m_offscreen_format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 
-        // Solid-color pipeline (lines).
-        uint32_t m_line_program = 0;
-        int32_t m_u_line_projection = -1;
-        uint32_t m_line_vao = 0;
-        uint32_t m_line_vbo = 0;
+        // Sprite pipeline + its unit-quad VBO (Vertex Buffer Object).
+        SDL_GPUGraphicsPipeline* m_sprite_pipeline = nullptr;
+        SDL_GPUBuffer* m_quad_vbo = nullptr;
 
-        // Fullscreen blit pipeline (FBO -> window).
-        uint32_t m_blit_program = 0;
-        uint32_t m_blit_vao = 0;
-        uint32_t m_blit_vbo = 0;
+        // Fullscreen blit pipeline (no VBO; vertex shader synthesizes a triangle from SV_VertexID).
+        SDL_GPUGraphicsPipeline* m_blit_pipeline = nullptr;
+
+        // Line pipeline + persistent dynamic VBO and matching upload transfer buffer.
+        // Lines drawn in a frame are uploaded once into the VBO via a copy pass on the
+        // engine's per-frame command buffer (no fence-wait — both are cycled).
+        SDL_GPUGraphicsPipeline* m_line_pipeline = nullptr;
+        SDL_GPUBuffer* m_line_vbo = nullptr;
+        SDL_GPUTransferBuffer* m_line_transfer_buffer = nullptr;
+        static constexpr uint32_t MAX_LINE_VERTICES = 8192;
+
+        // Samplers:
+        //  sprite: MIN=LINEAR, MAG=NEAREST  (smooth when shrunk, crisp pixel edges when enlarged)
+        //  blit:   MIN=LINEAR, MAG=LINEAR   (smooth in both directions when upscaling offscreen → window)
+        SDL_GPUSampler* m_sprite_sampler = nullptr;
+        SDL_GPUSampler* m_blit_sampler = nullptr;
 
         // Texture cache.
         std::unordered_map<TextureId, TextureEntry> m_textures;
         std::unordered_map<std::string, TextureId> m_path_to_id;
+        TextureId m_next_texture_id = 0;
         bool m_cvar_log_textures = false;
 
+        bool m_shadercross_initialized = false;
         bool m_is_initialized = false;
 
     public:
@@ -124,12 +143,6 @@ namespace hob {
         uint32_t get_pixels_per_meter() const;
         float get_pixels_per_meter_f() const;
 
-        // Begin a frame: bind FBO, set logical viewport, clear.
-        void frame_start();
-
-        // End a frame: unbind FBO, blit to window back-buffer.
-        void frame_end();
-
         /// Draws a textured quad in logical screen space (top-left origin, y-down).
         /// All pixel-valued parameters are in logical pixels — the same space the
         /// orthographic projection is configured in, NOT window pixels.
@@ -138,41 +151,50 @@ namespace hob {
         /// @param size_pixels  Destination rect size in logical pixels (width, height).
         /// @param pivot_pixel  Rotation pivot in logical pixels, relative to screen_pos (top-left).
         /// @param rotation_rad World-space rotation in radians (CCW in y-up world). Internally
-        ///                     negated to keep visual CCW under the y-down screen projection.
+        ///                     negated so positive world rotation stays visually CCW on the y-down screen.
         /// @param tint         RGBA multiplied with the sampled texel.
-        void draw_sprite(TextureId texture_id,
-                         const Vector2& screen_pos,
-                         const Vector2& size_pixels,
-                         const Vector2& pivot_pixel,
-                         float rotation_rad,
-                         const Color& tint);
+        void render_sprite(TextureId texture_id,
+                           const Vector2& screen_pos,
+                           const Vector2& size_pixels,
+                           const Vector2& pivot_pixel,
+                           float rotation_rad,
+                           const Color& tint);
 
         /// Draws a line segment in logical screen space (top-left origin, y-down).
         /// @param a         Start point in logical pixels.
         /// @param b         End point in logical pixels.
         /// @param color     RGBA line color.
-        /// @param thickness Line width in pixels. Values below 1.0 are clamped to 1.0
-        ///                  (the GL minimum); driver support above ~1.0 is not guaranteed.
-        void draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
+        /// @param thickness Ignored; SDL_GPU does not support wide lines.
+        void render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
         // Texture cache.
         TextureRef load_texture(const std::filesystem::path& full_path);
+
+        // Frame recording (called by Engine, which owns the command buffer + swapchain pass).
+        // record_world replays queued sprites + lines into the offscreen color target.
+        void record_world(SDL_GPUCommandBuffer* cmd);
+
+        // record_blit issues the upscale draw inside the swapchain render pass.
+        void record_blit(SDL_GPURenderPass* swap_pass);
 
     private:
         friend class TextureRef;
         bool unload_texture(TextureId id);
 
+        bool init_offscreen_target();
+        bool init_samplers();
+        bool init_quad_vbo();
         bool init_sprite_pipeline();
-        bool init_line_pipeline();
         bool init_blit_pipeline();
-        bool init_fbo();
-
-        // Low-level GL texture helpers (do not touch the cache).
-        static TextureId create_texture_from_pixels(const void* rgba_pixels, int width, int height);
-        static void destroy_texture(TextureId id);
-
-        void unload_all_textures();
+        bool init_line_pipeline();
 
         void register_cvars(Console& console);
+
+        // One-shot transfer-buffer upload of `data` (`size` bytes) into `dst_buffer`.
+        // Fences the upload so the buffer is safe to use on the next frame.
+        bool upload_buffer(SDL_GPUBuffer* dst_buffer, const void* data, uint32_t size);
+
+        // Same for textures: uploads RGBA8 pixels into `dst_texture` at mip 0, layer 0.
+        bool upload_texture_rgba(SDL_GPUTexture* dst_texture, const void* pixels, uint32_t width, uint32_t height);
     };
 }

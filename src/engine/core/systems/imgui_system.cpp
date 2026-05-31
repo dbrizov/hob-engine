@@ -1,20 +1,19 @@
 #include "imgui_system.h"
 
 #include <imgui.h>
-#include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlgpu3.h>
 
 #include "engine/core/logging.h"
-#include "renderer.h"
 #include "sdl_context.h"
 
 namespace hob {
     ImGuiSystem::ImGuiSystem(const SdlContext& sdl_context) {
         SDL_Window* window = sdl_context.get_window();
-        SDL_GLContext gl_context = sdl_context.get_gl_context();
+        m_gpu_device = sdl_context.get_gpu_device();
 
-        if (!window || !gl_context) {
-            debug::log_error("ImGuiSystem init failed: window/GL context is null");
+        if (!window || !m_gpu_device) {
+            debug::log_error("ImGuiSystem init failed: window/GPU device is null");
             return;
         }
 
@@ -35,22 +34,29 @@ namespace hob {
 
         ImGui::StyleColorsDark();
 
-        if (!ImGui_ImplSDL3_InitForOpenGL(window, gl_context)) {
-            debug::log_error("ImGui_ImplSDL3_InitForOpenGL failed");
+        if (!ImGui_ImplSDL3_InitForSDLGPU(window)) {
+            debug::log_error("ImGui_ImplSDL3_InitForSDLGPU failed");
             ImGui::DestroyContext(m_context);
+            m_context = nullptr;
             return;
         }
 
-        debug::log("ImGui_ImplSDL3_InitForOpenGL");
+        debug::log("ImGui_ImplSDL3_InitForSDLGPU");
 
-        if (!ImGui_ImplOpenGL3_Init(GLSL_VERSION)) {
-            debug::log_error("ImGui_ImplOpenGL3_Init failed");
+        ImGui_ImplSDLGPU3_InitInfo init_info{};
+        init_info.Device = m_gpu_device;
+        init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(m_gpu_device, window);
+        init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1;
+
+        if (!ImGui_ImplSDLGPU3_Init(&init_info)) {
+            debug::log_error("ImGui_ImplSDLGPU3_Init failed");
             ImGui_ImplSDL3_Shutdown();
             ImGui::DestroyContext(m_context);
+            m_context = nullptr;
             return;
         }
 
-        debug::log("ImGui_ImplOpenGL3_Init");
+        debug::log("ImGui_ImplSDLGPU3_Init");
 
         m_is_initialized = true;
     }
@@ -60,13 +66,14 @@ namespace hob {
             return;
         }
 
-        ImGui_ImplOpenGL3_Shutdown();
-        debug::log("ImGui_ImplOpenGL3_Shutdown");
+        ImGui_ImplSDLGPU3_Shutdown();
+        debug::log("ImGui_ImplSDLGPU3_Shutdown");
 
         ImGui_ImplSDL3_Shutdown();
         debug::log("ImGui_ImplSDL3_Shutdown");
 
         ImGui::DestroyContext(m_context);
+        m_context = nullptr;
         debug::log("ImGui_DestroyContext");
     }
 
@@ -78,14 +85,24 @@ namespace hob {
         ImGui_ImplSDL3_ProcessEvent(&event);
     }
 
-    void ImGuiSystem::frame_start() {
-        ImGui_ImplOpenGL3_NewFrame();
+    void ImGuiSystem::new_frame() {
+        ImGui_ImplSDLGPU3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
     }
 
-    void ImGuiSystem::frame_end() {
+    void ImGuiSystem::prepare_draw_data(SDL_GPUCommandBuffer* cmd) {
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImDrawData* draw_data = ImGui::GetDrawData();
+        Imgui_ImplSDLGPU3_PrepareDrawData(draw_data, cmd);
+    }
+
+    void ImGuiSystem::record_draw_data(SDL_GPURenderPass* pass, SDL_GPUCommandBuffer* cmd) {
+        ImDrawData* draw_data = ImGui::GetDrawData();
+        ImGui_ImplSDLGPU3_RenderDrawData(draw_data, cmd, pass);
+    }
+
+    void ImGuiSystem::discard_frame() {
+        ImGui::EndFrame();
     }
 }
