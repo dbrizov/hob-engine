@@ -492,83 +492,88 @@ namespace hob {
         ct.load_op = SDL_GPU_LOADOP_CLEAR;
         ct.store_op = SDL_GPU_STOREOP_STORE;
 
-        SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
-        if (!pass) {
-            m_pending_sprites.clear();
-            m_pending_lines.clear();
-            return;
-        }
-
-        if (!m_pending_sprites.empty()) {
-            std::stable_sort(m_pending_sprites.begin(), m_pending_sprites.end(),
-                             [](const Sprite& a, const Sprite& b) {
-                                 if (a.z_index != b.z_index) {
-                                     return a.z_index < b.z_index;
-                                 }
-                                 return a.material.shader_id < b.material.shader_id;
-                             });
-
-            debug_sprite_pipeline();
-
-            SDL_GPUBufferBinding vb{};
-            vb.buffer = m_quad_vbo;
-            vb.offset = 0;
-            SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
-
-            ShaderId bound_shader = INVALID_SHADER_ID;
-
-            for (const Sprite& sp : m_pending_sprites) {
-                auto it = m_textures.find(sp.texture_id);
-                if (it == m_textures.end() || !it->second.texture) {
-                    continue;
-                }
-
-                if (sp.material.shader_id != bound_shader) {
-                    SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.material.shader_id]);
-                    bound_shader = sp.material.shader_id;
-                }
-
-                SpriteVSUniforms vsu{};
-                std::memcpy(vsu.proj, m_projection.data(), sizeof(vsu.proj));
-                vsu.screen_pos[0] = sp.screen_pos.x;
-                vsu.screen_pos[1] = sp.screen_pos.y;
-                vsu.size[0] = sp.size_pixels.x;
-                vsu.size[1] = sp.size_pixels.y;
-                vsu.pivot[0] = sp.pivot_pixel.x;
-                vsu.pivot[1] = sp.pivot_pixel.y;
-                // World rotation is y-up CCW; logical screen is y-down. Negate so positive
-                // world rotation remains visually CCW.
-                vsu.rotation = -sp.rotation_rad;
-                SDL_PushGPUVertexUniformData(cmd, 0, &vsu, sizeof(vsu));
-
-                SDL_PushGPUFragmentUniformData(cmd, 0, &sp.material.tint, sizeof(Color));
-
-                SDL_GPUTextureSamplerBinding ts{};
-                ts.texture = it->second.texture;
-                ts.sampler = m_sprite_sampler;
-                SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
-
-                SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+        // Render pass
+        {
+            SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
+            if (!pass) {
+                m_pending_sprites.clear();
+                m_pending_lines.clear();
+                return;
             }
+
+            // Sprite pipelines
+            if (!m_pending_sprites.empty()) {
+                std::stable_sort(m_pending_sprites.begin(), m_pending_sprites.end(),
+                                 [](const Sprite& a, const Sprite& b) {
+                                     if (a.z_index != b.z_index) {
+                                         return a.z_index < b.z_index;
+                                     }
+                                     return a.material.shader_id < b.material.shader_id;
+                                 });
+
+                debug_sprite_pipeline();
+
+                SDL_GPUBufferBinding vb{};
+                vb.buffer = m_quad_vbo;
+                vb.offset = 0;
+                SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+
+                ShaderId bound_shader = INVALID_SHADER_ID;
+
+                for (const Sprite& sp : m_pending_sprites) {
+                    auto it = m_textures.find(sp.texture_id);
+                    if (it == m_textures.end() || !it->second.texture) {
+                        continue;
+                    }
+
+                    if (sp.material.shader_id != bound_shader) {
+                        SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.material.shader_id]);
+                        bound_shader = sp.material.shader_id;
+                    }
+
+                    SpriteVSUniforms vsu{};
+                    std::memcpy(vsu.proj, m_projection.data(), sizeof(vsu.proj));
+                    vsu.screen_pos[0] = sp.screen_pos.x;
+                    vsu.screen_pos[1] = sp.screen_pos.y;
+                    vsu.size[0] = sp.size_pixels.x;
+                    vsu.size[1] = sp.size_pixels.y;
+                    vsu.pivot[0] = sp.pivot_pixel.x;
+                    vsu.pivot[1] = sp.pivot_pixel.y;
+                    // World rotation is y-up CCW; logical screen is y-down. Negate so positive
+                    // world rotation remains visually CCW.
+                    vsu.rotation = -sp.rotation_rad;
+                    SDL_PushGPUVertexUniformData(cmd, 0, &vsu, sizeof(vsu));
+
+                    SDL_PushGPUFragmentUniformData(cmd, 0, &sp.material.tint, sizeof(Color));
+
+                    SDL_GPUTextureSamplerBinding ts{};
+                    ts.texture = it->second.texture;
+                    ts.sampler = m_sprite_sampler;
+                    SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
+
+                    SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+                }
+            }
+
+            // Line pipeline
+            if (line_vertex_count > 0) {
+                SDL_BindGPUGraphicsPipeline(pass, m_line_pipeline);
+
+                SDL_GPUBufferBinding vb{};
+                vb.buffer = m_line_vbo;
+                vb.offset = 0;
+                SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+
+                SDL_PushGPUVertexUniformData(cmd,
+                                             0,
+                                             m_projection.data(),
+                                             static_cast<uint32_t>(m_projection.size() * sizeof(float)));
+
+                SDL_DrawGPUPrimitives(pass, line_vertex_count, 1, 0, 0);
+            }
+
+            SDL_EndGPURenderPass(pass);
         }
-
-        if (line_vertex_count > 0) {
-            SDL_BindGPUGraphicsPipeline(pass, m_line_pipeline);
-
-            SDL_GPUBufferBinding vb{};
-            vb.buffer = m_line_vbo;
-            vb.offset = 0;
-            SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
-
-            SDL_PushGPUVertexUniformData(cmd,
-                                         0,
-                                         m_projection.data(),
-                                         static_cast<uint32_t>(m_projection.size() * sizeof(float)));
-
-            SDL_DrawGPUPrimitives(pass, line_vertex_count, 1, 0, 0);
-        }
-
-        SDL_EndGPURenderPass(pass);
 
         m_pending_sprites.clear();
         m_pending_lines.clear();
@@ -581,21 +586,24 @@ namespace hob {
         ct.store_op = SDL_GPU_STOREOP_STORE;
         ct.clear_color = CLEAR_COLOR;
 
-        SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(m_command_buffer, &ct, 1, nullptr);
-        if (!pass) {
-            return;
+        // Render pass
+        {
+            SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(m_command_buffer, &ct, 1, nullptr);
+            if (!pass) {
+                return;
+            }
+
+            SDL_BindGPUGraphicsPipeline(pass, m_blit_pipeline);
+
+            SDL_GPUTextureSamplerBinding ts{};
+            ts.texture = m_offscreen_color;
+            ts.sampler = m_blit_sampler;
+            SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
+
+            SDL_DrawGPUPrimitives(pass, 3, 1, 0, 0);
+
+            SDL_EndGPURenderPass(pass);
         }
-
-        SDL_BindGPUGraphicsPipeline(pass, m_blit_pipeline);
-
-        SDL_GPUTextureSamplerBinding ts{};
-        ts.texture = m_offscreen_color;
-        ts.sampler = m_blit_sampler;
-        SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
-
-        SDL_DrawGPUPrimitives(pass, 3, 1, 0, 0);
-
-        SDL_EndGPURenderPass(pass);
     }
 
     bool Renderer::acquire_command_buffer() {

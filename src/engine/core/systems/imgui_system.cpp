@@ -101,14 +101,17 @@ namespace hob {
         ct.load_op = SDL_GPU_LOADOP_LOAD;
         ct.store_op = SDL_GPU_STOREOP_STORE;
 
-        SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
-        if (!pass) {
-            return;
+        // Render pass
+        {
+            SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
+            if (!pass) {
+                return;
+            }
+
+            ImGui_ImplSDLGPU3_RenderDrawData(draw_data, cmd, pass);
+
+            SDL_EndGPURenderPass(pass);
         }
-
-        ImGui_ImplSDLGPU3_RenderDrawData(draw_data, cmd, pass);
-
-        SDL_EndGPURenderPass(pass);
     }
 
     void ImGuiSystem::discard_frame() {
