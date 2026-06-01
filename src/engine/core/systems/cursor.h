@@ -24,7 +24,7 @@ namespace hob {
         TextureRef m_texture;
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
-        Color m_tint = Color::white();
+        Material m_material;
         CursorMode m_mode = CursorMode::Default;
         bool m_is_visible = true;
 
@@ -44,8 +44,9 @@ namespace hob {
         Vector2 get_scale() const;
         void set_scale(const Vector2& scale);
 
-        Color get_tint() const;
-        void set_tint(const Color& tint);
+        const Material& get_material() const;
+        Material& get_material();
+        void set_material(const Material& material);
 
         CursorMode get_mode() const;
         void set_mode(CursorMode mode);

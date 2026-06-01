@@ -293,16 +293,13 @@ namespace hob {
     }
 
     void Renderer::render_sprite(TextureId texture_id,
-                                 ShaderId shader_id,
                                  const Vector2& screen_pos,
                                  const Vector2& size_pixels,
                                  const Vector2& pivot_pixel,
                                  float rotation_rad,
-                                 const Color& tint) {
-        const ShaderId resolved_shader_id =
-            (shader_id == INVALID_SHADER_ID) ? DEFAULT_SPRITE_SHADER_ID : shader_id;
+                                 const Material& material) {
         m_pending_sprites.push_back(
-            {texture_id, resolved_shader_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, tint});
+            {texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, material});
     }
 
     void Renderer::render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
@@ -480,7 +477,7 @@ namespace hob {
             // once Sprite carries z_index (sort by (shader_id, z_index) or similar).
             std::stable_sort(m_pending_sprites.begin(), m_pending_sprites.end(),
                              [](const Sprite& a, const Sprite& b) {
-                                 return a.shader_id < b.shader_id;
+                                 return a.material.shader_id < b.material.shader_id;
                              });
 
             SDL_GPUBufferBinding vb{};
@@ -496,9 +493,9 @@ namespace hob {
                     continue;
                 }
 
-                if (sp.shader_id != bound_shader) {
-                    SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.shader_id]);
-                    bound_shader = sp.shader_id;
+                if (sp.material.shader_id != bound_shader) {
+                    SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.material.shader_id]);
+                    bound_shader = sp.material.shader_id;
                 }
 
                 SpriteVSUniforms vsu{};
@@ -514,7 +511,7 @@ namespace hob {
                 vsu.rotation = -sp.rotation_rad;
                 SDL_PushGPUVertexUniformData(cmd, 0, &vsu, sizeof(vsu));
 
-                SDL_PushGPUFragmentUniformData(cmd, 0, &sp.tint, sizeof(Color));
+                SDL_PushGPUFragmentUniformData(cmd, 0, &sp.material.tint, sizeof(Color));
 
                 SDL_GPUTextureSamplerBinding ts{};
                 ts.texture = it->second.texture;

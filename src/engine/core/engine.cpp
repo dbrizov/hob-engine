@@ -223,12 +223,11 @@ namespace hob {
 
             m_renderer.render_sprite(
                 texture.get_id(),
-                sprite_comp->get_shader_id(),
                 screen_pos,
                 size_pixels,
                 pivot_pixel,
                 matrix.get_rotation(),
-                sprite_comp->get_tint());
+                sprite_comp->get_material());
         }
     }
 

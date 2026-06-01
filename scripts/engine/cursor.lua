@@ -15,7 +15,7 @@
 ---@field texture string?
 ---@field pivot Vector2?
 ---@field scale Vector2?
----@field tint Color?
+---@field material Material?
 ---@field visible boolean?
 
 ---@param config CursorConfig
@@ -32,8 +32,8 @@ function Cursor.config(config)
         Cursor.set_scale(config.scale)
     end
 
-    if config.tint then
-        Cursor.set_tint(config.tint)
+    if config.material then
+        Cursor.set_material(config.material)
     end
 
     if config.visible ~= nil then

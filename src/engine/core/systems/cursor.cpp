@@ -45,12 +45,16 @@ namespace hob {
         m_scale = scale;
     }
 
-    Color Cursor::get_tint() const {
-        return m_tint;
+    const Material& Cursor::get_material() const {
+        return m_material;
     }
 
-    void Cursor::set_tint(const Color& tint) {
-        m_tint = tint;
+    Material& Cursor::get_material() {
+        return m_material;
+    }
+
+    void Cursor::set_material(const Material& material) {
+        m_material = material;
     }
 
     CursorMode Cursor::get_mode() const {
@@ -105,11 +109,10 @@ namespace hob {
         Vector2 screen_pos(mouse_screen.x - pivot_pixel.x, mouse_screen.y - pivot_pixel.y);
 
         m_renderer.render_sprite(m_texture.get_id(),
-                                 DEFAULT_SPRITE_SHADER_ID,
                                  screen_pos,
                                  size,
                                  pivot_pixel,
                                  0.0f,
-                                 m_tint);
+                                 m_material);
     }
 }

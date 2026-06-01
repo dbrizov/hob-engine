@@ -56,15 +56,19 @@ namespace hob {
         uint32_t get_height() const;
     };
 
+    struct Material {
+        ShaderId shader_id = DEFAULT_SPRITE_SHADER_ID;
+        Color tint = Color::white();
+    };
+
     class Renderer {
         struct Sprite {
             TextureId texture_id = INVALID_TEXTURE_ID;
-            ShaderId shader_id = INVALID_SHADER_ID;
             Vector2 screen_pos;
             Vector2 size_pixels;
             Vector2 pivot_pixel;
             float rotation_rad = 0.0;
-            Color tint;
+            Material material;
         };
 
         struct LineVertex {
@@ -163,12 +167,11 @@ namespace hob {
         ///                     negated so positive world rotation stays visually CCW on the y-down screen.
         /// @param tint         RGBA multiplied with the sampled texel.
         void render_sprite(TextureId texture_id,
-                           ShaderId shader_id,
                            const Vector2& screen_pos,
                            const Vector2& size_pixels,
                            const Vector2& pivot_pixel,
                            float rotation_rad,
-                           const Color& tint);
+                           const Material& material);
 
         // Resolve a sprite-shader path (relative to assets root, no .vert.hlsl / .frag.hlsl
         // suffix) to a ShaderId. Lazily builds and caches the pipeline on first request.

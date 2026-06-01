@@ -12,6 +12,8 @@ namespace hob {
     struct Capsule;
     struct Circle;
     struct Color;
+    struct Material;
+    struct RaycastHit;
     struct EntityHandle;
     class Component;
     class TransformComponent;
@@ -27,7 +29,6 @@ namespace hob {
     enum class BodyType;
     enum class InputEventType;
     enum class CursorMode;
-    struct RaycastHit;
 
     // clang-format off
     HOB_LUA_TYPE(Vector2, "Vector2")
@@ -35,6 +36,8 @@ namespace hob {
     HOB_LUA_TYPE(Capsule, "Capsule")
     HOB_LUA_TYPE(Circle, "Circle")
     HOB_LUA_TYPE(Color, "Color")
+    HOB_LUA_TYPE(Material, "Material")
+    HOB_LUA_TYPE(RaycastHit, "RaycastHit")
     HOB_LUA_TYPE(EntityHandle, "Entity")
     HOB_LUA_TYPE(Component, "Component")
     HOB_LUA_TYPE(TransformComponent, "TransformComponent")
@@ -50,6 +53,5 @@ namespace hob {
     HOB_LUA_TYPE(BodyType, "BodyType")
     HOB_LUA_TYPE(InputEventType, "InputEventType")
     HOB_LUA_TYPE(CursorMode, "CursorMode")
-    HOB_LUA_TYPE(RaycastHit, "RaycastHit")
     // clang-format on
 }

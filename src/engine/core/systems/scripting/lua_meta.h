@@ -207,6 +207,7 @@ namespace hob {
 
     struct LuaCtorInfo {
         std::vector<std::string> args;
+        std::vector<std::string> arg_names; // optional, parallel to args; empty -> emits arg1, arg2, ...
     };
 
     struct LuaUsertypeInfo {
@@ -311,6 +312,26 @@ namespace hob {
         UsertypeBuilder& ctors() {
             m_usertype[sol::call_constructor] = sol::factories(make_factory(Sigs{})...);
             (record_ctor(Sigs{}), ...);
+            return *this;
+        }
+
+        // Custom factory constructor — useful when construction isn't a simple
+        // positional ctor (e.g. takes a config table and resolves paths through a
+        // subsystem). Arg types are derived from F via func_traits; `arg_names`
+        // is for autocompletion only (same pattern as `method`).
+        // Replaces any previously registered call-constructor on this usertype.
+        template<typename F>
+        UsertypeBuilder& factory_ctor(F func, std::initializer_list<const char*> arg_names = {}) {
+            m_usertype[sol::call_constructor] = sol::factories(func);
+            using traits = meta_detail::func_traits<F>;
+            using all_args = typename traits::args;
+
+            LuaCtorInfo c;
+            c.args = meta_detail::arg_names<all_args>();
+            for (const char* n : arg_names) {
+                c.arg_names.emplace_back(n);
+            }
+            m_info->ctors.push_back(std::move(c));
             return *this;
         }
 

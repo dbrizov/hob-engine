@@ -110,11 +110,11 @@ function Cursor.get_scale() end
 ---@param scale Vector2
 function Cursor.set_scale(scale) end
 
----@return Color
-function Cursor.get_tint() end
+---@return Material
+function Cursor.get_material() end
 
----@param tint Color
-function Cursor.set_tint(tint) end
+---@param material Material
+function Cursor.set_material(material) end
 
 ---@return boolean
 function Cursor.is_visible() end
@@ -474,6 +474,22 @@ function TransformComponent:set_scale(scale) end
 
 _G.TransformComponent = TransformComponent
 
+-- Material
+---@class Material
+---@overload fun(config: table): Material
+local Material = {}
+
+---@return Color
+function Material:get_tint() end
+
+---@param tint Color
+function Material:set_tint(tint) end
+
+---@param shader_path string
+function Material:set_shader(shader_path) end
+
+_G.Material = Material
+
 -- SpriteComponent
 ---@class SpriteComponent : Component
 local SpriteComponent = {}
@@ -486,8 +502,11 @@ function SpriteComponent:set_texture(path) end
 
 function SpriteComponent:clear_texture() end
 
----@param path string
-function SpriteComponent:set_shader(path) end
+---@return Material
+function SpriteComponent:get_material() end
+
+---@param material Material
+function SpriteComponent:set_material(material) end
 
 ---@return Vector2
 function SpriteComponent:get_pivot() end
@@ -500,12 +519,6 @@ function SpriteComponent:get_scale() end
 
 ---@param scale Vector2
 function SpriteComponent:set_scale(scale) end
-
----@return Color
-function SpriteComponent:get_tint() end
-
----@param color Color
-function SpriteComponent:set_tint(color) end
 
 ---@return integer
 function SpriteComponent:get_z_index() end

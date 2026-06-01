@@ -20,6 +20,7 @@
 #include "engine/core/engine.h"
 #include "engine/core/logging.h"
 #include "engine/core/systems/input.h"
+#include "engine/core/systems/renderer.h"
 #include "engine/entity/entity.h"
 #include "engine/entity/entity_spawner.h"
 
@@ -29,6 +30,7 @@ namespace hob {
         LuaMetaRegistry& m_meta = m_impl->meta;
         LuaComponentSchemaRegistry& m_schemas = m_impl->component_schemas;
         const EntitySpawner& m_spawner = m_engine.get_entity_spawner();
+        Renderer& m_renderer = m_engine.get_renderer();
 
         bind_usertype<Component>(m_lua, m_meta)
             .method("get_entity", [](Component& c) { return EntityHandle(c.get_entity().get_id()); })
@@ -42,17 +44,41 @@ namespace hob {
             .method("get_scale", &TransformComponent::get_scale)
             .method("set_scale", &TransformComponent::set_scale, {"scale"});
 
+        bind_usertype<Material>(m_lua, m_meta)
+            .factory_ctor([&m_renderer](sol::table t) {
+                Material mat;
+                sol::object sh_obj = t["shader"];
+                if (sh_obj.valid() && sh_obj.get_type() != sol::type::lua_nil) {
+                    // TODO Assets.X refs will not return only string in the future.
+                    // tostring resolves Assets.X refs via their __tostring metamethod
+                    // and passes through raw string paths unchanged.
+                    sol::state_view sv(t.lua_state());
+                    std::string path = sv["tostring"](sh_obj);
+                    mat.shader_id = m_renderer.get_or_build_sprite_shader(path);
+                }
+                if (auto tint = t.get<sol::optional<Color>>("tint")) {
+                    mat.tint = *tint;
+                }
+                return mat;
+            }, {"config"})
+            .method("get_tint", [](const Material& self) { return self.tint; })
+            .method("set_tint", [](Material& self, const Color& tint) { self.tint = tint; }, {"tint"})
+            .method("set_shader",
+                    [&m_renderer](Material& self, const std::string& path) {
+                        self.shader_id = m_renderer.get_or_build_sprite_shader(path);
+                    },
+                    {"shader_path"});
+
         bind_usertype<SpriteComponent>(m_lua, m_meta, Bases<Component>{})
             .method("has_texture", &SpriteComponent::has_texture)
             .method("set_texture", &SpriteComponent::set_texture, {"path"})
             .method("clear_texture", &SpriteComponent::clear_texture)
-            .method("set_shader", &SpriteComponent::set_shader, {"path"})
+            .method("get_material", sol::resolve<Material&()>(&SpriteComponent::get_material))
+            .method("set_material", &SpriteComponent::set_material, {"material"})
             .method("get_pivot", &SpriteComponent::get_pivot)
             .method("set_pivot", &SpriteComponent::set_pivot, {"pivot"})
             .method("get_scale", &SpriteComponent::get_scale)
             .method("set_scale", &SpriteComponent::set_scale, {"scale"})
-            .method("get_tint", &SpriteComponent::get_tint)
-            .method("set_tint", &SpriteComponent::set_tint, {"color"})
             .method("get_z_index", &SpriteComponent::get_z_index)
             .method("set_z_index", &SpriteComponent::set_z_index, {"z_index"})
             .method("get_pixels_per_meter", &SpriteComponent::get_pixels_per_meter)
@@ -225,10 +251,9 @@ namespace hob {
                 {"texture", "set_texture"},
                 {"pivot", "set_pivot"},
                 {"scale", "set_scale"},
-                {"tint", "set_tint"},
                 {"z_index", "set_z_index"},
                 {"pixels_per_meter", "set_pixels_per_meter"},
-                {"shader", "set_shader"},
+                {"material", "set_material"},
             });
 
         bind_component_schema<InputComponent>(

@@ -9,14 +9,18 @@ namespace hob {
     namespace {
         void emit_ctor_overloads(std::ostringstream& out, const LuaUsertypeInfo& ut) {
             for (const auto& c : ut.ctors) {
-                const bool use_field_names = c.args.size() == ut.fields.size();
+                const bool use_explicit_names = c.arg_names.size() == c.args.size();
+                const bool use_field_names = !use_explicit_names && c.args.size() == ut.fields.size();
                 out << "---@overload fun(";
                 for (std::size_t i = 0; i < c.args.size(); ++i) {
                     if (i > 0) {
                         out << ", ";
                     }
 
-                    if (use_field_names) {
+                    if (use_explicit_names) {
+                        out << c.arg_names[i];
+                    }
+                    else if (use_field_names) {
                         out << ut.fields[i].name;
                     }
                     else {

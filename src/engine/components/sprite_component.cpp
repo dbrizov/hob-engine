@@ -35,12 +35,16 @@ namespace hob {
         m_texture.reset();
     }
 
-    ShaderId SpriteComponent::get_shader_id() const {
-        return m_shader_id;
+    const Material& SpriteComponent::get_material() const {
+        return m_material;
     }
 
-    void SpriteComponent::set_shader(const std::string& path) {
-        m_shader_id = get_engine().get_renderer().get_or_build_sprite_shader(path);
+    Material& SpriteComponent::get_material() {
+        return m_material;
+    }
+
+    void SpriteComponent::set_material(const Material& material) {
+        m_material = material;
     }
 
     Vector2 SpriteComponent::get_pivot() const {
@@ -57,14 +61,6 @@ namespace hob {
 
     void SpriteComponent::set_scale(const Vector2& scale) {
         m_scale = scale;
-    }
-
-    Color SpriteComponent::get_tint() const {
-        return m_tint;
-    }
-
-    void SpriteComponent::set_tint(const Color& color) {
-        m_tint = color;
     }
 
     int SpriteComponent::get_z_index() const {
