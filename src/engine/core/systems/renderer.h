@@ -106,7 +106,8 @@ namespace hob {
         SDL_GPUGraphicsPipeline* m_line_pipeline = nullptr;
         SDL_GPUBuffer* m_line_vbo = nullptr;
         SDL_GPUTransferBuffer* m_line_transfer_buffer = nullptr;
-        static constexpr uint32_t MAX_LINE_VERTICES = 8192;
+        // 6 verts per line segment (two triangles): 24576 verts = 4096 lines/frame.
+        static constexpr uint32_t MAX_LINE_VERTICES = 24576;
 
         // Samplers:
         //  sprite: MIN=LINEAR, MAG=NEAREST  (smooth when shrunk, crisp pixel edges when enlarged)
@@ -164,7 +165,7 @@ namespace hob {
         /// @param a         Start point in logical pixels.
         /// @param b         End point in logical pixels.
         /// @param color     RGBA line color.
-        /// @param thickness Ignored; SDL_GPU does not support wide lines.
+        /// @param thickness Line width in logical pixels.
         void render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
         // Texture cache.

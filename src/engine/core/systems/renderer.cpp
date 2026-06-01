@@ -1,5 +1,6 @@
 #include "renderer.h"
 
+#include <cmath>
 #include <fstream>
 
 #include <SDL3/SDL.h>
@@ -287,9 +288,31 @@ namespace hob {
         m_pending_sprites.push_back({texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, tint});
     }
 
-    void Renderer::render_line(const Vector2& a, const Vector2& b, const Color& color, float /*thickness*/) {
-        m_pending_lines.push_back({a, color});
-        m_pending_lines.push_back({b, color});
+    void Renderer::render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
+        // Expand the segment into a screen-aligned quad. Perpendicular extrusion is in
+        // logical-pixel space, so the quad has uniform pixel width on the offscreen target.
+        const float dx = b.x - a.x;
+        const float dy = b.y - a.y;
+        const float len = std::sqrt(dx * dx + dy * dy);
+        if (len <= 0.0f) {
+            return;
+        }
+
+        const float half = std::max(thickness, 1.0f) * 0.5f;
+        const float nx = -dy / len * half;
+        const float ny = dx / len * half;
+
+        const Vector2 p0{a.x + nx, a.y + ny};
+        const Vector2 p1{a.x - nx, a.y - ny};
+        const Vector2 p2{b.x + nx, b.y + ny};
+        const Vector2 p3{b.x - nx, b.y - ny};
+
+        m_pending_lines.push_back({p0, color});
+        m_pending_lines.push_back({p1, color});
+        m_pending_lines.push_back({p2, color});
+        m_pending_lines.push_back({p2, color});
+        m_pending_lines.push_back({p1, color});
+        m_pending_lines.push_back({p3, color});
     }
 
     TextureRef Renderer::load_texture(const std::filesystem::path& full_path) {
@@ -759,7 +782,7 @@ namespace hob {
         gci.vertex_input_state.num_vertex_buffers = 1;
         gci.vertex_input_state.vertex_attributes = attrs;
         gci.vertex_input_state.num_vertex_attributes = 2;
-        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_LINELIST;
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
         gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
         gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
         gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
