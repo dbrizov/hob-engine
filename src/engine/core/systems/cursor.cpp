@@ -106,7 +106,7 @@ namespace hob {
         const Vector2 size(width * m_scale.x, height * m_scale.y);
         const Vector2 pivot(size.x * m_pivot.x, size.y * m_pivot.y);
         const float rotation_rad = 0.0f;
-        const int z_index = 0;
+        const int z_index = MAX_INT32;
         Vector2 mouse_screen = m_input.get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot.x, mouse_screen.y - pivot.y);
 

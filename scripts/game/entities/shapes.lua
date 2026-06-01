@@ -78,6 +78,10 @@ DefineEntity.PulsingStaticCircle = {
         collision_layer = Collision.Static,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
+    sprite = {
+        texture = Assets.RobotTexture,
+        z_index = 1,
+    },
     lua_components = { "PulseScale" },
 }
 
@@ -88,6 +92,10 @@ DefineEntity.PulsingTriggerCircle = {
         trigger = true,
         collision_layer = Collision.Trigger,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
+    },
+    sprite = {
+        texture = Assets.RobotTexture,
+        z_index = 1,
     },
     lua_components = { "PulseScale", "ContactLogger" },
 }

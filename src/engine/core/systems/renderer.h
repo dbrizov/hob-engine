@@ -134,6 +134,7 @@ namespace hob {
         TextureId m_next_texture_id = 0;
         bool m_cvar_log_textures = false;
         bool m_cvar_log_sprite_order = false;
+        bool m_cvar_show_sprite_queue = false;
 
         bool m_shadercross_initialized = false;
         bool m_is_initialized = false;
