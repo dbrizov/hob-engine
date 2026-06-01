@@ -10,9 +10,6 @@ DefineEntity.Player = {
     sprite = {
         texture = Assets.PlayerTexture,
         z_index = 2,
-        -- material = Material {
-        --     shader = Assets.OutlineShader,
-        -- },
     },
     lua_components = { "Player", "ContactLogger" },
 }

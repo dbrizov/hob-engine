@@ -482,54 +482,7 @@ namespace hob {
                                  return a.material.shader_id < b.material.shader_id;
                              });
 
-            if (m_cvar_log_sprite_order) {
-                debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
-                for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                    const Sprite& sp = m_pending_sprites[i];
-                    auto tex_it = m_textures.find(sp.texture_id);
-                    const char* tex_path = (tex_it != m_textures.end())
-                                               ? tex_it->second.path.c_str()
-                                               : "<unknown>";
-                    debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, tex_path);
-                }
-            }
-
-            if (m_cvar_show_sprite_queue) {
-                if (ImGui::Begin("Sprite Queue")) {
-                    ImGui::Text("Total: %zu", m_pending_sprites.size());
-                    const int columns = 4;
-                    const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
-                                                   ImGuiTableFlags_RowBg |
-                                                   ImGuiTableFlags_ScrollY;
-
-                    if (ImGui::BeginTable("queue", columns, flags)) {
-                        ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-                        ImGui::TableSetupColumn("z_index", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                        ImGui::TableSetupColumn("shader_id", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                        ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
-                        ImGui::TableHeadersRow();
-
-                        for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                            const Sprite& sp = m_pending_sprites[i];
-                            auto tex_it = m_textures.find(sp.texture_id);
-                            const char* tex_path = (tex_it != m_textures.end())
-                                                       ? tex_it->second.path.c_str()
-                                                       : "<unknown>";
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("%zu", i);
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%d", sp.z_index);
-                            ImGui::TableSetColumnIndex(2);
-                            ImGui::Text("%d", sp.material.shader_id);
-                            ImGui::TableSetColumnIndex(3);
-                            ImGui::TextUnformatted(tex_path);
-                        }
-                        ImGui::EndTable();
-                    }
-                }
-                ImGui::End();
-            }
+            debug_sprite_pipeline();
 
             SDL_GPUBufferBinding vb{};
             vb.buffer = m_quad_vbo;
@@ -932,35 +885,6 @@ namespace hob {
         return true;
     }
 
-    void Renderer::register_cvars(Console& console) {
-        console.register_cvar("r_log_textures",
-                              "Log every texture load/unload/cache-hit",
-                              "0",
-                              ConsoleVariableType::Bool,
-                              ConsoleVariableFlags::None,
-                              [this](const ConsoleVariable& cvar) {
-                                  m_cvar_log_textures = cvar.bool_value();
-                              });
-
-        console.register_cvar("r_log_sprite_order",
-                              "Log the sorted (z_index, shader_id, texture_id) of pending sprites each frame",
-                              "0",
-                              ConsoleVariableType::Bool,
-                              ConsoleVariableFlags::None,
-                              [this](const ConsoleVariable& cvar) {
-                                  m_cvar_log_sprite_order = cvar.bool_value();
-                              });
-
-        console.register_cvar("r_show_sprite_queue",
-                              "Show an ImGui window with the sorted sprite queue (z_index, shader_id, texture_id)",
-                              "0",
-                              ConsoleVariableType::Bool,
-                              ConsoleVariableFlags::None,
-                              [this](const ConsoleVariable& cvar) {
-                                  m_cvar_show_sprite_queue = cvar.bool_value();
-                              });
-    }
-
     bool Renderer::upload_buffer(SDL_GPUBuffer* dst_buffer, const void* data, uint32_t size) {
         SDL_GPUTransferBufferCreateInfo tbi{};
         tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
@@ -1058,5 +982,85 @@ namespace hob {
         }
         SDL_ReleaseGPUTransferBuffer(m_gpu_device, tb);
         return true;
+    }
+
+    void Renderer::debug_sprite_pipeline() {
+        if (m_cvar_log_sprite_queue) {
+            debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
+            for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
+                const Sprite& sp = m_pending_sprites[i];
+                auto tex_it = m_textures.find(sp.texture_id);
+                const char* tex_path = (tex_it != m_textures.end())
+                                           ? tex_it->second.path.c_str()
+                                           : "<unknown>";
+                debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, tex_path);
+            }
+        }
+
+        if (m_cvar_show_sprite_queue) {
+            if (ImGui::Begin("Sprite Queue")) {
+                ImGui::Text("Total: %zu", m_pending_sprites.size());
+                const int columns = 4;
+                const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
+                                               ImGuiTableFlags_RowBg |
+                                               ImGuiTableFlags_ScrollY;
+
+                if (ImGui::BeginTable("queue", columns, flags)) {
+                    ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+                    ImGui::TableSetupColumn("z_index", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                    ImGui::TableSetupColumn("shader_id", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                    ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableHeadersRow();
+
+                    for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
+                        const Sprite& sp = m_pending_sprites[i];
+                        auto tex_it = m_textures.find(sp.texture_id);
+                        const char* tex_path = (tex_it != m_textures.end())
+                                                   ? tex_it->second.path.c_str()
+                                                   : "<unknown>";
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%zu", i);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%d", sp.z_index);
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("%d", sp.material.shader_id);
+                        ImGui::TableSetColumnIndex(3);
+                        ImGui::TextUnformatted(tex_path);
+                    }
+                    ImGui::EndTable();
+                }
+            }
+            ImGui::End();
+        }
+    }
+
+    void Renderer::register_cvars(Console& console) {
+        console.register_cvar("r_log_textures",
+                              "Log every texture load/unload/cache-hit",
+                              "0",
+                              ConsoleVariableType::Bool,
+                              ConsoleVariableFlags::None,
+                              [this](const ConsoleVariable& cvar) {
+                                  m_cvar_log_textures = cvar.bool_value();
+                              });
+
+        console.register_cvar("r_log_sprite_order",
+                              "Log the sorted (z_index, shader_id, texture) of pending sprites each frame",
+                              "0",
+                              ConsoleVariableType::Bool,
+                              ConsoleVariableFlags::None,
+                              [this](const ConsoleVariable& cvar) {
+                                  m_cvar_log_sprite_queue = cvar.bool_value();
+                              });
+
+        console.register_cvar("r_show_sprite_queue",
+                              "Show a sprite queue window (z_index, shader_id, texture)",
+                              "0",
+                              ConsoleVariableType::Bool,
+                              ConsoleVariableFlags::None,
+                              [this](const ConsoleVariable& cvar) {
+                                  m_cvar_show_sprite_queue = cvar.bool_value();
+                              });
     }
 }

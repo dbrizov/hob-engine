@@ -314,8 +314,8 @@ namespace hob {
     }
 
     void Physics::register_cvars(Console& console) {
-        console.register_cvar("phys_debug_draw",
-                              "Debug draw physics colliders",
+        console.register_cvar("p_show_colliders",
+                              "Show physics colliders",
                               "1",
                               ConsoleVariableType::Bool,
                               ConsoleVariableFlags::None,

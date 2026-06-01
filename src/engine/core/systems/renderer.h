@@ -91,6 +91,9 @@ namespace hob {
         uint32_t m_logical_height;
         uint32_t m_pixels_per_meter;
 
+        bool m_shadercross_initialized = false;
+        bool m_is_initialized = false;
+
         // SDL_GPU clip-space ortho mapping (0,0)..(w,h) -> (-1,-1)..(+1,+1) with y-down.
         std::array<float, 16> m_projection{};
 
@@ -132,12 +135,11 @@ namespace hob {
         std::unordered_map<TextureId, TextureEntry> m_textures;
         std::unordered_map<std::string, TextureId> m_path_to_id;
         TextureId m_next_texture_id = 0;
-        bool m_cvar_log_textures = false;
-        bool m_cvar_log_sprite_order = false;
-        bool m_cvar_show_sprite_queue = false;
 
-        bool m_shadercross_initialized = false;
-        bool m_is_initialized = false;
+        // CVars.
+        bool m_cvar_log_textures = false;
+        bool m_cvar_log_sprite_queue = false;
+        bool m_cvar_show_sprite_queue = false;
 
     public:
         Renderer(const EngineConfig& config, const SdlContext& sdl_context, Console& console);
@@ -204,13 +206,15 @@ namespace hob {
         // Returns nullptr on failure; caller handles fallback.
         SDL_GPUGraphicsPipeline* build_sprite_pipeline(const std::string& path);
 
-        void register_cvars(Console& console);
-
         // One-shot transfer-buffer upload of `data` (`size` bytes) into `dst_buffer`.
         // Fences the upload so the buffer is safe to use on the next frame.
         bool upload_buffer(SDL_GPUBuffer* dst_buffer, const void* data, uint32_t size);
 
         // Same for textures: uploads RGBA8 pixels into `dst_texture` at mip 0, layer 0.
         bool upload_texture_rgba(SDL_GPUTexture* dst_texture, const void* pixels, uint32_t width, uint32_t height);
+
+        void debug_sprite_pipeline();
+
+        void register_cvars(Console& console);
     };
 }
