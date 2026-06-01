@@ -1,15 +1,15 @@
-DefineComponent.PulseScale = {}
----@class PulseScale : LuaComponent
-local PulseScale = PulseScale
+DefineComponent.ScalePulse = {}
+---@class ScalePulse : LuaComponent
+local ScalePulse = ScalePulse
 
-function PulseScale:init()
+function ScalePulse:init()
     self.min_scale = 1.0
     self.max_scale = 3.0
     self.speed = 2.0 -- radians/sec
     self.time = 0.0
 end
 
-function PulseScale:tick(delta_time)
+function ScalePulse:tick(delta_time)
     self.time = self.time + delta_time
 
     local t = (math.sin(self.time * self.speed) + 1.0) * 0.5

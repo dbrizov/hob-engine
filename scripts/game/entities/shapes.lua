@@ -82,7 +82,7 @@ DefineEntity.PulsingStaticCircle = {
         texture = Assets.RobotTexture,
         z_index = 1,
     },
-    lua_components = { "PulseScale" },
+    lua_components = { "ScalePulse" },
 }
 
 DefineEntity.PulsingTriggerCircle = {
@@ -97,5 +97,5 @@ DefineEntity.PulsingTriggerCircle = {
         texture = Assets.RobotTexture,
         z_index = 1,
     },
-    lua_components = { "PulseScale", "ContactLogger" },
+    lua_components = { "ScalePulse", "ContactLogger" },
 }
