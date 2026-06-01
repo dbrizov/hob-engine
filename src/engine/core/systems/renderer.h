@@ -101,6 +101,10 @@ namespace hob {
         std::vector<Sprite> m_pending_sprites;
         std::vector<LineVertex> m_pending_lines;
 
+        // Per-frame GPU state, valid between acquire_command_buffer() and submit/cancel.
+        SDL_GPUCommandBuffer* m_command_buffer = nullptr;
+        SDL_GPUTexture* m_swap_texture = nullptr;
+
         // Offscreen color target at logical resolution. Sprite pass renders into this;
         // blit pass samples it into the swapchain at window resolution.
         SDL_GPUTexture* m_offscreen_color = nullptr;
@@ -172,24 +176,34 @@ namespace hob {
                            int z_index,
                            const Material& material);
 
+        /// Draws a line segment in logical screen space (top-left origin, y-down).
+        void render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
+
         // Resolve a sprite-shader path (relative to assets root, no .vert.hlsl / .frag.hlsl suffix) to a ShaderId.
         // Lazily builds and caches the pipeline on first request.
         // Failed builds alias DEFAULT_SPRITE_SHADER_ID (no retry spam).
         ShaderId get_or_build_sprite_shader(const std::string& path);
 
-        /// Draws a line segment in logical screen space (top-left origin, y-down).
-        void render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
-
         // Texture cache.
         // Loads (or returns a cached ref to) a texture by path relative to the assets root.
         TextureRef get_or_load_texture(const std::string& path);
 
-        // Frame recording (called by Engine, which owns the command buffer + swapchain pass).
-        // record_world replays queued sprites + lines into the offscreen color target.
-        void record_world(SDL_GPUCommandBuffer* cmd);
+        // Per-frame GPU lifecycle. Engine calls acquire_command_buffer() at frame start;
+        // if it returns true the swapchain is usable and the engine records work + submits,
+        // otherwise it cancels.
+        bool acquire_command_buffer();
+        void submit_command_buffer();
+        void cancel_command_buffer();
 
-        // record_blit issues the upscale draw inside the swapchain render pass.
-        void record_blit(SDL_GPURenderPass* swap_pass);
+        SDL_GPUCommandBuffer* get_command_buffer() const;
+        SDL_GPUTexture* get_swap_texture() const;
+
+        // Replays queued sprites + lines into the offscreen color target.
+        void record_world_pass();
+
+        // Opens a render pass on the swapchain texture, upscales the offscreen target,
+        // and closes the pass.
+        void record_blit_pass();
 
     private:
         friend class TextureRef;

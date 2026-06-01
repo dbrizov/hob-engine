@@ -98,35 +98,15 @@ namespace hob {
                 m_console.render();
             }
 
-            SDL_GPUDevice* device = m_sdl_context.get_gpu_device();
-            SDL_Window* window = m_sdl_context.get_window();
-            SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(device);
-
-            SDL_GPUTexture* swap_tex = nullptr;
-            const bool acquired = SDL_WaitAndAcquireGPUSwapchainTexture(cmd, window, &swap_tex, nullptr, nullptr)
-                                  && swap_tex != nullptr;
-
-            m_renderer.record_world(cmd);
-
-            if (acquired) {
-                m_imgui_system.prepare_draw_data(cmd);
-
-                SDL_GPUColorTargetInfo swap_color_info{};
-                swap_color_info.texture = swap_tex;
-                swap_color_info.load_op = SDL_GPU_LOADOP_CLEAR;
-                swap_color_info.store_op = SDL_GPU_STOREOP_STORE;
-                swap_color_info.clear_color = CLEAR_COLOR;
-
-                SDL_GPURenderPass* swap_pass = SDL_BeginGPURenderPass(cmd, &swap_color_info, 1, nullptr);
-                m_renderer.record_blit(swap_pass);
-                m_imgui_system.record_draw_data(swap_pass, cmd);
-                SDL_EndGPURenderPass(swap_pass);
-
-                SDL_SubmitGPUCommandBuffer(cmd);
+            if (m_renderer.acquire_command_buffer()) {
+                m_renderer.record_world_pass();
+                m_renderer.record_blit_pass();
+                m_imgui_system.record_draw_data_pass(m_renderer.get_command_buffer(), m_renderer.get_swap_texture());
+                m_renderer.submit_command_buffer();
             }
             else {
                 m_imgui_system.discard_frame();
-                SDL_CancelGPUCommandBuffer(cmd);
+                m_renderer.cancel_command_buffer();
             }
 
             m_timer.frame_end();

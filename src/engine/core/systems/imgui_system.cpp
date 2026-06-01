@@ -91,15 +91,24 @@ namespace hob {
         ImGui::NewFrame();
     }
 
-    void ImGuiSystem::prepare_draw_data(SDL_GPUCommandBuffer* cmd) {
+    void ImGuiSystem::record_draw_data_pass(SDL_GPUCommandBuffer* cmd, SDL_GPUTexture* swap_tex) {
         ImGui::Render();
         ImDrawData* draw_data = ImGui::GetDrawData();
         ImGui_ImplSDLGPU3_PrepareDrawData(draw_data, cmd);
-    }
 
-    void ImGuiSystem::record_draw_data(SDL_GPURenderPass* pass, SDL_GPUCommandBuffer* cmd) {
-        ImDrawData* draw_data = ImGui::GetDrawData();
+        SDL_GPUColorTargetInfo ct{};
+        ct.texture = swap_tex;
+        ct.load_op = SDL_GPU_LOADOP_LOAD;
+        ct.store_op = SDL_GPU_STOREOP_STORE;
+
+        SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
+        if (!pass) {
+            return;
+        }
+
         ImGui_ImplSDLGPU3_RenderDrawData(draw_data, cmd, pass);
+
+        SDL_EndGPURenderPass(pass);
     }
 
     void ImGuiSystem::discard_frame() {

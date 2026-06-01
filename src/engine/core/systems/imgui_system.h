@@ -30,17 +30,15 @@ namespace hob {
         // Open the ImGui frame. Must run before any tick/gameplay code calls ImGui widgets.
         void new_frame();
 
-        // Finalize ImGui draw data and upload its vertex/index buffers to the GPU.
-        // Uses an internal copy pass, so this MUST be called outside any open render pass.
-        void prepare_draw_data(SDL_GPUCommandBuffer* cmd);
-
-        // Record ImGui draw commands into `pass`. Must be called inside an open render pass,
-        // after prepare_draw_data has run on the same command buffer.
-        void record_draw_data(SDL_GPURenderPass* pass, SDL_GPUCommandBuffer* cmd);
+        // Finalizes the ImGui frame, uploads draw data via a copy pass on `cmd`, then opens
+        // a render pass on `swap_tex` (LOAD_OP_LOAD so prior contents are preserved) and
+        // records ImGui draw commands into it. Pairs with new_frame as an alternative to
+        // discard_frame — exactly one of the two must run per new_frame.
+        void record_draw_data_pass(SDL_GPUCommandBuffer* cmd, SDL_GPUTexture* swap_tex);
 
         // Discard the current ImGui frame without producing draw data (e.g. when the
         // swapchain texture could not be acquired). Pairs with new_frame as an alternative
-        // to prepare_draw_data — exactly one of the two must run per new_frame.
+        // to record_draw_data_pass — exactly one of the two must run per new_frame.
         void discard_frame();
     };
 }

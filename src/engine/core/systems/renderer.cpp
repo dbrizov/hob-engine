@@ -331,6 +331,31 @@ namespace hob {
         m_pending_lines.push_back({p3, color});
     }
 
+    ShaderId Renderer::get_or_build_sprite_shader(const std::string& path) {
+        if (path.empty()) {
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const std::string key = std::filesystem::path(path).lexically_normal().string();
+
+        auto it = m_shader_path_to_id.find(key);
+        if (it != m_shader_path_to_id.end()) {
+            return it->second;
+        }
+
+        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(key);
+        if (!pipeline) {
+            // Alias to default so subsequent lookups are O(1) and silent.
+            m_shader_path_to_id.emplace(key, DEFAULT_SPRITE_SHADER_ID);
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const ShaderId id = static_cast<ShaderId>(m_sprite_pipelines.size());
+        m_sprite_pipelines.push_back(pipeline);
+        m_shader_path_to_id.emplace(key, id);
+        return id;
+    }
+
     TextureRef Renderer::get_or_load_texture(const std::string& path) {
         const std::string key = std::filesystem::path(path).lexically_normal().string();
 
@@ -434,7 +459,8 @@ namespace hob {
         return true;
     }
 
-    void Renderer::record_world(SDL_GPUCommandBuffer* cmd) {
+    void Renderer::record_world_pass() {
+        SDL_GPUCommandBuffer* cmd = m_command_buffer;
         // Upload pending line vertices into the persistent line VBO before the render
         // pass starts (copy passes can't run inside a graphics render pass).
         const uint32_t line_vertex_count = static_cast<uint32_t>(
@@ -548,15 +574,59 @@ namespace hob {
         m_pending_lines.clear();
     }
 
-    void Renderer::record_blit(SDL_GPURenderPass* swap_pass) {
-        SDL_BindGPUGraphicsPipeline(swap_pass, m_blit_pipeline);
+    void Renderer::record_blit_pass() {
+        SDL_GPUColorTargetInfo ct{};
+        ct.texture = m_swap_texture;
+        ct.load_op = SDL_GPU_LOADOP_CLEAR;
+        ct.store_op = SDL_GPU_STOREOP_STORE;
+        ct.clear_color = CLEAR_COLOR;
+
+        SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(m_command_buffer, &ct, 1, nullptr);
+        if (!pass) {
+            return;
+        }
+
+        SDL_BindGPUGraphicsPipeline(pass, m_blit_pipeline);
 
         SDL_GPUTextureSamplerBinding ts{};
         ts.texture = m_offscreen_color;
         ts.sampler = m_blit_sampler;
-        SDL_BindGPUFragmentSamplers(swap_pass, 0, &ts, 1);
+        SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
 
-        SDL_DrawGPUPrimitives(swap_pass, 3, 1, 0, 0);
+        SDL_DrawGPUPrimitives(pass, 3, 1, 0, 0);
+
+        SDL_EndGPURenderPass(pass);
+    }
+
+    bool Renderer::acquire_command_buffer() {
+        m_command_buffer = SDL_AcquireGPUCommandBuffer(m_gpu_device);
+        m_swap_texture = nullptr;
+
+        const bool ok = SDL_WaitAndAcquireGPUSwapchainTexture(
+                            m_command_buffer, m_sdl_context.get_window(),
+                            &m_swap_texture, nullptr, nullptr)
+                        && m_swap_texture != nullptr;
+        return ok;
+    }
+
+    void Renderer::submit_command_buffer() {
+        SDL_SubmitGPUCommandBuffer(m_command_buffer);
+        m_command_buffer = nullptr;
+        m_swap_texture = nullptr;
+    }
+
+    void Renderer::cancel_command_buffer() {
+        SDL_CancelGPUCommandBuffer(m_command_buffer);
+        m_command_buffer = nullptr;
+        m_swap_texture = nullptr;
+    }
+
+    SDL_GPUCommandBuffer* Renderer::get_command_buffer() const {
+        return m_command_buffer;
+    }
+
+    SDL_GPUTexture* Renderer::get_swap_texture() const {
+        return m_swap_texture;
     }
 
     bool Renderer::init_offscreen_target() {
@@ -713,31 +783,6 @@ namespace hob {
         m_sprite_pipelines.push_back(pipeline);
         m_shader_path_to_id.emplace(default_key, DEFAULT_SPRITE_SHADER_ID);
         return true;
-    }
-
-    ShaderId Renderer::get_or_build_sprite_shader(const std::string& path) {
-        if (path.empty()) {
-            return DEFAULT_SPRITE_SHADER_ID;
-        }
-
-        const std::string key = std::filesystem::path(path).lexically_normal().string();
-
-        auto it = m_shader_path_to_id.find(key);
-        if (it != m_shader_path_to_id.end()) {
-            return it->second;
-        }
-
-        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(key);
-        if (!pipeline) {
-            // Alias to default so subsequent lookups are O(1) and silent.
-            m_shader_path_to_id.emplace(key, DEFAULT_SPRITE_SHADER_ID);
-            return DEFAULT_SPRITE_SHADER_ID;
-        }
-
-        const ShaderId id = static_cast<ShaderId>(m_sprite_pipelines.size());
-        m_sprite_pipelines.push_back(pipeline);
-        m_shader_path_to_id.emplace(key, id);
-        return id;
     }
 
     bool Renderer::init_blit_pipeline() {
