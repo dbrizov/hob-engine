@@ -68,6 +68,7 @@ namespace hob {
             Vector2 size_pixels;
             Vector2 pivot_pixel;
             float rotation_rad = 0.0;
+            int z_index = 0;
             Material material;
         };
 
@@ -132,6 +133,7 @@ namespace hob {
         std::unordered_map<std::string, TextureId> m_path_to_id;
         TextureId m_next_texture_id = 0;
         bool m_cvar_log_textures = false;
+        bool m_cvar_log_sprite_order = false;
 
         bool m_shadercross_initialized = false;
         bool m_is_initialized = false;
@@ -164,6 +166,7 @@ namespace hob {
                            const Vector2& size_pixels,
                            const Vector2& pivot_pixel,
                            float rotation_rad,
+                           int z_index,
                            const Material& material);
 
         // Resolve a sprite-shader path (relative to assets root, no .vert.hlsl / .frag.hlsl suffix) to a ShaderId.

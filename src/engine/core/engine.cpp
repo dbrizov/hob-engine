@@ -181,14 +181,6 @@ namespace hob {
         TransformComponent* camera_transform = camera_entity->get_transform();
         Vector2 camera_position = camera_transform->get_position();
 
-        std::sort(entities.begin(), entities.end(),
-                  [](const Entity* a, const Entity* b) {
-                      const SpriteComponent* a_sprite = a->get_component<SpriteComponent>();
-                      const SpriteComponent* b_sprite = b->get_component<SpriteComponent>();
-
-                      return a_sprite->get_z_index() < b_sprite->get_z_index();
-                  });
-
         for (const Entity* entity : entities) {
             const TransformComponent* transform_comp = entity->get_transform();
             const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
@@ -227,6 +219,7 @@ namespace hob {
                 size_pixels,
                 pivot_pixel,
                 matrix.get_rotation(),
+                sprite_comp->get_z_index(),
                 sprite_comp->get_material());
         }
     }

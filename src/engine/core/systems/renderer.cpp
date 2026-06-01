@@ -297,9 +297,10 @@ namespace hob {
                                  const Vector2& size_pixels,
                                  const Vector2& pivot_pixel,
                                  float rotation_rad,
+                                 int z_index,
                                  const Material& material) {
         m_pending_sprites.push_back(
-            {texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, material});
+            {texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, z_index, material});
     }
 
     void Renderer::render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
@@ -472,13 +473,21 @@ namespace hob {
         }
 
         if (!m_pending_sprites.empty()) {
-            // TODO: this sort breaks z_index ordering across different shaders — a low-z
-            // sprite using shader B will draw after a high-z sprite using shader A. Fix
-            // once Sprite carries z_index (sort by (shader_id, z_index) or similar).
             std::stable_sort(m_pending_sprites.begin(), m_pending_sprites.end(),
                              [](const Sprite& a, const Sprite& b) {
+                                 if (a.z_index != b.z_index) {
+                                     return a.z_index < b.z_index;
+                                 }
                                  return a.material.shader_id < b.material.shader_id;
                              });
+
+            if (m_cvar_log_sprite_order) {
+                debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
+                for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
+                    const Sprite& sp = m_pending_sprites[i];
+                    debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, sp.texture_id);
+                }
+            }
 
             SDL_GPUBufferBinding vb{};
             vb.buffer = m_quad_vbo;
@@ -889,6 +898,15 @@ namespace hob {
                               ConsoleVariableFlags::None,
                               [this](const ConsoleVariable& cvar) {
                                   m_cvar_log_textures = cvar.bool_value();
+                              });
+
+        console.register_cvar("rend_log_sprite_order",
+                              "Log the sorted (z_index, shader_id, texture_id) of pending sprites each frame",
+                              "0",
+                              ConsoleVariableType::Bool,
+                              ConsoleVariableFlags::None,
+                              [this](const ConsoleVariable& cvar) {
+                                  m_cvar_log_sprite_order = cvar.bool_value();
                               });
     }
 
