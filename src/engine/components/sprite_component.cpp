@@ -3,7 +3,6 @@
 #include <format>
 
 #include "engine/core/engine.h"
-#include "engine/core/path_utils.h"
 #include "engine/entity/entity.h"
 #include "transform_component.h"
 
@@ -28,13 +27,20 @@ namespace hob {
         return m_texture;
     }
 
-    void SpriteComponent::set_texture(const std::string& relative_path) {
-        const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
-        m_texture = get_engine().get_renderer().load_texture(full_path);
+    void SpriteComponent::set_texture(const std::string& path) {
+        m_texture = get_engine().get_renderer().get_or_load_texture(path);
     }
 
     void SpriteComponent::clear_texture() {
         m_texture.reset();
+    }
+
+    ShaderId SpriteComponent::get_shader_id() const {
+        return m_shader_id;
+    }
+
+    void SpriteComponent::set_shader(const std::string& path) {
+        m_shader_id = get_engine().get_renderer().get_or_build_sprite_shader(path);
     }
 
     Vector2 SpriteComponent::get_pivot() const {

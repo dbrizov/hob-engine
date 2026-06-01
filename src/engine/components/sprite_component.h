@@ -10,6 +10,7 @@
 namespace hob {
     class SpriteComponent : public Component {
         TextureRef m_texture;
+        ShaderId m_shader_id = DEFAULT_SPRITE_SHADER_ID;
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
         Color m_tint = Color::white();
@@ -25,8 +26,11 @@ namespace hob {
 
         bool has_texture() const;
         const TextureRef& get_texture() const;
-        void set_texture(const std::string& relative_path);
+        void set_texture(const std::string& path);
         void clear_texture();
+
+        ShaderId get_shader_id() const;
+        void set_shader(const std::string& path);
 
         Vector2 get_pivot() const;
         void set_pivot(const Vector2& pivot);

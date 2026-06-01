@@ -44,8 +44,9 @@ namespace hob {
 
         bind_usertype<SpriteComponent>(m_lua, m_meta, Bases<Component>{})
             .method("has_texture", &SpriteComponent::has_texture)
-            .method("set_texture", &SpriteComponent::set_texture, {"relative_path"})
+            .method("set_texture", &SpriteComponent::set_texture, {"path"})
             .method("clear_texture", &SpriteComponent::clear_texture)
+            .method("set_shader", &SpriteComponent::set_shader, {"path"})
             .method("get_pivot", &SpriteComponent::get_pivot)
             .method("set_pivot", &SpriteComponent::set_pivot, {"pivot"})
             .method("get_scale", &SpriteComponent::get_scale)
@@ -227,6 +228,7 @@ namespace hob {
                 {"tint", "set_tint"},
                 {"z_index", "set_z_index"},
                 {"pixels_per_meter", "set_pixels_per_meter"},
+                {"shader", "set_shader"},
             });
 
         bind_component_schema<InputComponent>(

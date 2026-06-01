@@ -63,6 +63,7 @@ local schemas = {
             tint = "set_tint",
             z_index = "set_z_index",
             pixels_per_meter = "set_pixels_per_meter",
+            shader = "set_shader",
         },
     },
     input = {

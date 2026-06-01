@@ -2,7 +2,6 @@
 
 #include <SDL3/SDL_mouse.h>
 
-#include "engine/core/path_utils.h"
 #include "input.h"
 #include "renderer.h"
 #include "sdl_context.h"
@@ -20,9 +19,8 @@ namespace hob {
         return m_texture.is_valid();
     }
 
-    void Cursor::set_texture(const std::string& relative_path) {
-        const std::filesystem::path full_path = PathUtils::get_assets_root_path() / relative_path;
-        m_texture = m_renderer.load_texture(full_path);
+    void Cursor::set_texture(const std::string& path) {
+        m_texture = m_renderer.get_or_load_texture(path);
         set_visible(m_is_visible); // trigger the OS cursor fallback if the load failed
     }
 
@@ -107,6 +105,7 @@ namespace hob {
         Vector2 screen_pos(mouse_screen.x - pivot_pixel.x, mouse_screen.y - pivot_pixel.y);
 
         m_renderer.render_sprite(m_texture.get_id(),
+                                 DEFAULT_SPRITE_SHADER_ID,
                                  screen_pos,
                                  size,
                                  pivot_pixel,

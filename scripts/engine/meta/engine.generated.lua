@@ -93,8 +93,8 @@ Cursor = {}
 ---@return boolean
 function Cursor.has_texture() end
 
----@param relative_path string
-function Cursor.set_texture(relative_path) end
+---@param path string
+function Cursor.set_texture(path) end
 
 function Cursor.clear_texture() end
 
@@ -481,10 +481,13 @@ local SpriteComponent = {}
 ---@return boolean
 function SpriteComponent:has_texture() end
 
----@param relative_path string
-function SpriteComponent:set_texture(relative_path) end
+---@param path string
+function SpriteComponent:set_texture(path) end
 
 function SpriteComponent:clear_texture() end
+
+---@param path string
+function SpriteComponent:set_shader(path) end
 
 ---@return Vector2
 function SpriteComponent:get_pivot() end

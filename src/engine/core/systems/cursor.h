@@ -35,7 +35,7 @@ namespace hob {
         Cursor& operator=(const Cursor&) = delete;
 
         bool has_texture() const;
-        void set_texture(const std::string& relative_path);
+        void set_texture(const std::string& path);
         void clear_texture();
 
         Vector2 get_pivot() const;

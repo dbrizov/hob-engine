@@ -1,7 +1,10 @@
 #include "renderer.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <fstream>
+#include <unordered_set>
 
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -202,7 +205,7 @@ namespace hob {
             return;
         if (!init_quad_vbo())
             return;
-        if (!init_sprite_pipeline())
+        if (!init_default_sprite_pipeline())
             return;
         if (!init_blit_pipeline())
             return;
@@ -233,8 +236,18 @@ namespace hob {
             SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_line_pipeline);
         if (m_blit_pipeline)
             SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_blit_pipeline);
-        if (m_sprite_pipeline)
-            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_sprite_pipeline);
+
+        // Sprite pipelines: failed builds alias the default-slot pointer, so dedupe by
+        // pointer identity before releasing to avoid double-free.
+        std::unordered_set<SDL_GPUGraphicsPipeline*> released_pipelines;
+        for (SDL_GPUGraphicsPipeline* pipeline : m_sprite_pipelines) {
+            if (pipeline && released_pipelines.insert(pipeline).second) {
+                SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, pipeline);
+            }
+        }
+        m_sprite_pipelines.clear();
+        m_shader_path_to_id.clear();
+
         if (m_quad_vbo)
             SDL_ReleaseGPUBuffer(m_gpu_device, m_quad_vbo);
         if (m_blit_sampler)
@@ -280,12 +293,16 @@ namespace hob {
     }
 
     void Renderer::render_sprite(TextureId texture_id,
+                                 ShaderId shader_id,
                                  const Vector2& screen_pos,
                                  const Vector2& size_pixels,
                                  const Vector2& pivot_pixel,
                                  float rotation_rad,
                                  const Color& tint) {
-        m_pending_sprites.push_back({texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, tint});
+        const ShaderId resolved_shader_id =
+            (shader_id == INVALID_SHADER_ID) ? DEFAULT_SPRITE_SHADER_ID : shader_id;
+        m_pending_sprites.push_back(
+            {texture_id, resolved_shader_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, tint});
     }
 
     void Renderer::render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
@@ -315,13 +332,9 @@ namespace hob {
         m_pending_lines.push_back({p3, color});
     }
 
-    TextureRef Renderer::load_texture(const std::filesystem::path& full_path) {
-        std::error_code error_code;
-        std::filesystem::path canonical = std::filesystem::weakly_canonical(full_path, error_code);
-        if (error_code) {
-            canonical = full_path.lexically_normal();
-        }
-        const std::string key = canonical.string();
+    TextureRef Renderer::get_or_load_texture(const std::string& path) {
+        const std::filesystem::path full_path = PathUtils::get_assets_root_path() / path;
+        const std::string key = full_path.lexically_normal().string();
 
         auto it = m_path_to_id.find(key);
         if (it != m_path_to_id.end()) {
@@ -329,7 +342,10 @@ namespace hob {
             entry.ref_count += 1;
 
             if (m_cvar_log_textures) {
-                debug::log("Renderer::load_texture cache hit: '{}' (id={}, rc={})", key, it->second, entry.ref_count);
+                debug::log("Renderer::get_or_load_texture cache hit: '{}' (id={}, rc={})",
+                           key,
+                           it->second,
+                           entry.ref_count);
             }
 
             return TextureRef(*this, it->second, entry.width, entry.height);
@@ -384,7 +400,7 @@ namespace hob {
         m_path_to_id.emplace(key, texture_id);
 
         if (m_cvar_log_textures) {
-            debug::log("Renderer::load_texture loaded: '{}' (id={}, rc=1)", key, texture_id);
+            debug::log("Renderer::get_or_load_texture loaded: '{}' (id={}, rc=1)", key, texture_id);
         }
 
         return TextureRef(*this, texture_id, w, h);
@@ -459,17 +475,30 @@ namespace hob {
         }
 
         if (!m_pending_sprites.empty()) {
-            SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipeline);
+            // TODO: this sort breaks z_index ordering across different shaders — a low-z
+            // sprite using shader B will draw after a high-z sprite using shader A. Fix
+            // once Sprite carries z_index (sort by (shader_id, z_index) or similar).
+            std::stable_sort(m_pending_sprites.begin(), m_pending_sprites.end(),
+                             [](const Sprite& a, const Sprite& b) {
+                                 return a.shader_id < b.shader_id;
+                             });
 
             SDL_GPUBufferBinding vb{};
             vb.buffer = m_quad_vbo;
             vb.offset = 0;
             SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
 
+            ShaderId bound_shader = INVALID_SHADER_ID;
+
             for (const Sprite& sp : m_pending_sprites) {
                 auto it = m_textures.find(sp.texture_id);
                 if (it == m_textures.end() || !it->second.texture) {
                     continue;
+                }
+
+                if (sp.shader_id != bound_shader) {
+                    SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.shader_id]);
+                    bound_shader = sp.shader_id;
                 }
 
                 SpriteVSUniforms vsu{};
@@ -601,25 +630,20 @@ namespace hob {
         return upload_buffer(m_quad_vbo, verts, sizeof(verts));
     }
 
-    bool Renderer::init_sprite_pipeline() {
-        // TODO non-hardcoded shader paths
-        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "shaders";
+    SDL_GPUGraphicsPipeline* Renderer::build_sprite_pipeline(const std::string& path) {
+        const std::filesystem::path assets_root = PathUtils::get_assets_root_path();
+        const std::filesystem::path vert_path = assets_root / (path + ".vert.hlsl");
+        const std::filesystem::path frag_path = assets_root / (path + ".frag.hlsl");
 
-        SDL_GPUShader* vs = load_shader(m_gpu_device,
-                                        shader_dir / "sprite.vert.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
-
+        SDL_GPUShader* vs = load_shader(m_gpu_device, vert_path, SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
         if (!vs) {
-            return false;
+            return nullptr;
         }
 
-        SDL_GPUShader* fs = load_shader(m_gpu_device,
-                                        shader_dir / "sprite.frag.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
-
+        SDL_GPUShader* fs = load_shader(m_gpu_device, frag_path, SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
         if (!fs) {
             SDL_ReleaseGPUShader(m_gpu_device, vs);
-            return false;
+            return nullptr;
         }
 
         SDL_GPUVertexBufferDescription vbd{};
@@ -664,22 +688,59 @@ namespace hob {
         gci.target_info.num_color_targets = 1;
         gci.target_info.has_depth_stencil_target = false;
 
-        m_sprite_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+        SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
 
         SDL_ReleaseGPUShader(m_gpu_device, vs);
         SDL_ReleaseGPUShader(m_gpu_device, fs);
 
-        if (!m_sprite_pipeline) {
-            debug::log_error("SDL_CreateGPUGraphicsPipeline (sprite) failed: {}", SDL_GetError());
+        if (!pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (sprite '{}') failed: {}", path, SDL_GetError());
+            return nullptr;
+        }
+
+        return pipeline;
+    }
+
+    bool Renderer::init_default_sprite_pipeline() {
+        const std::string default_key = std::filesystem::path("builtin/shaders/sprite").lexically_normal().string();
+        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(default_key);
+        if (!pipeline) {
             return false;
         }
 
+        // Default lands at slot 0 = DEFAULT_SPRITE_SHADER_ID.
+        m_sprite_pipelines.push_back(pipeline);
+        m_shader_path_to_id.emplace(default_key, DEFAULT_SPRITE_SHADER_ID);
         return true;
     }
 
+    ShaderId Renderer::get_or_build_sprite_shader(const std::string& path) {
+        if (path.empty()) {
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const std::string key = std::filesystem::path(path).lexically_normal().string();
+
+        auto it = m_shader_path_to_id.find(key);
+        if (it != m_shader_path_to_id.end()) {
+            return it->second;
+        }
+
+        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(key);
+        if (!pipeline) {
+            // Alias to default so subsequent lookups are O(1) and silent.
+            m_shader_path_to_id.emplace(key, DEFAULT_SPRITE_SHADER_ID);
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const ShaderId id = static_cast<ShaderId>(m_sprite_pipelines.size());
+        m_sprite_pipelines.push_back(pipeline);
+        m_shader_path_to_id.emplace(key, id);
+        return id;
+    }
+
     bool Renderer::init_blit_pipeline() {
-        // TODO non-hardcoded shader paths.
-        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "shaders";
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
 
         SDL_GPUShader* vs = load_shader(m_gpu_device,
                                         shader_dir / "blit.vert.hlsl",
@@ -729,8 +790,7 @@ namespace hob {
     }
 
     bool Renderer::init_line_pipeline() {
-        // TODO non-hardcoded shader paths.
-        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "shaders";
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
 
         SDL_GPUShader* vs = load_shader(m_gpu_device,
                                         shader_dir / "line.vert.hlsl",

@@ -18,13 +18,17 @@ namespace hob {
     class Renderer;
     class Console;
 
-    using TextureId = int64_t;
+    using TextureId = int32_t;
     constexpr TextureId INVALID_TEXTURE_ID = -1;
+
+    using ShaderId = int32_t;
+    constexpr ShaderId INVALID_SHADER_ID = -1;
+    constexpr ShaderId DEFAULT_SPRITE_SHADER_ID = 0;
 
     constexpr SDL_FColor CLEAR_COLOR = SDL_FColor{0.17f, 0.18f, 0.47f, 1.0f};
 
     // Move-only RAII handle owning one ref count contribution in the Renderer's texture cache.
-    // Obtain via Renderer::load_texture; destructor releases.
+    // Obtain via Renderer::get_or_load_texture; destructor releases.
     class TextureRef {
         Renderer* m_renderer = nullptr;
         TextureId m_id = INVALID_TEXTURE_ID;
@@ -55,6 +59,7 @@ namespace hob {
     class Renderer {
         struct Sprite {
             TextureId texture_id = INVALID_TEXTURE_ID;
+            ShaderId shader_id = INVALID_SHADER_ID;
             Vector2 screen_pos;
             Vector2 size_pixels;
             Vector2 pivot_pixel;
@@ -93,8 +98,11 @@ namespace hob {
         SDL_GPUTexture* m_offscreen_color = nullptr;
         SDL_GPUTextureFormat m_offscreen_format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 
-        // Sprite pipeline + its unit-quad VBO (Vertex Buffer Object).
-        SDL_GPUGraphicsPipeline* m_sprite_pipeline = nullptr;
+        // Sprite pipelines indexed by ShaderId, plus path-dedupe map. Slot 0 holds the
+        // default pipeline (built from "builtin/shaders/sprite") and is pre-warmed at init,
+        // so DEFAULT_SPRITE_SHADER_ID is always valid. Failed builds alias the default id.
+        std::vector<SDL_GPUGraphicsPipeline*> m_sprite_pipelines;
+        std::unordered_map<std::string, ShaderId> m_shader_path_to_id;
         SDL_GPUBuffer* m_quad_vbo = nullptr;
 
         // Fullscreen blit pipeline (no VBO; vertex shader synthesizes a triangle from SV_VertexID).
@@ -147,7 +155,7 @@ namespace hob {
         /// Draws a textured quad in logical screen space (top-left origin, y-down).
         /// All pixel-valued parameters are in logical pixels — the same space the
         /// orthographic projection is configured in, NOT window pixels.
-        /// @param texture_id   Texture to sample. Must be a valid id from load_texture().
+        /// @param texture_id   Texture to sample. Must be a valid id from get_or_load_texture().
         /// @param screen_pos   Unrotated top-left corner of the destination rect, in logical pixels.
         /// @param size_pixels  Destination rect size in logical pixels (width, height).
         /// @param pivot_pixel  Rotation pivot in logical pixels, relative to screen_pos (top-left).
@@ -155,11 +163,17 @@ namespace hob {
         ///                     negated so positive world rotation stays visually CCW on the y-down screen.
         /// @param tint         RGBA multiplied with the sampled texel.
         void render_sprite(TextureId texture_id,
+                           ShaderId shader_id,
                            const Vector2& screen_pos,
                            const Vector2& size_pixels,
                            const Vector2& pivot_pixel,
                            float rotation_rad,
                            const Color& tint);
+
+        // Resolve a sprite-shader path (relative to assets root, no .vert.hlsl / .frag.hlsl
+        // suffix) to a ShaderId. Lazily builds and caches the pipeline on first request.
+        // Failed builds alias DEFAULT_SPRITE_SHADER_ID (no retry spam).
+        ShaderId get_or_build_sprite_shader(const std::string& path);
 
         /// Draws a line segment in logical screen space (top-left origin, y-down).
         /// @param a         Start point in logical pixels.
@@ -169,7 +183,8 @@ namespace hob {
         void render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
         // Texture cache.
-        TextureRef load_texture(const std::filesystem::path& full_path);
+        // Loads (or returns a cached ref to) a texture by path relative to the assets root.
+        TextureRef get_or_load_texture(const std::string& path);
 
         // Frame recording (called by Engine, which owns the command buffer + swapchain pass).
         // record_world replays queued sprites + lines into the offscreen color target.
@@ -185,9 +200,13 @@ namespace hob {
         bool init_offscreen_target();
         bool init_samplers();
         bool init_quad_vbo();
-        bool init_sprite_pipeline();
+        bool init_default_sprite_pipeline();
         bool init_blit_pipeline();
         bool init_line_pipeline();
+
+        // Builds a sprite pipeline from a shader path (relative to assets root, no suffix).
+        // Returns nullptr on failure; caller handles fallback.
+        SDL_GPUGraphicsPipeline* build_sprite_pipeline(const std::string& path);
 
         void register_cvars(Console& console);
 
