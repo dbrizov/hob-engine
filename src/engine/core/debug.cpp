@@ -24,7 +24,7 @@ namespace hob::debug {
                 float ratio = static_cast<float>(i) / static_cast<float>(circle.segments);
                 float angle = ratio * 2.0f * PI;
                 Vector2 point = circle.center + Vector2(std::cos(angle), std::sin(angle)) * circle.radius;
-                DebugLine line{prev_point, point, circle.color, circle.thickness};
+                DebugLine line{prev_point, point, circle.color, 0.0f, circle.thickness};
                 gl_draw_line(renderer, camera, line);
 
                 prev_point = point;
@@ -32,7 +32,7 @@ namespace hob::debug {
         }
     }
 
-    void render_debug_draws(Renderer& renderer, const CameraComponent* camera) {
+    void render_debug_draws(Renderer& renderer, const CameraComponent* camera, float delta_time) {
         for (const auto& line : lines) {
             gl_draw_line(renderer, camera, line);
         }
@@ -41,15 +41,31 @@ namespace hob::debug {
             gl_draw_circle(renderer, camera, circle);
         }
 
-        lines.clear();
-        circles.clear();
+        std::erase_if(lines, [delta_time](DebugLine& l) {
+            l.duration -= delta_time;
+            return l.duration <= 0.0f;
+        });
+
+        std::erase_if(circles, [delta_time](DebugCircle& c) {
+            c.duration -= delta_time;
+            return c.duration <= 0.0f;
+        });
     }
 
-    void draw_line(const Vector2& start, const Vector2& end, const Color& color, float thickness) {
-        lines.emplace_back(start, end, color, thickness);
+    void draw_line(const Vector2& start,
+                   const Vector2& end,
+                   const Color& color,
+                   float duration,
+                   float thickness) {
+        lines.emplace_back(start, end, color, duration, thickness);
     }
 
-    void draw_circle(const Vector2& center, float radius, const Color& color, float thickness, int segments) {
-        circles.emplace_back(center, radius, color, thickness, segments);
+    void draw_circle(const Vector2& center,
+                     float radius,
+                     const Color& color,
+                     float duration,
+                     float thickness,
+                     int segments) {
+        circles.emplace_back(center, radius, color, duration, thickness, segments);
     }
 }

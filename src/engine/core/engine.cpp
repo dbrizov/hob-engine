@@ -91,7 +91,7 @@ namespace hob {
 #endif
 
             render_entities(renderable_entities);
-            render_debug_draws();
+            render_debug_draws(scaled_delta_time);
             m_cursor.render();
 
             if (m_console.is_open()) {
@@ -231,10 +231,10 @@ namespace hob {
         }
     }
 
-    void Engine::render_debug_draws() {
+    void Engine::render_debug_draws(float delta_time) {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
 
-        debug::render_debug_draws(m_renderer, camera_component);
+        debug::render_debug_draws(m_renderer, camera_component, delta_time);
     }
 }

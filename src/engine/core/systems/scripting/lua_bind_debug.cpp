@@ -45,13 +45,23 @@ namespace hob {
                       }, "(...: any)")
             .func_sig("draw_line",
                       [](const Vector2& from, const Vector2& to, const Color& color,
-                         sol::optional<float> thickness) {
-                          debug::draw_line(from, to, color, thickness.value_or(2.0f));
-                      }, "(from: Vector2, to: Vector2, color: Color, thickness: number?)")
+                         sol::optional<float> duration, sol::optional<float> thickness) {
+                          debug::draw_line(from,
+                                           to,
+                                           color,
+                                           duration.value_or(0.0f),
+                                           thickness.value_or(2.0f));
+                      }, "(from: Vector2, to: Vector2, color: Color, duration: number?, thickness: number?)")
             .func_sig("draw_circle",
                       [](const Vector2& center, float radius, const Color& color,
-                         sol::optional<float> thickness, sol::optional<int> segments) {
-                          debug::draw_circle(center, radius, color, thickness.value_or(2.0f), segments.value_or(16));
-                      }, "(center: Vector2, radius: number, color: Color, thickness: number?, segments: integer?)");
+                         sol::optional<float> duration, sol::optional<float> thickness, sol::optional<int> segments) {
+                          debug::draw_circle(center,
+                                             radius,
+                                             color,
+                                             duration.value_or(0.0f),
+                                             thickness.value_or(2.0f),
+                                             segments.value_or(16));
+                      },
+                      "(center: Vector2, radius: number, color: Color, duration: number?, thickness: number?, segments: integer?)");
     }
 }

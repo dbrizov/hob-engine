@@ -180,15 +180,17 @@ function Debug.log_error(...) end
 ---@param from Vector2
 ---@param to Vector2
 ---@param color Color
+---@param duration number?
 ---@param thickness number?
-function Debug.draw_line(from, to, color, thickness) end
+function Debug.draw_line(from, to, color, duration, thickness) end
 
 ---@param center Vector2
 ---@param radius number
 ---@param color Color
+---@param duration number?
 ---@param thickness number?
 ---@param segments integer?
-function Debug.draw_circle(center, radius, color, thickness, segments) end
+function Debug.draw_circle(center, radius, color, duration, thickness, segments) end
 
 -- BodyType
 ---@enum BodyType

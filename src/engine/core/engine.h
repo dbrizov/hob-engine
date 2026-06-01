@@ -49,6 +49,6 @@ namespace hob {
 
     private:
         void render_entities(std::vector<const Entity*>& entities);
-        void render_debug_draws();
+        void render_debug_draws(float delta_time);
     };
 }
