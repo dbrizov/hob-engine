@@ -1,9 +1,6 @@
 #include "entity_spawner.h"
 
-#include <cassert>
-
 #include "entity.h"
-#include "engine/components/camera_component.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
@@ -12,7 +9,6 @@
 namespace hob {
     EntitySpawner::EntitySpawner(Engine& engine)
         : m_engine(engine) {
-        spawn_camera_entity();
     }
 
     EntitySpawner::~EntitySpawner() {
@@ -108,20 +104,6 @@ namespace hob {
         }
     }
 
-    Entity* EntitySpawner::get_camera_entity() const {
-        Entity* camera_entity = get_entity(m_camera_entity_id);
-        assert(camera_entity != nullptr && "There is no camera");
-
-        return camera_entity;
-    }
-
-    void EntitySpawner::spawn_camera_entity() {
-        Entity& camera_entity = spawn_entity();
-        camera_entity.add_component<CameraComponent>();
-
-        m_camera_entity_id = camera_entity.get_id();
-    }
-
     void EntitySpawner::resolve_requests() {
         resolve_spawn_requests();
         resolve_destroy_requests();
@@ -184,6 +166,5 @@ namespace hob {
         m_entity_records.clear();
         m_entity_spawn_requests.clear();
         m_entity_destroy_requests.clear();
-        m_camera_entity_id = INVALID_ENTITY_ID;
     }
 }

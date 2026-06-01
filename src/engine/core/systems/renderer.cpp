@@ -199,7 +199,6 @@ namespace hob {
         , m_gpu_device(sdl_context.get_gpu_device())
         , m_logical_width(config.graphics_config.logical_resolution_width)
         , m_logical_height(config.graphics_config.logical_resolution_height)
-        , m_pixels_per_meter(config.graphics_config.pixels_per_meter)
         , m_projection(ortho_top_left(static_cast<float>(m_logical_width),
                                       static_cast<float>(m_logical_height)))
         , m_overlay_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
@@ -300,14 +299,6 @@ namespace hob {
 
     float Renderer::get_logical_height_f() const {
         return static_cast<float>(m_logical_height);
-    }
-
-    uint32_t Renderer::get_pixels_per_meter() const {
-        return m_pixels_per_meter;
-    }
-
-    float Renderer::get_pixels_per_meter_f() const {
-        return static_cast<float>(m_pixels_per_meter);
     }
 
     void Renderer::draw_sprite(TextureId texture_id,

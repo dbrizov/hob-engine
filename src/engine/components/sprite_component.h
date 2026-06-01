@@ -14,12 +14,10 @@ namespace hob {
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
         int m_z_index = 0;
-        uint32_t m_pixels_per_meter = 0;
+        uint32_t m_pixels_per_meter = 64;
 
     public:
         explicit SpriteComponent(Entity& entity);
-
-        void init() override;
 
         std::string to_string() const override;
 

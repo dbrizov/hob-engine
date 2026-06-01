@@ -22,42 +22,8 @@ namespace hob {
         sol::state& m_lua = m_impl->lua;
         LuaMetaRegistry& m_meta = m_impl->meta;
 
-        // Capturing subsystems by reference is safe: Engine's destructor clears all
-        // entities before any member destructor runs, so these lambdas can never be
-        // invoked through Lua against a half-destroyed subsystem.
-        EntitySpawner& spawner = m_engine.get_entity_spawner();
-        Input& input = m_engine.get_input();
-        Timer& timer = m_engine.get_timer();
-        Cursor& cursor = m_engine.get_cursor();
-        Physics& physics = m_engine.get_physics();
-
-        // Scripts
-        bind_table(m_lua, m_meta, "Scripts")
-            .func("run_file", [this](const std::string& relative_path) {
-                return run_file(relative_path);
-            }, {"relative_path"})
-            .func_sig("run_folder", [this](const std::string& relative_path, sol::optional<sol::table> excludes) {
-                std::vector<std::string> exclude_list;
-                if (excludes) {
-                    for (const auto& kv : *excludes) {
-                        exclude_list.push_back(kv.second.as<std::string>());
-                    }
-                }
-
-                return run_folder(relative_path, exclude_list);
-            }, "(relative_path: string, excludes: string[]?): boolean");
-
-        // EntitySpawner
-        bind_table(m_lua, m_meta, "EntitySpawner")
-            .func("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })
-            .func("destroy_entity", [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); }, {"entity"})
-            .func("get_entity", [](EntityId id) { return EntityHandle(id); }, {"id"});
-
-        // Input
-        bind_table(m_lua, m_meta, "Input")
-            .func("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); });
-
         // Timer
+        Timer& timer = m_engine.get_timer();
         bind_table(m_lua, m_meta, "Timer")
             .func("get_fps", [&timer]() { return timer.get_fps(); })
             .func("set_fps", [&timer](uint32_t v) { timer.set_fps(v); }, {"fps"})
@@ -66,28 +32,13 @@ namespace hob {
             .func("get_play_time", [&timer]() { return timer.get_play_time(); })
             .func("get_delta_time", [&timer]() { return timer.get_delta_time(); });
 
-        // Cursor
-        bind_enum<CursorMode>(m_lua, m_meta, {
-                                  {"Default", CursorMode::Default},
-                                  {"Confined", CursorMode::Confined},
-                              });
-
-        bind_table(m_lua, m_meta, "Cursor")
-            .func("has_texture", [&cursor]() { return cursor.has_texture(); })
-            .func("set_texture", [&cursor](const std::string& path) { cursor.set_texture(path); }, {"path"})
-            .func("clear_texture", [&cursor]() { cursor.clear_texture(); })
-            .func("get_pivot", [&cursor]() { return cursor.get_pivot(); })
-            .func("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})
-            .func("get_scale", [&cursor]() { return cursor.get_scale(); })
-            .func("set_scale", [&cursor](const Vector2& s) { cursor.set_scale(s); }, {"scale"})
-            .func("get_material", [&cursor]() -> Material& { return cursor.get_material(); })
-            .func("set_material", [&cursor](const Material& m) { cursor.set_material(m); }, {"material"})
-            .func("is_visible", [&cursor]() { return cursor.is_visible(); })
-            .func("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"})
-            .func("get_mode", [&cursor]() { return cursor.get_mode(); })
-            .func("set_mode", [&cursor](CursorMode m) { cursor.set_mode(m); }, {"mode"});
+        // Input
+        Input& input = m_engine.get_input();
+        bind_table(m_lua, m_meta, "Input")
+            .func("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); });
 
         // Physics
+        Physics& physics = m_engine.get_physics();
         bind_usertype<RaycastHit>(m_lua, m_meta)
             .field("collider", &RaycastHit::collider)
             .field("point", &RaycastHit::point)
@@ -117,21 +68,87 @@ namespace hob {
                   },
                   {"origin", "direction", "distance", "layer_mask"});
 
+        // Cursor
+        Cursor& cursor = m_engine.get_cursor();
+        bind_enum<CursorMode>(m_lua, m_meta, {
+                                  {"Default", CursorMode::Default},
+                                  {"Confined", CursorMode::Confined},
+                              });
+
+        bind_table(m_lua, m_meta, "Cursor")
+            .func("has_texture", [&cursor]() { return cursor.has_texture(); })
+            .func("set_texture", [&cursor](const std::string& path) { cursor.set_texture(path); }, {"path"})
+            .func("clear_texture", [&cursor]() { cursor.clear_texture(); })
+            .func("get_pivot", [&cursor]() { return cursor.get_pivot(); })
+            .func("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})
+            .func("get_scale", [&cursor]() { return cursor.get_scale(); })
+            .func("set_scale", [&cursor](const Vector2& s) { cursor.set_scale(s); }, {"scale"})
+            .func("get_material", [&cursor]() -> Material& { return cursor.get_material(); })
+            .func("set_material", [&cursor](const Material& m) { cursor.set_material(m); }, {"material"})
+            .func("is_visible", [&cursor]() { return cursor.is_visible(); })
+            .func("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"})
+            .func("get_mode", [&cursor]() { return cursor.get_mode(); })
+            .func("set_mode", [&cursor](CursorMode m) { cursor.set_mode(m); }, {"mode"});
+
+        // EntitySpawner
+        EntitySpawner& spawner = m_engine.get_entity_spawner();
+        bind_table(m_lua, m_meta, "EntitySpawner")
+            .func("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })
+            .func("destroy_entity", [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); }, {"entity"})
+            .func("get_entity", [](EntityId id) { return EntityHandle(id); }, {"id"});
+
+        // Scripts
+        bind_table(m_lua, m_meta, "Scripts")
+            .func("run_file", [this](const std::string& relative_path) {
+                return run_file(relative_path);
+            }, {"relative_path"})
+            .func_sig("run_folder", [this](const std::string& relative_path, sol::optional<sol::table> excludes) {
+                std::vector<std::string> exclude_list;
+                if (excludes) {
+                    for (const auto& kv : *excludes) {
+                        exclude_list.push_back(kv.second.as<std::string>());
+                    }
+                }
+                return run_folder(relative_path, exclude_list);
+            }, "(relative_path: string, excludes: string[]?): boolean");
+
+        // Camera
+        Engine& engine = m_engine;
         bind_table(m_lua, m_meta, "Camera")
-            .func("get_entity", [&spawner]() {
-                return EntityHandle(spawner.get_camera_entity()->get_id());
-            })
-            .func("world_to_screen", [&spawner](const Vector2& world_pos) {
-                return spawner.get_camera_entity()->get_component<CameraComponent>()->world_to_screen(world_pos);
+            .func_sig("get_active", [&engine](sol::this_state ts) -> sol::object {
+                CameraComponent* cam = engine.get_active_camera();
+                if (cam == nullptr) {
+                    return sol::lua_nil;
+                }
+                return sol::make_object(sol::state_view(ts), EntityHandle(cam->get_entity().get_id()));
+            }, "(): Entity?")
+            .func("world_to_screen", [&engine](const Vector2& world_pos) {
+                CameraComponent* cam = engine.get_active_camera();
+                return cam ? cam->world_to_screen(world_pos) : Vector2();
             }, {"world_pos"})
-            .func("screen_to_world", [&spawner](const Vector2& screen_pos) {
-                return spawner.get_camera_entity()->get_component<CameraComponent>()->screen_to_world(screen_pos);
+            .func("screen_to_world", [&engine](const Vector2& screen_pos) {
+                CameraComponent* cam = engine.get_active_camera();
+                return cam ? cam->screen_to_world(screen_pos) : Vector2();
             }, {"screen_pos"})
-            .func("get_position", [&spawner]() {
-                return spawner.get_camera_entity()->get_transform()->get_position();
+            .func("get_position", [&engine]() {
+                CameraComponent* cam = engine.get_active_camera();
+                return cam ? cam->get_entity().get_transform()->get_position() : Vector2();
             })
-            .func("set_position", [&spawner](const Vector2& p) {
-                spawner.get_camera_entity()->get_transform()->set_position(p);
-            }, {"position"});
+            .func("set_position", [&engine](const Vector2& p) {
+                CameraComponent* cam = engine.get_active_camera();
+                if (cam != nullptr) {
+                    cam->get_entity().get_transform()->set_position(p);
+                }
+            }, {"position"})
+            .func("get_zoom", [&engine]() {
+                CameraComponent* cam = engine.get_active_camera();
+                return cam ? cam->get_zoom() : 1.0f;
+            })
+            .func("set_zoom", [&engine](float multiplier) {
+                CameraComponent* cam = engine.get_active_camera();
+                if (cam != nullptr) {
+                    cam->set_zoom(multiplier);
+                }
+            }, {"multiplier"});
     }
 }

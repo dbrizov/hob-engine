@@ -27,8 +27,6 @@ namespace hob {
                 g.value("logical_resolution_width", graphics_config.logical_resolution_width);
             graphics_config.logical_resolution_height =
                 g.value("logical_resolution_height", graphics_config.logical_resolution_height);
-            graphics_config.pixels_per_meter =
-                g.value("pixels_per_meter", graphics_config.pixels_per_meter);
             graphics_config.target_fps =
                 g.value("target_fps", graphics_config.target_fps);
             graphics_config.vsync_enabled =

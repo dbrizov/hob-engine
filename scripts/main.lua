@@ -9,6 +9,9 @@ local ARENA_HALF_W = 10
 local ARENA_HALF_H = 6
 local S = Vector2(SCALE, SCALE)
 
+-- Camera (owns world-to-screen scale). Must be spawned before any rendering.
+EntitySpawner.spawn_entity("Camera", Vector2(0.0, 0.0))
+
 -- Player at the center
 EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
 

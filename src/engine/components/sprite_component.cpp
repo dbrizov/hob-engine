@@ -11,10 +11,6 @@ namespace hob {
         : Component(entity) {
     }
 
-    void SpriteComponent::init() {
-        m_pixels_per_meter = get_engine().get_renderer().get_pixels_per_meter();
-    }
-
     std::string SpriteComponent::to_string() const {
         return std::format("SpriteComponent(entity_id = {})", get_entity().get_id());
     }

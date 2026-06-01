@@ -13,6 +13,7 @@
 
 namespace hob {
     struct EngineConfig;
+    class CameraComponent;
 
     class Engine {
         // Order matters
@@ -26,6 +27,8 @@ namespace hob {
         Cursor m_cursor;
         EntitySpawner m_entity_spawner;
         LuaScriptSystem m_lua_script_system;
+
+        CameraComponent* m_active_camera = nullptr;
 
         bool m_is_os_cursor_visible_before_console_opened = false;
 
@@ -46,6 +49,10 @@ namespace hob {
         Cursor& get_cursor();
         EntitySpawner& get_entity_spawner();
         LuaScriptSystem& get_lua_script_system();
+
+        CameraComponent* get_active_camera() const;
+        void set_active_camera(CameraComponent* camera);
+        void clear_active_camera(CameraComponent* camera);
 
     private:
         void draw_entities(std::vector<const Entity*>& entities);

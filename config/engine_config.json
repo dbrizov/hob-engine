@@ -5,7 +5,6 @@
     "window_height": 648,
     "logical_resolution_width": 1920,
     "logical_resolution_height": 1080,
-    "pixels_per_meter": 64,
     "target_fps": 60,
     "vsync_enabled": false
   },

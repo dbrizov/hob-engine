@@ -24,7 +24,6 @@ namespace hob {
 
     class EntitySpawner {
         Engine& m_engine;
-        EntityId m_camera_entity_id = INVALID_ENTITY_ID;
 
         EntityId m_next_entity_id = 0;
         std::vector<std::unique_ptr<Entity>> m_entities;
@@ -50,11 +49,7 @@ namespace hob {
         void get_physics_entities(std::vector<Entity*>& out_entities) const;
         void get_renderable_entities(std::vector<const Entity*>& out_entities) const;
 
-        Entity* get_camera_entity() const;
-
     private:
-        void spawn_camera_entity();
-
         void resolve_requests();
         void resolve_spawn_requests();
         void resolve_destroy_requests();

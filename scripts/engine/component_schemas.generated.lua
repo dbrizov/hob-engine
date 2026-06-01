@@ -71,7 +71,9 @@ local schemas = {
     },
     camera = {
         add = "add_camera",
-        setters = {},
+        setters = {
+            screen_pixels_per_meter = "set_screen_pixels_per_meter",
+        },
     },
 }
 

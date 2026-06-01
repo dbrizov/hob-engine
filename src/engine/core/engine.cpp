@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "debug.h"
+#include "logging.h"
 #include "engine/components/camera_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
@@ -159,10 +160,32 @@ namespace hob {
         return m_lua_script_system;
     }
 
+    CameraComponent* Engine::get_active_camera() const {
+        if (m_active_camera == nullptr) {
+            debug::log_error(
+                "Engine::get_active_camera: no active camera (spawn a Camera entity before any rendering or camera query)");
+        }
+        return m_active_camera;
+    }
+
+    void Engine::set_active_camera(CameraComponent* camera) {
+        m_active_camera = camera;
+    }
+
+    void Engine::clear_active_camera(CameraComponent* camera) {
+        if (m_active_camera == camera) {
+            m_active_camera = nullptr;
+        }
+    }
+
     void Engine::draw_entities(std::vector<const Entity*>& entities) {
-        Entity* camera_entity = m_entity_spawner.get_camera_entity();
-        CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
-        TransformComponent* camera_transform = camera_entity->get_transform();
+        CameraComponent* camera = get_active_camera();
+        if (camera == nullptr) {
+            return;
+        }
+
+        const float camera_ppm = camera->get_screen_pixels_per_meter();
+        TransformComponent* camera_transform = camera->get_entity().get_transform();
         Vector2 camera_position = camera_transform->get_position();
 
         for (const Entity* entity : entities) {
@@ -184,14 +207,13 @@ namespace hob {
 
             const float texture_width = static_cast<float>(texture.get_width());
             const float texture_height = static_cast<float>(texture.get_height());
-            const float runtime_ppm = m_renderer.get_pixels_per_meter_f();
             const float sprite_ppm = sprite_comp->get_pixels_per_meter_f();
-            const Vector2 size_pixels = Vector2((texture_width / sprite_ppm) * runtime_ppm * scale.x,
-                                                (texture_height / sprite_ppm) * runtime_ppm * scale.y);
+            const Vector2 size_pixels = Vector2((texture_width / sprite_ppm) * camera_ppm * scale.x,
+                                                (texture_height / sprite_ppm) * camera_ppm * scale.y);
 
             const Vector2 sprite_pivot = sprite_comp->get_pivot();
             const Vector2 world_position = matrix.origin;
-            Vector2 screen_pos = camera_component->world_to_screen(world_position, camera_position);
+            Vector2 screen_pos = camera->world_to_screen(world_position, camera_position);
             screen_pos.x -= size_pixels.x * sprite_pivot.x;
             screen_pos.y -= size_pixels.y * sprite_pivot.y;
 
@@ -209,9 +231,11 @@ namespace hob {
     }
 
     void Engine::flush_debug_draws_to_renderer(float delta_time) {
-        Entity* camera_entity = m_entity_spawner.get_camera_entity();
-        CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
+        CameraComponent* camera = get_active_camera();
+        if (camera == nullptr) {
+            return;
+        }
 
-        debug::flush_draws_to_renderer(m_renderer, camera_component, delta_time);
+        debug::flush_draws_to_renderer(m_renderer, camera, delta_time);
     }
 }

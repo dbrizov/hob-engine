@@ -30,40 +30,6 @@ function Math.lerp(a, b, t) end
 ---@return number
 function Math.lerp_angle(a_deg, b_deg, t) end
 
--- Scripts
----@class Scripts
-Scripts = {}
-
----@param relative_path string
----@return boolean
-function Scripts.run_file(relative_path) end
-
----@param relative_path string
----@param excludes string[]?
----@return boolean
-function Scripts.run_folder(relative_path, excludes) end
-
--- EntitySpawner
----@class EntitySpawner
-EntitySpawner = {}
-
----@return Entity
-function EntitySpawner.spawn_entity_c() end
-
----@param entity Entity
-function EntitySpawner.destroy_entity(entity) end
-
----@param id integer
----@return Entity
-function EntitySpawner.get_entity(id) end
-
--- Input
----@class Input
-Input = {}
-
----@return Vector2
-function Input.get_mouse_screen_position() end
-
 -- Timer
 ---@class Timer
 Timer = {}
@@ -85,6 +51,31 @@ function Timer.get_play_time() end
 
 ---@return number
 function Timer.get_delta_time() end
+
+-- Input
+---@class Input
+Input = {}
+
+---@return Vector2
+function Input.get_mouse_screen_position() end
+
+-- Physics
+---@class Physics
+Physics = {}
+
+---@param origin Vector2
+---@param direction Vector2
+---@param distance number
+---@param layer_mask integer?
+---@return RaycastHit
+function Physics.raycast(origin, direction, distance, layer_mask) end
+
+---@param origin Vector2
+---@param direction Vector2
+---@param distance number
+---@param layer_mask integer?
+---@return RaycastHit[]
+function Physics.raycast_all(origin, direction, distance, layer_mask) end
 
 -- Cursor
 ---@class Cursor
@@ -128,30 +119,39 @@ function Cursor.get_mode() end
 ---@param mode CursorMode
 function Cursor.set_mode(mode) end
 
--- Physics
----@class Physics
-Physics = {}
+-- EntitySpawner
+---@class EntitySpawner
+EntitySpawner = {}
 
----@param origin Vector2
----@param direction Vector2
----@param distance number
----@param layer_mask integer?
----@return RaycastHit
-function Physics.raycast(origin, direction, distance, layer_mask) end
+---@return Entity
+function EntitySpawner.spawn_entity_c() end
 
----@param origin Vector2
----@param direction Vector2
----@param distance number
----@param layer_mask integer?
----@return RaycastHit[]
-function Physics.raycast_all(origin, direction, distance, layer_mask) end
+---@param entity Entity
+function EntitySpawner.destroy_entity(entity) end
+
+---@param id integer
+---@return Entity
+function EntitySpawner.get_entity(id) end
+
+-- Scripts
+---@class Scripts
+Scripts = {}
+
+---@param relative_path string
+---@return boolean
+function Scripts.run_file(relative_path) end
+
+---@param relative_path string
+---@param excludes string[]?
+---@return boolean
+function Scripts.run_folder(relative_path, excludes) end
 
 -- Camera
 ---@class Camera
 Camera = {}
 
----@return Entity
-function Camera.get_entity() end
+---@return Entity?
+function Camera.get_active() end
 
 ---@param world_pos Vector2
 ---@return Vector2
@@ -166,6 +166,12 @@ function Camera.get_position() end
 
 ---@param position Vector2
 function Camera.set_position(position) end
+
+---@return number
+function Camera.get_zoom() end
+
+---@param multiplier number
+function Camera.set_zoom(multiplier) end
 
 -- Debug
 ---@class Debug
@@ -537,6 +543,18 @@ _G.SpriteComponent = SpriteComponent
 -- CameraComponent
 ---@class CameraComponent : Component
 local CameraComponent = {}
+
+---@return number
+function CameraComponent:get_screen_pixels_per_meter() end
+
+---@param value number
+function CameraComponent:set_screen_pixels_per_meter(value) end
+
+---@return number
+function CameraComponent:get_zoom() end
+
+---@param multiplier number
+function CameraComponent:set_zoom(multiplier) end
 
 ---@param world_pos Vector2
 ---@return Vector2

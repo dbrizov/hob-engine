@@ -89,7 +89,6 @@ namespace hob {
         SDL_GPUDevice* m_gpu_device = nullptr;
         uint32_t m_logical_width;
         uint32_t m_logical_height;
-        uint32_t m_pixels_per_meter;
 
         bool m_shadercross_initialized = false;
         bool m_is_initialized = false;
@@ -164,9 +163,6 @@ namespace hob {
         uint32_t get_logical_height() const;
         float get_logical_width_f() const;
         float get_logical_height_f() const;
-
-        uint32_t get_pixels_per_meter() const;
-        float get_pixels_per_meter_f() const;
 
         /// Draws a textured quad in logical screen space (top-left origin, y-down).
         /// All pixel-valued parameters are in logical pixels — the same space the

@@ -5,10 +5,23 @@
 
 namespace hob {
     class CameraComponent : public Component {
+        float m_screen_pixels_per_meter = 64.0f;
+        float m_base_screen_pixels_per_meter = 64.0f;
+        bool m_base_captured = false;
+
     public:
         explicit CameraComponent(Entity& entity);
 
+        void enter_play() override;
+        void exit_play() override;
+
         std::string to_string() const override;
+
+        float get_screen_pixels_per_meter() const;
+        void set_screen_pixels_per_meter(float value);
+
+        float get_zoom() const;
+        void set_zoom(float multiplier);
 
         Vector2 world_to_screen(const Vector2& world_position) const;
         Vector2 world_to_screen(const Vector2& world_position, const Vector2& camera_position) const;

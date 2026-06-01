@@ -85,6 +85,10 @@ namespace hob {
             .method("set_pixels_per_meter", &SpriteComponent::set_pixels_per_meter, {"value"});
 
         bind_usertype<CameraComponent>(m_lua, m_meta, Bases<Component>{})
+            .method("get_screen_pixels_per_meter", &CameraComponent::get_screen_pixels_per_meter)
+            .method("set_screen_pixels_per_meter", &CameraComponent::set_screen_pixels_per_meter, {"value"})
+            .method("get_zoom", &CameraComponent::get_zoom)
+            .method("set_zoom", &CameraComponent::set_zoom, {"multiplier"})
             .method("world_to_screen",
                     sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::world_to_screen),
                     {"world_pos"})
@@ -260,6 +264,8 @@ namespace hob {
             m_lua, m_meta, m_schemas, m_spawner, "input", "add_input", {});
 
         bind_component_schema<CameraComponent>(
-            m_lua, m_meta, m_schemas, m_spawner, "camera", "add_camera", {});
+            m_lua, m_meta, m_schemas, m_spawner, "camera", "add_camera", {
+                {"screen_pixels_per_meter", "set_screen_pixels_per_meter"},
+            });
     }
 }
