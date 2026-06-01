@@ -179,14 +179,14 @@ namespace hob {
         /// Draws a line segment in logical screen space (top-left origin, y-down).
         void render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
+        // Texture cache.
+        // Loads (or returns a cached ref to) a texture by path relative to the assets root.
+        TextureRef get_or_load_texture(const std::string& path);
+
         // Resolve a sprite-shader path (relative to assets root, no .vert.hlsl / .frag.hlsl suffix) to a ShaderId.
         // Lazily builds and caches the pipeline on first request.
         // Failed builds alias DEFAULT_SPRITE_SHADER_ID (no retry spam).
         ShaderId get_or_build_sprite_shader(const std::string& path);
-
-        // Texture cache.
-        // Loads (or returns a cached ref to) a texture by path relative to the assets root.
-        TextureRef get_or_load_texture(const std::string& path);
 
         // Per-frame GPU lifecycle. Engine calls acquire_command_buffer() at frame start;
         // if it returns true the swapchain is usable and the engine records work + submits,
@@ -212,9 +212,9 @@ namespace hob {
         bool init_offscreen_target();
         bool init_samplers();
         bool init_quad_vbo();
-        bool init_default_sprite_pipeline();
         bool init_blit_pipeline();
         bool init_line_pipeline();
+        bool init_default_sprite_pipeline();
 
         // Builds a sprite pipeline from a shader path (relative to assets root, no suffix).
         // Returns nullptr on failure; caller handles fallback.
