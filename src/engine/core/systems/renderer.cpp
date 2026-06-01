@@ -293,18 +293,18 @@ namespace hob {
         return static_cast<float>(m_pixels_per_meter);
     }
 
-    void Renderer::render_sprite(TextureId texture_id,
-                                 const Vector2& screen_pos,
-                                 const Vector2& size_pixels,
-                                 const Vector2& pivot_pixel,
-                                 float rotation_rad,
-                                 int z_index,
-                                 const Material& material) {
+    void Renderer::draw_sprite(TextureId texture_id,
+                               const Vector2& screen_pos,
+                               const Vector2& size_pixels,
+                               const Vector2& pivot_pixel,
+                               float rotation_rad,
+                               int z_index,
+                               const Material& material) {
         m_pending_sprites.push_back(
             {texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, z_index, material});
     }
 
-    void Renderer::render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
+    void Renderer::draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
         // Expand the segment into a screen-aligned quad. Perpendicular extrusion is in
         // logical-pixel space, so the quad has uniform pixel width on the offscreen target.
         const float dx = b.x - a.x;

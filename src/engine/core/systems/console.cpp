@@ -462,7 +462,7 @@ namespace hob {
         m_scroll_to_bottom = true;
     }
 
-    void Console::render() {
+    void Console::draw() {
         // ImGui draws to the window framebuffer, not SDL's logical-presentation space,
         // so anchor the console to ImGui's display size rather than the logical resolution.
         const ImVec2 display_size = ImGui::GetIO().DisplaySize;

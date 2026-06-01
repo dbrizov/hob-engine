@@ -130,7 +130,7 @@ namespace hob {
             log("[error] {}", std::format(fmt, std::forward<Args>(args)...));
         }
 
-        void render();
+        void draw();
 
         bool register_command(std::string_view name, std::string_view help, CommandFunc func);
         bool register_cvar(std::string_view name,

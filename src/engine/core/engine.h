@@ -48,7 +48,7 @@ namespace hob {
         LuaScriptSystem& get_lua_script_system();
 
     private:
-        void render_entities(std::vector<const Entity*>& entities);
-        void render_debug_draws(float delta_time);
+        void draw_entities(std::vector<const Entity*>& entities);
+        void draw_debug_draws(float delta_time);
     };
 }

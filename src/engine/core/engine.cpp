@@ -90,12 +90,12 @@ namespace hob {
             }
 #endif
 
-            render_entities(renderable_entities);
-            render_debug_draws(scaled_delta_time);
-            m_cursor.render();
+            draw_entities(renderable_entities);
+            draw_debug_draws(scaled_delta_time);
+            m_cursor.draw();
 
             if (m_console.is_open()) {
-                m_console.render();
+                m_console.draw();
             }
 
             if (m_renderer.acquire_command_buffer()) {
@@ -155,7 +155,7 @@ namespace hob {
         return m_lua_script_system;
     }
 
-    void Engine::render_entities(std::vector<const Entity*>& entities) {
+    void Engine::draw_entities(std::vector<const Entity*>& entities) {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
         TransformComponent* camera_transform = camera_entity->get_transform();
@@ -193,7 +193,7 @@ namespace hob {
 
             const Vector2 pivot_pixel(size_pixels.x * sprite_pivot.x, size_pixels.y * sprite_pivot.y);
 
-            m_renderer.render_sprite(
+            m_renderer.draw_sprite(
                 texture.get_id(),
                 screen_pos,
                 size_pixels,
@@ -204,10 +204,10 @@ namespace hob {
         }
     }
 
-    void Engine::render_debug_draws(float delta_time) {
+    void Engine::draw_debug_draws(float delta_time) {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
 
-        debug::render_debug_draws(m_renderer, camera_component, delta_time);
+        debug::draw_debug_draws(m_renderer, camera_component, delta_time);
     }
 }

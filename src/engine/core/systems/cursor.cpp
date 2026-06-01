@@ -96,7 +96,7 @@ namespace hob {
         }
     }
 
-    void Cursor::render() {
+    void Cursor::draw() {
         if (!m_is_visible || !m_texture.is_valid() || is_os_cursor_visible()) {
             return;
         }
@@ -110,6 +110,6 @@ namespace hob {
         Vector2 mouse_screen = m_input.get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot.x, mouse_screen.y - pivot.y);
 
-        m_renderer.render_sprite(m_texture.get_id(), screen_pos, size, pivot, rotation_rad, z_index, m_material);
+        m_renderer.draw_sprite(m_texture.get_id(), screen_pos, size, pivot, rotation_rad, z_index, m_material);
     }
 }

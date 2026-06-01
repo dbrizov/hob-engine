@@ -57,6 +57,6 @@ namespace hob {
         bool is_os_cursor_visible() const;
         void set_os_cursor_visible(bool visible);
 
-        void render();
+        void draw();
     };
 }

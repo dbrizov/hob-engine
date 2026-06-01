@@ -168,16 +168,16 @@ namespace hob {
         /// Draws a textured quad in logical screen space (top-left origin, y-down).
         /// All pixel-valued parameters are in logical pixels — the same space the
         /// orthographic projection is configured in, NOT window pixels.
-        void render_sprite(TextureId texture_id,
-                           const Vector2& screen_pos,
-                           const Vector2& size_pixels,
-                           const Vector2& pivot_pixel,
-                           float rotation_rad,
-                           int z_index,
-                           const Material& material);
+        void draw_sprite(TextureId texture_id,
+                         const Vector2& screen_pos,
+                         const Vector2& size_pixels,
+                         const Vector2& pivot_pixel,
+                         float rotation_rad,
+                         int z_index,
+                         const Material& material);
 
         /// Draws a line segment in logical screen space (top-left origin, y-down).
-        void render_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
+        void draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
         // Texture cache.
         // Loads (or returns a cached ref to) a texture by path relative to the assets root.
