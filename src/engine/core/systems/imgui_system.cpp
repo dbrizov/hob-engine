@@ -94,7 +94,7 @@ namespace hob {
     void ImGuiSystem::prepare_draw_data(SDL_GPUCommandBuffer* cmd) {
         ImGui::Render();
         ImDrawData* draw_data = ImGui::GetDrawData();
-        Imgui_ImplSDLGPU3_PrepareDrawData(draw_data, cmd);
+        ImGui_ImplSDLGPU3_PrepareDrawData(draw_data, cmd);
     }
 
     void ImGuiSystem::record_draw_data(SDL_GPURenderPass* pass, SDL_GPUCommandBuffer* cmd) {
