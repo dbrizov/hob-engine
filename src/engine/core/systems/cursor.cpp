@@ -5,7 +5,6 @@
 #include "input.h"
 #include "renderer.h"
 #include "sdl_context.h"
-#include "engine/math/constants.h"
 
 namespace hob {
     Cursor::Cursor(const SdlContext& sdl_context, Renderer& renderer, const Input& input)
@@ -106,10 +105,9 @@ namespace hob {
         const Vector2 size(width * m_scale.x, height * m_scale.y);
         const Vector2 pivot(size.x * m_pivot.x, size.y * m_pivot.y);
         const float rotation_rad = 0.0f;
-        const int z_index = MAX_INT32;
         Vector2 mouse_screen = m_input.get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot.x, mouse_screen.y - pivot.y);
 
-        m_renderer.draw_sprite(m_texture.get_id(), screen_pos, size, pivot, rotation_rad, z_index, m_material);
+        m_renderer.draw_overlay_sprite(m_texture.get_id(), screen_pos, size, pivot, rotation_rad, m_material);
     }
 }

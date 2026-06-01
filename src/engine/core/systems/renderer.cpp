@@ -32,6 +32,21 @@ namespace hob {
             return m;
         }
 
+        // Same logical-pixel input range as ortho_top_left, but maps y:[0,h] -> [+1,-1].
+        // Used for passes that target the swapchain directly (overlay) — the swap's NDC
+        // y convention is opposite to the offscreen target's, and without flipping here
+        // the overlay would render vertically mirrored relative to the world.
+        std::array<float, 16> ortho_top_left_y_flipped(float w, float h) {
+            std::array<float, 16> m{};
+            m[0] = 2.0f / w;
+            m[5] = -2.0f / h;
+            m[10] = 1.0f;
+            m[12] = -1.0f;
+            m[13] = 1.0f;
+            m[15] = 1.0f;
+            return m;
+        }
+
         // Must match the HLSL cbuffer layout in sprite.vert.hlsl (cbuffer @ b0, space1).
         // HLSL default packing: each non-vector member can't cross a 16-byte boundary;
         // float2 pairs pack into a single 16-byte slot.
@@ -186,7 +201,9 @@ namespace hob {
         , m_logical_height(config.graphics_config.logical_resolution_height)
         , m_pixels_per_meter(config.graphics_config.pixels_per_meter)
         , m_projection(ortho_top_left(static_cast<float>(m_logical_width),
-                                      static_cast<float>(m_logical_height))) {
+                                      static_cast<float>(m_logical_height)))
+        , m_overlay_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
+                                                        static_cast<float>(m_logical_height))) {
         if (!m_gpu_device) {
             debug::log_error("Renderer init failed: GPU device is null");
             return;
@@ -302,6 +319,16 @@ namespace hob {
                                const Material& material) {
         m_pending_sprites.push_back(
             {texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, z_index, material});
+    }
+
+    void Renderer::draw_overlay_sprite(TextureId texture_id,
+                                       const Vector2& screen_pos,
+                                       const Vector2& size_pixels,
+                                       const Vector2& pivot_pixel,
+                                       float rotation_rad,
+                                       const Material& material) {
+        m_pending_overlay_sprites.push_back(
+            {texture_id, screen_pos, size_pixels, pivot_pixel, rotation_rad, 0, material});
     }
 
     void Renderer::draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness) {
@@ -552,37 +579,7 @@ namespace hob {
                 ShaderId bound_shader = INVALID_SHADER_ID;
 
                 for (const Sprite& sp : m_pending_sprites) {
-                    auto it = m_textures.find(sp.texture_id);
-                    if (it == m_textures.end() || !it->second.texture) {
-                        continue;
-                    }
-
-                    if (sp.material.shader_id != bound_shader) {
-                        SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.material.shader_id]);
-                        bound_shader = sp.material.shader_id;
-                    }
-
-                    SpriteVSUniforms vsu{};
-                    std::memcpy(vsu.proj, m_projection.data(), sizeof(vsu.proj));
-                    vsu.screen_pos[0] = sp.screen_pos.x;
-                    vsu.screen_pos[1] = sp.screen_pos.y;
-                    vsu.size[0] = sp.size_pixels.x;
-                    vsu.size[1] = sp.size_pixels.y;
-                    vsu.pivot[0] = sp.pivot_pixel.x;
-                    vsu.pivot[1] = sp.pivot_pixel.y;
-                    // World rotation is y-up CCW; logical screen is y-down. Negate so positive
-                    // world rotation remains visually CCW.
-                    vsu.rotation = -sp.rotation_rad;
-                    SDL_PushGPUVertexUniformData(cmd, 0, &vsu, sizeof(vsu));
-
-                    SDL_PushGPUFragmentUniformData(cmd, 0, &sp.material.tint, sizeof(Color));
-
-                    SDL_GPUTextureSamplerBinding ts{};
-                    ts.texture = it->second.texture;
-                    ts.sampler = m_sprite_sampler;
-                    SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
-
-                    SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+                    record_sprite(pass, sp, m_projection, bound_shader);
                 }
             }
 
@@ -635,6 +632,42 @@ namespace hob {
 
             SDL_EndGPURenderPass(pass);
         }
+    }
+
+    void Renderer::render_overlay_pass() {
+        if (m_pending_overlay_sprites.empty()) {
+            return;
+        }
+
+        SDL_GPUColorTargetInfo ct{};
+        ct.texture = m_swap_texture;
+        ct.load_op = SDL_GPU_LOADOP_LOAD;
+        ct.store_op = SDL_GPU_STOREOP_STORE;
+
+        // Render pass
+        {
+            SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(m_command_buffer, &ct, 1, nullptr);
+            if (!pass) {
+                m_pending_overlay_sprites.clear();
+                return;
+            }
+
+            SDL_GPUBufferBinding vb{};
+            vb.buffer = m_quad_vbo;
+            vb.offset = 0;
+            SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+
+            ShaderId bound_shader = INVALID_SHADER_ID;
+
+            // Overlay sprites are drawn in push order (no z-sort).
+            for (const Sprite& sp : m_pending_overlay_sprites) {
+                record_sprite(pass, sp, m_overlay_projection, bound_shader);
+            }
+
+            SDL_EndGPURenderPass(pass);
+        }
+
+        m_pending_overlay_sprites.clear();
     }
 
     bool Renderer::init_offscreen_target() {
@@ -938,6 +971,92 @@ namespace hob {
         return pipeline;
     }
 
+    void Renderer::debug_sprite_pipeline() {
+        if (m_cvar_log_sprite_queue) {
+            debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
+            for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
+                const Sprite& sp = m_pending_sprites[i];
+                auto tex_it = m_textures.find(sp.texture_id);
+                const char* tex_path = (tex_it != m_textures.end()) ? tex_it->second.path.c_str() : "<unknown>";
+                debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, tex_path);
+            }
+        }
+
+        if (m_cvar_show_sprite_queue) {
+            if (ImGui::Begin("Sprite Queue")) {
+                ImGui::Text("Total: %zu", m_pending_sprites.size());
+                const int columns = 4;
+                const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
+                                               ImGuiTableFlags_RowBg |
+                                               ImGuiTableFlags_ScrollY;
+
+                if (ImGui::BeginTable("queue", columns, flags)) {
+                    ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+                    ImGui::TableSetupColumn("z_index", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                    ImGui::TableSetupColumn("shader_id", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                    ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableHeadersRow();
+
+                    for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
+                        const Sprite& sp = m_pending_sprites[i];
+                        auto tex_it = m_textures.find(sp.texture_id);
+                        const char* tex_path = (tex_it != m_textures.end())
+                                                   ? tex_it->second.path.c_str()
+                                                   : "<unknown>";
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%zu", i);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%d", sp.z_index);
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("%d", sp.material.shader_id);
+                        ImGui::TableSetColumnIndex(3);
+                        ImGui::TextUnformatted(tex_path);
+                    }
+                    ImGui::EndTable();
+                }
+            }
+            ImGui::End();
+        }
+    }
+
+    void Renderer::record_sprite(SDL_GPURenderPass* pass,
+                                 const Sprite& sp,
+                                 const std::array<float, 16>& projection,
+                                 ShaderId& bound_shader) {
+        auto it = m_textures.find(sp.texture_id);
+        if (it == m_textures.end() || !it->second.texture) {
+            return;
+        }
+
+        if (sp.material.shader_id != bound_shader) {
+            SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.material.shader_id]);
+            bound_shader = sp.material.shader_id;
+        }
+
+        SpriteVSUniforms vsu{};
+        std::memcpy(vsu.proj, projection.data(), sizeof(vsu.proj));
+        vsu.screen_pos[0] = sp.screen_pos.x;
+        vsu.screen_pos[1] = sp.screen_pos.y;
+        vsu.size[0] = sp.size_pixels.x;
+        vsu.size[1] = sp.size_pixels.y;
+        vsu.pivot[0] = sp.pivot_pixel.x;
+        vsu.pivot[1] = sp.pivot_pixel.y;
+        // World rotation is y-up CCW; logical screen is y-down. Negate so positive
+        // world rotation remains visually CCW.
+        vsu.rotation = -sp.rotation_rad;
+        SDL_PushGPUVertexUniformData(m_command_buffer, 0, &vsu, sizeof(vsu));
+
+        SDL_PushGPUFragmentUniformData(m_command_buffer, 0, &sp.material.tint, sizeof(Color));
+
+        SDL_GPUTextureSamplerBinding ts{};
+        ts.texture = it->second.texture;
+        ts.sampler = m_sprite_sampler;
+        SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
+
+        SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+    }
+
     bool Renderer::upload_buffer(SDL_GPUBuffer* dst_buffer, const void* data, uint32_t size) {
         SDL_GPUTransferBufferCreateInfo tbi{};
         tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
@@ -1035,55 +1154,6 @@ namespace hob {
         }
         SDL_ReleaseGPUTransferBuffer(m_gpu_device, tb);
         return true;
-    }
-
-    void Renderer::debug_sprite_pipeline() {
-        if (m_cvar_log_sprite_queue) {
-            debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
-            for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                const Sprite& sp = m_pending_sprites[i];
-                auto tex_it = m_textures.find(sp.texture_id);
-                const char* tex_path = (tex_it != m_textures.end()) ? tex_it->second.path.c_str() : "<unknown>";
-                debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, tex_path);
-            }
-        }
-
-        if (m_cvar_show_sprite_queue) {
-            if (ImGui::Begin("Sprite Queue")) {
-                ImGui::Text("Total: %zu", m_pending_sprites.size());
-                const int columns = 4;
-                const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
-                                               ImGuiTableFlags_RowBg |
-                                               ImGuiTableFlags_ScrollY;
-
-                if (ImGui::BeginTable("queue", columns, flags)) {
-                    ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-                    ImGui::TableSetupColumn("z_index", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                    ImGui::TableSetupColumn("shader_id", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                    ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
-                    ImGui::TableHeadersRow();
-
-                    for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                        const Sprite& sp = m_pending_sprites[i];
-                        auto tex_it = m_textures.find(sp.texture_id);
-                        const char* tex_path = (tex_it != m_textures.end())
-                                                   ? tex_it->second.path.c_str()
-                                                   : "<unknown>";
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("%zu", i);
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("%d", sp.z_index);
-                        ImGui::TableSetColumnIndex(2);
-                        ImGui::Text("%d", sp.material.shader_id);
-                        ImGui::TableSetColumnIndex(3);
-                        ImGui::TextUnformatted(tex_path);
-                    }
-                    ImGui::EndTable();
-                }
-            }
-            ImGui::End();
-        }
     }
 
     void Renderer::register_cvars(Console& console) {

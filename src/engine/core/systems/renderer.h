@@ -96,9 +96,12 @@ namespace hob {
 
         // SDL_GPU clip-space ortho mapping (0,0)..(w,h) -> (-1,-1)..(+1,+1) with y-down.
         std::array<float, 16> m_projection{};
+        // Y-flipped variant used by render_overlay_pass (swap target has opposite NDC y).
+        std::array<float, 16> m_overlay_projection{};
 
         // Per-frame batches.
         std::vector<Sprite> m_pending_sprites;
+        std::vector<Sprite> m_pending_overlay_sprites;
         std::vector<LineVertex> m_pending_lines;
 
         // Per-frame GPU state, valid between acquire_command_buffer() and submit/cancel.
@@ -176,6 +179,15 @@ namespace hob {
                          int z_index,
                          const Material& material);
 
+        /// Queues a sprite to be drawn in the overlay pass — on top of the world AND ImGui.
+        /// Same coordinate space as draw_sprite (logical screen pixels). No z_index: overlays are drawn in push order.
+        void draw_overlay_sprite(TextureId texture_id,
+                                 const Vector2& screen_pos,
+                                 const Vector2& size_pixels,
+                                 const Vector2& pivot_pixel,
+                                 float rotation_rad,
+                                 const Material& material);
+
         /// Draws a line segment in logical screen space (top-left origin, y-down).
         void draw_line(const Vector2& a, const Vector2& b, const Color& color, float thickness);
 
@@ -204,6 +216,10 @@ namespace hob {
         // Opens a render pass on the swapchain texture, upscales the offscreen target and closes the pass.
         void render_blit_pass();
 
+        // Opens a render pass on the swapchain texture with LOAD_OP_LOAD and draws the
+        // queued overlay sprites on top of whatever's already there (world + ImGui).
+        void render_overlay_pass();
+
     private:
         friend class TextureRef;
         bool unload_texture(TextureId id);
@@ -219,14 +235,22 @@ namespace hob {
         // Returns nullptr on failure; caller handles fallback.
         SDL_GPUGraphicsPipeline* build_sprite_pipeline(const std::string& path);
 
+        void debug_sprite_pipeline();
+
+        // Records one sprite's draw commands into `pass`. Reads m_command_buffer for
+        // uniform pushes. Updates `bound_shader` so callers can skip redundant pipeline
+        // binds across a batch of sprites.
+        void record_sprite(SDL_GPURenderPass* pass,
+                           const Sprite& sp,
+                           const std::array<float, 16>& projection,
+                           ShaderId& bound_shader);
+
         // One-shot transfer-buffer upload of `data` (`size` bytes) into `dst_buffer`.
         // Fences the upload so the buffer is safe to use on the next frame.
         bool upload_buffer(SDL_GPUBuffer* dst_buffer, const void* data, uint32_t size);
 
         // Same for textures: uploads RGBA8 pixels into `dst_texture` at mip 0, layer 0.
         bool upload_texture_rgba(SDL_GPUTexture* dst_texture, const void* pixels, uint32_t width, uint32_t height);
-
-        void debug_sprite_pipeline();
 
         void register_cvars(Console& console);
     };

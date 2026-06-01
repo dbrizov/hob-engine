@@ -104,6 +104,7 @@ namespace hob {
                 m_renderer.render_world_pass();
                 m_renderer.render_blit_pass();
                 m_imgui_system.render_pass(m_renderer.get_command_buffer(), m_renderer.get_swap_texture());
+                m_renderer.render_overlay_pass();
 
                 m_renderer.submit_command_buffer();
             }
