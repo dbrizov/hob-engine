@@ -198,12 +198,11 @@ namespace hob {
         SDL_GPUCommandBuffer* get_command_buffer() const;
         SDL_GPUTexture* get_swap_texture() const;
 
-        // Replays queued sprites + lines into the offscreen color target.
-        void record_world_pass();
+        // Renders queued sprites + lines into the offscreen color target.
+        void render_world_pass();
 
-        // Opens a render pass on the swapchain texture, upscales the offscreen target,
-        // and closes the pass.
-        void record_blit_pass();
+        // Opens a render pass on the swapchain texture, upscales the offscreen target and closes the pass.
+        void render_blit_pass();
 
     private:
         friend class TextureRef;

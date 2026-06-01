@@ -490,7 +490,7 @@ namespace hob {
         return m_swap_texture;
     }
 
-    void Renderer::record_world_pass() {
+    void Renderer::render_world_pass() {
         SDL_GPUCommandBuffer* cmd = m_command_buffer;
         // Upload pending line vertices into the persistent line VBO before the render
         // pass starts (copy passes can't run inside a graphics render pass).
@@ -610,7 +610,7 @@ namespace hob {
         m_pending_lines.clear();
     }
 
-    void Renderer::record_blit_pass() {
+    void Renderer::render_blit_pass() {
         SDL_GPUColorTargetInfo ct{};
         ct.texture = m_swap_texture;
         ct.load_op = SDL_GPU_LOADOP_CLEAR;

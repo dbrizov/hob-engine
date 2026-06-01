@@ -25,7 +25,7 @@ namespace hob {
             int segments = 16;
         };
 
-        void draw_debug_draws(Renderer& renderer, const CameraComponent* camera, float delta_time);
+        void flush_draws_to_renderer(Renderer& renderer, const CameraComponent* camera, float delta_time);
 
         void draw_line(const Vector2& start,
                        const Vector2& end,

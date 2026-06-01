@@ -91,7 +91,7 @@ namespace hob {
 #endif
 
             draw_entities(renderable_entities);
-            draw_debug_draws(scaled_delta_time);
+            flush_debug_draws_to_renderer(scaled_delta_time);
             m_cursor.draw();
 
             if (m_console.is_open()) {
@@ -99,9 +99,10 @@ namespace hob {
             }
 
             if (m_renderer.acquire_command_buffer()) {
-                m_renderer.record_world_pass();
-                m_renderer.record_blit_pass();
-                m_imgui_system.record_draw_data_pass(m_renderer.get_command_buffer(), m_renderer.get_swap_texture());
+                m_renderer.render_world_pass();
+                m_renderer.render_blit_pass();
+                m_imgui_system.render_pass(m_renderer.get_command_buffer(), m_renderer.get_swap_texture());
+
                 m_renderer.submit_command_buffer();
             }
             else {
@@ -204,10 +205,10 @@ namespace hob {
         }
     }
 
-    void Engine::draw_debug_draws(float delta_time) {
+    void Engine::flush_debug_draws_to_renderer(float delta_time) {
         Entity* camera_entity = m_entity_spawner.get_camera_entity();
         CameraComponent* camera_component = camera_entity->get_component<CameraComponent>();
 
-        debug::draw_debug_draws(m_renderer, camera_component, delta_time);
+        debug::flush_draws_to_renderer(m_renderer, camera_component, delta_time);
     }
 }

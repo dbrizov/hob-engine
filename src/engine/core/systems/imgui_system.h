@@ -34,7 +34,7 @@ namespace hob {
         // a render pass on `swap_tex` (LOAD_OP_LOAD so prior contents are preserved) and
         // records ImGui draw commands into it. Pairs with new_frame as an alternative to
         // discard_frame — exactly one of the two must run per new_frame.
-        void record_draw_data_pass(SDL_GPUCommandBuffer* cmd, SDL_GPUTexture* swap_tex);
+        void render_pass(SDL_GPUCommandBuffer* cmd, SDL_GPUTexture* swap_tex);
 
         // Discard the current ImGui frame without producing draw data (e.g. when the
         // swapchain texture could not be acquired). Pairs with new_frame as an alternative
