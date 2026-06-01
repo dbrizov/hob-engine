@@ -90,6 +90,7 @@ namespace hob {
             }
 #endif
 
+            // Draw
             draw_entities(renderable_entities);
             flush_debug_draws_to_renderer(scaled_delta_time);
             m_cursor.draw();
@@ -98,6 +99,7 @@ namespace hob {
                 m_console.draw();
             }
 
+            // Render
             if (m_renderer.acquire_command_buffer()) {
                 m_renderer.render_world_pass();
                 m_renderer.render_blit_pass();
