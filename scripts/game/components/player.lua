@@ -51,6 +51,25 @@ function Player:physics_tick(fixed_delta_time)
     self:update_rotation(fixed_delta_time)
 end
 
+function Player:tick(delta_time)
+    self:update_animation()
+end
+
+function Player:update_animation()
+    local animator = self.entity:get_sprite_animator()
+    if animator == nil then
+        return
+    end
+
+    local velocity = self.entity:get_character_body():get_velocity()
+    local moving = velocity:length_sqr() > 0.01
+    local desired = moving and "run" or "idle"
+
+    if animator:get_current_clip() ~= desired then
+        animator:play(desired)
+    end
+end
+
 function Player:debug_draw_tick(delta_time)
     local mouse_screen = Input.get_mouse_screen_position()
     local mouse_world = Camera.screen_to_world(mouse_screen)

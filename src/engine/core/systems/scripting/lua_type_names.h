@@ -14,10 +14,12 @@ namespace hob {
     struct Color;
     struct Material;
     struct RaycastHit;
+    struct AnimationClip;
     struct EntityHandle;
     class Component;
     class TransformComponent;
     class SpriteComponent;
+    class SpriteAnimatorComponent;
     class CameraComponent;
     class RigidbodyComponent;
     class ColliderComponent;
@@ -38,10 +40,12 @@ namespace hob {
     HOB_LUA_TYPE(Color, "Color")
     HOB_LUA_TYPE(Material, "Material")
     HOB_LUA_TYPE(RaycastHit, "RaycastHit")
+    HOB_LUA_TYPE(AnimationClip, "AnimationClip")
     HOB_LUA_TYPE(EntityHandle, "Entity")
     HOB_LUA_TYPE(Component, "Component")
     HOB_LUA_TYPE(TransformComponent, "TransformComponent")
     HOB_LUA_TYPE(SpriteComponent, "SpriteComponent")
+    HOB_LUA_TYPE(SpriteAnimatorComponent, "SpriteAnimatorComponent")
     HOB_LUA_TYPE(CameraComponent, "CameraComponent")
     HOB_LUA_TYPE(RigidbodyComponent, "RigidbodyComponent")
     HOB_LUA_TYPE(ColliderComponent, "ColliderComponent")

@@ -179,6 +179,15 @@ namespace hob {
         }
     }
 
+    TextureRef TextureRef::clone() const {
+        if (m_renderer == nullptr) {
+            return TextureRef();
+        }
+
+        m_renderer->retain_texture(m_id);
+        return TextureRef(*m_renderer, m_id, m_width, m_height);
+    }
+
     bool TextureRef::is_valid() const {
         return m_renderer != nullptr;
     }
@@ -423,6 +432,23 @@ namespace hob {
         }
 
         return TextureRef(*this, texture_id, w, h);
+    }
+
+    bool Renderer::retain_texture(TextureId id) {
+        auto it = m_textures.find(id);
+        if (it == m_textures.end()) {
+            debug::log_error("Renderer::retain_texture: 'unknown' (id={})", id);
+            return false;
+        }
+
+        TextureEntry& entry = it->second;
+        entry.ref_count += 1;
+
+        if (m_cvar_log_textures) {
+            debug::log("Renderer::retain_texture: '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
+        }
+
+        return true;
     }
 
     bool Renderer::unload_texture(TextureId id) {

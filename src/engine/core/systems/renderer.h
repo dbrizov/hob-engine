@@ -50,6 +50,10 @@ namespace hob {
 
         void reset();
 
+        // Returns an owning copy of this ref, bumping the renderer's refcount for the
+        // underlying texture. Invalid refs clone to invalid refs.
+        TextureRef clone() const;
+
         bool is_valid() const;
         TextureId get_id() const;
         uint32_t get_width() const;
@@ -219,6 +223,9 @@ namespace hob {
     private:
         friend class TextureRef;
         bool unload_texture(TextureId id);
+        // Bumps the ref_count of an already-loaded texture. Used by TextureRef::clone.
+        // Returns false (and logs) if the id is unknown.
+        bool retain_texture(TextureId id);
 
         bool init_offscreen_target();
         bool init_samplers();

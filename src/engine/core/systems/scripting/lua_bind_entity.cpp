@@ -10,6 +10,7 @@
 #include "engine/components/lua_script_component.h"
 #include "engine/components/lua_script_component_impl.h"
 #include "engine/components/input_component.h"
+#include "engine/components/sprite_animator_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/components/physics/box_collider_component.h"
@@ -89,6 +90,10 @@ namespace hob {
             .method("get_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
                 Entity* e = get_entity(h);
                 return e ? e->get_component<SpriteComponent>() : nullptr;
+            })
+            .method("get_sprite_animator", [get_entity](const EntityHandle& h) -> SpriteAnimatorComponent* {
+                Entity* e = get_entity(h);
+                return e ? e->get_component<SpriteAnimatorComponent>() : nullptr;
             })
             .method("get_input", [get_entity](const EntityHandle& h) -> InputComponent* {
                 Entity* e = get_entity(h);

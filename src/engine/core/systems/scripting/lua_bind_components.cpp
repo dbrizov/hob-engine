@@ -14,6 +14,8 @@
 #include "engine/components/physics/circle_collider_component.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
+#include "engine/animation/animation_clip.h"
+#include "engine/components/sprite_animator_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/debug.h"
@@ -163,6 +165,68 @@ namespace hob {
             .method("get_pixels_per_meter", &SpriteComponent::get_pixels_per_meter)
             .method("set_pixels_per_meter", &SpriteComponent::set_pixels_per_meter, {"value"});
 
+        // AnimationClip
+        // Factory: AnimationClip { textures = { ... }, fps = N, looping = bool }.
+        // Each texture entry may be a raw path string or an Assets.X ref (tostring unwraps it).
+        // Returns shared_ptr so multiple animators can share a single instance and the
+        // underlying TextureRefs stay alive as long as any holder exists.
+        Renderer& renderer = m_engine.get_renderer();
+        bind_usertype<AnimationClip>(lua, meta)
+            .factory_ctor([&renderer](sol::table t) {
+                auto clip = std::make_shared<AnimationClip>();
+                sol::object textures_obj = t["textures"];
+                if (textures_obj.valid() && textures_obj.get_type() == sol::type::table) {
+                    sol::table textures = textures_obj;
+                    sol::state_view sv(t.lua_state());
+                    clip->frames.reserve(textures.size());
+                    for (size_t i = 1; i <= textures.size(); ++i) {
+                        sol::object entry = textures[i];
+                        if (!entry.valid() || entry.get_type() == sol::type::lua_nil) {
+                            continue;
+                        }
+
+                        std::string path = sv["tostring"](entry);
+                        clip->frames.push_back({renderer.get_or_load_texture(path)});
+                    }
+                }
+                clip->fps = t.get_or("fps", 12.0f);
+                clip->looping = t.get_or("looping", true);
+                return clip;
+            }, {"config"})
+            .method("get_fps", [](const AnimationClip& self) { return self.fps; })
+            .method("get_looping", [](const AnimationClip& self) { return self.looping; })
+            .method("get_frame_count", [](const AnimationClip& self) {
+                return static_cast<int>(self.frames.size());
+            });
+
+        bind_usertype<SpriteAnimatorComponent>(lua, meta, Bases<Component>{})
+            .method("add_clip", &SpriteAnimatorComponent::add_clip, {"name", "clip"})
+            .method("set_default_clip", &SpriteAnimatorComponent::set_default_clip, {"name"})
+            .method("get_default_clip", &SpriteAnimatorComponent::get_default_clip)
+            .method("get_current_clip", &SpriteAnimatorComponent::get_current_clip)
+            .method("get_current_frame", &SpriteAnimatorComponent::get_current_frame)
+            .method("play", &SpriteAnimatorComponent::play, {"name"})
+            .method("resume", &SpriteAnimatorComponent::resume)
+            .method("pause", &SpriteAnimatorComponent::pause)
+            .method("stop", &SpriteAnimatorComponent::stop)
+            .method("is_playing", &SpriteAnimatorComponent::is_playing)
+            // Bulk setter used by the prefab schema. Lua passes a table of {name -> AnimationClip ref}.
+            // Skips entries that are not valid AnimationClip shared_ptrs.
+            .method("set_clips",
+                    [](SpriteAnimatorComponent& self, sol::table t) {
+                        for (auto& kv : t) {
+                            if (!kv.first.is<std::string>()) {
+                                continue;
+                            }
+                            std::string name = kv.first.as<std::string>();
+                            auto clip = kv.second.as<sol::optional<std::shared_ptr<AnimationClip>>>();
+                            if (clip) {
+                                self.add_clip(name, *clip);
+                            }
+                        }
+                    },
+                    {"clips"});
+
         bind_usertype<CameraComponent>(lua, meta, Bases<Component>{})
             .method("get_screen_pixels_per_meter", &CameraComponent::get_screen_pixels_per_meter)
             .method("set_screen_pixels_per_meter", &CameraComponent::set_screen_pixels_per_meter, {"value"})
@@ -239,6 +303,12 @@ namespace hob {
                 {"z_index", "set_z_index"},
                 {"pixels_per_meter", "set_pixels_per_meter"},
                 {"material", "set_material"},
+            });
+
+        bind_component_schema<SpriteAnimatorComponent>(
+            lua, meta, schemas, spawner, "sprite_animator", "add_sprite_animator", {
+                {"clips", "set_clips"},
+                {"default_clip", "set_default_clip"},
             });
 
         bind_component_schema<InputComponent>(

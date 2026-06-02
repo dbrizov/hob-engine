@@ -71,6 +71,13 @@ local schemas = {
             material = "set_material",
         },
     },
+    sprite_animator = {
+        add = "add_sprite_animator",
+        setters = {
+            clips = "set_clips",
+            default_clip = "set_default_clip",
+        },
+    },
     input = {
         add = "add_input",
         setters = {},
@@ -91,6 +98,7 @@ schemas.__order = {
     "capsule_collider",
     "circle_collider",
     "sprite",
+    "sprite_animator",
     "input",
     "camera",
 }

@@ -14,5 +14,12 @@ DefineEntity.Player = {
         texture = Assets.PlayerTexture,
         z_index = 2,
     },
+    sprite_animator = {
+        clips = {
+            idle = AnimationClips.PlayerIdle,
+            run = AnimationClips.PlayerRun,
+        },
+        default_clip = "idle",
+    },
     lua_components = { "Player", "ContactLogger" },
 }

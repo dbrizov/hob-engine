@@ -411,6 +411,9 @@ function Entity:get_character_body() end
 ---@return SpriteComponent?
 function Entity:get_sprite() end
 
+---@return SpriteAnimatorComponent?
+function Entity:get_sprite_animator() end
+
 ---@return InputComponent?
 function Entity:get_input() end
 
@@ -438,6 +441,9 @@ function Entity:add_circle_collider() end
 
 ---@return SpriteComponent?
 function Entity:add_sprite() end
+
+---@return SpriteAnimatorComponent?
+function Entity:add_sprite_animator() end
 
 ---@return InputComponent?
 function Entity:add_input() end
@@ -733,6 +739,59 @@ function SpriteComponent:get_pixels_per_meter() end
 function SpriteComponent:set_pixels_per_meter(value) end
 
 _G.SpriteComponent = SpriteComponent
+
+-- AnimationClip
+---@class AnimationClip
+---@overload fun(config: table): AnimationClip
+local AnimationClip = {}
+
+---@return number
+function AnimationClip:get_fps() end
+
+---@return boolean
+function AnimationClip:get_looping() end
+
+---@return integer
+function AnimationClip:get_frame_count() end
+
+_G.AnimationClip = AnimationClip
+
+-- SpriteAnimatorComponent
+---@class SpriteAnimatorComponent : Component
+local SpriteAnimatorComponent = {}
+
+---@param name string
+---@param clip any
+function SpriteAnimatorComponent:add_clip(name, clip) end
+
+---@param name string
+function SpriteAnimatorComponent:set_default_clip(name) end
+
+---@return string
+function SpriteAnimatorComponent:get_default_clip() end
+
+---@return string
+function SpriteAnimatorComponent:get_current_clip() end
+
+---@return integer
+function SpriteAnimatorComponent:get_current_frame() end
+
+---@param name string
+function SpriteAnimatorComponent:play(name) end
+
+function SpriteAnimatorComponent:resume() end
+
+function SpriteAnimatorComponent:pause() end
+
+function SpriteAnimatorComponent:stop() end
+
+---@return boolean
+function SpriteAnimatorComponent:is_playing() end
+
+---@param clips table
+function SpriteAnimatorComponent:set_clips(clips) end
+
+_G.SpriteAnimatorComponent = SpriteAnimatorComponent
 
 -- CameraComponent
 ---@class CameraComponent : Component

@@ -29,9 +29,27 @@ _G.DefineEntity = setmetatable({}, {
     end,
 })
 
+local function resolve_value(value)
+    -- Unwrap deferred refs (Assets.X, AnimationClips.X) and recurse into plain tables
+    -- so map-valued prefab properties (e.g. sprite_animator.clips) get every entry
+    -- resolved before being handed to the C++ setter.
+    local resolved = Assets.resolve(value)
+    resolved = AnimationClips.resolve(resolved)
+
+    if type(resolved) == "table" and getmetatable(resolved) == nil then
+        local out = {}
+        for k, v in pairs(resolved) do
+            out[k] = resolve_value(v)
+        end
+        return out
+    end
+
+    return resolved
+end
+
 local function apply_setters(component, section, setters)
     for prop, value in pairs(section) do
-        local resolved_value = Assets.resolve(value)
+        local resolved_value = resolve_value(value)
         local setter = setters[prop]
         if setter == nil then
             Debug.log_error("Unknown prefab property '" .. tostring(prop) .. "' for component")
