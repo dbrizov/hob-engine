@@ -35,6 +35,7 @@ local function resolve_value(value)
     -- resolved before being handed to the C++ setter.
     local resolved = Assets.resolve(value)
     resolved = AnimationClips.resolve(resolved)
+    resolved = Materials.resolve(resolved)
 
     if type(resolved) == "table" and getmetatable(resolved) == nil then
         local out = {}

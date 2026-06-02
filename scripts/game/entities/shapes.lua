@@ -64,9 +64,7 @@ DefineEntity.TriggerCircle = {
     },
     sprite = {
         texture = Assets.RobotTexture,
-        material = Material {
-            shader = Assets.OutlineShader,
-        },
+        material = Materials.Outline,
     },
     lua_components = { "ContactLogger" },
 }
