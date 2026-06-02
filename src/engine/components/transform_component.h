@@ -7,11 +7,12 @@
 namespace hob {
     class TransformComponent : public Component {
         Vector2 m_position;
-        float m_rotation = 0.0f; // in radians
+        float m_rotation = 0.0f; // In radians
         Vector2 m_scale = Vector2(1.0f, 1.0f);
 
         Matrix2x3 m_local_matrix;
         Matrix2x3 m_prev_local_matrix; // Used for Physics interpolation
+        bool m_interpolate_physics = true;
 
         // Physics is a friend class of TransformComponent so that
         // the rendering can take advantage of Physics interpolation when enabled.
@@ -30,6 +31,9 @@ namespace hob {
 
         Vector2 get_scale() const;
         void set_scale(const Vector2& scale);
+
+        bool get_interpolate_physics() const;
+        void set_interpolate_physics(bool value);
 
         const Matrix2x3& get_local_matrix() const;
         const Matrix2x3& get_prev_local_matrix() const;

@@ -53,6 +53,22 @@ namespace hob {
         }
     }
 
+    bool TransformComponent::get_interpolate_physics() const {
+        return m_interpolate_physics;
+    }
+
+    void TransformComponent::set_interpolate_physics(bool value) {
+        if (m_interpolate_physics == value) {
+            return;
+        }
+
+        m_interpolate_physics = value;
+        if (value) {
+            // Bring prev back in sync so the first render after re-enabling doesn't lerp from a stale matrix.
+            m_prev_local_matrix = m_local_matrix;
+        }
+    }
+
     const Matrix2x3& TransformComponent::get_local_matrix() const {
         return m_local_matrix;
     }

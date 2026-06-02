@@ -2,6 +2,12 @@
 -- Source of truth: hob::LuaScriptSystem::bind_components().
 
 local schemas = {
+    transform = {
+        add = "get_transform",
+        setters = {
+            interpolate_physics = "set_interpolate_physics",
+        },
+    },
     rigidbody = {
         add = "add_rigidbody",
         setters = {
@@ -78,6 +84,7 @@ local schemas = {
 }
 
 schemas.__order = {
+    "transform",
     "rigidbody",
     "character_body",
     "box_collider",

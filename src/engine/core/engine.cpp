@@ -197,9 +197,11 @@ namespace hob {
                 continue;
             }
 
-            const Matrix2x3 matrix = Matrix2x3::lerp(transform_comp->get_prev_local_matrix(),
-                                                     transform_comp->get_local_matrix(),
-                                                     m_physics.get_interpolation_fraction());
+            const Matrix2x3 matrix = transform_comp->get_interpolate_physics()
+                                         ? Matrix2x3::lerp(transform_comp->get_prev_local_matrix(),
+                                                           transform_comp->get_local_matrix(),
+                                                           m_physics.get_interpolation_fraction())
+                                         : transform_comp->get_local_matrix();
 
             const Vector2 tr_scale = transform_comp->get_scale();
             const Vector2 sp_scale = sprite_comp->get_scale();

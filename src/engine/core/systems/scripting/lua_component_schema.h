@@ -71,4 +71,23 @@ namespace hob {
 
         schemas.add_schema(key, add_method, std::move(v));
     }
+
+    // Overload for components that are always present on every entity
+    // (e.g. TransformComponent, added by EntitySpawner at construction).
+    // Records only the prefab schema entry; the prefab applier dispatches through
+    // an Entity method that is already bound elsewhere (e.g. "get_transform").
+    // No add_X method is synthesized, so Lua cannot construct a second instance.
+    template<typename T>
+    void bind_component_schema(LuaComponentSchemaRegistry& schemas,
+                               const char* key,
+                               const char* existing_method,
+                               std::initializer_list<std::pair<const char*, const char*>> setters) {
+        std::vector<std::pair<std::string, std::string>> v;
+        v.reserve(setters.size());
+        for (const auto& s : setters) {
+            v.emplace_back(s.first, s.second);
+        }
+
+        schemas.add_schema(key, existing_method, std::move(v));
+    }
 }

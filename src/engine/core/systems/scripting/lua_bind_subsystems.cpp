@@ -13,6 +13,7 @@
 #include "engine/core/systems/cursor.h"
 #include "engine/core/systems/input.h"
 #include "engine/core/systems/physics.h"
+#include "engine/core/systems/renderer.h"
 #include "engine/core/systems/timer.h"
 #include "engine/entity/entity.h"
 #include "engine/entity/entity_spawner.h"
@@ -21,6 +22,33 @@ namespace hob {
     void LuaScriptSystem::bind_subsystems() {
         sol::state& m_lua = m_impl->lua;
         LuaMetaRegistry& m_meta = m_impl->meta;
+
+        // Renderer
+        Renderer& renderer = m_engine.get_renderer();
+        bind_usertype<Material>(m_lua, m_meta)
+            .factory_ctor([&renderer](sol::table t) {
+                Material mat;
+                sol::object sh_obj = t["shader"];
+                if (sh_obj.valid() && sh_obj.get_type() != sol::type::lua_nil) {
+                    // TODO Assets.X refs will not return only string in the future.
+                    // tostring resolves Assets.X refs via their __tostring metamethod
+                    // and passes through raw string paths unchanged.
+                    sol::state_view sv(t.lua_state());
+                    std::string path = sv["tostring"](sh_obj);
+                    mat.shader_id = renderer.get_or_build_sprite_shader(path);
+                }
+                if (auto tint = t.get<sol::optional<Color>>("tint")) {
+                    mat.tint = *tint;
+                }
+                return mat;
+            }, {"config"})
+            .method("get_tint", [](const Material& self) { return self.tint; })
+            .method("set_tint", [](Material& self, const Color& tint) { self.tint = tint; }, {"tint"})
+            .method("set_shader",
+                    [&renderer](Material& self, const std::string& path) {
+                        self.shader_id = renderer.get_or_build_sprite_shader(path);
+                    },
+                    {"path"});
 
         // Timer
         Timer& timer = m_engine.get_timer();

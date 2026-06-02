@@ -478,93 +478,13 @@ function TransformComponent:get_scale() end
 ---@param scale Vector2
 function TransformComponent:set_scale(scale) end
 
-_G.TransformComponent = TransformComponent
-
--- Material
----@class Material
----@overload fun(config: table): Material
-local Material = {}
-
----@return Color
-function Material:get_tint() end
-
----@param tint Color
-function Material:set_tint(tint) end
-
----@param shader_path string
-function Material:set_shader(shader_path) end
-
-_G.Material = Material
-
--- SpriteComponent
----@class SpriteComponent : Component
-local SpriteComponent = {}
-
 ---@return boolean
-function SpriteComponent:has_texture() end
+function TransformComponent:get_interpolate_physics() end
 
----@param path string
-function SpriteComponent:set_texture(path) end
+---@param value boolean
+function TransformComponent:set_interpolate_physics(value) end
 
-function SpriteComponent:clear_texture() end
-
----@return Material
-function SpriteComponent:get_material() end
-
----@param material Material
-function SpriteComponent:set_material(material) end
-
----@return Vector2
-function SpriteComponent:get_pivot() end
-
----@param pivot Vector2
-function SpriteComponent:set_pivot(pivot) end
-
----@return Vector2
-function SpriteComponent:get_scale() end
-
----@param scale Vector2
-function SpriteComponent:set_scale(scale) end
-
----@return integer
-function SpriteComponent:get_z_index() end
-
----@param z_index integer
-function SpriteComponent:set_z_index(z_index) end
-
----@return integer
-function SpriteComponent:get_pixels_per_meter() end
-
----@param value integer
-function SpriteComponent:set_pixels_per_meter(value) end
-
-_G.SpriteComponent = SpriteComponent
-
--- CameraComponent
----@class CameraComponent : Component
-local CameraComponent = {}
-
----@return number
-function CameraComponent:get_screen_pixels_per_meter() end
-
----@param value number
-function CameraComponent:set_screen_pixels_per_meter(value) end
-
----@return number
-function CameraComponent:get_zoom() end
-
----@param multiplier number
-function CameraComponent:set_zoom(multiplier) end
-
----@param world_pos Vector2
----@return Vector2
-function CameraComponent:world_to_screen(world_pos) end
-
----@param screen_pos Vector2
----@return Vector2
-function CameraComponent:screen_to_world(screen_pos) end
-
-_G.CameraComponent = CameraComponent
+_G.TransformComponent = TransformComponent
 
 -- RigidbodyComponent
 ---@class RigidbodyComponent : Component
@@ -601,6 +521,55 @@ function RigidbodyComponent:get_rotation() end
 function RigidbodyComponent:set_rotation(radians) end
 
 _G.RigidbodyComponent = RigidbodyComponent
+
+-- CharacterBodyComponent
+---@class CharacterBodyComponent : Component
+local CharacterBodyComponent = {}
+
+---@return integer
+function CharacterBodyComponent:get_collision_layer() end
+
+---@param layer integer
+function CharacterBodyComponent:set_collision_layer(layer) end
+
+---@return integer
+function CharacterBodyComponent:get_collision_mask() end
+
+---@param mask integer
+function CharacterBodyComponent:set_collision_mask(mask) end
+
+---@return integer
+function CharacterBodyComponent:get_solver_ignore_mask() end
+
+---@param mask integer
+function CharacterBodyComponent:set_solver_ignore_mask(mask) end
+
+---@param capsule Capsule
+function CharacterBodyComponent:set_capsule(capsule) end
+
+---@param velocity Vector2
+---@param fixed_dt number
+function CharacterBodyComponent:move_and_slide(velocity, fixed_dt) end
+
+---@return Vector2
+function CharacterBodyComponent:get_velocity() end
+
+---@param velocity Vector2
+function CharacterBodyComponent:set_velocity(velocity) end
+
+---@return Vector2
+function CharacterBodyComponent:get_position() end
+
+---@param position Vector2
+function CharacterBodyComponent:set_position(position) end
+
+---@return number
+function CharacterBodyComponent:get_rotation() end
+
+---@param radians number
+function CharacterBodyComponent:set_rotation(radians) end
+
+_G.CharacterBodyComponent = CharacterBodyComponent
 
 -- ColliderComponent
 ---@class ColliderComponent : Component
@@ -694,55 +663,6 @@ function CircleColliderComponent:get_scaled_circle() end
 
 _G.CircleColliderComponent = CircleColliderComponent
 
--- CharacterBodyComponent
----@class CharacterBodyComponent : Component
-local CharacterBodyComponent = {}
-
----@return integer
-function CharacterBodyComponent:get_collision_layer() end
-
----@param layer integer
-function CharacterBodyComponent:set_collision_layer(layer) end
-
----@return integer
-function CharacterBodyComponent:get_collision_mask() end
-
----@param mask integer
-function CharacterBodyComponent:set_collision_mask(mask) end
-
----@return integer
-function CharacterBodyComponent:get_solver_ignore_mask() end
-
----@param mask integer
-function CharacterBodyComponent:set_solver_ignore_mask(mask) end
-
----@param capsule Capsule
-function CharacterBodyComponent:set_capsule(capsule) end
-
----@param velocity Vector2
----@param fixed_dt number
-function CharacterBodyComponent:move_and_slide(velocity, fixed_dt) end
-
----@return Vector2
-function CharacterBodyComponent:get_velocity() end
-
----@param velocity Vector2
-function CharacterBodyComponent:set_velocity(velocity) end
-
----@return Vector2
-function CharacterBodyComponent:get_position() end
-
----@param position Vector2
-function CharacterBodyComponent:set_position(position) end
-
----@return number
-function CharacterBodyComponent:get_rotation() end
-
----@param radians number
-function CharacterBodyComponent:set_rotation(radians) end
-
-_G.CharacterBodyComponent = CharacterBodyComponent
-
 -- InputComponent
 ---@class InputComponent : Component
 local InputComponent = {}
@@ -769,6 +689,92 @@ function InputComponent:unbind_action(name, id) end
 function InputComponent:clear_all_bindings() end
 
 _G.InputComponent = InputComponent
+
+-- SpriteComponent
+---@class SpriteComponent : Component
+local SpriteComponent = {}
+
+---@return boolean
+function SpriteComponent:has_texture() end
+
+---@param path string
+function SpriteComponent:set_texture(path) end
+
+function SpriteComponent:clear_texture() end
+
+---@return Material
+function SpriteComponent:get_material() end
+
+---@param material Material
+function SpriteComponent:set_material(material) end
+
+---@return Vector2
+function SpriteComponent:get_pivot() end
+
+---@param pivot Vector2
+function SpriteComponent:set_pivot(pivot) end
+
+---@return Vector2
+function SpriteComponent:get_scale() end
+
+---@param scale Vector2
+function SpriteComponent:set_scale(scale) end
+
+---@return integer
+function SpriteComponent:get_z_index() end
+
+---@param z_index integer
+function SpriteComponent:set_z_index(z_index) end
+
+---@return integer
+function SpriteComponent:get_pixels_per_meter() end
+
+---@param value integer
+function SpriteComponent:set_pixels_per_meter(value) end
+
+_G.SpriteComponent = SpriteComponent
+
+-- CameraComponent
+---@class CameraComponent : Component
+local CameraComponent = {}
+
+---@return number
+function CameraComponent:get_screen_pixels_per_meter() end
+
+---@param value number
+function CameraComponent:set_screen_pixels_per_meter(value) end
+
+---@return number
+function CameraComponent:get_zoom() end
+
+---@param multiplier number
+function CameraComponent:set_zoom(multiplier) end
+
+---@param world_pos Vector2
+---@return Vector2
+function CameraComponent:world_to_screen(world_pos) end
+
+---@param screen_pos Vector2
+---@return Vector2
+function CameraComponent:screen_to_world(screen_pos) end
+
+_G.CameraComponent = CameraComponent
+
+-- Material
+---@class Material
+---@overload fun(config: table): Material
+local Material = {}
+
+---@return Color
+function Material:get_tint() end
+
+---@param tint Color
+function Material:set_tint(tint) end
+
+---@param path string
+function Material:set_shader(path) end
+
+_G.Material = Material
 
 -- RaycastHit
 ---@class RaycastHit
