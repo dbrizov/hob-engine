@@ -25,7 +25,7 @@ namespace hob {
     constexpr ShaderId INVALID_SHADER_ID = -1;
     constexpr ShaderId DEFAULT_SPRITE_SHADER_ID = 0;
 
-    constexpr SDL_FColor CLEAR_COLOR = SDL_FColor{0.17f, 0.18f, 0.47f, 1.0f};
+    constexpr Color CLEAR_COLOR = Color(0.17f, 0.18f, 0.47f, 1.0f);
 
     // Move-only RAII handle owning one ref count contribution in the Renderer's texture cache.
     // Obtain via Renderer::get_or_load_texture; destructor releases.

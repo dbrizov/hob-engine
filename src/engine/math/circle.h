@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "vector2.h"
 
 namespace hob {
@@ -7,6 +9,11 @@ namespace hob {
         Vector2 center;
         float radius;
 
-        Circle(const Vector2& center_, float radius_);
+        constexpr Circle(const Vector2& center_, float radius_)
+            : center(center_)
+            , radius(radius_) {
+        }
+
+        std::string to_string() const;
     };
 }

@@ -1,8 +1,9 @@
 #include "circle.h"
 
+#include <format>
+
 namespace hob {
-    Circle::Circle(const Vector2& center_, float radius_)
-        : center(center_)
-        , radius(radius_) {
+    std::string Circle::to_string() const {
+        return std::format("Circle(center={}, radius={:.2f})", center.to_string(), radius);
     }
 }

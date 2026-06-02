@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <vector>
 #include <box2d/box2d.h>
 
@@ -61,11 +62,11 @@ namespace hob {
                                             float distance,
                                             uint64_t layer_mask = ~0ull) const;
 
-        static Vector2 b2Vec2_to_vec2(const b2Vec2& vec);
-        static b2Vec2 vec2_to_b2Vec2(const Vector2& vec);
+        static Vector2 b2Vec2_to_vec2(const b2Vec2& vec) { return Vector2(vec.x, vec.y); }
+        static b2Vec2 vec2_to_b2Vec2(const Vector2& vec) { return b2Vec2{vec.x, vec.y}; }
 
-        static float b2Rot_to_radians(const b2Rot& rot);
-        static b2Rot radians_to_b2Rot(float radians);
+        static float b2Rot_to_radians(const b2Rot& rot) { return std::atan2(rot.s, rot.c); }
+        static b2Rot radians_to_b2Rot(float radians) { return b2MakeRot(radians); }
 
     private:
         void dispatch_collision_events() const;

@@ -214,22 +214,6 @@ namespace hob {
         return hits;
     }
 
-    Vector2 Physics::b2Vec2_to_vec2(const b2Vec2& vec) {
-        return Vector2(vec.x, vec.y);
-    }
-
-    b2Vec2 Physics::vec2_to_b2Vec2(const Vector2& vec) {
-        return b2Vec2(vec.x, vec.y);
-    }
-
-    float Physics::b2Rot_to_radians(const b2Rot& rot) {
-        return std::atan2(rot.s, rot.c);
-    }
-
-    b2Rot Physics::radians_to_b2Rot(float radians) {
-        return b2MakeRot(radians);
-    }
-
     void Physics::dispatch_collision_events() const {
         b2ContactEvents contact_events = b2World_GetContactEvents(m_physics_world.get_id());
 

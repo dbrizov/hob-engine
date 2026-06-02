@@ -19,6 +19,8 @@
 
 namespace hob {
     namespace {
+        SDL_FColor to_sdl_color(const Color& c) { return {c.r, c.g, c.b, c.a}; }
+
         // SDL_GPU clip space is y-down (Vulkan/D3D convention). Logical screen space is also
         // y-down (top-left origin), so we map x:[0,w]->[-1,+1] and y:[0,h]->[-1,+1]
         std::array<float, 16> ortho_top_left(float w, float h) {
@@ -537,7 +539,7 @@ namespace hob {
 
         SDL_GPUColorTargetInfo ct{};
         ct.texture = m_offscreen_color;
-        ct.clear_color = CLEAR_COLOR;
+        ct.clear_color = to_sdl_color(CLEAR_COLOR);
         ct.load_op = SDL_GPU_LOADOP_CLEAR;
         ct.store_op = SDL_GPU_STOREOP_STORE;
 
@@ -601,9 +603,8 @@ namespace hob {
     void Renderer::render_blit_pass() {
         SDL_GPUColorTargetInfo ct{};
         ct.texture = m_swap_texture;
-        ct.load_op = SDL_GPU_LOADOP_CLEAR;
+        ct.load_op = SDL_GPU_LOADOP_DONT_CARE;
         ct.store_op = SDL_GPU_STOREOP_STORE;
-        ct.clear_color = CLEAR_COLOR;
 
         // Render pass
         {

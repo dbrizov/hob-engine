@@ -9,20 +9,28 @@ namespace hob {
         float b;
         float a;
 
-        Color();
-        Color(float r_, float g_, float b_, float a_ = 1.0f);
+        constexpr Color()
+            : Color(0.0f, 0.0f, 0.0f, 0.0f) {
+        }
+
+        constexpr Color(float r_, float g_, float b_, float a_ = 1.0f)
+            : r(r_)
+            , g(g_)
+            , b(b_)
+            , a(a_) {
+        }
 
         std::string to_string() const;
 
-        static Color black();
-        static Color white();
-        static Color gray();
-        static Color red();
-        static Color green();
-        static Color blue();
-        static Color yellow();
-        static Color magenta();
-        static Color cyan();
-        static Color orange();
+        static constexpr Color black() { return Color(0.0f, 0.0f, 0.0f); }
+        static constexpr Color white() { return Color(1.0f, 1.0f, 1.0f); }
+        static constexpr Color gray() { return Color(0.5f, 0.5f, 0.5f); }
+        static constexpr Color red() { return Color(1.0f, 0.0f, 0.0f); }
+        static constexpr Color green() { return Color(0.0f, 1.0f, 0.0f); }
+        static constexpr Color blue() { return Color(0.0f, 0.0f, 1.0f); }
+        static constexpr Color yellow() { return Color(1.0f, 1.0f, 0.0f); }
+        static constexpr Color magenta() { return Color(1.0f, 0.0f, 1.0f); }
+        static constexpr Color cyan() { return Color(0.0f, 1.0f, 1.0f); }
+        static constexpr Color orange() { return Color(1.0f, 0.647f, 0.0f); }
     };
 }

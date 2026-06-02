@@ -1,14 +1,12 @@
 #include "capsule.h"
 
-namespace hob {
-    Capsule::Capsule(const Vector2& center_a_, const Vector2& center_b_, float radius_)
-        : center_a(center_a_)
-        , center_b(center_b_)
-        , radius(radius_) {
-    }
+#include <format>
 
-    float Capsule::get_height() const {
-        float height = Vector2::distance(center_a, center_b) + (radius * 2.0f);
-        return height;
+namespace hob {
+    std::string Capsule::to_string() const {
+        return std::format("Capsule(center_a={}, center_b={}, radius={:.2f})",
+                           center_a.to_string(),
+                           center_b.to_string(),
+                           radius);
     }
 }
