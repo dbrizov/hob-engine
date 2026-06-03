@@ -88,6 +88,10 @@ namespace hob {
         bool m_shadercross_initialized = false;
         bool m_is_initialized = false;
 
+        // Seconds-since-play-start, refreshed by Engine each frame
+        // and pushed to fragment cbuffers so shaders can animate.
+        float m_frame_time = 0.0f;
+
         // SDL_GPU clip-space ortho mapping (0,0)..(w,h) -> (-1,-1)..(+1,+1) with y-down.
         std::array<float, 16> m_projection{};
         // Y-flipped variant used by render_overlay_pass (swap target has opposite NDC y).
@@ -155,6 +159,8 @@ namespace hob {
 
         bool is_initialized() const;
 
+        void set_frame_time(float time);
+
         uint32_t get_logical_width() const;
         uint32_t get_logical_height() const;
         float get_logical_width_f() const;
@@ -220,9 +226,9 @@ namespace hob {
         bool init_offscreen_target();
         bool init_samplers();
         bool init_quad_vbo();
+        bool init_default_sprite_pipeline();
         bool init_blit_pipeline();
         bool init_line_pipeline();
-        bool init_default_sprite_pipeline();
 
         // Builds a sprite pipeline from a shader path (relative to assets root, no suffix).
         // Returns nullptr on failure; caller handles fallback.

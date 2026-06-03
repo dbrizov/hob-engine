@@ -726,7 +726,7 @@ function SpriteComponent:clear_texture() end
 ---@return Material
 function SpriteComponent:get_material() end
 
----@param material Material
+---@param material Material|MaterialRef
 function SpriteComponent:set_material(material) end
 
 ---@return Vector2

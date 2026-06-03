@@ -70,9 +70,11 @@ namespace hob {
             float outline_width; // 32..36
             float alpha_threshold; // 36..40
             float texel_size[2]; // 40..48
+            float time; // 48..52
+            float _pad[3]; // 52..64
         };
 
-        static_assert(sizeof(SpriteFSUniforms) == 48);
+        static_assert(sizeof(SpriteFSUniforms) == 64);
 
         std::string read_text_file(const std::filesystem::path& path) {
             std::ifstream f(path, std::ios::binary | std::ios::ate);
@@ -270,6 +272,10 @@ namespace hob {
 
     bool Renderer::is_initialized() const {
         return m_is_initialized;
+    }
+
+    void Renderer::set_frame_time(float time) {
+        m_frame_time = time;
     }
 
     uint32_t Renderer::get_logical_width() const {
@@ -968,6 +974,7 @@ namespace hob {
         const uint32_t tex_h = sp.texture->get_height();
         fsu.texel_size[0] = tex_w > 0 ? 1.0f / static_cast<float>(tex_w) : 0.0f;
         fsu.texel_size[1] = tex_h > 0 ? 1.0f / static_cast<float>(tex_h) : 0.0f;
+        fsu.time = m_frame_time;
         SDL_PushGPUFragmentUniformData(m_command_buffer, 0, &fsu, sizeof(fsu));
 
         SDL_GPUTextureSamplerBinding ts{};

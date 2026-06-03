@@ -17,6 +17,8 @@ cbuffer SpriteFS : register(b0, space3)
     float  outline_width;
     float  alpha_threshold;
     float2 texel_size;
+    float  time;
+    float3 _pad;
 };
 
 float4 main(float2 uv : TEXCOORD0) : SV_Target0

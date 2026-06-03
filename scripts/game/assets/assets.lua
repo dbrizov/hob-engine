@@ -15,3 +15,9 @@ DefineTexture.PlayerRun07 = "images/player/HJ_run07.png"
 DefineTexture.PlayerRun08 = "images/player/HJ_run08.png"
 DefineTexture.PlayerRun09 = "images/player/HJ_run09.png"
 DefineTexture.PlayerRun10 = "images/player/HJ_run010.png"
+
+DefineShader.Psychedelic = "shaders/psychedelic"
+
+DefineMaterial.Psychedelic = {
+    shader = Shaders.Psychedelic,
+}

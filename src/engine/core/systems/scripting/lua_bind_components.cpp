@@ -173,7 +173,22 @@ namespace hob {
                         }, "(path_or_texture: string|Texture)")
             .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_material", sol::resolve<Material&()>(&SpriteComponent::get_material))
-            .method("set_material", &SpriteComponent::set_material, {"material"})
+            .method_sig("set_material",
+                        [](SpriteComponent& self, sol::object value) {
+                            if (value.is<Material>()) {
+                                self.set_material(value.as<Material>());
+                                return;
+                            }
+                            if (value.get_type() == sol::type::table) {
+                                sol::state_view sv(value.lua_state());
+                                sol::object unwrapped = sv["unwrap_def"](value);
+                                if (unwrapped.is<Material>()) {
+                                    self.set_material(unwrapped.as<Material>());
+                                    return;
+                                }
+                            }
+                            debug::log_error("SpriteComponent:set_material expects a Material or a Materials.X ref");
+                        }, "(material: Material|MaterialRef)")
             .method("get_pivot", &SpriteComponent::get_pivot)
             .method("set_pivot", &SpriteComponent::set_pivot, {"pivot"})
             .method("get_scale", &SpriteComponent::get_scale)
