@@ -84,8 +84,8 @@ Cursor = {}
 ---@return Texture?
 function Cursor.get_texture() end
 
----@param path string
-function Cursor.set_texture(path) end
+---@param path_or_texture string|Texture
+function Cursor.set_texture(path_or_texture) end
 
 function Cursor.clear_texture() end
 
@@ -726,7 +726,7 @@ function SpriteComponent:clear_texture() end
 ---@return Material
 function SpriteComponent:get_material() end
 
----@param material Material|MaterialRef
+---@param material Material
 function SpriteComponent:set_material(material) end
 
 ---@return Vector2

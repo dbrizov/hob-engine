@@ -188,7 +188,7 @@ namespace hob {
                                 }
                             }
                             debug::log_error("SpriteComponent:set_material expects a Material or a Materials.X ref");
-                        }, "(material: Material|MaterialRef)")
+                        }, "(material: Material)")
             .method("get_pivot", &SpriteComponent::get_pivot)
             .method("set_pivot", &SpriteComponent::set_pivot, {"pivot"})
             .method("get_scale", &SpriteComponent::get_scale)

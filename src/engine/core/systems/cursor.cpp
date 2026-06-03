@@ -19,6 +19,11 @@ namespace hob {
         return m_texture;
     }
 
+    void Cursor::set_texture(TextureRef texture) {
+        m_texture = std::move(texture);
+        set_visible(m_is_visible); // trigger the OS cursor fallback if the texture is null
+    }
+
     void Cursor::set_texture(const std::string& path) {
         m_texture = m_renderer.get_or_load_texture(path);
         set_visible(m_is_visible); // trigger the OS cursor fallback if the load failed

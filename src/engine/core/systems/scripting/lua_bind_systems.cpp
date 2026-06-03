@@ -12,6 +12,7 @@
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/engine.h"
+#include "engine/core/logging.h"
 #include "engine/core/systems/cursor.h"
 #include "engine/core/systems/input.h"
 #include "engine/core/systems/physics.h"
@@ -127,7 +128,18 @@ namespace hob {
 
             bind_table(lua, meta, "Cursor")
                 .func("get_texture", [&cursor]() -> const TextureRef& { return cursor.get_texture(); })
-                .func("set_texture", [&cursor](const std::string& path) { cursor.set_texture(path); }, {"path"})
+                .func_sig("set_texture",
+                          [&cursor](sol::object value) {
+                              if (value.is<TextureRef>()) {
+                                  cursor.set_texture(value.as<TextureRef>());
+                              }
+                              else if (value.is<std::string>()) {
+                                  cursor.set_texture(value.as<std::string>());
+                              }
+                              else {
+                                  debug::log_error("Cursor.set_texture expects a string path or a Texture");
+                              }
+                          }, "(path_or_texture: string|Texture)")
                 .func("clear_texture", [&cursor]() { cursor.clear_texture(); })
                 .func("get_pivot", [&cursor]() { return cursor.get_pivot(); })
                 .func("set_pivot", [&cursor](const Vector2& p) { cursor.set_pivot(p); }, {"pivot"})
