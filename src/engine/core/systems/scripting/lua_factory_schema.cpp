@@ -6,20 +6,6 @@
 #include "engine/core/logging.h"
 
 namespace hob {
-    namespace {
-        const char* resolve_kind_string(LuaFieldResolve r) {
-            switch (r) {
-                case LuaFieldResolve::Passthrough:
-                    return "passthrough";
-                case LuaFieldResolve::Asset:
-                    return "asset";
-                case LuaFieldResolve::AssetList:
-                    return "asset_list";
-            }
-            return "passthrough";
-        }
-    }
-
     void LuaFactorySchemaRegistry::add_schema(LuaFactorySchemaInfo info) {
         m_schemas.push_back(std::move(info));
     }
@@ -41,8 +27,7 @@ namespace hob {
             else {
                 out << "        fields = {\n";
                 for (const auto& f : s.fields) {
-                    out << "            { name = \"" << f.name
-                        << "\", resolve = \"" << resolve_kind_string(f.resolve) << "\" },\n";
+                    out << "            { name = \"" << f.name << "\" },\n";
                 }
                 out << "        },\n";
             }

@@ -6,17 +6,17 @@ _G.__factory_schemas = {
         define = "DefineAnimationClip",
         lua_type = "AnimationClip",
         fields = {
-            { name = "textures", resolve = "asset_list" },
-            { name = "fps", resolve = "passthrough" },
-            { name = "looping", resolve = "passthrough" },
+            { name = "textures" },
+            { name = "fps" },
+            { name = "looping" },
         },
     },
     Materials = {
         define = "DefineMaterial",
         lua_type = "Material",
         fields = {
-            { name = "shader", resolve = "asset" },
-            { name = "tint", resolve = "passthrough" },
+            { name = "shader" },
+            { name = "tint" },
         },
     },
 }

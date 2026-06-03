@@ -49,10 +49,8 @@ namespace hob {
                     },
                     {"path"});
 
-        bind_factory_schema(factory_schemas, "Materials", "DefineMaterial", "Material", {
-                                {"shader", LuaFieldResolve::Asset},
-                                {"tint", LuaFieldResolve::Passthrough},
-                            });
+        bind_factory_schema(factory_schemas, "Materials", "DefineMaterial", "Material",
+                            {"shader", "tint"});
 
         // Timer
         Timer& timer = m_engine.get_timer();

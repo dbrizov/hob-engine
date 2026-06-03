@@ -14,12 +14,21 @@
 -- path lookup happens at dispatch time (apply_setters in entity_def.lua and
 -- Cursor.config in cursor.lua), so DefineAsset calls can live in any file in
 -- any load order. If user-script code calls a C++ setter directly with an
--- Assets.X value, it must pass it through Assets.resolve(...) or tostring(...).
+-- Assets.X value, it must pass it through resolve_asset(...) or tostring(...).
 
 _G.__assets = _G.__assets or {}
 
 local asset_ref_mt = {
     __tostring = function(self)
+        local path = _G.__assets[self.__asset]
+        if not path then
+            Debug.log_error("Asset '" .. self.__asset .. "' is not defined")
+            return ""
+        end
+
+        return path
+    end,
+    __resolve = function(self)
         local path = _G.__assets[self.__asset]
         if not path then
             Debug.log_error("Asset '" .. self.__asset .. "' is not defined")
@@ -48,18 +57,3 @@ _G.Assets = setmetatable({}, {
         return wrapper
     end,
 })
-
--- rawset so the __index above doesn't shadow this with a wrapper.
-rawset(_G.Assets, "resolve", function(value)
-    if type(value) == "table" and getmetatable(value) == asset_ref_mt then
-        local path = _G.__assets[value.__asset]
-        if not path then
-            Debug.log_error("Asset '" .. value.__asset .. "' is not defined")
-            return ""
-        end
-
-        return path
-    end
-
-    return value
-end)

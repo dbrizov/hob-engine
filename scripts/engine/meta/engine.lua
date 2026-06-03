@@ -82,7 +82,7 @@ DefineMixin = {}
 --- for an asset path. Reference it as `Assets.Foo` in prefabs and config;
 --- the lookup is deferred and resolved at dispatch time, so DefineAsset calls
 --- can live in any file in any load order. When passing `Assets.Foo` directly
---- to a C++ setter, unwrap with `Assets.resolve(...)` or `tostring(...)`.
+--- to a C++ setter, unwrap with `resolve_asset(...)` or `tostring(...)`.
 ---@class DefineAsset
 DefineAsset = {}
 
@@ -91,9 +91,9 @@ DefineAsset = {}
 ---@class Assets
 Assets = {}
 
---- Unwrap an `Assets.X` deferred reference into its underlying path string.
---- Non-asset values are returned unchanged. Use this when passing an asset to
---- a C++ setter that expects a plain string.
+--- Unwrap any deferred `DefineX` reference (Assets.X, Materials.X,
+--- AnimationClips.X, ...) into its underlying value, recursing into plain tables.
+--- Non-deferred values are returned unchanged.
 ---@param value any
 ---@return any
-function Assets.resolve(value) end
+function resolve_asset(value) end

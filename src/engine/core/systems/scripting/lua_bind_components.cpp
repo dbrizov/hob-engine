@@ -217,11 +217,8 @@ namespace hob {
                 return static_cast<int>(self.frames.size());
             });
 
-        bind_factory_schema(factory_schemas, "AnimationClips", "DefineAnimationClip", "AnimationClip", {
-                                {"textures", LuaFieldResolve::AssetList},
-                                {"fps", LuaFieldResolve::Passthrough},
-                                {"looping", LuaFieldResolve::Passthrough},
-                            });
+        bind_factory_schema(factory_schemas, "AnimationClips", "DefineAnimationClip", "AnimationClip",
+                            {"textures", "fps", "looping"});
 
         bind_usertype<SpriteAnimatorComponent>(lua, meta, Bases<Component>{})
             .method("add_clip", &SpriteAnimatorComponent::add_clip, {"name", "clip"})
