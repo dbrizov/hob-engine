@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -27,38 +28,39 @@ namespace hob {
 
     constexpr Color CLEAR_COLOR = Color(0.17f, 0.18f, 0.47f, 1.0f);
 
-    // Move-only RAII handle owning one ref count contribution in the Renderer's texture cache.
-    // Obtain via Renderer::get_or_load_texture; destructor releases.
-    class TextureRef {
+    // GPU texture resource. Owned via std::shared_ptr; destructor releases the GPU
+    // handle and removes the cache entry from the Renderer.
+    class Texture {
+        SDL_GPUTexture* m_gpu_texture = nullptr;
         Renderer* m_renderer = nullptr;
         TextureId m_id = INVALID_TEXTURE_ID;
         uint32_t m_width = 0;
         uint32_t m_height = 0;
+        std::string m_path;
 
         friend class Renderer;
-        TextureRef(Renderer& renderer, TextureId id, uint32_t width, uint32_t height);
+        Texture(SDL_GPUTexture* gpu_texture,
+                Renderer& renderer,
+                TextureId id,
+                uint32_t width,
+                uint32_t height,
+                std::string path);
 
     public:
-        TextureRef() = default;
-        ~TextureRef();
+        ~Texture();
 
-        TextureRef(const TextureRef&) = delete;
-        TextureRef& operator=(const TextureRef&) = delete;
+        Texture(const Texture&) = delete;
+        Texture& operator=(const Texture&) = delete;
+        Texture(Texture&&) = delete;
+        Texture& operator=(Texture&&) = delete;
 
-        TextureRef(TextureRef&& other) noexcept;
-        TextureRef& operator=(TextureRef&& other) noexcept;
-
-        void reset();
-
-        // Returns an owning copy of this ref, bumping the renderer's refcount for the
-        // underlying texture. Invalid refs clone to invalid refs.
-        TextureRef clone() const;
-
-        bool is_valid() const;
         TextureId get_id() const;
         uint32_t get_width() const;
         uint32_t get_height() const;
+        const std::string& get_path() const;
     };
+
+    using TextureRef = std::shared_ptr<Texture>;
 
     struct Material {
         ShaderId shader_id = DEFAULT_SPRITE_SHADER_ID;
@@ -67,7 +69,7 @@ namespace hob {
 
     class Renderer {
         struct Sprite {
-            TextureId texture_id = INVALID_TEXTURE_ID;
+            TextureRef texture;
             Vector2 screen_pos;
             Vector2 size_pixels;
             Vector2 pivot_pixel;
@@ -79,14 +81,6 @@ namespace hob {
         struct LineVertex {
             Vector2 pos;
             Color color;
-        };
-
-        struct TextureEntry {
-            SDL_GPUTexture* texture;
-            uint32_t width;
-            uint32_t height;
-            std::string path;
-            int ref_count;
         };
 
         const SdlContext& m_sdl_context;
@@ -141,8 +135,9 @@ namespace hob {
         SDL_GPUSampler* m_sprite_sampler = nullptr;
         SDL_GPUSampler* m_blit_sampler = nullptr;
 
-        // Texture cache.
-        std::unordered_map<TextureId, TextureEntry> m_textures;
+        // Texture cache. Holds weak refs so unused textures are released as soon as
+        // their last shared_ptr<Texture> is dropped.
+        std::unordered_map<TextureId, std::weak_ptr<Texture>> m_textures;
         std::unordered_map<std::string, TextureId> m_path_to_id;
         TextureId m_next_texture_id = 0;
 
@@ -173,7 +168,7 @@ namespace hob {
         /// Draws a textured quad in logical screen space (top-left origin, y-down).
         /// All pixel-valued parameters are in logical pixels — the same space the
         /// orthographic projection is configured in, NOT window pixels.
-        void draw_sprite(TextureId texture_id,
+        void draw_sprite(TextureRef texture,
                          const Vector2& screen_pos,
                          const Vector2& size_pixels,
                          const Vector2& pivot_pixel,
@@ -183,7 +178,7 @@ namespace hob {
 
         /// Queues a sprite to be drawn in the overlay pass — on top of the world AND ImGui.
         /// Same coordinate space as draw_sprite (logical screen pixels). No z_index: overlays are drawn in push order.
-        void draw_overlay_sprite(TextureId texture_id,
+        void draw_overlay_sprite(TextureRef texture,
                                  const Vector2& screen_pos,
                                  const Vector2& size_pixels,
                                  const Vector2& pivot_pixel,
@@ -223,11 +218,9 @@ namespace hob {
         void render_overlay_pass();
 
     private:
-        friend class TextureRef;
-        bool unload_texture(TextureId id);
-        // Bumps the ref_count of an already-loaded texture. Used by TextureRef::clone.
-        // Returns false (and logs) if the id is unknown.
-        bool retain_texture(TextureId id);
+        friend class Texture;
+        // Called by Texture::~Texture to release the GPU handle and drop the cache entry.
+        void release_texture(const Texture& texture);
 
         bool init_offscreen_target();
         bool init_samplers();

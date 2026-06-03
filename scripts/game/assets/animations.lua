@@ -1,7 +1,12 @@
 DefineAnimationClip.PlayerIdle = {
-    textures = { Assets.PlayerRun01 },
-    fps = 1,
-    looping = false,
+    textures = {
+        Assets.PlayerIdle01,
+        Assets.PlayerIdle02,
+        Assets.PlayerIdle03,
+        Assets.PlayerIdle04,
+    },
+    fps = 4,
+    looping = true,
 }
 
 DefineAnimationClip.PlayerRun = {

@@ -81,8 +81,8 @@ function Physics.raycast_all(origin, direction, distance, layer_mask) end
 ---@class Cursor
 Cursor = {}
 
----@return boolean
-function Cursor.has_texture() end
+---@return Texture?
+function Cursor.get_texture() end
 
 ---@param path string
 function Cursor.set_texture(path) end
@@ -696,12 +696,27 @@ function InputComponent:clear_all_bindings() end
 
 _G.InputComponent = InputComponent
 
+-- Texture
+---@class Texture
+local Texture = {}
+
+---@return integer
+function Texture:get_width() end
+
+---@return integer
+function Texture:get_height() end
+
+---@return string
+function Texture:get_path() end
+
+_G.Texture = Texture
+
 -- SpriteComponent
 ---@class SpriteComponent : Component
 local SpriteComponent = {}
 
----@return boolean
-function SpriteComponent:has_texture() end
+---@return Texture?
+function SpriteComponent:get_texture() end
 
 ---@param path string
 function SpriteComponent:set_texture(path) end
@@ -761,7 +776,7 @@ _G.AnimationClip = AnimationClip
 local SpriteAnimatorComponent = {}
 
 ---@param name string
----@param clip any
+---@param clip AnimationClip?
 function SpriteAnimatorComponent:add_clip(name, clip) end
 
 ---@param name string

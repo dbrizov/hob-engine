@@ -101,7 +101,7 @@ namespace hob {
                               });
 
         bind_table(m_lua, m_meta, "Cursor")
-            .func("has_texture", [&cursor]() { return cursor.has_texture(); })
+            .func("get_texture", [&cursor]() -> const TextureRef& { return cursor.get_texture(); })
             .func("set_texture", [&cursor](const std::string& path) { cursor.set_texture(path); }, {"path"})
             .func("clear_texture", [&cursor]() { cursor.clear_texture(); })
             .func("get_pivot", [&cursor]() { return cursor.get_pivot(); })

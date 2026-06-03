@@ -15,8 +15,8 @@ namespace hob {
         set_visible(m_is_visible);
     }
 
-    bool Cursor::has_texture() const {
-        return m_texture.is_valid();
+    const TextureRef& Cursor::get_texture() const {
+        return m_texture;
     }
 
     void Cursor::set_texture(const std::string& path) {
@@ -79,7 +79,7 @@ namespace hob {
 
         // OS cursor is the fallback when our cursor is on but has no texture;
         // otherwise it stays hidden (the engine owns cursor presentation).
-        set_os_cursor_visible(m_is_visible && !m_texture.is_valid());
+        set_os_cursor_visible(m_is_visible && m_texture == nullptr);
     }
 
     bool Cursor::is_os_cursor_visible() const {
@@ -96,18 +96,18 @@ namespace hob {
     }
 
     void Cursor::draw() {
-        if (!m_is_visible || !m_texture.is_valid() || is_os_cursor_visible()) {
+        if (m_texture == nullptr || !m_is_visible || is_os_cursor_visible()) {
             return;
         }
 
-        const float width = static_cast<float>(m_texture.get_width());
-        const float height = static_cast<float>(m_texture.get_height());
+        const float width = static_cast<float>(m_texture->get_width());
+        const float height = static_cast<float>(m_texture->get_height());
         const Vector2 size(width * m_scale.x, height * m_scale.y);
         const Vector2 pivot(size.x * m_pivot.x, size.y * m_pivot.y);
         const float rotation_rad = 0.0f;
         Vector2 mouse_screen = m_input.get_mouse_screen_position();
         Vector2 screen_pos(mouse_screen.x - pivot.x, mouse_screen.y - pivot.y);
 
-        m_renderer.draw_overlay_sprite(m_texture.get_id(), screen_pos, size, pivot, rotation_rad, m_material);
+        m_renderer.draw_overlay_sprite(m_texture, screen_pos, size, pivot, rotation_rad, m_material);
     }
 }

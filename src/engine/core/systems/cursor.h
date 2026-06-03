@@ -34,7 +34,7 @@ namespace hob {
         Cursor(const Cursor&) = delete;
         Cursor& operator=(const Cursor&) = delete;
 
-        bool has_texture() const;
+        const TextureRef& get_texture() const;
         void set_texture(const std::string& path);
         void clear_texture();
 

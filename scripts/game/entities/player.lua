@@ -11,7 +11,7 @@ DefineEntity.Player = {
         capsule = Capsule(Vector2.zero(), Vector2.zero(), 1.2),
     },
     sprite = {
-        texture = Assets.PlayerTexture,
+        texture = Assets.PlayerIdle01,
         z_index = 2,
     },
     sprite_animator = {

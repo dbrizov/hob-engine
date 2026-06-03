@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <format>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -66,6 +67,14 @@ namespace hob {
         };
 
         template<typename T>
+        struct is_shared_ptr : std::false_type {
+        };
+
+        template<typename T>
+        struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {
+        };
+
+        template<typename T>
         const char* lua_name() {
             using no_cv_ref = std::remove_cv_t<std::remove_reference_t<T>>;
 
@@ -91,6 +100,13 @@ namespace hob {
                 using inner = strip_t<typename no_cv_ref::value_type>;
                 static const std::string s =
                     std::string(LuaTypeName<inner>::value ? LuaTypeName<inner>::value : "any") + "[]";
+                return s.c_str();
+            }
+            // std::shared_ptr<T> → nullable in Lua (sol2 converts empty shared_ptr to nil).
+            else if constexpr (is_shared_ptr<no_cv_ref>::value) {
+                using inner = strip_t<typename no_cv_ref::element_type>;
+                static const std::string s =
+                    std::string(LuaTypeName<inner>::value ? LuaTypeName<inner>::value : "any") + "?";
                 return s.c_str();
             }
             else {

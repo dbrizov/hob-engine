@@ -193,7 +193,7 @@ namespace hob {
             const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
 
             const TextureRef& texture = sprite_comp->get_texture();
-            if (!texture.is_valid()) {
+            if (texture == nullptr) {
                 continue;
             }
 
@@ -207,8 +207,8 @@ namespace hob {
             const Vector2 sp_scale = sprite_comp->get_scale();
             const Vector2 scale = Vector2(tr_scale.x * sp_scale.x, tr_scale.y * sp_scale.y);
 
-            const float texture_width = static_cast<float>(texture.get_width());
-            const float texture_height = static_cast<float>(texture.get_height());
+            const float texture_width = static_cast<float>(texture->get_width());
+            const float texture_height = static_cast<float>(texture->get_height());
             const float sprite_ppm = sprite_comp->get_pixels_per_meter_f();
             const Vector2 size_pixels = Vector2((texture_width / sprite_ppm) * camera_ppm * scale.x,
                                                 (texture_height / sprite_ppm) * camera_ppm * scale.y);
@@ -222,7 +222,7 @@ namespace hob {
             const Vector2 pivot_pixel(size_pixels.x * sprite_pivot.x, size_pixels.y * sprite_pivot.y);
 
             m_renderer.draw_sprite(
-                texture.get_id(),
+                texture,
                 screen_pos,
                 size_pixels,
                 pivot_pixel,

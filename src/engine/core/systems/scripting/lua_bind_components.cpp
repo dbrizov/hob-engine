@@ -150,8 +150,13 @@ namespace hob {
                         }, "(name: string, id: integer)")
             .method("clear_all_bindings", &InputComponent::clear_all_bindings);
 
+        bind_usertype<Texture>(lua, meta)
+            .method("get_width", &Texture::get_width)
+            .method("get_height", &Texture::get_height)
+            .method("get_path", &Texture::get_path);
+
         bind_usertype<SpriteComponent>(lua, meta, Bases<Component>{})
-            .method("has_texture", &SpriteComponent::has_texture)
+            .method("get_texture", &SpriteComponent::get_texture)
             .method("set_texture", &SpriteComponent::set_texture, {"path"})
             .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_material", sol::resolve<Material&()>(&SpriteComponent::get_material))
