@@ -1,4 +1,4 @@
-Cursor.set_texture(Textures.Cursor)
+Cursor.set_texture(unwrap_def(Textures.Cursor))
 Cursor.get_material():set_outline_color(Color.black())
 Cursor.get_material():set_outline_width(2.0)
 Cursor.set_pivot(Vector2(0.24, 0.1))
@@ -14,7 +14,7 @@ EntitySpawner.spawn_entity("Camera", Vector2(0.0, 0.0))
 
 -- Player at the center
 local player = EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
-player:get_sprite():set_material(Materials.Psychedelic)
+player:get_sprite():set_material(unwrap_def(Materials.Psychedelic))
 
 -- Stationary enemies for testing
 local red_enemy = EntitySpawner.spawn_entity("Enemy", Vector2(0.0, 4.0), -90.0)

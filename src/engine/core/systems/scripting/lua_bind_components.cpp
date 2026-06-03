@@ -161,17 +161,11 @@ namespace hob {
             .method("get_texture", &SpriteComponent::get_texture)
             .method_sig("set_texture",
                         [](SpriteComponent& self, sol::object value) {
-                            sol::object resolved = value;
-                            if (value.get_type() == sol::type::table) {
-                                sol::state_view sv(value.lua_state());
-                                resolved = sv["unwrap_def"](value);
+                            if (value.is<TextureRef>()) {
+                                self.set_texture(value.as<TextureRef>());
                             }
-
-                            if (resolved.is<TextureRef>()) {
-                                self.set_texture(resolved.as<TextureRef>());
-                            }
-                            else if (resolved.is<std::string>()) {
-                                self.set_texture(resolved.as<std::string>());
+                            else if (value.is<std::string>()) {
+                                self.set_texture(value.as<std::string>());
                             }
                             else {
                                 debug::log_error("SpriteComponent:set_texture expects a string path or a Texture");
@@ -179,21 +173,7 @@ namespace hob {
                         }, "(path_or_texture: string|Texture)")
             .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_material", sol::resolve<Material&()>(&SpriteComponent::get_material))
-            .method_sig("set_material",
-                        [](SpriteComponent& self, sol::object value) {
-                            sol::object resolved = value;
-                            if (value.get_type() == sol::type::table) {
-                                sol::state_view sv(value.lua_state());
-                                resolved = sv["unwrap_def"](value);
-                            }
-
-                            if (resolved.is<Material>()) {
-                                self.set_material(resolved.as<Material>());
-                            }
-                            else {
-                                debug::log_error("SpriteComponent:set_material expects a Material");
-                            }
-                        }, "(material: Material)")
+            .method("set_material", &SpriteComponent::set_material, {"material"})
             .method("get_pivot", &SpriteComponent::get_pivot)
             .method("set_pivot", &SpriteComponent::set_pivot, {"pivot"})
             .method("get_scale", &SpriteComponent::get_scale)

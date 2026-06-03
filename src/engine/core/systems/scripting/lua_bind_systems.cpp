@@ -130,17 +130,11 @@ namespace hob {
                 .func("get_texture", [&cursor]() -> const TextureRef& { return cursor.get_texture(); })
                 .func_sig("set_texture",
                           [&cursor](sol::object value) {
-                              sol::object resolved = value;
-                              if (value.get_type() == sol::type::table) {
-                                  sol::state_view sv(value.lua_state());
-                                  resolved = sv["unwrap_def"](value);
+                              if (value.is<TextureRef>()) {
+                                  cursor.set_texture(value.as<TextureRef>());
                               }
-
-                              if (resolved.is<TextureRef>()) {
-                                  cursor.set_texture(resolved.as<TextureRef>());
-                              }
-                              else if (resolved.is<std::string>()) {
-                                  cursor.set_texture(resolved.as<std::string>());
+                              else if (value.is<std::string>()) {
+                                  cursor.set_texture(value.as<std::string>());
                               }
                               else {
                                   debug::log_error("Cursor.set_texture expects a string path or a Texture");
@@ -152,21 +146,8 @@ namespace hob {
                 .func("get_scale", [&cursor]() { return cursor.get_scale(); })
                 .func("set_scale", [&cursor](const Vector2& s) { cursor.set_scale(s); }, {"scale"})
                 .func("get_material", [&cursor]() -> Material& { return cursor.get_material(); })
-                .func_sig("set_material",
-                          [&cursor](sol::object value) {
-                              sol::object resolved = value;
-                              if (value.get_type() == sol::type::table) {
-                                  sol::state_view sv(value.lua_state());
-                                  resolved = sv["unwrap_def"](value);
-                              }
-
-                              if (resolved.is<Material>()) {
-                                  cursor.set_material(resolved.as<Material>());
-                              }
-                              else {
-                                  debug::log_error("Cursor.set_material expects a Material or a Materials.X ref");
-                              }
-                          }, "(material: Material)")
+                .func("set_material",
+                      [&cursor](const Material& material) { cursor.set_material(material); }, {"material"})
                 .func("is_visible", [&cursor]() { return cursor.is_visible(); })
                 .func("set_visible", [&cursor](bool v) { cursor.set_visible(v); }, {"visible"})
                 .func("get_mode", [&cursor]() { return cursor.get_mode(); })
