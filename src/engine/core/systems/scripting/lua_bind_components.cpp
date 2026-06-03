@@ -183,11 +183,8 @@ namespace hob {
             .method("get_pixels_per_meter", &SpriteComponent::get_pixels_per_meter)
             .method("set_pixels_per_meter", &SpriteComponent::set_pixels_per_meter, {"value"});
 
-        // AnimationClip
-        // Factory: AnimationClip { textures = { ... }, fps = N, looping = bool }.
         // Each texture entry may be a raw path string or a Textures.X ref (unwrap_def resolves it).
-        // Returns shared_ptr so multiple animators can share a single instance and the
-        // underlying TextureRefs stay alive as long as any holder exists.
+        // shared_ptr lets multiple animators share an instance and keeps the TextureRefs alive.
         Renderer& renderer = m_engine.get_renderer();
         bind_usertype<AnimationClip>(lua, meta)
             .factory_ctor([&renderer](sol::table animclip_t) {
@@ -217,8 +214,8 @@ namespace hob {
                 return static_cast<int>(self.frames.size());
             });
 
-        bind_factory_schema(factory_schemas, "AnimationClips", "DefineAnimationClip", "AnimationClip",
-                            {"textures", "fps", "looping"});
+        bind_factory_schema<AnimationClip>(factory_schemas, "AnimationClips", "DefineAnimationClip",
+                                           {"textures", "fps", "looping"});
 
         bind_usertype<SpriteAnimatorComponent>(lua, meta, Bases<Component>{})
             .method("add_clip", &SpriteAnimatorComponent::add_clip, {"name", "clip"})
@@ -231,8 +228,6 @@ namespace hob {
             .method("pause", &SpriteAnimatorComponent::pause)
             .method("stop", &SpriteAnimatorComponent::stop)
             .method("is_playing", &SpriteAnimatorComponent::is_playing)
-            // Bulk setter used by the prefab schema. Lua passes a table of {name -> AnimationClip ref}.
-            // Skips entries that are not valid AnimationClip shared_ptrs.
             .method("set_clips",
                     [](SpriteAnimatorComponent& self, sol::table t) {
                         for (auto& kv : t) {
@@ -260,9 +255,6 @@ namespace hob {
                     sol::resolve<Vector2(const Vector2&) const>(&CameraComponent::screen_to_world),
                     {"screen_pos"});
 
-        // Authorable-from-prefab registration. Each call registers (1) the
-        // entity:add_<key>() method on the already-bound Entity usertype,
-        // (2) the autocomplete entry, and (3) the prefab schema in one shot.
         // Order is load-bearing: Box2D bodies must be attached before colliders.
         bind_component_schema<TransformComponent>(
             schemas, "transform", "get_transform", {

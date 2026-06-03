@@ -21,10 +21,6 @@ namespace hob {
         bool write_meta_to_file(const std::filesystem::path& path) const;
     };
 
-    // Records that `DefineX.Name = "path"` should produce a deferred-ref under `Registry.Name`
-    // that unwraps to the registered path string. No C++ usertype is required; this is a typed
-    // path alias, not a factory. To migrate a namespace to a real factory later, replace this
-    // call with a `bind_factory_schema(...)` + `factory_ctor` on the bound usertype.
     inline void bind_path_schema(LuaPathSchemaRegistry& schemas,
                                  const char* registry_name,
                                  const char* define_name,
