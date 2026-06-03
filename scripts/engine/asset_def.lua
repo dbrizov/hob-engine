@@ -14,7 +14,7 @@
 -- `Textures.Name` / `Shaders.Name` / `Assets.Name` return deferred references, not eager
 -- strings. The actual path lookup happens at dispatch time (apply_setters in entity_def.lua
 -- and Cursor.config in cursor.lua), so DefineX calls can live in any file in any load order.
--- When passing a deferred ref directly to a C++ setter, unwrap with unwrap_def(...) or tostring(...).
+-- When passing a deferred ref directly to a C++ setter, unwrap with unwrap_def(...).
 --
 -- The full list of (Define, Registry) namespaces is C++-driven: hob:: bind_path_schema(...) calls
 -- in lua_bind_assets.cpp emit path_schemas.generated.lua, which this file reads via

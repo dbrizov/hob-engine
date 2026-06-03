@@ -23,13 +23,13 @@ namespace hob {
             out << "--- and resolved at dispatch time, so " << s.define_name
                 << " calls can live in any file in any load order.\n";
             out << "--- When passing `" << s.registry_name
-                << ".Foo` directly to a C++ setter, unwrap with `unwrap_def(...)` or `tostring(...)`.\n";
+                << ".Foo` directly to a C++ setter, unwrap with `unwrap_def(...)`.\n";
             out << "---@class " << s.define_name << "\n";
             out << s.define_name << " = {}\n\n";
 
             out << "--- Registry of " << s.type_label << " aliases declared via `"
                 << s.define_name << "`. `" << s.registry_name << ".Foo` returns a deferred reference\n";
-            out << "--- that resolves to the registered path via __tostring.\n";
+            out << "--- that resolves to the registered path via unwrap_def (see scripts/engine/unwrap.lua).\n";
             out << "---@class " << s.registry_name << "\n";
             out << s.registry_name << " = {}\n\n";
         }

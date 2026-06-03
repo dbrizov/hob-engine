@@ -185,7 +185,7 @@ namespace hob {
 
         // AnimationClip
         // Factory: AnimationClip { textures = { ... }, fps = N, looping = bool }.
-        // Each texture entry may be a raw path string or an Assets.X ref (tostring unwraps it).
+        // Each texture entry may be a raw path string or a Textures.X ref (unwrap_def resolves it).
         // Returns shared_ptr so multiple animators can share a single instance and the
         // underlying TextureRefs stay alive as long as any holder exists.
         Renderer& renderer = m_engine.get_renderer();
@@ -203,7 +203,7 @@ namespace hob {
                             continue;
                         }
 
-                        std::string path = sv["tostring"](entry);
+                        std::string path = sv["unwrap_def"](entry);
                         clip->frames.push_back({renderer.get_or_load_texture(path)});
                     }
                 }

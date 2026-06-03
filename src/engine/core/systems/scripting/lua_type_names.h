@@ -12,10 +12,10 @@ namespace hob {
     struct Capsule;
     struct Circle;
     struct Color;
-    struct Material;
-    struct RaycastHit;
-    struct AnimationClip;
     class Texture;
+    struct Material;
+    struct AnimationClip;
+    struct RaycastHit;
     struct EntityHandle;
     class Component;
     class TransformComponent;
@@ -39,10 +39,10 @@ namespace hob {
     HOB_LUA_TYPE(Capsule, "Capsule")
     HOB_LUA_TYPE(Circle, "Circle")
     HOB_LUA_TYPE(Color, "Color")
-    HOB_LUA_TYPE(Material, "Material")
-    HOB_LUA_TYPE(RaycastHit, "RaycastHit")
-    HOB_LUA_TYPE(AnimationClip, "AnimationClip")
     HOB_LUA_TYPE(Texture, "Texture")
+    HOB_LUA_TYPE(Material, "Material")
+    HOB_LUA_TYPE(AnimationClip, "AnimationClip")
+    HOB_LUA_TYPE(RaycastHit, "RaycastHit")
     HOB_LUA_TYPE(EntityHandle, "Entity")
     HOB_LUA_TYPE(Component, "Component")
     HOB_LUA_TYPE(TransformComponent, "TransformComponent")

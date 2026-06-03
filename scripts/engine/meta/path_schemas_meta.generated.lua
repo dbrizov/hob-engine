@@ -5,36 +5,36 @@
 --- Assigning `DefineAsset.Foo = "path/under/assets"` registers a
 --- named alias for a Asset path. Reference it as `Assets.Foo` in prefabs and config; the lookup is deferred
 --- and resolved at dispatch time, so DefineAsset calls can live in any file in any load order.
---- When passing `Assets.Foo` directly to a C++ setter, unwrap with `unwrap_def(...)` or `tostring(...)`.
+--- When passing `Assets.Foo` directly to a C++ setter, unwrap with `unwrap_def(...)`.
 ---@class DefineAsset
 DefineAsset = {}
 
 --- Registry of Asset aliases declared via `DefineAsset`. `Assets.Foo` returns a deferred reference
---- that resolves to the registered path via __tostring.
+--- that resolves to the registered path via unwrap_def (see scripts/engine/unwrap.lua).
 ---@class Assets
 Assets = {}
 
 --- Assigning `DefineTexture.Foo = "path/under/assets"` registers a
 --- named alias for a Texture path. Reference it as `Textures.Foo` in prefabs and config; the lookup is deferred
 --- and resolved at dispatch time, so DefineTexture calls can live in any file in any load order.
---- When passing `Textures.Foo` directly to a C++ setter, unwrap with `unwrap_def(...)` or `tostring(...)`.
+--- When passing `Textures.Foo` directly to a C++ setter, unwrap with `unwrap_def(...)`.
 ---@class DefineTexture
 DefineTexture = {}
 
 --- Registry of Texture aliases declared via `DefineTexture`. `Textures.Foo` returns a deferred reference
---- that resolves to the registered path via __tostring.
+--- that resolves to the registered path via unwrap_def (see scripts/engine/unwrap.lua).
 ---@class Textures
 Textures = {}
 
 --- Assigning `DefineShader.Foo = "path/under/assets"` registers a
 --- named alias for a Shader path. Reference it as `Shaders.Foo` in prefabs and config; the lookup is deferred
 --- and resolved at dispatch time, so DefineShader calls can live in any file in any load order.
---- When passing `Shaders.Foo` directly to a C++ setter, unwrap with `unwrap_def(...)` or `tostring(...)`.
+--- When passing `Shaders.Foo` directly to a C++ setter, unwrap with `unwrap_def(...)`.
 ---@class DefineShader
 DefineShader = {}
 
 --- Registry of Shader aliases declared via `DefineShader`. `Shaders.Foo` returns a deferred reference
---- that resolves to the registered path via __tostring.
+--- that resolves to the registered path via unwrap_def (see scripts/engine/unwrap.lua).
 ---@class Shaders
 Shaders = {}
 

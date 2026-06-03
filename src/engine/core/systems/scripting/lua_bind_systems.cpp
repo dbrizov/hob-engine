@@ -33,7 +33,7 @@ namespace hob {
                 sol::object sh_obj = mat_t["shader"];
                 if (sh_obj.valid() && sh_obj.get_type() != sol::type::lua_nil) {
                     sol::state_view sv(mat_t.lua_state());
-                    std::string path = sv["tostring"](sh_obj);
+                    std::string path = sv["unwrap_def"](sh_obj);
                     mat.shader_id = renderer.get_or_build_sprite_shader(path);
                 }
                 if (auto tint = mat_t.get<sol::optional<Color>>("tint")) {
