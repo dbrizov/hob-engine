@@ -3,12 +3,12 @@
 -- Components are built in two phases:
 --   1. DefineComponent.X = {...}  -- registers a placeholder class table immediately
 --                                    so `local X = X` and `function X:foo() end` work.
---   2. build_component_classes()  -- called by bootstrap.lua after ALL user scripts have
+--   2. finalize_components()      -- called by bootstrap.lua after ALL user scripts have
 --                                    loaded. Resolves __parent and __mixins for every
 --                                    pending component, walking the inheritance graph.
 --
 -- This means DefineMixin / DefineComponent calls can appear in ANY file in ANY order;
--- references only need to be resolvable by the time build_component_classes() runs.
+-- references only need to be resolvable by the time finalize_components() runs.
 --
 -- Usage:
 --   DefineComponent.Player = {
@@ -123,7 +123,7 @@ local function build_class(name)
     return class
 end
 
-function _G.build_component_classes()
+function _G.finalize_components()
     local names = {}
     local n = 0
     for name in pairs(_G.__component_pending) do

@@ -1,5 +1,6 @@
 #include "lua_script_system.h"
 #include "lua_script_system_impl.h"
+#include "lua_factory_schema.h"
 #include "lua_meta.h"
 #include "lua_type_names.h" // IWYU pragma: keep
 
@@ -22,6 +23,7 @@ namespace hob {
     void LuaScriptSystem::bind_systems() {
         sol::state& m_lua = m_impl->lua;
         LuaMetaRegistry& m_meta = m_impl->meta;
+        LuaFactorySchemaRegistry& factory_schemas = m_impl->factory_schemas;
 
         // Renderer
         Renderer& renderer = m_engine.get_renderer();
@@ -46,6 +48,11 @@ namespace hob {
                         self.shader_id = renderer.get_or_build_sprite_shader(path);
                     },
                     {"path"});
+
+        bind_factory_schema(factory_schemas, "Materials", "DefineMaterial", "Material", {
+                                {"shader", LuaFieldResolve::Asset},
+                                {"tint", LuaFieldResolve::Passthrough},
+                            });
 
         // Timer
         Timer& timer = m_engine.get_timer();

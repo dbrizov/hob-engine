@@ -1,6 +1,7 @@
 #include "lua_script_system.h"
 #include "lua_script_system_impl.h"
 #include "lua_component_schema.h"
+#include "lua_factory_schema.h"
 #include "lua_meta.h"
 #include "lua_type_names.h" // IWYU pragma: keep
 
@@ -31,6 +32,7 @@ namespace hob {
         sol::state& lua = m_impl->lua;
         LuaMetaRegistry& meta = m_impl->meta;
         LuaComponentSchemaRegistry& schemas = m_impl->component_schemas;
+        LuaFactorySchemaRegistry& factory_schemas = m_impl->factory_schemas;
         const EntitySpawner& spawner = m_engine.get_entity_spawner();
 
         bind_usertype<Component>(lua, meta)
@@ -214,6 +216,12 @@ namespace hob {
             .method("get_frame_count", [](const AnimationClip& self) {
                 return static_cast<int>(self.frames.size());
             });
+
+        bind_factory_schema(factory_schemas, "AnimationClips", "DefineAnimationClip", "AnimationClip", {
+                                {"textures", LuaFieldResolve::AssetList},
+                                {"fps", LuaFieldResolve::Passthrough},
+                                {"looping", LuaFieldResolve::Passthrough},
+                            });
 
         bind_usertype<SpriteAnimatorComponent>(lua, meta, Bases<Component>{})
             .method("add_clip", &SpriteAnimatorComponent::add_clip, {"name", "clip"})

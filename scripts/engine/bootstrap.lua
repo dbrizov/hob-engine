@@ -10,13 +10,19 @@ end
 -- lib/ is `require`d on demand (vendored lldebugger); meta/ is LuaCATS annotations.
 Scripts.run_folder("scripts/engine", { "bootstrap.lua", "lib", "meta" })
 
+-- Install DefineMaterial / DefineAnimationClip / ... from the generated factory
+-- schema. Runs after the engine folder (so factory_schemas.generated.lua and
+-- factory_def.lua are both loaded) and before user scripts (so they may call
+-- DefineMaterial.X etc. at file scope).
+install_factories()
+
 -- User scripts: anything outside engine/ and main.lua.
--- Mixins, components, prefabs, and behavior scripts can live anywhere under scripts/.
+-- Assets, materials, animation clips, entities, components, and mixins can live anywhere under scripts/.
 Scripts.run_folder("scripts", { "engine", "main.lua" })
 
 -- Resolve __parent / __mixins for every DefineComponent now that all files
--- (and thus all DefineMixin / DefineComponent registrations) are loaded.
-build_component_classes()
+-- (and thus all DefineComponent / DefineMixin registrations) are loaded.
+finalize_components()
 
 -- Entry point.
 Scripts.run_file("scripts/main.lua")
