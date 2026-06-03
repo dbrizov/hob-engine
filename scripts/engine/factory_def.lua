@@ -12,7 +12,7 @@
 --   sprite = { material = Materials.Outline }
 --
 -- `Materials.Name` / `AnimationClips.Name` return deferred refs. The actual C++
--- object is constructed lazily on first resolve_asset(...) call and cached.
+-- object is constructed lazily on first unwrap_def(...) call and cached.
 -- Define calls can live in any file in any load order.
 
 local function install_factory(registry_name, schema)
@@ -28,7 +28,7 @@ local function install_factory(registry_name, schema)
 
         local cfg = {}
         for _, field in ipairs(schema.fields) do
-            cfg[field.name] = resolve_asset(def[field.name])
+            cfg[field.name] = unwrap_def(def[field.name])
         end
 
         local ctor = _G[schema.lua_type]
@@ -46,7 +46,7 @@ local function install_factory(registry_name, schema)
         __tostring = function(self)
             return schema.lua_type .. "(" .. self.__name .. ")"
         end,
-        __resolve = function(self)
+        __unwrap = function(self)
             return built[self.__name] or build(self.__name)
         end,
     }

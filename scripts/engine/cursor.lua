@@ -21,7 +21,7 @@
 ---@param config CursorConfig
 function Cursor.config(config)
     if config.texture then
-        Cursor.set_texture(resolve_asset(config.texture))
+        Cursor.set_texture(unwrap_def(config.texture))
     end
 
     if config.pivot then

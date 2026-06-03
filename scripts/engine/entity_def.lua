@@ -31,14 +31,14 @@ _G.DefineEntity = setmetatable({}, {
 
 local function apply_setters(component, section, setters)
     for prop, value in pairs(section) do
-        local resolved_value = resolve_asset(value)
+        local unwrapped = unwrap_def(value)
         local setter = setters[prop]
         if setter == nil then
             Debug.log_error("Unknown prefab property '" .. tostring(prop) .. "' for component")
         elseif type(setter) == "string" then
-            component[setter](component, resolved_value)
+            component[setter](component, unwrapped)
         else
-            setter(component, resolved_value)
+            setter(component, unwrapped)
         end
     end
 end
