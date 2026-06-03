@@ -19,9 +19,6 @@ namespace hob {
     class Renderer;
     class Console;
 
-    using TextureId = int32_t;
-    constexpr TextureId INVALID_TEXTURE_ID = -1;
-
     using ShaderId = int32_t;
     constexpr ShaderId INVALID_SHADER_ID = -1;
     constexpr ShaderId DEFAULT_SPRITE_SHADER_ID = 0;
@@ -33,7 +30,6 @@ namespace hob {
     class Texture {
         SDL_GPUTexture* m_gpu_texture = nullptr;
         Renderer* m_renderer = nullptr;
-        TextureId m_id = INVALID_TEXTURE_ID;
         uint32_t m_width = 0;
         uint32_t m_height = 0;
         std::string m_path;
@@ -41,7 +37,6 @@ namespace hob {
         friend class Renderer;
         Texture(SDL_GPUTexture* gpu_texture,
                 Renderer& renderer,
-                TextureId id,
                 uint32_t width,
                 uint32_t height,
                 std::string path);
@@ -54,7 +49,6 @@ namespace hob {
         Texture(Texture&&) = delete;
         Texture& operator=(Texture&&) = delete;
 
-        TextureId get_id() const;
         uint32_t get_width() const;
         uint32_t get_height() const;
         const std::string& get_path() const;
@@ -135,11 +129,9 @@ namespace hob {
         SDL_GPUSampler* m_sprite_sampler = nullptr;
         SDL_GPUSampler* m_blit_sampler = nullptr;
 
-        // Texture cache. Holds weak refs so unused textures are released as soon as
-        // their last shared_ptr<Texture> is dropped.
-        std::unordered_map<TextureId, std::weak_ptr<Texture>> m_textures;
-        std::unordered_map<std::string, TextureId> m_path_to_id;
-        TextureId m_next_texture_id = 0;
+        // Texture cache. Holds weak refs keyed by normalized asset path, so unused
+        // textures are released as soon as their last shared_ptr<Texture> is dropped.
+        std::unordered_map<std::string, std::weak_ptr<Texture>> m_textures;
 
         // CVars.
         bool m_cvar_log_texture_ref = false;

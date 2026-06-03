@@ -61,7 +61,7 @@ namespace hob {
         }
 
         if (frame_changed) {
-            m_sprite->set_texture_ref(m_current_clip->frames[m_frame_index].texture);
+            m_sprite->set_texture(m_current_clip->frames[m_frame_index].texture);
         }
     }
 
@@ -98,7 +98,7 @@ namespace hob {
         m_playing = true;
 
         if (m_sprite != nullptr && !m_current_clip->frames.empty()) {
-            m_sprite->set_texture_ref(m_current_clip->frames[0].texture);
+            m_sprite->set_texture(m_current_clip->frames[0].texture);
         }
     }
 

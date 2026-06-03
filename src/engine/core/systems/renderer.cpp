@@ -131,13 +131,11 @@ namespace hob {
     // Texture
     Texture::Texture(SDL_GPUTexture* gpu_texture,
                      Renderer& renderer,
-                     TextureId id,
                      uint32_t width,
                      uint32_t height,
                      std::string path)
         : m_gpu_texture(gpu_texture)
         , m_renderer(&renderer)
-        , m_id(id)
         , m_width(width)
         , m_height(height)
         , m_path(std::move(path)) {
@@ -147,10 +145,6 @@ namespace hob {
         if (m_renderer != nullptr) {
             m_renderer->release_texture(*this);
         }
-    }
-
-    TextureId Texture::get_id() const {
-        return m_id;
     }
 
     uint32_t Texture::get_width() const {
@@ -210,17 +204,22 @@ namespace hob {
         // holder dies before the Renderer, so the weak refs here should already be expired.
         // If anything is still alive, detach it from the renderer and release its GPU handle
         // directly so Texture::~Texture (which would call back into us) becomes a no-op.
-        for (auto& [id, weak] : m_textures) {
+        for (auto& [path, weak] : m_textures) {
             if (auto tex = weak.lock()) {
+                debug::log_error(
+                    "Renderer::~Renderer: texture '{}' still has {} holder(s) at shutdown — destruction order is wrong",
+                    path,
+                    tex.use_count() - 1);
+
                 if (tex->m_gpu_texture) {
                     SDL_ReleaseGPUTexture(m_gpu_device, tex->m_gpu_texture);
                     tex->m_gpu_texture = nullptr;
                 }
+
                 tex->m_renderer = nullptr;
             }
         }
         m_textures.clear();
-        m_path_to_id.clear();
 
         if (m_line_transfer_buffer)
             SDL_ReleaseGPUTransferBuffer(m_gpu_device, m_line_transfer_buffer);
@@ -329,19 +328,15 @@ namespace hob {
     TextureRef Renderer::get_or_load_texture(const std::string& path) {
         const std::string key = std::filesystem::path(path).lexically_normal().string();
 
-        auto path_it = m_path_to_id.find(key);
-        if (path_it != m_path_to_id.end()) {
-            auto tex_it = m_textures.find(path_it->second);
-            if (tex_it != m_textures.end()) {
-                if (auto cached = tex_it->second.lock()) {
-                    if (m_cvar_log_texture_ref) {
-                        debug::log("Renderer::get_or_load_texture cache hit: '{}' (id={}, rc={})",
-                                   key,
-                                   path_it->second,
-                                   cached.use_count());
-                    }
-                    return cached;
+        auto tex_it = m_textures.find(key);
+        if (tex_it != m_textures.end()) {
+            if (auto cached = tex_it->second.lock()) {
+                if (m_cvar_log_texture_ref) {
+                    debug::log("Renderer::get_or_load_texture cache hit: '{}' (rc={})",
+                               key,
+                               cached.use_count());
                 }
+                return cached;
             }
         }
 
@@ -390,13 +385,11 @@ namespace hob {
 
         SDL_DestroySurface(rgba);
 
-        const TextureId texture_id = m_next_texture_id++;
-        TextureRef texture(new Texture(gpu_tex, *this, texture_id, w, h, key));
-        m_textures.emplace(texture_id, std::weak_ptr<Texture>(texture));
-        m_path_to_id[key] = texture_id;
+        TextureRef texture(new Texture(gpu_tex, *this, w, h, key));
+        m_textures.emplace(key, std::weak_ptr<Texture>(texture));
 
         if (m_cvar_log_texture_ref) {
-            debug::log("Renderer::get_or_load_texture loaded: '{}' (id={}, rc=1)", key, texture_id);
+            debug::log("Renderer::get_or_load_texture loaded: '{}' (rc=1)", key);
         }
 
         return texture;
@@ -404,13 +397,10 @@ namespace hob {
 
     void Renderer::release_texture(const Texture& texture) {
         if (m_cvar_log_texture_ref) {
-            debug::log("Renderer::release_texture: '{}' (id={}) [destroyed]",
-                       texture.m_path,
-                       texture.m_id);
+            debug::log("Renderer::release_texture: '{}' [destroyed]", texture.m_path);
         }
 
-        m_path_to_id.erase(texture.m_path);
-        m_textures.erase(texture.m_id);
+        m_textures.erase(texture.m_path);
         if (texture.m_gpu_texture) {
             SDL_ReleaseGPUTexture(m_gpu_device, texture.m_gpu_texture);
         }
@@ -1070,66 +1060,64 @@ namespace hob {
             // Count per-texture refs held by pending sprite queues. Each draw_sprite
             // call copies the TextureRef into the pending vector for the duration of
             // the frame, which inflates use_count() but is not a "logical" holder.
-            std::unordered_map<TextureId, int> pending_refs;
+            std::unordered_map<const Texture*, int> pending_refs;
             for (const auto& sp : m_pending_sprites) {
                 if (sp.texture) {
-                    pending_refs[sp.texture->get_id()] += 1;
+                    pending_refs[sp.texture.get()] += 1;
                 }
             }
             for (const auto& sp : m_pending_overlay_sprites) {
                 if (sp.texture) {
-                    pending_refs[sp.texture->get_id()] += 1;
+                    pending_refs[sp.texture.get()] += 1;
                 }
             }
 
-            int total_logical = 0;
+            int total_game = 0;
             int total_all = 0;
-            for (const auto& [id, weak] : m_textures) {
+            for (const auto& [path, weak] : m_textures) {
                 if (auto tex = weak.lock()) {
                     // Subtract 1 because `tex` itself is a strong ref held only for this iteration.
                     const int all = static_cast<int>(tex.use_count()) - 1;
-                    const int pending = pending_refs.count(id) ? pending_refs[id] : 0;
+                    const auto pit = pending_refs.find(tex.get());
+                    const int pending = pit != pending_refs.end() ? pit->second : 0;
                     total_all += all;
-                    total_logical += all - pending;
+                    total_game += all - pending;
                 }
             }
             ImGui::Text("Textures: %zu | Game refs: %d | All refs: %d",
                         m_textures.size(),
-                        total_logical,
+                        total_game,
                         total_all);
 
             const ImGuiTableFlags flags = ImGuiTableFlags_Borders |
                                           ImGuiTableFlags_RowBg |
-                                          ImGuiTableFlags_ScrollY |
-                                          ImGuiTableFlags_Sortable;
+                                          ImGuiTableFlags_ScrollY;
 
-            if (ImGui::BeginTable("texture_refs", 5, flags)) {
-                ImGui::TableSetupColumn("id", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+            if (ImGui::BeginTable("texture_refs", 4, flags)) {
                 ImGui::TableSetupColumn("size", ImGuiTableColumnFlags_WidthFixed, 90.0f);
                 ImGui::TableSetupColumn("game refs", ImGuiTableColumnFlags_WidthFixed, 80.0f);
                 ImGui::TableSetupColumn("all refs", ImGuiTableColumnFlags_WidthFixed, 80.0f);
                 ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableHeadersRow();
 
-                for (const auto& [id, weak] : m_textures) {
+                for (const auto& [path, weak] : m_textures) {
                     auto tex = weak.lock();
                     if (!tex) {
                         continue;
                     }
                     const int all = static_cast<int>(tex.use_count()) - 1;
-                    const int pending = pending_refs.count(id) ? pending_refs[id] : 0;
-                    const int logical = all - pending;
+                    const auto pit = pending_refs.find(tex.get());
+                    const int pending = pit != pending_refs.end() ? pit->second : 0;
+                    const int game = all - pending;
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("%d", id);
-                    ImGui::TableSetColumnIndex(1);
                     ImGui::Text("%ux%u", tex->get_width(), tex->get_height());
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%d", game);
                     ImGui::TableSetColumnIndex(2);
-                    ImGui::Text("%d", logical);
-                    ImGui::TableSetColumnIndex(3);
                     ImGui::Text("%d", all);
-                    ImGui::TableSetColumnIndex(4);
+                    ImGui::TableSetColumnIndex(3);
                     ImGui::TextUnformatted(tex->get_path().c_str());
                 }
                 ImGui::EndTable();

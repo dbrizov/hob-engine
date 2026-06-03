@@ -19,12 +19,12 @@ namespace hob {
         return m_texture;
     }
 
-    void SpriteComponent::set_texture(const std::string& path) {
-        m_texture = get_engine().get_renderer().get_or_load_texture(path);
+    void SpriteComponent::set_texture(TextureRef texture) {
+        m_texture = std::move(texture);
     }
 
-    void SpriteComponent::set_texture_ref(TextureRef texture) {
-        m_texture = std::move(texture);
+    void SpriteComponent::set_texture(const std::string& path) {
+        m_texture = get_engine().get_renderer().get_or_load_texture(path);
     }
 
     void SpriteComponent::clear_texture() {

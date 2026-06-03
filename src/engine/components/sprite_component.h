@@ -22,8 +22,8 @@ namespace hob {
         std::string to_string() const override;
 
         const TextureRef& get_texture() const;
+        void set_texture(TextureRef texture);
         void set_texture(const std::string& path);
-        void set_texture_ref(TextureRef texture);
         void clear_texture();
 
         const Material& get_material() const;

@@ -157,7 +157,18 @@ namespace hob {
 
         bind_usertype<SpriteComponent>(lua, meta, Bases<Component>{})
             .method("get_texture", &SpriteComponent::get_texture)
-            .method("set_texture", &SpriteComponent::set_texture, {"path"})
+            .method_sig("set_texture",
+                        [](SpriteComponent& self, sol::object value) {
+                            if (value.is<TextureRef>()) {
+                                self.set_texture(value.as<TextureRef>());
+                            }
+                            else if (value.is<std::string>()) {
+                                self.set_texture(value.as<std::string>());
+                            }
+                            else {
+                                debug::log_error("SpriteComponent:set_texture expects a string path or a Texture");
+                            }
+                        }, "(texture: string|Texture)")
             .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_material", sol::resolve<Material&()>(&SpriteComponent::get_material))
             .method("set_material", &SpriteComponent::set_material, {"material"})

@@ -718,8 +718,8 @@ local SpriteComponent = {}
 ---@return Texture?
 function SpriteComponent:get_texture() end
 
----@param path string
-function SpriteComponent:set_texture(path) end
+---@param texture string|Texture
+function SpriteComponent:set_texture(texture) end
 
 function SpriteComponent:clear_texture() end
 
