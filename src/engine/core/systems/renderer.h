@@ -59,6 +59,9 @@ namespace hob {
     struct Material {
         ShaderId shader_id = DEFAULT_SPRITE_SHADER_ID;
         Color tint = Color::white();
+        Color outline_color = Color::white();
+        float outline_width = 0.0f;
+        float alpha_threshold = 0.1f;
     };
 
     class Renderer {

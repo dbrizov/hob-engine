@@ -1,8 +1,10 @@
 DefineTexture.CursorTexture = "images/cursor_48px.png"
+
 DefineTexture.PlayerIdle01 = "images/player/HJ_idle01.png"
 DefineTexture.PlayerIdle02 = "images/player/HJ_idle02.png"
 DefineTexture.PlayerIdle03 = "images/player/HJ_idle03.png"
 DefineTexture.PlayerIdle04 = "images/player/HJ_idle04.png"
+
 DefineTexture.PlayerRun01 = "images/player/HJ_run01.png"
 DefineTexture.PlayerRun02 = "images/player/HJ_run02.png"
 DefineTexture.PlayerRun03 = "images/player/HJ_run03.png"
@@ -13,5 +15,3 @@ DefineTexture.PlayerRun07 = "images/player/HJ_run07.png"
 DefineTexture.PlayerRun08 = "images/player/HJ_run08.png"
 DefineTexture.PlayerRun09 = "images/player/HJ_run09.png"
 DefineTexture.PlayerRun10 = "images/player/HJ_run010.png"
-DefineTexture.RobotTexture = "images/robot.png"
-DefineShader.OutlineShader = "shaders/outline"

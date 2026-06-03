@@ -15,9 +15,6 @@ DefineEntity.DynamicBox = {
         collision_layer = Collision.Dynamic,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
     },
-    sprite = {
-        texture = Textures.RobotTexture,
-    },
 }
 
 DefineEntity.TriggerBox = {
@@ -26,9 +23,6 @@ DefineEntity.TriggerBox = {
         trigger = true,
         collision_layer = Collision.Trigger,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
-    },
-    sprite = {
-        texture = Textures.RobotTexture,
     },
     lua_components = { "ContactLogger" },
 }
@@ -50,9 +44,6 @@ DefineEntity.DynamicCircle = {
         collision_layer = Collision.Dynamic,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
     },
-    sprite = {
-        texture = Textures.RobotTexture,
-    },
 }
 
 DefineEntity.TriggerCircle = {
@@ -62,38 +53,5 @@ DefineEntity.TriggerCircle = {
         collision_layer = Collision.Trigger,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
-    sprite = {
-        texture = Textures.RobotTexture,
-        material = Materials.Outline,
-    },
     lua_components = { "ContactLogger" },
-}
-
-DefineEntity.PulsingStaticCircle = {
-    ticking = true,
-    rigidbody = {},
-    circle_collider = {
-        collision_layer = Collision.Static,
-        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
-    },
-    sprite = {
-        texture = Textures.RobotTexture,
-        z_index = 1,
-    },
-    lua_components = { "ScalePulse" },
-}
-
-DefineEntity.PulsingTriggerCircle = {
-    ticking = true,
-    rigidbody = {},
-    circle_collider = {
-        trigger = true,
-        collision_layer = Collision.Trigger,
-        collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
-    },
-    sprite = {
-        texture = Textures.RobotTexture,
-        z_index = 1,
-    },
-    lua_components = { "ScalePulse", "ContactLogger" },
 }

@@ -2,12 +2,12 @@
 --
 -- Usage:
 --   DefineTexture.PlayerTexture = "images/player/HJ_run01.png"
---   DefineShader.Outline        = "shaders/outline"
+--   DefineShader.MyShader       = "shaders/my_shader"
 --   DefineAsset.SomeFont        = "fonts/arial.ttf"
 --
 -- Then in prefabs / config:
 --   sprite   = { texture = Textures.PlayerTexture }
---   material = { shader  = Shaders.Outline }
+--   material = { shader  = Shaders.MyShader }
 --
 -- Paths are relative to the assets/ root, same as a raw string would be.
 --

@@ -38,10 +38,31 @@ namespace hob {
                     if (auto tint = mat_t.get<sol::optional<Color>>("tint")) {
                         mat.tint = *tint;
                     }
+                    if (auto oc = mat_t.get<sol::optional<Color>>("outline_color")) {
+                        mat.outline_color = *oc;
+                    }
+                    if (auto ow = mat_t.get<sol::optional<float>>("outline_width")) {
+                        mat.outline_width = *ow;
+                    }
+                    if (auto at = mat_t.get<sol::optional<float>>("alpha_threshold")) {
+                        mat.alpha_threshold = *at;
+                    }
                     return mat;
                 }, {"config"})
                 .method("get_tint", [](const Material& self) { return self.tint; })
                 .method("set_tint", [](Material& self, const Color& tint) { self.tint = tint; }, {"tint"})
+                .method("get_outline_color", [](const Material& self) { return self.outline_color; })
+                .method("set_outline_color",
+                        [](Material& self, const Color& color) { self.outline_color = color; },
+                        {"color"})
+                .method("get_outline_width", [](const Material& self) { return self.outline_width; })
+                .method("set_outline_width",
+                        [](Material& self, float width) { self.outline_width = width; },
+                        {"width"})
+                .method("get_alpha_threshold", [](const Material& self) { return self.alpha_threshold; })
+                .method("set_alpha_threshold",
+                        [](Material& self, float threshold) { self.alpha_threshold = threshold; },
+                        {"threshold"})
                 .method("set_shader",
                         [&renderer](Material& self, const std::string& path) {
                             self.shader_id = renderer.get_or_build_sprite_shader(path);
@@ -49,7 +70,7 @@ namespace hob {
                         {"path"});
 
             bind_factory_schema<Material>(factory_schemas, "DefineMaterial", "Materials",
-                                          {"shader", "tint"});
+                                          {"shader", "tint", "outline_color", "outline_width", "alpha_threshold"});
         }
 
         void bind_timer(sol::state& lua, LuaMetaRegistry& meta, Timer& timer) {

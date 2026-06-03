@@ -1,9 +1,8 @@
-DefineEntity.Player = {
+DefineEntity.Enemy = {
     ticking = true,
     transform = {
         interpolate_physics = false,
     },
-    input = {},
     character_body = {
         collision_layer = Collision.Kinematic,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Trigger,
@@ -21,5 +20,5 @@ DefineEntity.Player = {
         },
         default_clip = "idle",
     },
-    lua_components = { "Player", "ContactLogger" },
+    lua_components = { "ContactLogger" },
 }

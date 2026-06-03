@@ -63,6 +63,17 @@ namespace hob {
 
         static_assert(sizeof(SpriteVSUniforms) == 96);
 
+        // Must match the HLSL cbuffer layout in sprite.frag.hlsl (cbuffer @ b0, space3).
+        struct SpriteFSUniforms {
+            float tint[4]; // 0..16
+            float outline_color[4]; // 16..32
+            float outline_width; // 32..36
+            float alpha_threshold; // 36..40
+            float texel_size[2]; // 40..48
+        };
+
+        static_assert(sizeof(SpriteFSUniforms) == 48);
+
         std::string read_text_file(const std::filesystem::path& path) {
             std::ifstream f(path, std::ios::binary | std::ios::ate);
             if (!f) {
@@ -942,7 +953,22 @@ namespace hob {
         vsu.rotation = -sp.rotation_rad;
         SDL_PushGPUVertexUniformData(m_command_buffer, 0, &vsu, sizeof(vsu));
 
-        SDL_PushGPUFragmentUniformData(m_command_buffer, 0, &sp.material.tint, sizeof(Color));
+        SpriteFSUniforms fsu{};
+        fsu.tint[0] = sp.material.tint.r;
+        fsu.tint[1] = sp.material.tint.g;
+        fsu.tint[2] = sp.material.tint.b;
+        fsu.tint[3] = sp.material.tint.a;
+        fsu.outline_color[0] = sp.material.outline_color.r;
+        fsu.outline_color[1] = sp.material.outline_color.g;
+        fsu.outline_color[2] = sp.material.outline_color.b;
+        fsu.outline_color[3] = sp.material.outline_color.a;
+        fsu.outline_width = sp.material.outline_width;
+        fsu.alpha_threshold = sp.material.alpha_threshold;
+        const uint32_t tex_w = sp.texture->get_width();
+        const uint32_t tex_h = sp.texture->get_height();
+        fsu.texel_size[0] = tex_w > 0 ? 1.0f / static_cast<float>(tex_w) : 0.0f;
+        fsu.texel_size[1] = tex_h > 0 ? 1.0f / static_cast<float>(tex_h) : 0.0f;
+        SDL_PushGPUFragmentUniformData(m_command_buffer, 0, &fsu, sizeof(fsu));
 
         SDL_GPUTextureSamplerBinding ts{};
         ts.texture = sp.texture->m_gpu_texture;

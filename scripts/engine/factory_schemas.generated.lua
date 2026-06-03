@@ -17,6 +17,9 @@ _G.__factory_schemas = {
         fields = {
             { name = "shader" },
             { name = "tint" },
+            { name = "outline_color" },
+            { name = "outline_width" },
+            { name = "alpha_threshold" },
         },
     },
 }

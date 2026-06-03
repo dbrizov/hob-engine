@@ -8,7 +8,7 @@
 -- picks it up on the next run; no edits to this file are needed.
 --
 -- Usage (same contract as DefineAsset / DefineTexture / DefineShader):
---   DefineMaterial.Outline = { shader = Shaders.OutlineShader, tint = Color(1,0,0,1) }
+--   DefineMaterial.Outline = { outline_width = 2.0, outline_color = Color(1,1,1,1) }
 --   sprite = { material = Materials.Outline }
 --
 -- `Materials.Name` / `AnimationClips.Name` return deferred refs. The actual C++

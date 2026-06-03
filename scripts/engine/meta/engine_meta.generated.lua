@@ -845,6 +845,24 @@ function Material:get_tint() end
 ---@param tint Color
 function Material:set_tint(tint) end
 
+---@return Color
+function Material:get_outline_color() end
+
+---@param color Color
+function Material:set_outline_color(color) end
+
+---@return number
+function Material:get_outline_width() end
+
+---@param width number
+function Material:set_outline_width(width) end
+
+---@return number
+function Material:get_alpha_threshold() end
+
+---@param threshold number
+function Material:set_alpha_threshold(threshold) end
+
 ---@param path string
 function Material:set_shader(path) end
 

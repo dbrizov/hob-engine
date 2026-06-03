@@ -15,6 +15,19 @@ EntitySpawner.spawn_entity("Camera", Vector2(0.0, 0.0))
 -- Player at the center
 EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
 
+-- Stationary enemies for testing
+local red_enemy = EntitySpawner.spawn_entity("Enemy", Vector2(0.0, 4.0), -90.0)
+red_enemy:get_sprite():get_material():set_outline_color(Color:red());
+red_enemy:get_sprite():get_material():set_outline_width(2.0)
+
+local green_enemy = EntitySpawner.spawn_entity("Enemy", Vector2(-4.0, 0.0))
+green_enemy:get_sprite():get_material():set_outline_color(Color:green())
+green_enemy:get_sprite():get_material():set_outline_width(2.0)
+
+local blue_enemy = EntitySpawner.spawn_entity("Enemy", Vector2(4.0, 0.0), 180.0)
+blue_enemy:get_sprite():get_material():set_outline_color(Color:blue())
+blue_enemy:get_sprite():get_material():set_outline_width(2.0)
+
 -- Perimeter walls
 for x = -ARENA_HALF_W, ARENA_HALF_W do
     EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE, ARENA_HALF_H * SCALE), 0, S)  -- top
@@ -45,11 +58,6 @@ EntitySpawner.spawn_entity("StaticCircle", Vector2(5.0 * SCALE, 0.0), 0, S)
 -- Checkpoint triggers (top and bottom of the arena)
 EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0, 4.0 * SCALE), 0, S)
 EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0, -4.0 * SCALE), 0, S)
-
--- Live-rescale test: a box that pulses its scale with a sin wave.
--- Walk into it to verify the player gets pushed out as it grows.
-EntitySpawner.spawn_entity("PulsingStaticCircle", Vector2(-4.0, 0.0))
-EntitySpawner.spawn_entity("PulsingTriggerCircle", Vector2(4.0, 0.0))
 
 -- Dynamic entities for collision testing. With Y-up gravity these fall
 -- and pile up on the bottom wall and crates.
