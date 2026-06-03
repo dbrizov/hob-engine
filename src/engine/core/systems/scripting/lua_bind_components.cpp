@@ -168,7 +168,7 @@ namespace hob {
                             else {
                                 debug::log_error("SpriteComponent:set_texture expects a string path or a Texture");
                             }
-                        }, "(texture: string|Texture)")
+                        }, "(path_or_texture: string|Texture)")
             .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_material", sol::resolve<Material&()>(&SpriteComponent::get_material))
             .method("set_material", &SpriteComponent::set_material, {"material"})

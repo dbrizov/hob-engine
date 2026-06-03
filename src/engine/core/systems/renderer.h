@@ -28,15 +28,15 @@ namespace hob {
     // GPU texture resource. Owned via std::shared_ptr; destructor releases the GPU
     // handle and removes the cache entry from the Renderer.
     class Texture {
-        SDL_GPUTexture* m_gpu_texture = nullptr;
         Renderer* m_renderer = nullptr;
+        SDL_GPUTexture* m_gpu_texture = nullptr;
         uint32_t m_width = 0;
         uint32_t m_height = 0;
         std::string m_path;
 
         friend class Renderer;
-        Texture(SDL_GPUTexture* gpu_texture,
-                Renderer& renderer,
+        Texture(Renderer& renderer,
+                SDL_GPUTexture* gpu_texture,
                 uint32_t width,
                 uint32_t height,
                 std::string path);

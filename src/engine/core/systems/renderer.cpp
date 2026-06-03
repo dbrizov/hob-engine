@@ -129,13 +129,13 @@ namespace hob {
     }
 
     // Texture
-    Texture::Texture(SDL_GPUTexture* gpu_texture,
-                     Renderer& renderer,
+    Texture::Texture(Renderer& renderer,
+                     SDL_GPUTexture* gpu_texture,
                      uint32_t width,
                      uint32_t height,
                      std::string path)
-        : m_gpu_texture(gpu_texture)
-        , m_renderer(&renderer)
+        : m_renderer(&renderer)
+        , m_gpu_texture(gpu_texture)
         , m_width(width)
         , m_height(height)
         , m_path(std::move(path)) {
@@ -385,7 +385,7 @@ namespace hob {
 
         SDL_DestroySurface(rgba);
 
-        TextureRef texture(new Texture(gpu_tex, *this, w, h, key));
+        TextureRef texture(new Texture(*this, gpu_tex, w, h, key));
         m_textures.emplace(key, std::weak_ptr<Texture>(texture));
 
         if (m_cvar_log_texture_ref) {
@@ -1174,7 +1174,7 @@ namespace hob {
     void Renderer::register_cvars(Console& console) {
         console.register_cvar("r_log_texture_ref",
                               "Log every texture load/unload/cache-hit",
-                              "1",
+                              "0",
                               ConsoleVariableType::Bool,
                               ConsoleVariableFlags::None,
                               [this](const ConsoleVariable& cvar) {
