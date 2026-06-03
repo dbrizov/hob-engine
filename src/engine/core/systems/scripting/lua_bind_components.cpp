@@ -172,12 +172,12 @@ namespace hob {
         // underlying TextureRefs stay alive as long as any holder exists.
         Renderer& renderer = m_engine.get_renderer();
         bind_usertype<AnimationClip>(lua, meta)
-            .factory_ctor([&renderer](sol::table t) {
+            .factory_ctor([&renderer](sol::table animclip_t) {
                 auto clip = std::make_shared<AnimationClip>();
-                sol::object textures_obj = t["textures"];
+                sol::object textures_obj = animclip_t["textures"];
                 if (textures_obj.valid() && textures_obj.get_type() == sol::type::table) {
                     sol::table textures = textures_obj;
-                    sol::state_view sv(t.lua_state());
+                    sol::state_view sv(animclip_t.lua_state());
                     clip->frames.reserve(textures.size());
                     for (size_t i = 1; i <= textures.size(); ++i) {
                         sol::object entry = textures[i];
@@ -189,8 +189,8 @@ namespace hob {
                         clip->frames.push_back({renderer.get_or_load_texture(path)});
                     }
                 }
-                clip->fps = t.get_or("fps", 12.0f);
-                clip->looping = t.get_or("looping", true);
+                clip->fps = animclip_t.get_or("fps", 12.0f);
+                clip->looping = animclip_t.get_or("looping", true);
                 return clip;
             }, {"config"})
             .method("get_fps", [](const AnimationClip& self) { return self.fps; })

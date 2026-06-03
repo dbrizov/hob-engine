@@ -225,10 +225,8 @@ namespace hob {
         }
         m_shadercross_initialized = true;
 
-        if (!init_offscreen_target()) {
+        if (!init_offscreen_target())
             return;
-        }
-
         if (!init_samplers())
             return;
         if (!init_quad_vbo())
@@ -368,7 +366,7 @@ namespace hob {
             TextureEntry& entry = m_textures.at(it->second);
             entry.ref_count += 1;
 
-            if (m_cvar_log_textures) {
+            if (m_cvar_log_texture_ref) {
                 debug::log("Renderer::get_or_load_texture cache hit: '{}' (id={}, rc={})",
                            key,
                            it->second,
@@ -427,7 +425,7 @@ namespace hob {
         m_textures.emplace(texture_id, TextureEntry{gpu_tex, w, h, key, 1});
         m_path_to_id.emplace(key, texture_id);
 
-        if (m_cvar_log_textures) {
+        if (m_cvar_log_texture_ref) {
             debug::log("Renderer::get_or_load_texture loaded: '{}' (id={}, rc=1)", key, texture_id);
         }
 
@@ -444,7 +442,7 @@ namespace hob {
         TextureEntry& entry = it->second;
         entry.ref_count += 1;
 
-        if (m_cvar_log_textures) {
+        if (m_cvar_log_texture_ref) {
             debug::log("Renderer::retain_texture: '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
         }
 
@@ -462,13 +460,13 @@ namespace hob {
         entry.ref_count -= 1;
 
         if (entry.ref_count > 0) {
-            if (m_cvar_log_textures) {
+            if (m_cvar_log_texture_ref) {
                 debug::log("Renderer::unload_texture: '{}' (id={}, rc={})", entry.path, id, entry.ref_count);
             }
             return true;
         }
 
-        if (m_cvar_log_textures) {
+        if (m_cvar_log_texture_ref) {
             debug::log("Renderer::unload_texture: '{}' (id={}, rc=0) [destroyed]", entry.path, id);
         }
 
@@ -588,8 +586,6 @@ namespace hob {
                                      return a.material.shader_id < b.material.shader_id;
                                  });
 
-                debug_sprite_pipeline();
-
                 SDL_GPUBufferBinding vb{};
                 vb.buffer = m_quad_vbo;
                 vb.offset = 0;
@@ -621,6 +617,9 @@ namespace hob {
 
             SDL_EndGPURenderPass(pass);
         }
+
+        debug_texture_refs();
+        debug_sprite_queue();
 
         m_pending_sprites.clear();
         m_pending_lines.clear();
@@ -989,55 +988,6 @@ namespace hob {
         return pipeline;
     }
 
-    void Renderer::debug_sprite_pipeline() {
-        if (m_cvar_log_sprite_queue) {
-            debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
-            for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                const Sprite& sp = m_pending_sprites[i];
-                auto tex_it = m_textures.find(sp.texture_id);
-                const char* tex_path = (tex_it != m_textures.end()) ? tex_it->second.path.c_str() : "<unknown>";
-                debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, tex_path);
-            }
-        }
-
-        if (m_cvar_show_sprite_queue) {
-            if (ImGui::Begin("Sprite Queue")) {
-                ImGui::Text("Total: %zu", m_pending_sprites.size());
-                const int columns = 4;
-                const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
-                                               ImGuiTableFlags_RowBg |
-                                               ImGuiTableFlags_ScrollY;
-
-                if (ImGui::BeginTable("queue", columns, flags)) {
-                    ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-                    ImGui::TableSetupColumn("z_index", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                    ImGui::TableSetupColumn("shader_id", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                    ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
-                    ImGui::TableHeadersRow();
-
-                    for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                        const Sprite& sp = m_pending_sprites[i];
-                        auto tex_it = m_textures.find(sp.texture_id);
-                        const char* tex_path = (tex_it != m_textures.end())
-                                                   ? tex_it->second.path.c_str()
-                                                   : "<unknown>";
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("%zu", i);
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("%d", sp.z_index);
-                        ImGui::TableSetColumnIndex(2);
-                        ImGui::Text("%d", sp.material.shader_id);
-                        ImGui::TableSetColumnIndex(3);
-                        ImGui::TextUnformatted(tex_path);
-                    }
-                    ImGui::EndTable();
-                }
-            }
-            ImGui::End();
-        }
-    }
-
     void Renderer::record_sprite(SDL_GPURenderPass* pass,
                                  const Sprite& sp,
                                  const std::array<float, 16>& projection,
@@ -1174,14 +1124,113 @@ namespace hob {
         return true;
     }
 
+    void Renderer::debug_texture_refs() {
+        if (!m_cvar_show_texture_refs) {
+            return;
+        }
+
+        if (ImGui::Begin("Texture Refs")) {
+            int total_refs = 0;
+            for (const auto& [id, entry] : m_textures) {
+                total_refs += entry.ref_count;
+            }
+            ImGui::Text("Textures: %zu | Total refs: %d", m_textures.size(), total_refs);
+
+            const ImGuiTableFlags flags = ImGuiTableFlags_Borders |
+                                          ImGuiTableFlags_RowBg |
+                                          ImGuiTableFlags_ScrollY |
+                                          ImGuiTableFlags_Sortable;
+
+            if (ImGui::BeginTable("texture_refs", 4, flags)) {
+                ImGui::TableSetupColumn("id", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+                ImGui::TableSetupColumn("size", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+                ImGui::TableSetupColumn("refs", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+                ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableHeadersRow();
+
+                for (const auto& [id, entry] : m_textures) {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("%d", id);
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%ux%u", entry.width, entry.height);
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::Text("%d", entry.ref_count);
+                    ImGui::TableSetColumnIndex(3);
+                    ImGui::TextUnformatted(entry.path.c_str());
+                }
+                ImGui::EndTable();
+            }
+        }
+        ImGui::End();
+    }
+
+    void Renderer::debug_sprite_queue() {
+        if (m_cvar_log_sprite_queue) {
+            debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
+            for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
+                const Sprite& sp = m_pending_sprites[i];
+                auto tex_it = m_textures.find(sp.texture_id);
+                const char* tex_path = (tex_it != m_textures.end()) ? tex_it->second.path.c_str() : "<unknown>";
+                debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, tex_path);
+            }
+        }
+
+        if (m_cvar_show_sprite_queue) {
+            if (ImGui::Begin("Sprite Queue")) {
+                ImGui::Text("Total: %zu", m_pending_sprites.size());
+                const int columns = 4;
+                const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
+                                               ImGuiTableFlags_RowBg |
+                                               ImGuiTableFlags_ScrollY;
+
+                if (ImGui::BeginTable("queue", columns, flags)) {
+                    ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+                    ImGui::TableSetupColumn("z_index", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                    ImGui::TableSetupColumn("shader_id", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                    ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableHeadersRow();
+
+                    for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
+                        const Sprite& sp = m_pending_sprites[i];
+                        auto tex_it = m_textures.find(sp.texture_id);
+                        const char* tex_path = (tex_it != m_textures.end())
+                                                   ? tex_it->second.path.c_str()
+                                                   : "<unknown>";
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%zu", i);
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%d", sp.z_index);
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("%d", sp.material.shader_id);
+                        ImGui::TableSetColumnIndex(3);
+                        ImGui::TextUnformatted(tex_path);
+                    }
+                    ImGui::EndTable();
+                }
+            }
+            ImGui::End();
+        }
+    }
+
     void Renderer::register_cvars(Console& console) {
-        console.register_cvar("r_log_textures",
+        console.register_cvar("r_log_texture_ref",
                               "Log every texture load/unload/cache-hit",
                               "0",
                               ConsoleVariableType::Bool,
                               ConsoleVariableFlags::None,
                               [this](const ConsoleVariable& cvar) {
-                                  m_cvar_log_textures = cvar.bool_value();
+                                  m_cvar_log_texture_ref = cvar.bool_value();
+                              });
+
+        console.register_cvar("r_show_texture_refs",
+                              "Show a texture cache window (id, size, ref_count, path)",
+                              "0",
+                              ConsoleVariableType::Bool,
+                              ConsoleVariableFlags::None,
+                              [this](const ConsoleVariable& cvar) {
+                                  m_cvar_show_texture_refs = cvar.bool_value();
                               });
 
         console.register_cvar("r_log_sprite_queue",

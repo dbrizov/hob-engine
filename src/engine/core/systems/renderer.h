@@ -147,7 +147,9 @@ namespace hob {
         TextureId m_next_texture_id = 0;
 
         // CVars.
-        bool m_cvar_log_textures = false;
+        bool m_cvar_log_texture_ref = false;
+        bool m_cvar_show_texture_refs = false;
+
         bool m_cvar_log_sprite_queue = false;
         bool m_cvar_show_sprite_queue = false;
 
@@ -238,8 +240,6 @@ namespace hob {
         // Returns nullptr on failure; caller handles fallback.
         SDL_GPUGraphicsPipeline* build_sprite_pipeline(const std::string& path);
 
-        void debug_sprite_pipeline();
-
         // Records one sprite's draw commands into `pass`. Reads m_command_buffer for
         // uniform pushes. Updates `bound_shader` so callers can skip redundant pipeline
         // binds across a batch of sprites.
@@ -254,6 +254,9 @@ namespace hob {
 
         // Same for textures: uploads RGBA8 pixels into `dst_texture` at mip 0, layer 0.
         bool upload_texture_rgba(SDL_GPUTexture* dst_texture, const void* pixels, uint32_t width, uint32_t height);
+
+        void debug_texture_refs();
+        void debug_sprite_queue();
 
         void register_cvars(Console& console);
     };

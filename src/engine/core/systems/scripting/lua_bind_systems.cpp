@@ -26,18 +26,15 @@ namespace hob {
         // Renderer
         Renderer& renderer = m_engine.get_renderer();
         bind_usertype<Material>(m_lua, m_meta)
-            .factory_ctor([&renderer](sol::table t) {
+            .factory_ctor([&renderer](sol::table mat_t) {
                 Material mat;
-                sol::object sh_obj = t["shader"];
+                sol::object sh_obj = mat_t["shader"];
                 if (sh_obj.valid() && sh_obj.get_type() != sol::type::lua_nil) {
-                    // TODO Assets.X refs will not return only string in the future.
-                    // tostring resolves Assets.X refs via their __tostring metamethod
-                    // and passes through raw string paths unchanged.
-                    sol::state_view sv(t.lua_state());
+                    sol::state_view sv(mat_t.lua_state());
                     std::string path = sv["tostring"](sh_obj);
                     mat.shader_id = renderer.get_or_build_sprite_shader(path);
                 }
-                if (auto tint = t.get<sol::optional<Color>>("tint")) {
+                if (auto tint = mat_t.get<sol::optional<Color>>("tint")) {
                     mat.tint = *tint;
                 }
                 return mat;
