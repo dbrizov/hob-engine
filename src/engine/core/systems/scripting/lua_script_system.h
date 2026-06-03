@@ -32,14 +32,18 @@ namespace hob {
         bool run_bootstrap();
 
         void register_bindings();
-        void dump_meta();
-        void dump_component_schemas();
-        void dump_factory_schemas();
 
         void bind_math();
         void bind_entity();
         void bind_components();
         void bind_systems();
+        void bind_assets();
         void bind_debug();
+
+        void dump_meta();
+        void dump_component_schemas();
+        void dump_factory_schemas();
+        void dump_path_schemas();
+        void dump_path_schemas_meta();
     };
 }

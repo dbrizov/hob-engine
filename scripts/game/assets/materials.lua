@@ -1,3 +1,3 @@
 DefineMaterial.Outline = {
-    shader = Assets.OutlineShader,
+    shader = Shaders.OutlineShader,
 }

@@ -3,19 +3,19 @@
 -- Drives DefineMaterial / DefineAnimationClip (and any future DefineX where X is a
 -- C++ usertype bound with a `factory_ctor` that takes a single config table).
 -- The per-type field list lives in factory_schemas.generated.lua, which is dumped
--- from C++ by LuaScriptSystem::dump_factory_schemas() — to add a new factory type,
+-- from C++ by LuaScriptSystem::dump_factory_schemas(). To add a new factory type,
 -- call bind_factory_schema(...) next to its bind_usertype<T>() and the Lua side
 -- picks it up on the next run; no edits to this file are needed.
 --
--- Usage (same contract as DefineAsset):
---   DefineMaterial.Outline = { shader = Assets.OutlineShader, tint = Color(1,0,0,1) }
+-- Usage (same contract as DefineAsset / DefineTexture / DefineShader):
+--   DefineMaterial.Outline = { shader = Shaders.OutlineShader, tint = Color(1,0,0,1) }
 --   sprite = { material = Materials.Outline }
 --
 -- `Materials.Name` / `AnimationClips.Name` return deferred refs. The actual C++
 -- object is constructed lazily on first unwrap_def(...) call and cached.
 -- Define calls can live in any file in any load order.
 
-local function install_factory(registry_name, schema)
+local function install_factory_registry(registry_name, schema)
     local defs = {}
     local built = {}
 
@@ -71,14 +71,15 @@ local function install_factory(registry_name, schema)
     })
 end
 
-function _G.install_factories()
+function _G.install_factory_registries()
     local schemas = _G.__factory_schemas
     if schemas == nil then
-        Debug.log_error("install_factories: __factory_schemas is missing (did factory_schemas.generated.lua run?)")
+        Debug.log_error(
+            "install_factory_registries: __factory_schemas is missing (did factory_schemas.generated.lua run?)")
         return
     end
 
     for registry_name, schema in pairs(schemas) do
-        install_factory(registry_name, schema)
+        install_factory_registry(registry_name, schema)
     end
 end

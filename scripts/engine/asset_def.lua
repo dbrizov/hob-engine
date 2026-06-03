@@ -1,59 +1,77 @@
--- DefineAsset: Named alias for asset paths.
+-- Typed path-alias namespaces (DefineAsset, DefineTexture, DefineShader, ...).
 --
 -- Usage:
---   DefineAsset.PlayerTexture = "images/player/HJ_run01.png"
---   DefineAsset.RobotTexture  = "images/robot.png"
+--   DefineTexture.PlayerTexture = "images/player/HJ_run01.png"
+--   DefineShader.Outline        = "shaders/outline"
+--   DefineAsset.SomeFont        = "fonts/arial.ttf"
 --
 -- Then in prefabs / config:
---   sprite = { texture = Assets.PlayerTexture }
---   Cursor.config { texture = Assets.CursorTexture }
+--   sprite   = { texture = Textures.PlayerTexture }
+--   material = { shader  = Shaders.Outline }
 --
 -- Paths are relative to the assets/ root, same as a raw string would be.
 --
--- `Assets.Name` returns a deferred reference, not an eager string. The actual
--- path lookup happens at dispatch time (apply_setters in entity_def.lua and
--- Cursor.config in cursor.lua), so DefineAsset calls can live in any file in
--- any load order. If user-script code calls a C++ setter directly with an
--- Assets.X value, it must pass it through unwrap_def(...) or tostring(...).
+-- `Textures.Name` / `Shaders.Name` / `Assets.Name` return deferred references, not eager
+-- strings. The actual path lookup happens at dispatch time (apply_setters in entity_def.lua
+-- and Cursor.config in cursor.lua), so DefineX calls can live in any file in any load order.
+-- When passing a deferred ref directly to a C++ setter, unwrap with unwrap_def(...) or tostring(...).
+--
+-- The full list of (Define, Registry) namespaces is C++-driven: hob:: bind_path_schema(...) calls
+-- in lua_bind_assets.cpp emit path_schemas.generated.lua, which this file reads via
+-- install_path_registries() (called from bootstrap.lua).
 
-_G.__assets = _G.__assets or {}
+local function install_path_registry(define_name, registry_name, type_label)
+    local store = {}
 
-local asset_ref_mt = {
-    __tostring = function(self)
-        local path = _G.__assets[self.__asset]
-        if not path then
-            Debug.log_error("Asset '" .. self.__asset .. "' is not defined")
-            return ""
-        end
+    local ref_mt = {
+        __tostring = function(self)
+            local path = store[self.__name]
+            if not path then
+                Debug.log_error(type_label .. " '" .. self.__name .. "' is not defined")
+                return ""
+            end
 
-        return path
-    end,
-    __unwrap = function(self)
-        local path = _G.__assets[self.__asset]
-        if not path then
-            Debug.log_error("Asset '" .. self.__asset .. "' is not defined")
-            return ""
-        end
+            return path
+        end,
+        __unwrap = function(self)
+            local path = store[self.__name]
+            if not path then
+                Debug.log_error(type_label .. " '" .. self.__name .. "' is not defined")
+                return ""
+            end
 
-        return path
-    end,
-}
+            return path
+        end,
+    }
 
-_G.DefineAsset = setmetatable({}, {
-    __newindex = function(_, name, def)
-        if def == nil then
-            Debug.log_error("DefineAsset." .. tostring(name) .. " must not be nil")
-            return
-        end
+    _G[define_name] = setmetatable({}, {
+        __newindex = function(_, name, def)
+            if def == nil then
+                Debug.log_error(define_name .. "." .. tostring(name) .. " must not be nil")
+                return
+            end
 
-        _G.__assets[name] = def
-    end,
-})
+            store[name] = def
+        end,
+    })
 
-_G.Assets = setmetatable({}, {
-    __index = function(t, name)
-        local wrapper = setmetatable({ __asset = name }, asset_ref_mt)
-        rawset(t, name, wrapper)
-        return wrapper
-    end,
-})
+    _G[registry_name] = setmetatable({}, {
+        __index = function(t, name)
+            local wrapper = setmetatable({ __name = name }, ref_mt)
+            rawset(t, name, wrapper)
+            return wrapper
+        end,
+    })
+end
+
+function _G.install_path_registries()
+    local schemas = _G.__path_schemas
+    if schemas == nil then
+        Debug.log_error("install_path_registries: __path_schemas is missing (did path_schemas.generated.lua run?)")
+        return
+    end
+
+    for _, s in ipairs(schemas) do
+        install_path_registry(s.define, s.registry, s.type_label)
+    end
+end

@@ -2,7 +2,7 @@
 --
 -- Usage:
 --   Cursor.config {
---       texture = Assets.CursorTexture,  -- DefineAsset name, or raw "path/under/assets"
+--       texture = Textures.CursorTexture,  -- DefineTexture name, or raw "path/under/assets"
 --       pivot   = Vector2(0.0, 0.0),     -- normalized (0,0)=top-left, (0.5,0.5)=center
 --       scale   = Vector2(1.0, 1.0),
 --       tint    = Color.white(),

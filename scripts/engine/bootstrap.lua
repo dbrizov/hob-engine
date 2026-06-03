@@ -10,11 +10,13 @@ end
 -- lib/ is `require`d on demand (vendored lldebugger); meta/ is LuaCATS annotations.
 Scripts.run_folder("scripts/engine", { "bootstrap.lua", "lib", "meta" })
 
--- Install DefineMaterial / DefineAnimationClip / ... from the generated factory
--- schema. Runs after the engine folder (so factory_schemas.generated.lua and
--- factory_def.lua are both loaded) and before user scripts (so they may call
--- DefineMaterial.X etc. at file scope).
-install_factories()
+-- Install DefineAsset / DefineTexture / DefineShader / ... from the generated path schema.
+-- Then DefineMaterial / DefineAnimationClip / ... from the generated factory schema.
+-- Runs after the engine folder (so *_schemas.generated.lua and *_def.lua are loaded)
+-- and before user scripts (so they may call DefineTexture.X etc. at file scope).
+-- Path registries first: factory configs (e.g. Materials) may reference Textures/Shaders.
+install_path_registries()
+install_factory_registries()
 
 -- User scripts: anything outside engine/ and main.lua.
 -- Assets, materials, animation clips, entities, components, and mixins can live anywhere under scripts/.

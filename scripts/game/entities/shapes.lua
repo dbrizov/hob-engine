@@ -16,7 +16,7 @@ DefineEntity.DynamicBox = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
     },
     sprite = {
-        texture = Assets.RobotTexture,
+        texture = Textures.RobotTexture,
     },
 }
 
@@ -28,7 +28,7 @@ DefineEntity.TriggerBox = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
     sprite = {
-        texture = Assets.RobotTexture,
+        texture = Textures.RobotTexture,
     },
     lua_components = { "ContactLogger" },
 }
@@ -51,7 +51,7 @@ DefineEntity.DynamicCircle = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
     },
     sprite = {
-        texture = Assets.RobotTexture,
+        texture = Textures.RobotTexture,
     },
 }
 
@@ -63,7 +63,7 @@ DefineEntity.TriggerCircle = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
     sprite = {
-        texture = Assets.RobotTexture,
+        texture = Textures.RobotTexture,
         material = Materials.Outline,
     },
     lua_components = { "ContactLogger" },
@@ -77,7 +77,7 @@ DefineEntity.PulsingStaticCircle = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
     sprite = {
-        texture = Assets.RobotTexture,
+        texture = Textures.RobotTexture,
         z_index = 1,
     },
     lua_components = { "ScalePulse" },
@@ -92,7 +92,7 @@ DefineEntity.PulsingTriggerCircle = {
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
     sprite = {
-        texture = Assets.RobotTexture,
+        texture = Textures.RobotTexture,
         z_index = 1,
     },
     lua_components = { "ScalePulse", "ContactLogger" },

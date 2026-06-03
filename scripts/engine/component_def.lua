@@ -138,6 +138,10 @@ function _G.finalize_components()
     _G.__component_pending = {}
 end
 
+--- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
+--- and creates a global `Foo`. The table may contain default fields,
+--- and methods (`init`, `enter_play`, `exit_play`, `tick`, ...).
+---@class DefineComponent
 _G.DefineComponent = setmetatable({}, {
     __newindex = function(_, name, def)
         if type(def) ~= "table" then

@@ -1,5 +1,5 @@
 Cursor.config {
-    texture = Assets.CursorTexture,
+    texture = Textures.CursorTexture,
     pivot = Vector2(0.24, 0.1),
     scale = Vector2(0.8, 0.8)
 }

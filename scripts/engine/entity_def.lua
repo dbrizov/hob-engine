@@ -15,6 +15,12 @@
 
 _G.__entity_prefab_registry = _G.__entity_prefab_registry or {}
 
+--- Assigning `DefineEntity.Foo = { ... }` registers a prefab usable via
+--- `EntitySpawner.spawn_entity("Foo", ...)`. Recognized section keys are
+--- `ticking`, `lua_components`, and one key per C++ component (e.g. `transform`,
+--- `rigidbody`, `box_collider`, `sprite`, ...) bound via `bind_component_schema`
+--- in lua_bind_components.cpp.
+---@class DefineEntity
 _G.DefineEntity = setmetatable({}, {
     __newindex = function(_, name, def)
         if type(def) ~= "table" then

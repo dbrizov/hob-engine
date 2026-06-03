@@ -29,11 +29,15 @@ namespace hob {
         package["path"] = lib_path + ";" + package["path"].get<std::string>();
 
         register_bindings();
+
 #ifndef NDEBUG
         dump_meta();
+        dump_path_schemas_meta();
 #endif
         dump_component_schemas();
         dump_factory_schemas();
+        dump_path_schemas();
+
         run_bootstrap();
     }
 
@@ -115,12 +119,13 @@ namespace hob {
         bind_entity();
         bind_components();
         bind_systems();
+        bind_assets();
         bind_debug();
     }
 
     void LuaScriptSystem::dump_meta() {
         const std::filesystem::path out_path =
-            PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "engine.generated.lua";
+            PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "engine_meta.generated.lua";
 
         if (!m_impl->meta.write_to_file(out_path)) {
             debug::log_error("LuaScriptSystem::dump_meta: failed to write '{}'", out_path.string());
@@ -142,6 +147,24 @@ namespace hob {
 
         if (!m_impl->factory_schemas.write_to_file(out_path)) {
             debug::log_error("LuaScriptSystem::dump_factory_schemas: failed to write '{}'", out_path.string());
+        }
+    }
+
+    void LuaScriptSystem::dump_path_schemas() {
+        const std::filesystem::path out_path =
+            PathUtils::get_root_path() / "scripts" / "engine" / "path_schemas.generated.lua";
+
+        if (!m_impl->path_schemas.write_to_file(out_path)) {
+            debug::log_error("LuaScriptSystem::dump_path_schemas: failed to write '{}'", out_path.string());
+        }
+    }
+
+    void LuaScriptSystem::dump_path_schemas_meta() {
+        const std::filesystem::path out_path =
+            PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "path_schemas_meta.generated.lua";
+
+        if (!m_impl->path_schemas.write_meta_to_file(out_path)) {
+            debug::log_error("LuaScriptSystem::dump_path_schemas_meta: failed to write '{}'", out_path.string());
         }
     }
 }

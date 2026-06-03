@@ -18,6 +18,12 @@
 
 _G.__mixin_registry = _G.__mixin_registry or {}
 
+--- Assigning `DefineMixin.Foo = { ... }` registers an orthogonal capability
+--- bag that can be merged into a Component class via `__mixins = { "Foo" }`.
+--- Mixins are NOT components: no lifecycle hooks, no inheritance, no `new`.
+--- Keys must not collide with the parent or other mixins; the def's own keys
+--- may override a mixin key.
+---@class DefineMixin
 _G.DefineMixin = setmetatable({}, {
     __newindex = function(_, name, def)
         if type(def) ~= "table" then

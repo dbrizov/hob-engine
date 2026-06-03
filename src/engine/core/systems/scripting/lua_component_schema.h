@@ -18,7 +18,7 @@ namespace hob {
     struct EntityHandle;
 
     struct LuaComponentSchemaInfo {
-        std::string key; // prefab section key, e.g. "rigidbody"
+        std::string key; // Prefab section key, e.g. "rigidbody"
         std::string add_method; // Entity method, e.g. "add_rigidbody"
         std::vector<std::pair<std::string, std::string>> setters; // {field, set_method}
     };
