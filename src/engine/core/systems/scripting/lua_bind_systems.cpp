@@ -48,7 +48,7 @@ namespace hob {
                         },
                         {"path"});
 
-            bind_factory_schema<Material>(factory_schemas, "Materials", "DefineMaterial",
+            bind_factory_schema<Material>(factory_schemas, "DefineMaterial", "Materials",
                                           {"shader", "tint"});
         }
 

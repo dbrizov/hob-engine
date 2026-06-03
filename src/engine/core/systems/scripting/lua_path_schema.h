@@ -6,8 +6,8 @@
 
 namespace hob {
     struct LuaPathSchemaInfo {
-        std::string registry_name; // Lua-side registry table, e.g. "Textures"
         std::string define_name; // Lua-side define entry point, e.g. "DefineTexture"
+        std::string registry_name; // Lua-side registry table, e.g. "Textures"
         std::string type_label; // Used in error messages, e.g. "Texture"
     };
 
@@ -22,9 +22,9 @@ namespace hob {
     };
 
     inline void bind_path_schema(LuaPathSchemaRegistry& schemas,
-                                 const char* registry_name,
                                  const char* define_name,
+                                 const char* registry_name,
                                  const char* type_label) {
-        schemas.add_schema({registry_name, define_name, type_label});
+        schemas.add_schema({define_name, registry_name, type_label});
     }
 }

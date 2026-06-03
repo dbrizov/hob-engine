@@ -14,8 +14,8 @@ namespace hob {
     };
 
     struct LuaFactorySchemaInfo {
-        std::string registry_name; // Lua-side registry table, e.g. "Materials"
         std::string define_name; // Lua-side define entry point, e.g. "DefineMaterial"
+        std::string registry_name; // Lua-side registry table, e.g. "Materials"
         std::string lua_type; // Bound usertype name invoked as a factory, e.g. "Material"
         std::vector<LuaFactoryFieldInfo> fields;
     };
@@ -35,12 +35,12 @@ namespace hob {
     // call must already exist (this function only records metadata).
     template<typename T>
     void bind_factory_schema(LuaFactorySchemaRegistry& schemas,
-                             const char* registry_name,
                              const char* define_name,
+                             const char* registry_name,
                              std::initializer_list<const char*> fields) {
         LuaFactorySchemaInfo info;
-        info.registry_name = registry_name;
         info.define_name = define_name;
+        info.registry_name = registry_name;
         info.lua_type = LuaTypeName<T>::value;
         info.fields.reserve(fields.size());
         for (const auto& f : fields) {

@@ -214,7 +214,7 @@ namespace hob {
                 return static_cast<int>(self.frames.size());
             });
 
-        bind_factory_schema<AnimationClip>(factory_schemas, "AnimationClips", "DefineAnimationClip",
+        bind_factory_schema<AnimationClip>(factory_schemas, "DefineAnimationClip", "AnimationClips",
                                            {"textures", "fps", "looping"});
 
         bind_usertype<SpriteAnimatorComponent>(lua, meta, Bases<Component>{})
