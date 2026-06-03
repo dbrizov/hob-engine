@@ -38,7 +38,7 @@ namespace hob {
         void bind_math();
         void bind_entity();
         void bind_components();
-        void bind_subsystems();
+        void bind_systems();
         void bind_debug();
     };
 }

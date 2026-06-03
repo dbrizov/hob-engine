@@ -19,7 +19,7 @@
 #include "engine/entity/entity_spawner.h"
 
 namespace hob {
-    void LuaScriptSystem::bind_subsystems() {
+    void LuaScriptSystem::bind_systems() {
         sol::state& m_lua = m_impl->lua;
         LuaMetaRegistry& m_meta = m_impl->meta;
 

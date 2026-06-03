@@ -113,7 +113,7 @@ namespace hob {
         bind_math();
         bind_entity();
         bind_components();
-        bind_subsystems();
+        bind_systems();
         bind_debug();
     }
 
