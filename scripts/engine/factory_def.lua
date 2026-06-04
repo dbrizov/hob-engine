@@ -15,9 +15,19 @@
 -- object is constructed lazily on first unwrap_def(...) call and cached.
 -- Define calls can live in any file in any load order.
 
+-- Per-registry list of declared alias names, populated as `DefineX.Foo = { ... }` runs.
+-- Read by C++ (LuaScriptSystem::dump_factory_aliases_meta) after bootstrap completes to emit
+-- scripts/engine/meta/factory_aliases_meta.generated.lua so editors get autocomplete on
+-- `Materials.Foo`, `AnimationClips.Foo`, etc.
+_G.__factory_alias_names = _G.__factory_alias_names or {}
+
 local function install_factory_registry(registry_name, schema)
     local defs = {}
     local built = {}
+
+    local names = {}
+    local seen = {}
+    _G.__factory_alias_names[registry_name] = names
 
     local function build(name)
         local def = defs[name]
@@ -59,6 +69,11 @@ local function install_factory_registry(registry_name, schema)
             end
 
             defs[name] = def
+
+            if not seen[name] then
+                seen[name] = true
+                names[#names + 1] = name
+            end
         end,
     })
 

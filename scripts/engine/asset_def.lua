@@ -20,8 +20,18 @@
 -- in lua_bind_assets.cpp emit path_schemas.generated.lua, which this file reads via
 -- install_path_registries() (called from bootstrap.lua).
 
+-- Per-registry list of declared alias names, populated as `DefineX.Foo = "..."` runs.
+-- Read by C++ (LuaScriptSystem::dump_path_aliases_meta) after bootstrap completes to emit
+-- scripts/engine/meta/path_aliases_meta.generated.lua so editors get autocomplete on
+-- `Textures.Foo`, `Shaders.Foo`, etc.
+_G.__path_alias_names = _G.__path_alias_names or {}
+
 local function install_path_registry(define_name, registry_name, type_label)
     local store = {}
+
+    local names = {}
+    local seen = {}
+    _G.__path_alias_names[registry_name] = names
 
     local ref_mt = {
         __tostring = function(self)
@@ -52,6 +62,11 @@ local function install_path_registry(define_name, registry_name, type_label)
             end
 
             store[name] = def
+
+            if not seen[name] then
+                seen[name] = true
+                names[#names + 1] = name
+            end
         end,
     })
 

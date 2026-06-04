@@ -26,7 +26,10 @@ namespace hob {
     public:
         void add_schema(LuaFactorySchemaInfo info);
 
+        const std::vector<LuaFactorySchemaInfo>& get_schemas() const;
+
         bool write_to_file(const std::filesystem::path& path) const;
+        bool write_meta_to_file(const std::filesystem::path& path) const;
     };
 
     // Records that a usertype `T` bound with a `factory_ctor` accepting a single config table
