@@ -33,6 +33,40 @@
 _G.__component_registry = _G.__component_registry or {}
 _G.__component_pending = _G.__component_pending or {}
 
+--- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
+--- and creates a global `Foo`. The table may contain default fields,
+--- and methods (`init`, `enter_play`, `exit_play`, `tick`, ...).
+---@class DefineComponent
+_G.DefineComponent = setmetatable({}, {
+    __newindex = function(_, name, def)
+        if type(def) ~= "table" then
+            Debug.log_error("DefineComponent." .. tostring(name) .. " must be assigned a table")
+            return
+        end
+
+        -- Create the class placeholder immediately so that `local X = X` and
+        -- subsequent `function X:foo()` calls in the same file work as expected.
+        -- Copy non-meta fields from def onto the placeholder so scalar defaults
+        -- (e.g. `speed = 7.0`) are visible right away.
+        local class = {}
+        for k, v in pairs(def) do
+            if k ~= "__parent" and k ~= "__mixins" then
+                class[k] = v
+            end
+        end
+
+        _G.__component_pending[name] = { class = class, def = def }
+        _G[name] = class
+    end,
+    __index = function(_, name)
+        local class = _G.__component_registry[name]
+        if class then return class end
+
+        local pending = _G.__component_pending[name]
+        return pending and pending.class or nil
+    end,
+})
+
 local function build_class(name)
     if _G.__component_registry[name] then
         return _G.__component_registry[name]
@@ -137,37 +171,3 @@ function _G.finalize_components()
 
     _G.__component_pending = {}
 end
-
---- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
---- and creates a global `Foo`. The table may contain default fields,
---- and methods (`init`, `enter_play`, `exit_play`, `tick`, ...).
----@class DefineComponent
-_G.DefineComponent = setmetatable({}, {
-    __newindex = function(_, name, def)
-        if type(def) ~= "table" then
-            Debug.log_error("DefineComponent." .. tostring(name) .. " must be assigned a table")
-            return
-        end
-
-        -- Create the class placeholder immediately so that `local X = X` and
-        -- subsequent `function X:foo()` calls in the same file work as expected.
-        -- Copy non-meta fields from def onto the placeholder so scalar defaults
-        -- (e.g. `speed = 7.0`) are visible right away.
-        local class = {}
-        for k, v in pairs(def) do
-            if k ~= "__parent" and k ~= "__mixins" then
-                class[k] = v
-            end
-        end
-
-        _G.__component_pending[name] = { class = class, def = def }
-        _G[name] = class
-    end,
-    __index = function(_, name)
-        local class = _G.__component_registry[name]
-        if class then return class end
-
-        local pending = _G.__component_pending[name]
-        return pending and pending.class or nil
-    end,
-})
