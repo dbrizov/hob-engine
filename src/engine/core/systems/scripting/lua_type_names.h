@@ -16,7 +16,7 @@ namespace hob {
     struct Material;
     struct AnimationClip;
     struct RaycastHit;
-    struct EntityHandle;
+    class EntityRef;
     class Component;
     class TransformComponent;
     class SpriteComponent;
@@ -43,7 +43,7 @@ namespace hob {
     HOB_LUA_TYPE(Material, "Material")
     HOB_LUA_TYPE(AnimationClip, "AnimationClip")
     HOB_LUA_TYPE(RaycastHit, "RaycastHit")
-    HOB_LUA_TYPE(EntityHandle, "Entity")
+    HOB_LUA_TYPE(EntityRef, "Entity")
     HOB_LUA_TYPE(Component, "Component")
     HOB_LUA_TYPE(TransformComponent, "TransformComponent")
     HOB_LUA_TYPE(SpriteComponent, "SpriteComponent")

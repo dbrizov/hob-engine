@@ -9,6 +9,7 @@
 #include "engine/core/logging.h"
 #include "engine/core/systems/scripting/lua_script_system.h"
 #include "engine/entity/entity.h"
+#include "engine/entity/entity_ref.h"
 
 namespace hob {
     namespace {
@@ -105,7 +106,7 @@ namespace hob {
         }
 
         m_impl->lua_instance = inst_obj;
-        m_impl->lua_instance["entity"] = EntityHandle(get_entity().get_id());
+        m_impl->lua_instance["entity"] = EntityRef(get_entity().get_id(), get_engine().get_entity_spawner());
         m_impl->lua_instance["class_name"] = m_class_name;
 
         call_hook(*m_impl, "init");

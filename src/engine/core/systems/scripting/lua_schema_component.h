@@ -10,12 +10,10 @@
 
 #include "lua_meta.h"
 #include "lua_type_names.h"
-#include "engine/core/systems/entity_spawner.h"
+#include "engine/entity/entity_ref.h"
 
 namespace hob {
     class Entity;
-    class EntitySpawner;
-    struct EntityHandle;
 
     struct LuaComponentSchemaInfo {
         std::string key; // Prefab section key, e.g. "rigidbody"
@@ -44,14 +42,13 @@ namespace hob {
     void bind_component_schema(sol::state& lua,
                                LuaMetaRegistry& meta,
                                LuaComponentSchemaRegistry& schemas,
-                               const EntitySpawner& spawner,
                                const char* key,
                                const char* add_method,
                                std::initializer_list<std::pair<const char*, const char*>> setters) {
-        const char* entity_lua_name = LuaTypeName<EntityHandle>::value;
+        const char* entity_lua_name = LuaTypeName<EntityRef>::value;
         sol::table entity_ut = lua[entity_lua_name];
-        entity_ut[add_method] = [&spawner](const EntityHandle& h) -> T* {
-            Entity* e = spawner.get_entity(h.id);
+        entity_ut[add_method] = [](const EntityRef& r) -> T* {
+            Entity* e = r.resolve();
             return e ? e->add_component<T>() : nullptr;
         };
 

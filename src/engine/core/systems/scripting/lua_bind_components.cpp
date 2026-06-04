@@ -23,9 +23,9 @@
 #include "engine/core/engine.h"
 #include "engine/core/logging.h"
 #include "engine/core/systems/input.h"
-#include "engine/core/systems/entity_spawner.h"
 #include "engine/core/systems/renderer/renderer.h"
 #include "engine/entity/entity.h"
+#include "engine/entity/entity_ref.h"
 
 namespace hob {
     void LuaScriptSystem::bind_components() {
@@ -33,10 +33,11 @@ namespace hob {
         LuaMetaRegistry& meta = m_impl->meta;
         LuaComponentSchemaRegistry& schemas = m_impl->component_schemas;
         LuaFactorySchemaRegistry& factory_schemas = m_impl->factory_schemas;
-        const EntitySpawner& spawner = m_engine.get_entity_spawner();
 
         bind_usertype<Component>(lua, meta)
-            .method("get_entity", [](Component& c) { return EntityHandle(c.get_entity().get_id()); })
+            .method("get_entity", [](Component& c) {
+                return EntityRef(c.get_entity().get_id(), c.get_engine().get_entity_spawner());
+            })
             .op_tostring(&Component::to_string);
 
         bind_usertype<TransformComponent>(lua, meta, Bases<Component>{})
@@ -254,13 +255,13 @@ namespace hob {
             });
 
         bind_component_schema<RigidbodyComponent>(
-            lua, meta, schemas, spawner, "rigidbody", "add_rigidbody", {
+            lua, meta, schemas, "rigidbody", "add_rigidbody", {
                 {"body_type", "set_body_type"},
                 {"fixed_rotation", "set_fixed_rotation"},
             });
 
         bind_component_schema<CharacterBodyComponent>(
-            lua, meta, schemas, spawner, "character_body", "add_character_body", {
+            lua, meta, schemas, "character_body", "add_character_body", {
                 {"collision_layer", "set_collision_layer"},
                 {"collision_mask", "set_collision_mask"},
                 {"solver_ignore_mask", "set_solver_ignore_mask"},
@@ -268,7 +269,7 @@ namespace hob {
             });
 
         bind_component_schema<BoxColliderComponent>(
-            lua, meta, schemas, spawner, "box_collider", "add_box_collider", {
+            lua, meta, schemas, "box_collider", "add_box_collider", {
                 {"aabb", "set_aabb"},
                 {"density", "set_density"},
                 {"friction", "set_friction"},
@@ -279,7 +280,7 @@ namespace hob {
             });
 
         bind_component_schema<CapsuleColliderComponent>(
-            lua, meta, schemas, spawner, "capsule_collider", "add_capsule_collider", {
+            lua, meta, schemas, "capsule_collider", "add_capsule_collider", {
                 {"capsule", "set_capsule"},
                 {"density", "set_density"},
                 {"friction", "set_friction"},
@@ -290,7 +291,7 @@ namespace hob {
             });
 
         bind_component_schema<CircleColliderComponent>(
-            lua, meta, schemas, spawner, "circle_collider", "add_circle_collider", {
+            lua, meta, schemas, "circle_collider", "add_circle_collider", {
                 {"circle", "set_circle"},
                 {"density", "set_density"},
                 {"friction", "set_friction"},
@@ -301,7 +302,7 @@ namespace hob {
             });
 
         bind_component_schema<SpriteComponent>(
-            lua, meta, schemas, spawner, "sprite", "add_sprite", {
+            lua, meta, schemas, "sprite", "add_sprite", {
                 {"texture", "set_texture"},
                 {"pivot", "set_pivot"},
                 {"scale", "set_scale"},
@@ -311,16 +312,16 @@ namespace hob {
             });
 
         bind_component_schema<SpriteAnimatorComponent>(
-            lua, meta, schemas, spawner, "sprite_animator", "add_sprite_animator", {
+            lua, meta, schemas, "sprite_animator", "add_sprite_animator", {
                 {"clips", "set_clips"},
                 {"default_clip", "set_default_clip"},
             });
 
         bind_component_schema<InputComponent>(
-            lua, meta, schemas, spawner, "input", "add_input", {});
+            lua, meta, schemas, "input", "add_input", {});
 
         bind_component_schema<CameraComponent>(
-            lua, meta, schemas, spawner, "camera", "add_camera", {
+            lua, meta, schemas, "camera", "add_camera", {
                 {"screen_pixels_per_meter", "set_screen_pixels_per_meter"},
             });
     }

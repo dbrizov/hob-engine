@@ -20,6 +20,7 @@
 #include "engine/core/systems/renderer/renderer.h"
 #include "engine/core/systems/timer.h"
 #include "engine/entity/entity.h"
+#include "engine/entity/entity_ref.h"
 
 namespace hob {
     namespace {
@@ -99,7 +100,8 @@ namespace hob {
                         return sol::lua_nil;
                     }
 
-                    return sol::make_object(sv, EntityHandle(h.collider->get_entity().get_id()));
+                    return sol::make_object(sv, EntityRef(h.collider->get_entity().get_id(),
+                                                          h.collider->get_engine().get_entity_spawner()));
                 }, "Entity?");
 
             bind_table(lua, meta, "Physics")
@@ -153,9 +155,11 @@ namespace hob {
 
         void bind_entity_spawner(sol::state& lua, LuaMetaRegistry& meta, EntitySpawner& spawner) {
             bind_table(lua, meta, "EntitySpawner")
-                .func("spawn_entity_c", [&spawner]() { return EntityHandle(spawner.spawn_entity().get_id()); })
-                .func("destroy_entity", [&spawner](const EntityHandle& h) { spawner.destroy_entity(h.id); }, {"entity"})
-                .func("get_entity", [](EntityId id) { return EntityHandle(id); }, {"id"});
+                .func("spawn_entity_c", [&spawner]() { return EntityRef(spawner.spawn_entity().get_id(), spawner); })
+                .func("destroy_entity",
+                      [&spawner](const EntityRef& r) { spawner.destroy_entity(r.get_id()); },
+                      {"entity"})
+                .func("get_entity", [&spawner](EntityId id) { return EntityRef(id, spawner); }, {"id"});
         }
 
         void bind_scripts(sol::state& lua,
@@ -186,7 +190,8 @@ namespace hob {
                     if (cam == nullptr) {
                         return sol::lua_nil;
                     }
-                    return sol::make_object(sol::state_view(ts), EntityHandle(cam->get_entity().get_id()));
+                    return sol::make_object(sol::state_view(ts),
+                                            EntityRef(cam->get_entity().get_id(), engine.get_entity_spawner()));
                 }, "(): Entity?")
                 .func("world_to_screen", [&engine](const Vector2& world_pos) {
                     CameraComponent* cam = engine.get_active_camera();

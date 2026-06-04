@@ -17,41 +17,34 @@
 #include "engine/components/physics/character_body_component.h"
 #include "engine/components/physics/circle_collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
-#include "engine/core/engine.h"
-#include "engine/core/systems/entity_spawner.h"
 #include "engine/entity/entity.h"
+#include "engine/entity/entity_ref.h"
 
 namespace hob {
     void LuaScriptSystem::bind_entity() {
         sol::state& m_lua = m_impl->lua;
         LuaMetaRegistry& m_meta = m_impl->meta;
 
-        const EntitySpawner& spawner = m_engine.get_entity_spawner();
-
-        auto get_entity = [&spawner](const EntityHandle& h) -> Entity* {
-            return spawner.get_entity(h.id);
-        };
-
-        bind_usertype<EntityHandle>(m_lua, m_meta)
-            .method("get_id", [](const EntityHandle& h) { return h.id; })
-            .method("is_valid", [get_entity](const EntityHandle& h) { return get_entity(h) != nullptr; })
-            .method("is_in_play", [get_entity](const EntityHandle& h) {
-                Entity* e = get_entity(h);
+        bind_usertype<EntityRef>(m_lua, m_meta)
+            .method("get_id", &EntityRef::get_id)
+            .method("is_valid", &EntityRef::is_valid)
+            .method("is_in_play", [](const EntityRef& r) {
+                Entity* e = r.resolve();
                 return e != nullptr && e->is_in_play();
             })
-            .method("is_ticking", [get_entity](const EntityHandle& h) {
-                Entity* e = get_entity(h);
+            .method("is_ticking", [](const EntityRef& r) {
+                Entity* e = r.resolve();
                 return e != nullptr && e->is_ticking();
             })
-            .method("set_ticking", [get_entity](const EntityHandle& h, bool v) {
-                if (Entity* e = get_entity(h)) {
+            .method("set_ticking", [](const EntityRef& r, bool v) {
+                if (Entity* e = r.resolve()) {
                     e->set_ticking(v);
                 }
             }, {"ticking"})
             .method_sig(
                 "add_lua_component",
-                [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
-                    Entity* e = get_entity(h);
+                [](const EntityRef& r, const std::string& class_name) -> sol::object {
+                    Entity* e = r.resolve();
                     if (e == nullptr) {
                         return sol::lua_nil;
                     }
@@ -63,45 +56,45 @@ namespace hob {
 
                     return lua_comp->impl().lua_instance;
                 }, "(class_name: string): LuaComponent?")
-            .method("get_transform", [get_entity](const EntityHandle& h) -> TransformComponent* {
-                Entity* e = get_entity(h);
+            .method("get_transform", [](const EntityRef& r) -> TransformComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_transform() : nullptr;
             })
-            .method("get_rigidbody", [get_entity](const EntityHandle& h) -> RigidbodyComponent* {
-                Entity* e = get_entity(h);
+            .method("get_rigidbody", [](const EntityRef& r) -> RigidbodyComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_rigidbody() : nullptr;
             })
-            .method("get_box_collider", [get_entity](const EntityHandle& h) -> BoxColliderComponent* {
-                Entity* e = get_entity(h);
+            .method("get_box_collider", [](const EntityRef& r) -> BoxColliderComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_component<BoxColliderComponent>() : nullptr;
             })
-            .method("get_capsule_collider", [get_entity](const EntityHandle& h) -> CapsuleColliderComponent* {
-                Entity* e = get_entity(h);
+            .method("get_capsule_collider", [](const EntityRef& r) -> CapsuleColliderComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_component<CapsuleColliderComponent>() : nullptr;
             })
-            .method("get_circle_collider", [get_entity](const EntityHandle& h) -> CircleColliderComponent* {
-                Entity* e = get_entity(h);
+            .method("get_circle_collider", [](const EntityRef& r) -> CircleColliderComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_component<CircleColliderComponent>() : nullptr;
             })
-            .method("get_character_body", [get_entity](const EntityHandle& h) -> CharacterBodyComponent* {
-                Entity* e = get_entity(h);
+            .method("get_character_body", [](const EntityRef& r) -> CharacterBodyComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_component<CharacterBodyComponent>() : nullptr;
             })
-            .method("get_sprite", [get_entity](const EntityHandle& h) -> SpriteComponent* {
-                Entity* e = get_entity(h);
+            .method("get_sprite", [](const EntityRef& r) -> SpriteComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_component<SpriteComponent>() : nullptr;
             })
-            .method("get_sprite_animator", [get_entity](const EntityHandle& h) -> SpriteAnimatorComponent* {
-                Entity* e = get_entity(h);
+            .method("get_sprite_animator", [](const EntityRef& r) -> SpriteAnimatorComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_component<SpriteAnimatorComponent>() : nullptr;
             })
-            .method("get_input", [get_entity](const EntityHandle& h) -> InputComponent* {
-                Entity* e = get_entity(h);
+            .method("get_input", [](const EntityRef& r) -> InputComponent* {
+                Entity* e = r.resolve();
                 return e ? e->get_component<InputComponent>() : nullptr;
             })
             .method_sig("get_lua_component",
-                        [get_entity](const EntityHandle& h, const std::string& class_name) -> sol::object {
-                            Entity* e = get_entity(h);
+                        [](const EntityRef& r, const std::string& class_name) -> sol::object {
+                            Entity* e = r.resolve();
                             if (e == nullptr) {
                                 return sol::lua_nil;
                             }
@@ -115,9 +108,9 @@ namespace hob {
                             return sol::lua_nil;
                         }, "(class_name: string): LuaComponent?")
             .method_sig("get_lua_components",
-                        [this, get_entity](const EntityHandle& h) {
+                        [this](const EntityRef& r) {
                             sol::table out = m_impl->lua.create_table();
-                            Entity* e = get_entity(h);
+                            Entity* e = r.resolve();
                             if (e == nullptr) {
                                 return out;
                             }
@@ -128,9 +121,9 @@ namespace hob {
 
                             return out;
                         }, "(): LuaComponent[]")
-            .op_tostring([get_entity](const EntityHandle& h) {
-                Entity* e = get_entity(h);
-                return e ? e->to_string() : std::format("Entity(invalid, id = {})", h.id);
+            .op_tostring([](const EntityRef& r) {
+                Entity* e = r.resolve();
+                return e ? e->to_string() : std::format("Entity(invalid, id = {})", r.get_id());
             });
     }
 }
