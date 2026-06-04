@@ -10,7 +10,7 @@
 
 #include "lua_meta.h"
 #include "lua_type_names.h"
-#include "engine/entity/entity_spawner.h"
+#include "engine/core/systems/entity_spawner.h"
 
 namespace hob {
     class Entity;

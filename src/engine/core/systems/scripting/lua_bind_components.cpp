@@ -23,9 +23,9 @@
 #include "engine/core/engine.h"
 #include "engine/core/logging.h"
 #include "engine/core/systems/input.h"
+#include "engine/core/systems/entity_spawner.h"
 #include "engine/core/systems/renderer/renderer.h"
 #include "engine/entity/entity.h"
-#include "engine/entity/entity_spawner.h"
 
 namespace hob {
     void LuaScriptSystem::bind_components() {

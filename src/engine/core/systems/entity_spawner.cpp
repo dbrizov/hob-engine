@@ -1,6 +1,6 @@
 #include "entity_spawner.h"
 
-#include "entity.h"
+#include "engine/entity/entity.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"

@@ -6,7 +6,6 @@
 #include <format>
 #include <string>
 
-#include "engine/core/engine.h"
 #include "engine/components/lua_script_component.h"
 #include "engine/components/lua_script_component_impl.h"
 #include "engine/components/input_component.h"
@@ -18,8 +17,9 @@
 #include "engine/components/physics/character_body_component.h"
 #include "engine/components/physics/circle_collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
+#include "engine/core/engine.h"
+#include "engine/core/systems/entity_spawner.h"
 #include "engine/entity/entity.h"
-#include "engine/entity/entity_spawner.h"
 
 namespace hob {
     void LuaScriptSystem::bind_entity() {

@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "entity.h"
+#include "engine/entity/entity.h"
 
 namespace hob {
     class Engine;
