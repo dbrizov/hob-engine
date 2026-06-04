@@ -67,6 +67,42 @@ _G.DefineComponent = setmetatable({}, {
     end,
 })
 
+local function component_name_is_registered(name)
+    if _G.__component_registry[name] then return true end
+    if _G.__component_pending[name] then return true end
+    return false
+end
+
+-- `Components.Foo` returns a deferred reference that unwraps to the component
+-- name string after validating against `__component_registry` (post-finalize)
+-- or `__component_pending` (pre-finalize). Use it in place of a raw string
+-- literal so editors can autocomplete the name and catch typos.
+local component_ref_mt = {
+    __tostring = function(self)
+        if not component_name_is_registered(self.__name) then
+            Debug.log_error("Component '" .. self.__name .. "' is not defined")
+            return ""
+        end
+        return self.__name
+    end,
+    __unwrap = function(self)
+        if not component_name_is_registered(self.__name) then
+            Debug.log_error("Component '" .. self.__name .. "' is not defined")
+            return ""
+        end
+        return self.__name
+    end,
+}
+
+---@class Components
+_G.Components = setmetatable({}, {
+    __index = function(t, name)
+        local wrapper = setmetatable({ __name = name }, component_ref_mt)
+        rawset(t, name, wrapper)
+        return wrapper
+    end,
+})
+
 local function build_class(name)
     if _G.__component_registry[name] then
         return _G.__component_registry[name]

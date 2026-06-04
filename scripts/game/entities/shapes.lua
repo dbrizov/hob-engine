@@ -24,7 +24,7 @@ DefineEntity.TriggerBox = {
         collision_layer = Collision.Trigger,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
-    lua_components = { "ContactLogger" },
+    lua_components = { Components.ContactLogger },
 }
 
 DefineEntity.StaticCircle = {
@@ -53,5 +53,5 @@ DefineEntity.TriggerCircle = {
         collision_layer = Collision.Trigger,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
-    lua_components = { "ContactLogger" },
+    lua_components = { Components.ContactLogger },
 }

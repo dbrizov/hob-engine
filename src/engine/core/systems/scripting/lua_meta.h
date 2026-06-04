@@ -340,7 +340,7 @@ namespace hob {
         UsertypeBuilder& factory_ctor(F func, std::initializer_list<const char*> arg_names = {}) {
             m_usertype[sol::call_constructor] = sol::factories(func);
             using traits = meta_detail::func_traits<F>;
-            using all_args = typename traits::args;
+            using all_args = traits::args;
 
             LuaCtorInfo c;
             c.args = meta_detail::arg_names<all_args>();

@@ -10,55 +10,55 @@ local ARENA_HALF_H = 6
 local S = Vector2(SCALE, SCALE)
 
 -- Camera (owns world-to-screen scale). Must be spawned before any rendering.
-EntitySpawner.spawn_entity("Camera", Vector2(0.0, 0.0))
+EntitySpawner.spawn_entity(Entities.Camera, Vector2(0.0, 0.0))
 
 -- Player at the center
-local player = EntitySpawner.spawn_entity("Player", Vector2(0.0, 0.0))
+local player = EntitySpawner.spawn_entity(Entities.Player, Vector2(0.0, 0.0))
 player:get_sprite():set_material(unwrap_def(Materials.Psychedelic))
 
 -- Stationary enemies for testing
-local red_enemy = EntitySpawner.spawn_entity("Enemy", Vector2(0.0, 4.0), -90.0)
+local red_enemy = EntitySpawner.spawn_entity(Entities.Enemy, Vector2(0.0, 4.0), -90.0)
 red_enemy:get_sprite():get_material():set_outline_color(Color:red());
 red_enemy:get_sprite():get_material():set_outline_width(2.0)
 
-local green_enemy = EntitySpawner.spawn_entity("Enemy", Vector2(-4.0, 0.0))
+local green_enemy = EntitySpawner.spawn_entity(Entities.Enemy, Vector2(-4.0, 0.0))
 green_enemy:get_sprite():get_material():set_outline_color(Color:green())
 green_enemy:get_sprite():get_material():set_outline_width(2.0)
 
-local blue_enemy = EntitySpawner.spawn_entity("Enemy", Vector2(4.0, 0.0), 180.0)
+local blue_enemy = EntitySpawner.spawn_entity(Entities.Enemy, Vector2(4.0, 0.0), 180.0)
 blue_enemy:get_sprite():get_material():set_outline_color(Color:blue())
 blue_enemy:get_sprite():get_material():set_outline_width(2.0)
 
 -- Perimeter walls
 for x = -ARENA_HALF_W, ARENA_HALF_W do
-    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE, ARENA_HALF_H * SCALE), 0, S)  -- top
-    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE, -ARENA_HALF_H * SCALE), 0, S) -- bottom
+    EntitySpawner.spawn_entity(Entities.StaticBox, Vector2(x * SCALE, ARENA_HALF_H * SCALE), 0, S)  -- top
+    EntitySpawner.spawn_entity(Entities.StaticBox, Vector2(x * SCALE, -ARENA_HALF_H * SCALE), 0, S) -- bottom
 end
 for y = -ARENA_HALF_H + 1, ARENA_HALF_H - 1 do
-    EntitySpawner.spawn_entity("StaticBox", Vector2(-ARENA_HALF_W * SCALE, y * SCALE), 0, S) -- left
-    EntitySpawner.spawn_entity("StaticBox", Vector2(ARENA_HALF_W * SCALE, y * SCALE), 0, S)  -- right
+    EntitySpawner.spawn_entity(Entities.StaticBox, Vector2(-ARENA_HALF_W * SCALE, y * SCALE), 0, S) -- left
+    EntitySpawner.spawn_entity(Entities.StaticBox, Vector2(ARENA_HALF_W * SCALE, y * SCALE), 0, S)  -- right
 end
 
 -- Interior crates: two cover lines (top and bottom)
 local crate_xs = { -3, -2, 2, 3 }
 for _, x in ipairs(crate_xs) do
-    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE, 2.0 * SCALE), 0, S)
-    EntitySpawner.spawn_entity("StaticBox", Vector2(x * SCALE, -2.0 * SCALE), 0, S)
+    EntitySpawner.spawn_entity(Entities.StaticBox, Vector2(x * SCALE, 2.0 * SCALE), 0, S)
+    EntitySpawner.spawn_entity(Entities.StaticBox, Vector2(x * SCALE, -2.0 * SCALE), 0, S)
 end
 
 -- Corner pillars (circles)
-EntitySpawner.spawn_entity("StaticCircle", Vector2(-7.0 * SCALE, 4.0 * SCALE), 0, S)
-EntitySpawner.spawn_entity("StaticCircle", Vector2(7.0 * SCALE, 4.0 * SCALE), 0, S)
-EntitySpawner.spawn_entity("StaticCircle", Vector2(-7.0 * SCALE, -4.0 * SCALE), 0, S)
-EntitySpawner.spawn_entity("StaticCircle", Vector2(7.0 * SCALE, -4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity(Entities.StaticCircle, Vector2(-7.0 * SCALE, 4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity(Entities.StaticCircle, Vector2(7.0 * SCALE, 4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity(Entities.StaticCircle, Vector2(-7.0 * SCALE, -4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity(Entities.StaticCircle, Vector2(7.0 * SCALE, -4.0 * SCALE), 0, S)
 
 -- Mid-line pillars (gives the center extra cover to weave around)
-EntitySpawner.spawn_entity("StaticCircle", Vector2(-5.0 * SCALE, 0.0), 0, S)
-EntitySpawner.spawn_entity("StaticCircle", Vector2(5.0 * SCALE, 0.0), 0, S)
+EntitySpawner.spawn_entity(Entities.StaticCircle, Vector2(-5.0 * SCALE, 0.0), 0, S)
+EntitySpawner.spawn_entity(Entities.StaticCircle, Vector2(5.0 * SCALE, 0.0), 0, S)
 
 -- Checkpoint triggers (top and bottom of the arena)
-EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0, 4.0 * SCALE), 0, S)
-EntitySpawner.spawn_entity("TriggerCircle", Vector2(0.0, -4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity(Entities.TriggerCircle, Vector2(0.0, 4.0 * SCALE), 0, S)
+EntitySpawner.spawn_entity(Entities.TriggerCircle, Vector2(0.0, -4.0 * SCALE), 0, S)
 
 -- Dynamic entities for collision testing. With Y-up gravity these fall
 -- and pile up on the bottom wall and crates.

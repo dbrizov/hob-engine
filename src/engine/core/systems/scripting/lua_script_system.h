@@ -49,5 +49,7 @@ namespace hob {
         void dump_path_aliases_meta();
         void dump_factory_schemas_meta();
         void dump_factory_aliases_meta();
+        void dump_entity_registry_meta();
+        void dump_component_registry_meta();
     };
 }

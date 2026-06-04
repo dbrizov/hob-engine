@@ -21,5 +21,5 @@ DefineEntity.Player = {
         },
         default_clip = "idle",
     },
-    lua_components = { "Player", "ContactLogger" },
+    lua_components = { Components.Player, Components.ContactLogger },
 }

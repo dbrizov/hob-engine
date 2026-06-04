@@ -28,7 +28,7 @@ namespace hob {
                            LuaFactorySchemaRegistry& factory_schemas,
                            Renderer& renderer) {
             bind_usertype<Material>(lua, meta)
-                .factory_ctor([&renderer](sol::table mat_t) {
+                .factory_ctor([&renderer](const sol::table& mat_t) {
                     Material mat;
                     if (auto path = mat_t.get<sol::optional<std::string>>("shader")) {
                         mat.shader_id = renderer.get_or_build_sprite_shader(*path);
@@ -126,7 +126,7 @@ namespace hob {
             bind_table(lua, meta, "Cursor")
                 .func("get_texture", [&cursor]() -> const TextureRef& { return cursor.get_texture(); })
                 .func_sig("set_texture",
-                          [&cursor](sol::object value) {
+                          [&cursor](const sol::object& value) {
                               if (value.is<TextureRef>()) {
                                   cursor.set_texture(value.as<TextureRef>());
                               }
