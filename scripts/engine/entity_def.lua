@@ -35,33 +35,14 @@ _G.DefineEntity = setmetatable({}, {
     end,
 })
 
--- `Entities.Foo` returns a deferred reference that unwraps to the prefab name string
--- after validating against `__entity_prefab_registry`. Use it in place of a raw string
--- literal so editors can autocomplete the name and catch typos.
-local entity_ref_mt = {
-    __tostring = function(self)
-        if not _G.__entity_prefab_registry[self.__name] then
-            Debug.log_error("Entity prefab '" .. self.__name .. "' is not defined")
-            return ""
-        end
-        return self.__name
-    end,
-    __unwrap = function(self)
-        if not _G.__entity_prefab_registry[self.__name] then
-            Debug.log_error("Entity prefab '" .. self.__name .. "' is not defined")
-            return ""
-        end
-        return self.__name
-    end,
-}
-
+-- `Entities.Foo` evaluates to the prefab name string `"Foo"`. The registry only
+-- exists so editors can autocomplete the name and catch typos via the LuaCATS
+-- meta; there is no validation at index time (load order means a referenced
+-- prefab may legitimately be defined later). Unknown names surface as
+-- "prefab is not registered" errors at spawn time.
 ---@class Entities
 _G.Entities = setmetatable({}, {
-    __index = function(t, name)
-        local wrapper = setmetatable({ __name = name }, entity_ref_mt)
-        rawset(t, name, wrapper)
-        return wrapper
-    end,
+    __index = function(_, name) return name end,
 })
 
 local function apply_setters(component, section, setters)
@@ -96,7 +77,7 @@ local function apply_prefab(entity, prefab)
 
     if prefab.lua_components then
         for _, entry in ipairs(prefab.lua_components) do
-            entity:add_lua_component(unwrap_def(entry))
+            entity:add_lua_component(entry)
         end
     end
 end
@@ -107,7 +88,6 @@ end
 ---@param scale? Vector2
 ---@return Entity|nil
 EntitySpawner.spawn_entity = function(name, position, rotation_deg, scale)
-    name = unwrap_def(name)
     local prefab = _G.__entity_prefab_registry[name]
     if not prefab then
         Debug.log_error("EntitySpawner.spawn_entity: prefab '" .. name .. "' is not registered")
