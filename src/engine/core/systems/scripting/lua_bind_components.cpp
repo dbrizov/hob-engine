@@ -183,25 +183,17 @@ namespace hob {
             .method("get_pixels_per_meter", &SpriteComponent::get_pixels_per_meter)
             .method("set_pixels_per_meter", &SpriteComponent::set_pixels_per_meter, {"value"});
 
-        // Each texture entry may be a raw path string or a Textures.X ref (unwrap_def resolves it).
         // shared_ptr lets multiple animators share an instance and keeps the TextureRefs alive.
         Renderer& renderer = m_engine.get_renderer();
         bind_usertype<AnimationClip>(lua, meta)
             .factory_ctor([&renderer](sol::table animclip_t) {
                 auto clip = std::make_shared<AnimationClip>();
-                sol::object textures_obj = animclip_t["textures"];
-                if (textures_obj.valid() && textures_obj.get_type() == sol::type::table) {
-                    sol::table textures = textures_obj;
-                    sol::state_view sv(animclip_t.lua_state());
-                    clip->frames.reserve(textures.size());
-                    for (size_t i = 1; i <= textures.size(); ++i) {
-                        sol::object entry = textures[i];
-                        if (!entry.valid() || entry.get_type() == sol::type::lua_nil) {
-                            continue;
+                if (auto textures = animclip_t.get<sol::optional<sol::table>>("textures")) {
+                    clip->frames.reserve(textures->size());
+                    for (size_t i = 1; i <= textures->size(); ++i) {
+                        if (auto path = textures->get<sol::optional<std::string>>(i)) {
+                            clip->frames.push_back({renderer.get_or_load_texture(*path)});
                         }
-
-                        std::string path = sv["unwrap_def"](entry);
-                        clip->frames.push_back({renderer.get_or_load_texture(path)});
                     }
                 }
                 clip->fps = animclip_t.get_or("fps", 12.0f);

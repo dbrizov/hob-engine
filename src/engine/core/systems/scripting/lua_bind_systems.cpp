@@ -30,11 +30,8 @@ namespace hob {
             bind_usertype<Material>(lua, meta)
                 .factory_ctor([&renderer](sol::table mat_t) {
                     Material mat;
-                    sol::object sh_obj = mat_t["shader"];
-                    if (sh_obj.valid() && sh_obj.get_type() != sol::type::lua_nil) {
-                        sol::state_view sv(mat_t.lua_state());
-                        std::string path = sv["unwrap_def"](sh_obj);
-                        mat.shader_id = renderer.get_or_build_sprite_shader(path);
+                    if (auto path = mat_t.get<sol::optional<std::string>>("shader")) {
+                        mat.shader_id = renderer.get_or_build_sprite_shader(*path);
                     }
                     if (auto tint = mat_t.get<sol::optional<Color>>("tint")) {
                         mat.tint = *tint;

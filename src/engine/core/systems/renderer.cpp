@@ -1215,7 +1215,7 @@ namespace hob {
                               });
 
         console.register_cvar("r_show_texture_refs",
-                              "Show a texture cache window (id, size, ref_count, path)",
+                              "Show a texture cache window (size, game refs, all refs, path)",
                               "0",
                               ConsoleVariableType::Bool,
                               ConsoleVariableFlags::None,
