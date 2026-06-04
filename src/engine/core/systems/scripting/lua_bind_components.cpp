@@ -160,7 +160,7 @@ namespace hob {
         bind_usertype<SpriteComponent>(lua, meta, Bases<Component>{})
             .method("get_texture", &SpriteComponent::get_texture)
             .method_sig("set_texture",
-                        [](SpriteComponent& self, sol::object value) {
+                        [](SpriteComponent& self, const sol::object& value) {
                             if (value.is<TextureRef>()) {
                                 self.set_texture(value.as<TextureRef>());
                             }
@@ -186,7 +186,7 @@ namespace hob {
         // shared_ptr lets multiple animators share an instance and keeps the TextureRefs alive.
         Renderer& renderer = m_engine.get_renderer();
         bind_usertype<AnimationClip>(lua, meta)
-            .factory_ctor([&renderer](sol::table animclip_t) {
+            .factory_ctor([&renderer](const sol::table& animclip_t) {
                 auto clip = std::make_shared<AnimationClip>();
                 if (auto textures = animclip_t.get<sol::optional<sol::table>>("textures")) {
                     clip->frames.reserve(textures->size());
@@ -221,8 +221,8 @@ namespace hob {
             .method("stop", &SpriteAnimatorComponent::stop)
             .method("is_playing", &SpriteAnimatorComponent::is_playing)
             .method("set_clips",
-                    [](SpriteAnimatorComponent& self, sol::table t) {
-                        for (auto& kv : t) {
+                    [](SpriteAnimatorComponent& self, const sol::table& clips_t) {
+                        for (auto& kv : clips_t) {
                             if (!kv.first.is<std::string>()) {
                                 continue;
                             }

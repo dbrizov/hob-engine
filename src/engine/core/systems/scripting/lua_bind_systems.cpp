@@ -93,7 +93,7 @@ namespace hob {
                 .field("normal", &RaycastHit::normal)
                 .field("distance", &RaycastHit::distance)
                 .field("hit", &RaycastHit::hit)
-                .property_sig("entity", [](const RaycastHit& h, sol::this_state ts) -> sol::object {
+                .property_sig("entity", [](const RaycastHit& h, const sol::this_state ts) -> sol::object {
                     sol::state_view sv(ts);
                     if (h.collider == nullptr) {
                         return sol::lua_nil;
@@ -168,7 +168,7 @@ namespace hob {
                 }, {"relative_path"})
                 .func_sig("run_folder",
                           [run_folder = std::move(run_folder)](const std::string& relative_path,
-                                                               sol::optional<sol::table> excludes) {
+                                                               const sol::optional<sol::table>& excludes) {
                               std::vector<std::string> exclude_list;
                               if (excludes) {
                                   for (const auto& kv : *excludes) {
