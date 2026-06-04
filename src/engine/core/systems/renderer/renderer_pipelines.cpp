@@ -1,0 +1,406 @@
+#include "renderer.h"
+
+#include <filesystem>
+#include <fstream>
+#include <string>
+
+#include <SDL3/SDL.h>
+#include <SDL3_shadercross/SDL_shadercross.h>
+
+#include "engine/core/logging.h"
+#include "engine/core/path_utils.h"
+#include "engine/core/systems/sdl_context.h"
+
+namespace hob {
+    namespace {
+        std::string read_text_file(const std::filesystem::path& path) {
+            std::ifstream f(path, std::ios::binary | std::ios::ate);
+            if (!f) {
+                return {};
+            }
+
+            const std::streamsize size = f.tellg();
+            f.seekg(0);
+            std::string contents(static_cast<size_t>(size), '\0');
+            f.read(contents.data(), size);
+            return contents;
+        }
+
+        SDL_GPUShader* load_shader(SDL_GPUDevice* device,
+                                   const std::filesystem::path& hlsl_path,
+                                   SDL_ShaderCross_ShaderStage stage) {
+            const std::string source = read_text_file(hlsl_path);
+            if (source.empty()) {
+                debug::log_error("Failed to read shader: {}", hlsl_path.string());
+                return nullptr;
+            }
+
+            SDL_ShaderCross_HLSL_Info hlsl_info{};
+            hlsl_info.source = source.c_str();
+            hlsl_info.entrypoint = "main";
+            hlsl_info.shader_stage = stage;
+
+            size_t spirv_size = 0;
+            void* spirv = SDL_ShaderCross_CompileSPIRVFromHLSL(&hlsl_info, &spirv_size);
+            if (!spirv) {
+                debug::log_error("CompileSPIRVFromHLSL failed for {}: {}", hlsl_path.string(), SDL_GetError());
+                return nullptr;
+            }
+
+            SDL_ShaderCross_GraphicsShaderMetadata* meta =
+                SDL_ShaderCross_ReflectGraphicsSPIRV(static_cast<Uint8*>(spirv), spirv_size, 0);
+            if (!meta) {
+                debug::log_error("ReflectGraphicsSPIRV failed for {}: {}", hlsl_path.string(), SDL_GetError());
+                SDL_free(spirv);
+                return nullptr;
+            }
+
+            SDL_ShaderCross_SPIRV_Info sp_info{};
+            sp_info.bytecode = static_cast<Uint8*>(spirv);
+            sp_info.bytecode_size = spirv_size;
+            sp_info.entrypoint = "main";
+            sp_info.shader_stage = stage;
+
+            SDL_GPUShader* shader =
+                SDL_ShaderCross_CompileGraphicsShaderFromSPIRV(device, &sp_info, &meta->resource_info, 0);
+
+            SDL_free(spirv);
+            SDL_free(meta);
+
+            if (!shader) {
+                debug::log_error("CompileGraphicsShaderFromSPIRV failed for {}: {}",
+                                 hlsl_path.string(),
+                                 SDL_GetError());
+                return nullptr;
+            }
+
+            return shader;
+        }
+    }
+
+    bool Renderer::init_offscreen_target() {
+        SDL_GPUTextureCreateInfo tci{};
+        tci.type = SDL_GPU_TEXTURETYPE_2D;
+        tci.format = m_offscreen_format;
+        tci.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+        tci.width = m_logical_width;
+        tci.height = m_logical_height;
+        tci.layer_count_or_depth = 1;
+        tci.num_levels = 1;
+        tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+
+        m_offscreen_color = SDL_CreateGPUTexture(m_gpu_device, &tci);
+        if (!m_offscreen_color) {
+            debug::log_error("SDL_CreateGPUTexture (offscreen) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_samplers() {
+        SDL_GPUSamplerCreateInfo sprite_info{};
+        sprite_info.min_filter = SDL_GPU_FILTER_LINEAR;
+        sprite_info.mag_filter = SDL_GPU_FILTER_NEAREST;
+        sprite_info.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+        sprite_info.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+        sprite_info.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+        sprite_info.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+
+        m_sprite_sampler = SDL_CreateGPUSampler(m_gpu_device, &sprite_info);
+        if (!m_sprite_sampler) {
+            debug::log_error("SDL_CreateGPUSampler (sprite) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUSamplerCreateInfo blit_info = sprite_info;
+        blit_info.min_filter = SDL_GPU_FILTER_LINEAR;
+        blit_info.mag_filter = SDL_GPU_FILTER_LINEAR;
+
+        m_blit_sampler = SDL_CreateGPUSampler(m_gpu_device, &blit_info);
+        if (!m_blit_sampler) {
+            debug::log_error("SDL_CreateGPUSampler (blit) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_quad_vbo() {
+        // 6 vertices for two triangles covering the unit square [0,1] x [0,1].
+        // Layout per vertex: float2 pos, float2 uv.
+        const float verts[] = {
+            0.0f, 0.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, 1.0f,
+        };
+
+        SDL_GPUBufferCreateInfo bci{};
+        bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+        bci.size = sizeof(verts);
+        m_quad_vbo = SDL_CreateGPUBuffer(m_gpu_device, &bci);
+        if (!m_quad_vbo) {
+            debug::log_error("SDL_CreateGPUBuffer (quad) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return upload_buffer(m_quad_vbo, verts, sizeof(verts));
+    }
+
+    bool Renderer::init_blit_pipeline() {
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
+
+        SDL_GPUShader* vs = load_shader(m_gpu_device,
+                                        shader_dir / "blit.vert.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+
+        if (!vs) {
+            return false;
+        }
+
+        SDL_GPUShader* fs = load_shader(m_gpu_device,
+                                        shader_dir / "blit.frag.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+
+        if (!fs) {
+            SDL_ReleaseGPUShader(m_gpu_device, vs);
+            return false;
+        }
+
+        SDL_GPUColorTargetDescription ctd{};
+        ctd.format = SDL_GetGPUSwapchainTextureFormat(m_gpu_device, m_sdl_context.get_window());
+        ctd.blend_state.enable_blend = false;
+
+        SDL_GPUGraphicsPipelineCreateInfo gci{};
+        gci.vertex_shader = vs;
+        gci.fragment_shader = fs;
+        // No vertex buffers — blit VS synthesizes verts from SV_VertexID.
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+        gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+        gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+        gci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        gci.target_info.color_target_descriptions = &ctd;
+        gci.target_info.num_color_targets = 1;
+        gci.target_info.has_depth_stencil_target = false;
+
+        m_blit_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+
+        SDL_ReleaseGPUShader(m_gpu_device, vs);
+        SDL_ReleaseGPUShader(m_gpu_device, fs);
+
+        if (!m_blit_pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (blit) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_line_pipeline() {
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
+
+        SDL_GPUShader* vs = load_shader(m_gpu_device,
+                                        shader_dir / "line.vert.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+
+        if (!vs) {
+            return false;
+        }
+
+        SDL_GPUShader* fs = load_shader(m_gpu_device,
+                                        shader_dir / "line.frag.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+
+        if (!fs) {
+            SDL_ReleaseGPUShader(m_gpu_device, vs);
+            return false;
+        }
+
+        // LineVertex layout: float2 pos (offset 0), float4 color (offset 8).
+        SDL_GPUVertexBufferDescription vbd{};
+        vbd.slot = 0;
+        vbd.pitch = sizeof(LineVertex);
+        vbd.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+
+        SDL_GPUVertexAttribute attrs[2]{};
+        attrs[0].location = 0;
+        attrs[0].buffer_slot = 0;
+        attrs[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[0].offset = 0;
+        attrs[1].location = 1;
+        attrs[1].buffer_slot = 0;
+        attrs[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
+        attrs[1].offset = sizeof(Vector2);
+
+        SDL_GPUColorTargetDescription ctd{};
+        ctd.format = m_offscreen_format;
+        ctd.blend_state.enable_blend = true;
+        ctd.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+        ctd.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+        ctd.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+        ctd.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+
+        SDL_GPUGraphicsPipelineCreateInfo gci{};
+        gci.vertex_shader = vs;
+        gci.fragment_shader = fs;
+        gci.vertex_input_state.vertex_buffer_descriptions = &vbd;
+        gci.vertex_input_state.num_vertex_buffers = 1;
+        gci.vertex_input_state.vertex_attributes = attrs;
+        gci.vertex_input_state.num_vertex_attributes = 2;
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+        gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+        gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+        gci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        gci.target_info.color_target_descriptions = &ctd;
+        gci.target_info.num_color_targets = 1;
+        gci.target_info.has_depth_stencil_target = false;
+
+        m_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+
+        SDL_ReleaseGPUShader(m_gpu_device, vs);
+        SDL_ReleaseGPUShader(m_gpu_device, fs);
+
+        if (!m_line_pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (line) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        const uint32_t buffer_bytes = MAX_LINE_VERTICES * sizeof(LineVertex);
+
+        SDL_GPUBufferCreateInfo bci{};
+        bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+        bci.size = buffer_bytes;
+        m_line_vbo = SDL_CreateGPUBuffer(m_gpu_device, &bci);
+        if (!m_line_vbo) {
+            debug::log_error("SDL_CreateGPUBuffer (line) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUTransferBufferCreateInfo tbi{};
+        tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        tbi.size = buffer_bytes;
+        m_line_transfer_buffer = SDL_CreateGPUTransferBuffer(m_gpu_device, &tbi);
+        if (!m_line_transfer_buffer) {
+            debug::log_error("SDL_CreateGPUTransferBuffer (line) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_default_sprite_pipeline() {
+        const std::string default_key = std::filesystem::path("builtin/shaders/sprite").lexically_normal().string();
+        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(default_key);
+        if (!pipeline) {
+            return false;
+        }
+
+        // Default lands at slot 0 = DEFAULT_SPRITE_SHADER_ID.
+        m_sprite_pipelines.push_back(pipeline);
+        m_shader_path_to_id.emplace(default_key, DEFAULT_SPRITE_SHADER_ID);
+        return true;
+    }
+
+    SDL_GPUGraphicsPipeline* Renderer::build_sprite_pipeline(const std::string& path) {
+        const std::filesystem::path assets_root = PathUtils::get_assets_root_path();
+        const std::filesystem::path vert_path = assets_root / (path + ".vert.hlsl");
+        const std::filesystem::path frag_path = assets_root / (path + ".frag.hlsl");
+
+        SDL_GPUShader* vs = load_shader(m_gpu_device, vert_path, SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+        if (!vs) {
+            return nullptr;
+        }
+
+        SDL_GPUShader* fs = load_shader(m_gpu_device, frag_path, SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+        if (!fs) {
+            SDL_ReleaseGPUShader(m_gpu_device, vs);
+            return nullptr;
+        }
+
+        SDL_GPUVertexBufferDescription vbd{};
+        vbd.slot = 0;
+        vbd.pitch = 4 * sizeof(float);
+        vbd.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+        vbd.instance_step_rate = 0;
+
+        SDL_GPUVertexAttribute attrs[2]{};
+        attrs[0].location = 0;
+        attrs[0].buffer_slot = 0;
+        attrs[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[0].offset = 0;
+        attrs[1].location = 1;
+        attrs[1].buffer_slot = 0;
+        attrs[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[1].offset = 2 * sizeof(float);
+
+        SDL_GPUColorTargetDescription ctd{};
+        ctd.format = m_offscreen_format;
+        ctd.blend_state.enable_blend = true;
+        ctd.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+        ctd.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+        ctd.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+        ctd.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+
+        SDL_GPUGraphicsPipelineCreateInfo gci{};
+        gci.vertex_shader = vs;
+        gci.fragment_shader = fs;
+        gci.vertex_input_state.vertex_buffer_descriptions = &vbd;
+        gci.vertex_input_state.num_vertex_buffers = 1;
+        gci.vertex_input_state.vertex_attributes = attrs;
+        gci.vertex_input_state.num_vertex_attributes = 2;
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+        gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+        gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+        gci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        gci.target_info.color_target_descriptions = &ctd;
+        gci.target_info.num_color_targets = 1;
+        gci.target_info.has_depth_stencil_target = false;
+
+        SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+
+        SDL_ReleaseGPUShader(m_gpu_device, vs);
+        SDL_ReleaseGPUShader(m_gpu_device, fs);
+
+        if (!pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (sprite '{}') failed: {}", path, SDL_GetError());
+            return nullptr;
+        }
+
+        return pipeline;
+    }
+
+    ShaderId Renderer::get_or_build_sprite_shader(const std::string& path) {
+        if (path.empty()) {
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const std::string key = std::filesystem::path(path).lexically_normal().string();
+
+        auto it = m_shader_path_to_id.find(key);
+        if (it != m_shader_path_to_id.end()) {
+            return it->second;
+        }
+
+        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(key);
+        if (!pipeline) {
+            // Alias to default so subsequent lookups are O(1) and silent.
+            m_shader_path_to_id.emplace(key, DEFAULT_SPRITE_SHADER_ID);
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const ShaderId id = static_cast<ShaderId>(m_sprite_pipelines.size());
+        m_sprite_pipelines.push_back(pipeline);
+        m_shader_path_to_id.emplace(key, id);
+        return id;
+    }
+}
