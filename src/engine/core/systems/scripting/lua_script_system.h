@@ -44,7 +44,7 @@ namespace hob {
         void dump_path_schemas();
         void dump_factory_schemas();
 
-        void dump_meta();
+        void dump_bindings_meta();
         void dump_path_schemas_meta();
         void dump_path_aliases_meta();
         void dump_factory_schemas_meta();
