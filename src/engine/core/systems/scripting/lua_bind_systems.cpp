@@ -1,6 +1,6 @@
 #include "lua_script_system.h"
 #include "lua_script_system_impl.h"
-#include "lua_factory_schema.h"
+#include "lua_schema_factory.h"
 #include "lua_meta.h"
 #include "lua_type_names.h" // IWYU pragma: keep
 

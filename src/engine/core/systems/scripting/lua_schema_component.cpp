@@ -1,4 +1,4 @@
-#include "lua_component_schema.h"
+#include "lua_schema_component.h"
 
 #include <fstream>
 #include <sstream>

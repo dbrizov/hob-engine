@@ -1,6 +1,6 @@
 #include "lua_script_system.h"
 #include "lua_script_system_impl.h"
-#include "lua_path_schema.h"
+#include "lua_schema_path.h"
 
 namespace hob {
     void LuaScriptSystem::bind_assets() {

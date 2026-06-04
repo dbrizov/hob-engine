@@ -1,4 +1,4 @@
-#include "lua_factory_schema.h"
+#include "lua_schema_factory.h"
 
 #include <fstream>
 #include <sstream>
