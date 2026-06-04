@@ -78,6 +78,31 @@ namespace hob {
         }
     }
 
+    ShaderId Renderer::get_or_build_sprite_shader(const std::string& path) {
+        if (path.empty()) {
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const std::string key = std::filesystem::path(path).lexically_normal().string();
+
+        auto it = m_shader_path_to_id.find(key);
+        if (it != m_shader_path_to_id.end()) {
+            return it->second;
+        }
+
+        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(key);
+        if (!pipeline) {
+            // Alias to default so subsequent lookups are O(1) and silent.
+            m_shader_path_to_id.emplace(key, DEFAULT_SPRITE_SHADER_ID);
+            return DEFAULT_SPRITE_SHADER_ID;
+        }
+
+        const ShaderId id = static_cast<ShaderId>(m_sprite_pipelines.size());
+        m_sprite_pipelines.push_back(pipeline);
+        m_shader_path_to_id.emplace(key, id);
+        return id;
+    }
+
     bool Renderer::init_offscreen_target() {
         SDL_GPUTextureCreateInfo tci{};
         tci.type = SDL_GPU_TEXTURETYPE_2D;
@@ -148,6 +173,19 @@ namespace hob {
         }
 
         return upload_buffer(m_quad_vbo, verts, sizeof(verts));
+    }
+
+    bool Renderer::init_default_sprite_pipeline() {
+        const std::string default_key = std::filesystem::path("builtin/shaders/sprite").lexically_normal().string();
+        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(default_key);
+        if (!pipeline) {
+            return false;
+        }
+
+        // Default lands at slot 0 = DEFAULT_SPRITE_SHADER_ID.
+        m_sprite_pipelines.push_back(pipeline);
+        m_shader_path_to_id.emplace(default_key, DEFAULT_SPRITE_SHADER_ID);
+        return true;
     }
 
     bool Renderer::init_blit_pipeline() {
@@ -295,19 +333,6 @@ namespace hob {
         return true;
     }
 
-    bool Renderer::init_default_sprite_pipeline() {
-        const std::string default_key = std::filesystem::path("builtin/shaders/sprite").lexically_normal().string();
-        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(default_key);
-        if (!pipeline) {
-            return false;
-        }
-
-        // Default lands at slot 0 = DEFAULT_SPRITE_SHADER_ID.
-        m_sprite_pipelines.push_back(pipeline);
-        m_shader_path_to_id.emplace(default_key, DEFAULT_SPRITE_SHADER_ID);
-        return true;
-    }
-
     SDL_GPUGraphicsPipeline* Renderer::build_sprite_pipeline(const std::string& path) {
         const std::filesystem::path assets_root = PathUtils::get_assets_root_path();
         const std::filesystem::path vert_path = assets_root / (path + ".vert.hlsl");
@@ -377,30 +402,5 @@ namespace hob {
         }
 
         return pipeline;
-    }
-
-    ShaderId Renderer::get_or_build_sprite_shader(const std::string& path) {
-        if (path.empty()) {
-            return DEFAULT_SPRITE_SHADER_ID;
-        }
-
-        const std::string key = std::filesystem::path(path).lexically_normal().string();
-
-        auto it = m_shader_path_to_id.find(key);
-        if (it != m_shader_path_to_id.end()) {
-            return it->second;
-        }
-
-        SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(key);
-        if (!pipeline) {
-            // Alias to default so subsequent lookups are O(1) and silent.
-            m_shader_path_to_id.emplace(key, DEFAULT_SPRITE_SHADER_ID);
-            return DEFAULT_SPRITE_SHADER_ID;
-        }
-
-        const ShaderId id = static_cast<ShaderId>(m_sprite_pipelines.size());
-        m_sprite_pipelines.push_back(pipeline);
-        m_shader_path_to_id.emplace(key, id);
-        return id;
     }
 }

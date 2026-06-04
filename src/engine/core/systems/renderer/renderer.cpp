@@ -163,6 +163,37 @@ namespace hob {
         return static_cast<float>(m_logical_height);
     }
 
+    bool Renderer::acquire_command_buffer() {
+        m_command_buffer = SDL_AcquireGPUCommandBuffer(m_gpu_device);
+        m_swap_texture = nullptr;
+
+        const bool ok = SDL_WaitAndAcquireGPUSwapchainTexture(
+                            m_command_buffer, m_sdl_context.get_window(),
+                            &m_swap_texture, nullptr, nullptr)
+                        && m_swap_texture != nullptr;
+        return ok;
+    }
+
+    void Renderer::submit_command_buffer() {
+        SDL_SubmitGPUCommandBuffer(m_command_buffer);
+        m_command_buffer = nullptr;
+        m_swap_texture = nullptr;
+    }
+
+    void Renderer::cancel_command_buffer() {
+        SDL_CancelGPUCommandBuffer(m_command_buffer);
+        m_command_buffer = nullptr;
+        m_swap_texture = nullptr;
+    }
+
+    SDL_GPUCommandBuffer* Renderer::get_command_buffer() const {
+        return m_command_buffer;
+    }
+
+    SDL_GPUTexture* Renderer::get_swap_texture() const {
+        return m_swap_texture;
+    }
+
     void Renderer::draw_sprite(TextureRef texture,
                                const Vector2& screen_pos,
                                const Vector2& size_pixels,
@@ -208,36 +239,5 @@ namespace hob {
         m_pending_lines.push_back({p2, color});
         m_pending_lines.push_back({p1, color});
         m_pending_lines.push_back({p3, color});
-    }
-
-    bool Renderer::acquire_command_buffer() {
-        m_command_buffer = SDL_AcquireGPUCommandBuffer(m_gpu_device);
-        m_swap_texture = nullptr;
-
-        const bool ok = SDL_WaitAndAcquireGPUSwapchainTexture(
-                            m_command_buffer, m_sdl_context.get_window(),
-                            &m_swap_texture, nullptr, nullptr)
-                        && m_swap_texture != nullptr;
-        return ok;
-    }
-
-    void Renderer::submit_command_buffer() {
-        SDL_SubmitGPUCommandBuffer(m_command_buffer);
-        m_command_buffer = nullptr;
-        m_swap_texture = nullptr;
-    }
-
-    void Renderer::cancel_command_buffer() {
-        SDL_CancelGPUCommandBuffer(m_command_buffer);
-        m_command_buffer = nullptr;
-        m_swap_texture = nullptr;
-    }
-
-    SDL_GPUCommandBuffer* Renderer::get_command_buffer() const {
-        return m_command_buffer;
-    }
-
-    SDL_GPUTexture* Renderer::get_swap_texture() const {
-        return m_swap_texture;
     }
 }
