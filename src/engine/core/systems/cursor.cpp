@@ -3,7 +3,7 @@
 #include <SDL3/SDL_mouse.h>
 
 #include "input.h"
-#include "renderer.h"
+#include "renderer/renderer.h"
 #include "sdl_context.h"
 
 namespace hob {

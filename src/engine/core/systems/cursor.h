@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "renderer.h"
+#include "renderer/renderer.h"
 #include "engine/math/vector2.h"
 
 namespace hob {

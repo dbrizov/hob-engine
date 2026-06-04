@@ -6,7 +6,7 @@
 #include "systems/imgui_system.h"
 #include "systems/input.h"
 #include "systems/physics.h"
-#include "systems/renderer.h"
+#include "systems/renderer/renderer.h"
 #include "systems/scripting/lua_script_system.h"
 #include "systems/sdl_context.h"
 #include "systems/timer.h"

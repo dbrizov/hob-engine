@@ -5,7 +5,7 @@
 #include <SDL3/SDL_video.h>
 
 #include "engine/core/path_utils.h"
-#include "renderer.h"
+#include "renderer/renderer.h"
 #include "sdl_context.h"
 
 namespace hob {

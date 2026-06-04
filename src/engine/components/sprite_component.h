@@ -4,7 +4,8 @@
 #include <string>
 
 #include "component.h"
-#include "engine/core/systems/renderer.h"
+#include "engine/core/systems/renderer/material.h"
+#include "engine/core/systems/renderer/texture.h"
 #include "engine/math/vector2.h"
 
 namespace hob {

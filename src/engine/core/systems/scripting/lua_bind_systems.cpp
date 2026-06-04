@@ -16,7 +16,7 @@
 #include "engine/core/systems/cursor.h"
 #include "engine/core/systems/input.h"
 #include "engine/core/systems/physics.h"
-#include "engine/core/systems/renderer.h"
+#include "engine/core/systems/renderer/renderer.h"
 #include "engine/core/systems/timer.h"
 #include "engine/entity/entity.h"
 #include "engine/entity/entity_spawner.h"

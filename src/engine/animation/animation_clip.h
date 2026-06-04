@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "engine/core/systems/renderer.h"
+#include "engine/core/systems/renderer/texture.h"
 
 namespace hob {
     struct AnimationFrame {

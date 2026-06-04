@@ -5,7 +5,7 @@
 
 #include "engine/components/camera_component.h"
 #include "engine/math/constants.h"
-#include "systems/renderer.h"
+#include "systems/renderer/renderer.h"
 
 namespace hob::debug {
     namespace {
@@ -13,9 +13,9 @@ namespace hob::debug {
         std::vector<DebugCircle> circles;
 
         void r_draw_line(Renderer& renderer, const CameraComponent* camera, const DebugLine& line) {
-            Vector2 a = camera->world_to_screen(line.start);
-            Vector2 b = camera->world_to_screen(line.end);
-            renderer.draw_line(a, b, line.color, line.thickness);
+            Vector2 start = camera->world_to_screen(line.start);
+            Vector2 end = camera->world_to_screen(line.end);
+            renderer.draw_line(start, end, line.color, line.thickness);
         }
 
         void r_draw_circle(Renderer& renderer, const CameraComponent* camera, const DebugCircle& circle) {

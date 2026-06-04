@@ -6,7 +6,6 @@
 
 #include "engine/components/transform_component.h"
 #include "engine/core/engine.h"
-#include "engine/core/systems/renderer.h"
 #include "engine/entity/entity.h"
 #include "rigidbody_component.h"
 
