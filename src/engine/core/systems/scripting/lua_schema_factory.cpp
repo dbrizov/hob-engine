@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 
 namespace hob {
     void LuaFactorySchemaRegistry::add_schema(LuaFactorySchemaInfo info) {

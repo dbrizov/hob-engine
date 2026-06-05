@@ -7,7 +7,7 @@
 #include <SDL3_shadercross/SDL_shadercross.h>
 
 #include "engine/core/engine_config.h"
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 #include "engine/core/systems/console.h"
 #include "engine/core/systems/sdl_context.h"
 
@@ -74,6 +74,10 @@ namespace hob {
             return;
         if (!init_debug_line_pipeline())
             return;
+        if (!init_debug_text_pipeline())
+            return;
+        if (!init_debug_font())
+            return;
 
         register_cvars(console);
 
@@ -102,6 +106,22 @@ namespace hob {
             }
         }
         m_textures.clear();
+
+        // Debug font owns its atlas texture; release before the GPU device goes away.
+        m_debug_font.shutdown();
+
+        if (m_debug_text_sampler)
+            SDL_ReleaseGPUSampler(m_gpu_device, m_debug_text_sampler);
+        if (m_debug_text_ibo_transfer)
+            SDL_ReleaseGPUTransferBuffer(m_gpu_device, m_debug_text_ibo_transfer);
+        if (m_debug_text_vbo_transfer)
+            SDL_ReleaseGPUTransferBuffer(m_gpu_device, m_debug_text_vbo_transfer);
+        if (m_debug_text_ibo)
+            SDL_ReleaseGPUBuffer(m_gpu_device, m_debug_text_ibo);
+        if (m_debug_text_vbo)
+            SDL_ReleaseGPUBuffer(m_gpu_device, m_debug_text_vbo);
+        if (m_debug_text_pipeline)
+            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_debug_text_pipeline);
 
         if (m_debug_line_transfer_buffer)
             SDL_ReleaseGPUTransferBuffer(m_gpu_device, m_debug_line_transfer_buffer);
@@ -222,11 +242,60 @@ namespace hob {
         const Vector2 p2 = screen_end + offset;
         const Vector2 p3 = screen_end - offset;
 
-        m_pending_debug_lines.push_back({p0, color});
-        m_pending_debug_lines.push_back({p1, color});
-        m_pending_debug_lines.push_back({p2, color});
-        m_pending_debug_lines.push_back({p2, color});
-        m_pending_debug_lines.push_back({p1, color});
-        m_pending_debug_lines.push_back({p3, color});
+        m_pending_debug_line_vertices.push_back({p0, color});
+        m_pending_debug_line_vertices.push_back({p1, color});
+        m_pending_debug_line_vertices.push_back({p2, color});
+        m_pending_debug_line_vertices.push_back({p2, color});
+        m_pending_debug_line_vertices.push_back({p1, color});
+        m_pending_debug_line_vertices.push_back({p3, color});
+    }
+
+    void Renderer::draw_debug_text(const Vector2& screen_pos, std::string_view text, const Color& color) {
+        if (!m_debug_font.is_initialized() || text.empty()) {
+            return;
+        }
+
+        float pen_x = screen_pos.x;
+        const float pen_y = screen_pos.y;
+
+        for (char c : text) {
+            const uint32_t cp = static_cast<uint32_t>(static_cast<unsigned char>(c));
+            const Glyph* g = m_debug_font.get_glyph(cp);
+            if (!g) {
+                continue;
+            }
+
+            // Don't tessellate quads for whitespace glyphs (no ink). Still advances the pen.
+            if (g->width > 0 && g->height > 0) {
+                if (m_pending_debug_text_vertices.size() + 4 > MAX_DEBUG_TEXT_VERTICES) {
+                    break;
+                }
+
+                const float x0 = pen_x + static_cast<float>(g->offset_x);
+                const float y0 = pen_y + static_cast<float>(g->offset_y);
+                const float x1 = x0 + static_cast<float>(g->width);
+                const float y1 = y0 + static_cast<float>(g->height);
+
+                const uint16_t base = static_cast<uint16_t>(m_pending_debug_text_vertices.size());
+
+                m_pending_debug_text_vertices.push_back({Vector2(x0, y0), Vector2(g->u0, g->v0), color});
+                m_pending_debug_text_vertices.push_back({Vector2(x1, y0), Vector2(g->u1, g->v0), color});
+                m_pending_debug_text_vertices.push_back({Vector2(x0, y1), Vector2(g->u0, g->v1), color});
+                m_pending_debug_text_vertices.push_back({Vector2(x1, y1), Vector2(g->u1, g->v1), color});
+
+                m_pending_debug_text_indices.push_back(base + 0);
+                m_pending_debug_text_indices.push_back(base + 2);
+                m_pending_debug_text_indices.push_back(base + 1);
+                m_pending_debug_text_indices.push_back(base + 1);
+                m_pending_debug_text_indices.push_back(base + 2);
+                m_pending_debug_text_indices.push_back(base + 3);
+            }
+
+            pen_x += static_cast<float>(g->advance);
+        }
+    }
+
+    int Renderer::get_debug_font_line_height() const {
+        return m_debug_font.get_line_height();
     }
 }

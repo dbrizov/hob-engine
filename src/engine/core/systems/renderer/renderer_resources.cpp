@@ -6,7 +6,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 #include "engine/core/path_utils.h"
 
 namespace hob {

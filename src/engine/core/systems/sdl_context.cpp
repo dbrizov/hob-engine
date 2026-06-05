@@ -3,7 +3,7 @@
 #include <SDL3/SDL.h>
 
 #include "engine/core/engine_config.h"
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 
 namespace hob {
     SdlContext::SdlContext(const GraphicsConfig& graphics_config) {

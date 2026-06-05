@@ -3,7 +3,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
-#include "logging.h"
+#include "debug.h"
 
 namespace hob {
     EngineConfig::EngineConfig(const std::filesystem::path& json_path) {

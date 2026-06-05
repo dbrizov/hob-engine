@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "engine/math/color.h"
 #include "engine/math/vector2.h"
 
+#include "font.h"
 #include "material.h"
 #include "texture.h"
 
@@ -36,6 +38,12 @@ namespace hob {
 
         struct DebugLineVertex {
             Vector2 screen_pos;
+            Color color;
+        };
+
+        struct DebugTextVertex {
+            Vector2 screen_pos;
+            Vector2 uv;
             Color color;
         };
 
@@ -69,7 +77,9 @@ namespace hob {
         // Per-frame batches, drained by the render passes.
         std::vector<Sprite> m_pending_sprites;
         std::vector<Sprite> m_pending_overlay_sprites;
-        std::vector<DebugLineVertex> m_pending_debug_lines;
+        std::vector<DebugLineVertex> m_pending_debug_line_vertices;
+        std::vector<DebugTextVertex> m_pending_debug_text_vertices;
+        std::vector<uint16_t> m_pending_debug_text_indices;
 
         // --- Resources (texture cache) ---
 
@@ -102,6 +112,19 @@ namespace hob {
         SDL_GPUTransferBuffer* m_debug_line_transfer_buffer = nullptr;
         // 6 verts per line segment (two triangles): 65536 verts = ~10,922 lines/frame.
         static constexpr uint32_t MAX_DEBUG_LINE_VERTICES = 65536;
+
+        // Debug-text pipeline + persistent dynamic VBO/IBO and matching upload transfer buffer.
+        // 4 verts and 6 indices per glyph quad: 4096 glyphs = 16384 verts, 24576 indices.
+        SDL_GPUGraphicsPipeline* m_debug_text_pipeline = nullptr;
+        SDL_GPUBuffer* m_debug_text_vbo = nullptr;
+        SDL_GPUBuffer* m_debug_text_ibo = nullptr;
+        SDL_GPUTransferBuffer* m_debug_text_vbo_transfer = nullptr;
+        SDL_GPUTransferBuffer* m_debug_text_ibo_transfer = nullptr;
+        SDL_GPUSampler* m_debug_text_sampler = nullptr;
+        Font m_debug_font;
+        static constexpr uint32_t MAX_DEBUG_TEXT_GLYPHS = 4096;
+        static constexpr uint32_t MAX_DEBUG_TEXT_VERTICES = MAX_DEBUG_TEXT_GLYPHS * 4;
+        static constexpr uint32_t MAX_DEBUG_TEXT_INDICES = MAX_DEBUG_TEXT_GLYPHS * 6;
 
         // Samplers:
         //  sprite: MIN=LINEAR, MAG=NEAREST  (smooth when shrunk, crisp pixel edges when enlarged)
@@ -174,6 +197,13 @@ namespace hob {
                              const Color& color,
                              float thickness_pixels);
 
+        /// Draws a debug text string in logical screen space (top-left origin, y-down).
+        /// `screen_pos` is the top-left of the line. ASCII only; unknown codepoints fall back to '?'.
+        void draw_debug_text(const Vector2& screen_pos, std::string_view text, const Color& color);
+
+        /// Returns the line height of the debug font in logical pixels.
+        int get_debug_font_line_height() const;
+
         // --- Render passes (renderer_passes.cpp) ---
 
         // Renders queued sprites into the offscreen color target.
@@ -183,7 +213,10 @@ namespace hob {
         void render_blit_pass();
 
         // Renders queued debug lines into the swapchain target.
-        void render_debug_pass();
+        void render_debug_lines_pass();
+
+        // Renders queued debug text glyphs into the swapchain target.
+        void render_debug_text_pass();
 
         // Renders queued overlay sprites into the swapchain target.
         void render_overlay_pass();
@@ -202,6 +235,7 @@ namespace hob {
 
     private:
         friend class Texture;
+        friend class Font;
 
         // --- Resources (renderer_resources.cpp) ---
 
@@ -223,6 +257,8 @@ namespace hob {
         bool init_default_sprite_pipeline();
         bool init_blit_pipeline();
         bool init_debug_line_pipeline();
+        bool init_debug_text_pipeline();
+        bool init_debug_font();
 
         // Builds a sprite pipeline from a shader path (relative to assets root, no suffix).
         // Returns nullptr on failure; caller handles fallback.

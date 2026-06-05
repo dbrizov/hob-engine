@@ -4,7 +4,7 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
 
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 #include "sdl_context.h"
 
 namespace hob {

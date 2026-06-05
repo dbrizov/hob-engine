@@ -4,7 +4,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 
 namespace hob {
     static SDL_Scancode scancode_from_name(const std::string& name) {

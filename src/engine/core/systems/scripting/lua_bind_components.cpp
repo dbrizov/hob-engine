@@ -21,7 +21,6 @@
 #include "engine/components/transform_component.h"
 #include "engine/core/debug.h"
 #include "engine/core/engine.h"
-#include "engine/core/logging.h"
 #include "engine/core/systems/input.h"
 #include "engine/core/systems/renderer/renderer.h"
 #include "engine/entity/entity.h"

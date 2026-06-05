@@ -4,7 +4,7 @@
 
 #include <imgui.h>
 
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 #include "engine/core/systems/console.h"
 
 namespace hob {

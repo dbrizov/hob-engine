@@ -12,7 +12,7 @@
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/engine.h"
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 #include "engine/core/systems/cursor.h"
 #include "engine/core/systems/input.h"
 #include "engine/core/systems/entity_spawner.h"

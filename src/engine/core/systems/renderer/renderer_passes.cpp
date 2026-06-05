@@ -111,8 +111,8 @@ namespace hob {
         }
     }
 
-    void Renderer::render_debug_pass() {
-        if (m_pending_debug_lines.empty()) {
+    void Renderer::render_debug_lines_pass() {
+        if (m_pending_debug_line_vertices.empty()) {
             return;
         }
 
@@ -121,15 +121,15 @@ namespace hob {
         // Upload pending line vertices into the persistent debug-line VBO before the
         // render pass starts (copy passes can't run inside a graphics render pass).
         const uint32_t line_vertex_count = static_cast<uint32_t>(
-            std::min<size_t>(m_pending_debug_lines.size(), MAX_DEBUG_LINE_VERTICES));
+            std::min<size_t>(m_pending_debug_line_vertices.size(), MAX_DEBUG_LINE_VERTICES));
 
         const uint32_t bytes = line_vertex_count * sizeof(DebugLineVertex);
         void* map = SDL_MapGPUTransferBuffer(m_gpu_device, m_debug_line_transfer_buffer, true);
         if (!map) {
-            m_pending_debug_lines.clear();
+            m_pending_debug_line_vertices.clear();
             return;
         }
-        std::memcpy(map, m_pending_debug_lines.data(), bytes);
+        std::memcpy(map, m_pending_debug_line_vertices.data(), bytes);
         SDL_UnmapGPUTransferBuffer(m_gpu_device, m_debug_line_transfer_buffer);
 
         // Copy pass
@@ -155,7 +155,7 @@ namespace hob {
         {
             SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
             if (!pass) {
-                m_pending_debug_lines.clear();
+                m_pending_debug_line_vertices.clear();
                 return;
             }
 
@@ -176,7 +176,114 @@ namespace hob {
             SDL_EndGPURenderPass(pass);
         }
 
-        m_pending_debug_lines.clear();
+        m_pending_debug_line_vertices.clear();
+    }
+
+    void Renderer::render_debug_text_pass() {
+        if (m_pending_debug_text_indices.empty() || !m_debug_font.is_initialized()) {
+            m_pending_debug_text_vertices.clear();
+            m_pending_debug_text_indices.clear();
+            return;
+        }
+
+        SDL_GPUCommandBuffer* cmd = m_command_buffer;
+
+        const uint32_t vertex_count = static_cast<uint32_t>(
+            std::min<size_t>(m_pending_debug_text_vertices.size(), MAX_DEBUG_TEXT_VERTICES));
+        const uint32_t index_count = static_cast<uint32_t>(
+            std::min<size_t>(m_pending_debug_text_indices.size(), MAX_DEBUG_TEXT_INDICES));
+
+        const uint32_t vbo_bytes = vertex_count * sizeof(DebugTextVertex);
+        const uint32_t ibo_bytes = index_count * sizeof(uint16_t);
+
+        // Upload vertices.
+        {
+            void* map = SDL_MapGPUTransferBuffer(m_gpu_device, m_debug_text_vbo_transfer, true);
+            if (!map) {
+                m_pending_debug_text_vertices.clear();
+                m_pending_debug_text_indices.clear();
+                return;
+            }
+            std::memcpy(map, m_pending_debug_text_vertices.data(), vbo_bytes);
+            SDL_UnmapGPUTransferBuffer(m_gpu_device, m_debug_text_vbo_transfer);
+        }
+
+        // Upload indices.
+        {
+            void* map = SDL_MapGPUTransferBuffer(m_gpu_device, m_debug_text_ibo_transfer, true);
+            if (!map) {
+                m_pending_debug_text_vertices.clear();
+                m_pending_debug_text_indices.clear();
+                return;
+            }
+            std::memcpy(map, m_pending_debug_text_indices.data(), ibo_bytes);
+            SDL_UnmapGPUTransferBuffer(m_gpu_device, m_debug_text_ibo_transfer);
+        }
+
+        // Copy pass — both buffers in one pass.
+        {
+            SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
+
+            SDL_GPUTransferBufferLocation vsrc{};
+            vsrc.transfer_buffer = m_debug_text_vbo_transfer;
+            SDL_GPUBufferRegion vdst{};
+            vdst.buffer = m_debug_text_vbo;
+            vdst.size = vbo_bytes;
+            SDL_UploadToGPUBuffer(copy_pass, &vsrc, &vdst, true);
+
+            SDL_GPUTransferBufferLocation isrc{};
+            isrc.transfer_buffer = m_debug_text_ibo_transfer;
+            SDL_GPUBufferRegion idst{};
+            idst.buffer = m_debug_text_ibo;
+            idst.size = ibo_bytes;
+            SDL_UploadToGPUBuffer(copy_pass, &isrc, &idst, true);
+
+            SDL_EndGPUCopyPass(copy_pass);
+        }
+
+        SDL_GPUColorTargetInfo ct{};
+        ct.texture = m_swap_texture;
+        ct.load_op = SDL_GPU_LOADOP_LOAD;
+        ct.store_op = SDL_GPU_STOREOP_STORE;
+
+        // Render pass
+        {
+            SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
+            if (!pass) {
+                m_pending_debug_text_vertices.clear();
+                m_pending_debug_text_indices.clear();
+                return;
+            }
+
+            SDL_BindGPUGraphicsPipeline(pass, m_debug_text_pipeline);
+
+            SDL_GPUBufferBinding vb{};
+            vb.buffer = m_debug_text_vbo;
+            vb.offset = 0;
+            SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+
+            SDL_GPUBufferBinding ib{};
+            ib.buffer = m_debug_text_ibo;
+            ib.offset = 0;
+            SDL_BindGPUIndexBuffer(pass, &ib, SDL_GPU_INDEXELEMENTSIZE_16BIT);
+
+            SDL_GPUTextureSamplerBinding ts{};
+            ts.texture = m_debug_font.get_atlas_texture();
+            ts.sampler = m_debug_text_sampler;
+            SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
+
+            SDL_PushGPUVertexUniformData(cmd,
+                                         0,
+                                         m_swapchain_projection.data(),
+                                         static_cast<uint32_t>(m_swapchain_projection.size() * sizeof(float)));
+
+            SDL_DrawGPUIndexedPrimitives(pass, index_count, 1, 0, 0, 0);
+
+            SDL_EndGPURenderPass(pass);
+        }
+
+        m_pending_debug_text_vertices.clear();
+        m_pending_debug_text_indices.clear();
     }
 
     void Renderer::render_overlay_pass() {

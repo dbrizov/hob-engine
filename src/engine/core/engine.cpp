@@ -1,10 +1,7 @@
 #include "engine.h"
 #include "engine_config.h"
 
-#include <algorithm>
-
 #include "debug.h"
-#include "logging.h"
 #include "engine/components/camera_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
@@ -105,7 +102,8 @@ namespace hob {
             if (m_renderer.acquire_command_buffer()) {
                 m_renderer.render_world_pass();
                 m_renderer.render_blit_pass();
-                m_renderer.render_debug_pass();
+                m_renderer.render_debug_lines_pass();
+                m_renderer.render_debug_text_pass();
                 m_imgui_system.render_pass(m_renderer.get_command_buffer(), m_renderer.get_swap_texture());
                 m_renderer.render_overlay_pass();
 

@@ -7,7 +7,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_shadercross/SDL_shadercross.h>
 
-#include "engine/core/logging.h"
+#include "engine/core/debug.h"
 #include "engine/core/path_utils.h"
 #include "engine/core/systems/sdl_context.h"
 
@@ -327,6 +327,150 @@ namespace hob {
         m_debug_line_transfer_buffer = SDL_CreateGPUTransferBuffer(m_gpu_device, &tbi);
         if (!m_debug_line_transfer_buffer) {
             debug::log_error("SDL_CreateGPUTransferBuffer (debug_line) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_debug_text_pipeline() {
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
+
+        SDL_GPUShader* vs = load_shader(m_gpu_device,
+                                        shader_dir / "debug_text.vert.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+
+        if (!vs) {
+            return false;
+        }
+
+        SDL_GPUShader* fs = load_shader(m_gpu_device,
+                                        shader_dir / "debug_text.frag.hlsl",
+                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+
+        if (!fs) {
+            SDL_ReleaseGPUShader(m_gpu_device, vs);
+            return false;
+        }
+
+        // DebugTextVertex layout: float2 pos (0), float2 uv (8), float4 color (16).
+        SDL_GPUVertexBufferDescription vbd{};
+        vbd.slot = 0;
+        vbd.pitch = sizeof(DebugTextVertex);
+        vbd.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+
+        SDL_GPUVertexAttribute attrs[3]{};
+        attrs[0].location = 0;
+        attrs[0].buffer_slot = 0;
+        attrs[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[0].offset = 0;
+        attrs[1].location = 1;
+        attrs[1].buffer_slot = 0;
+        attrs[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+        attrs[1].offset = sizeof(Vector2);
+        attrs[2].location = 2;
+        attrs[2].buffer_slot = 0;
+        attrs[2].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
+        attrs[2].offset = sizeof(Vector2) * 2;
+
+        SDL_GPUColorTargetDescription ctd{};
+        ctd.format = SDL_GetGPUSwapchainTextureFormat(m_gpu_device, m_sdl_context.get_window());
+        ctd.blend_state.enable_blend = true;
+        ctd.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+        ctd.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+        ctd.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+        ctd.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        ctd.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+
+        SDL_GPUGraphicsPipelineCreateInfo gci{};
+        gci.vertex_shader = vs;
+        gci.fragment_shader = fs;
+        gci.vertex_input_state.vertex_buffer_descriptions = &vbd;
+        gci.vertex_input_state.num_vertex_buffers = 1;
+        gci.vertex_input_state.vertex_attributes = attrs;
+        gci.vertex_input_state.num_vertex_attributes = 3;
+        gci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+        gci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        gci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+        gci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+        gci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        gci.target_info.color_target_descriptions = &ctd;
+        gci.target_info.num_color_targets = 1;
+        gci.target_info.has_depth_stencil_target = false;
+
+        m_debug_text_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+
+        SDL_ReleaseGPUShader(m_gpu_device, vs);
+        SDL_ReleaseGPUShader(m_gpu_device, fs);
+
+        if (!m_debug_text_pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (debug_text) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        const uint32_t vbo_bytes = MAX_DEBUG_TEXT_VERTICES * sizeof(DebugTextVertex);
+        const uint32_t ibo_bytes = MAX_DEBUG_TEXT_INDICES * sizeof(uint16_t);
+
+        SDL_GPUBufferCreateInfo vbo_info{};
+        vbo_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+        vbo_info.size = vbo_bytes;
+        m_debug_text_vbo = SDL_CreateGPUBuffer(m_gpu_device, &vbo_info);
+        if (!m_debug_text_vbo) {
+            debug::log_error("SDL_CreateGPUBuffer (debug_text vbo) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUBufferCreateInfo ibo_info{};
+        ibo_info.usage = SDL_GPU_BUFFERUSAGE_INDEX;
+        ibo_info.size = ibo_bytes;
+        m_debug_text_ibo = SDL_CreateGPUBuffer(m_gpu_device, &ibo_info);
+        if (!m_debug_text_ibo) {
+            debug::log_error("SDL_CreateGPUBuffer (debug_text ibo) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUTransferBufferCreateInfo vbo_tbi{};
+        vbo_tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        vbo_tbi.size = vbo_bytes;
+        m_debug_text_vbo_transfer = SDL_CreateGPUTransferBuffer(m_gpu_device, &vbo_tbi);
+        if (!m_debug_text_vbo_transfer) {
+            debug::log_error("SDL_CreateGPUTransferBuffer (debug_text vbo) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUTransferBufferCreateInfo ibo_tbi{};
+        ibo_tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        ibo_tbi.size = ibo_bytes;
+        m_debug_text_ibo_transfer = SDL_CreateGPUTransferBuffer(m_gpu_device, &ibo_tbi);
+        if (!m_debug_text_ibo_transfer) {
+            debug::log_error("SDL_CreateGPUTransferBuffer (debug_text ibo) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        SDL_GPUSamplerCreateInfo sci{};
+        sci.min_filter = SDL_GPU_FILTER_LINEAR;
+        sci.mag_filter = SDL_GPU_FILTER_LINEAR;
+        sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+        sci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+        sci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+        sci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+        m_debug_text_sampler = SDL_CreateGPUSampler(m_gpu_device, &sci);
+        if (!m_debug_text_sampler) {
+            debug::log_error("SDL_CreateGPUSampler (debug_text) failed: {}", SDL_GetError());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Renderer::init_debug_font() {
+        const std::filesystem::path font_path =
+            PathUtils::get_assets_root_path() / "builtin" / "fonts" / "jetbrains_mono_bold.ttf";
+        constexpr float DEBUG_FONT_POINT_SIZE = 24.0f;
+
+        if (!m_debug_font.init(*this, font_path, DEBUG_FONT_POINT_SIZE)) {
+            debug::log_error("Failed to init debug font from {}", font_path.string());
             return false;
         }
 

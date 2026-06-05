@@ -6,7 +6,6 @@
 #include <string>
 
 #include "engine/core/debug.h"
-#include "engine/core/logging.h"
 #include "engine/math/vector2.h"
 
 namespace hob {
@@ -42,6 +41,17 @@ namespace hob {
                       [stringify_args](sol::this_state ts, sol::variadic_args args) {
                           debug::log_error("{}", stringify_args(ts, args));
                       }, "(...: any)")
+            .func_sig("print",
+                      [](sol::this_state ts,
+                         const std::string& message,
+                         sol::optional<Color> color,
+                         sol::optional<float> duration) {
+                          (void)ts;
+                          debug::print(color.value_or(Color::green()),
+                                       duration.value_or(2.0f),
+                                       "{}",
+                                       message);
+                      }, "(message: string, color: Color?, duration: number?)")
             .func_sig("draw_line",
                       [](const Vector2& from, const Vector2& to, const Color& color,
                          sol::optional<float> duration, sol::optional<float> thickness) {
