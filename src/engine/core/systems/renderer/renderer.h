@@ -28,14 +28,14 @@ namespace hob {
             TextureRef texture;
             Vector2 screen_pos;
             Vector2 size_pixels;
-            Vector2 pivot_pixel;
+            Vector2 pivot_pixels;
             float rotation_rad = 0.0;
             int z_index = 0;
             Material material;
         };
 
-        struct LineVertex {
-            Vector2 pos;
+        struct DebugLineVertex {
+            Vector2 screen_pos;
             Color color;
         };
 
@@ -53,10 +53,12 @@ namespace hob {
         // and pushed to fragment cbuffers so shaders can animate.
         float m_frame_time = 0.0f;
 
-        // SDL_GPU clip-space ortho mapping (0,0)..(w,h) -> (-1,-1)..(+1,+1) with y-down.
-        std::array<float, 16> m_projection{};
-        // Y-flipped variant used by render_overlay_pass (swap target has opposite NDC y).
-        std::array<float, 16> m_overlay_projection{};
+        // Projection used when rendering into the offscreen color target. SDL_GPU clip-space
+        // ortho mapping (0,0)..(w,h) -> (-1,-1)..(+1,+1) with y-down. Input is logical pixels.
+        std::array<float, 16> m_offscreen_projection{};
+        // Projection used when rendering directly into the swapchain. Same logical-pixel input
+        // range as m_offscreen_projection, but y-flipped because the swap target has the opposite NDC y convention.
+        std::array<float, 16> m_swapchain_projection{};
 
         // --- Per-frame state ---
 
@@ -67,7 +69,7 @@ namespace hob {
         // Per-frame batches, drained by the render passes.
         std::vector<Sprite> m_pending_sprites;
         std::vector<Sprite> m_pending_overlay_sprites;
-        std::vector<LineVertex> m_pending_lines;
+        std::vector<DebugLineVertex> m_pending_debug_lines;
 
         // --- Resources (texture cache) ---
 
@@ -77,8 +79,8 @@ namespace hob {
 
         // --- Pipelines ---
 
-        // Offscreen color target at logical resolution. Sprite pass renders into this;
-        // blit pass samples it into the swapchain at window resolution.
+        // Offscreen color target at logical resolution. World pass renders into this.
+        // Blit pass samples it into the swapchain at window resolution.
         SDL_GPUTexture* m_offscreen_color = nullptr;
         SDL_GPUTextureFormat m_offscreen_format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 
@@ -92,14 +94,14 @@ namespace hob {
         // Fullscreen blit pipeline (no VBO; vertex shader synthesizes a triangle from SV_VertexID).
         SDL_GPUGraphicsPipeline* m_blit_pipeline = nullptr;
 
-        // Line pipeline + persistent dynamic VBO and matching upload transfer buffer.
+        // Debug-line pipeline + persistent dynamic VBO and matching upload transfer buffer.
         // Lines drawn in a frame are uploaded once into the VBO via a copy pass on the
         // engine's per-frame command buffer (no fence-wait — both are cycled).
-        SDL_GPUGraphicsPipeline* m_line_pipeline = nullptr;
-        SDL_GPUBuffer* m_line_vbo = nullptr;
-        SDL_GPUTransferBuffer* m_line_transfer_buffer = nullptr;
-        // 6 verts per line segment (two triangles): 24576 verts = 4096 lines/frame.
-        static constexpr uint32_t MAX_LINE_VERTICES = 24576;
+        SDL_GPUGraphicsPipeline* m_debug_line_pipeline = nullptr;
+        SDL_GPUBuffer* m_debug_line_vbo = nullptr;
+        SDL_GPUTransferBuffer* m_debug_line_transfer_buffer = nullptr;
+        // 6 verts per line segment (two triangles): 65536 verts = ~10,922 lines/frame.
+        static constexpr uint32_t MAX_DEBUG_LINE_VERTICES = 65536;
 
         // Samplers:
         //  sprite: MIN=LINEAR, MAG=NEAREST  (smooth when shrunk, crisp pixel edges when enlarged)
@@ -152,7 +154,7 @@ namespace hob {
         void draw_sprite(TextureRef texture,
                          const Vector2& screen_pos,
                          const Vector2& size_pixels,
-                         const Vector2& pivot_pixel,
+                         const Vector2& pivot_pixels,
                          float rotation_rad,
                          int z_index,
                          const Material& material);
@@ -162,23 +164,28 @@ namespace hob {
         void draw_overlay_sprite(TextureRef texture,
                                  const Vector2& screen_pos,
                                  const Vector2& size_pixels,
-                                 const Vector2& pivot_pixel,
+                                 const Vector2& pivot_pixels,
                                  float rotation_rad,
                                  const Material& material);
 
-        /// Draws a line segment in logical screen space (top-left origin, y-down).
-        void draw_line(const Vector2& start, const Vector2& end, const Color& color, float thickness);
+        /// Draws a debug line segment in logical screen space (top-left origin, y-down).
+        void draw_debug_line(const Vector2& screen_start,
+                             const Vector2& screen_end,
+                             const Color& color,
+                             float thickness_pixels);
 
         // --- Render passes (renderer_passes.cpp) ---
 
-        // Renders queued sprites + lines into the offscreen color target.
+        // Renders queued sprites into the offscreen color target.
         void render_world_pass();
 
-        // Opens a render pass on the swapchain texture, upscales the offscreen target and closes the pass.
+        // Opens a render pass on the swapchain target, upscales the offscreen target and closes the pass.
         void render_blit_pass();
 
-        // Opens a render pass on the swapchain texture with LOAD_OP_LOAD and draws the
-        // queued overlay sprites on top of whatever's already there (world + ImGui).
+        // Renders queued debug lines into the swapchain target.
+        void render_debug_pass();
+
+        // Renders queued overlay sprites into the swapchain target.
         void render_overlay_pass();
 
         // --- Resources (renderer_resources.cpp) ---
@@ -215,7 +222,7 @@ namespace hob {
         bool init_quad_vbo();
         bool init_default_sprite_pipeline();
         bool init_blit_pipeline();
-        bool init_line_pipeline();
+        bool init_debug_line_pipeline();
 
         // Builds a sprite pipeline from a shader path (relative to assets root, no suffix).
         // Returns nullptr on failure; caller handles fallback.

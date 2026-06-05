@@ -238,7 +238,7 @@ namespace hob {
         return true;
     }
 
-    bool Renderer::init_line_pipeline() {
+    bool Renderer::init_debug_line_pipeline() {
         const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
 
         SDL_GPUShader* vs = load_shader(m_gpu_device,
@@ -258,10 +258,10 @@ namespace hob {
             return false;
         }
 
-        // LineVertex layout: float2 pos (offset 0), float4 color (offset 8).
+        // DebugLineVertex layout: float2 pos (offset 0), float4 color (offset 8).
         SDL_GPUVertexBufferDescription vbd{};
         vbd.slot = 0;
-        vbd.pitch = sizeof(LineVertex);
+        vbd.pitch = sizeof(DebugLineVertex);
         vbd.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
 
         SDL_GPUVertexAttribute attrs[2]{};
@@ -300,33 +300,33 @@ namespace hob {
         gci.target_info.num_color_targets = 1;
         gci.target_info.has_depth_stencil_target = false;
 
-        m_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
+        m_debug_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_gpu_device, &gci);
 
         SDL_ReleaseGPUShader(m_gpu_device, vs);
         SDL_ReleaseGPUShader(m_gpu_device, fs);
 
-        if (!m_line_pipeline) {
-            debug::log_error("SDL_CreateGPUGraphicsPipeline (line) failed: {}", SDL_GetError());
+        if (!m_debug_line_pipeline) {
+            debug::log_error("SDL_CreateGPUGraphicsPipeline (debug_line) failed: {}", SDL_GetError());
             return false;
         }
 
-        const uint32_t buffer_bytes = MAX_LINE_VERTICES * sizeof(LineVertex);
+        const uint32_t buffer_bytes = MAX_DEBUG_LINE_VERTICES * sizeof(DebugLineVertex);
 
         SDL_GPUBufferCreateInfo bci{};
         bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
         bci.size = buffer_bytes;
-        m_line_vbo = SDL_CreateGPUBuffer(m_gpu_device, &bci);
-        if (!m_line_vbo) {
-            debug::log_error("SDL_CreateGPUBuffer (line) failed: {}", SDL_GetError());
+        m_debug_line_vbo = SDL_CreateGPUBuffer(m_gpu_device, &bci);
+        if (!m_debug_line_vbo) {
+            debug::log_error("SDL_CreateGPUBuffer (debug_line) failed: {}", SDL_GetError());
             return false;
         }
 
         SDL_GPUTransferBufferCreateInfo tbi{};
         tbi.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
         tbi.size = buffer_bytes;
-        m_line_transfer_buffer = SDL_CreateGPUTransferBuffer(m_gpu_device, &tbi);
-        if (!m_line_transfer_buffer) {
-            debug::log_error("SDL_CreateGPUTransferBuffer (line) failed: {}", SDL_GetError());
+        m_debug_line_transfer_buffer = SDL_CreateGPUTransferBuffer(m_gpu_device, &tbi);
+        if (!m_debug_line_transfer_buffer) {
+            debug::log_error("SDL_CreateGPUTransferBuffer (debug_line) failed: {}", SDL_GetError());
             return false;
         }
 

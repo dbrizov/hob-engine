@@ -39,30 +39,6 @@ namespace hob {
 
     void Renderer::render_world_pass() {
         SDL_GPUCommandBuffer* cmd = m_command_buffer;
-        // Upload pending line vertices into the persistent line VBO before the render
-        // pass starts (copy passes can't run inside a graphics render pass).
-        const uint32_t line_vertex_count = static_cast<uint32_t>(
-            std::min<size_t>(m_pending_lines.size(), MAX_LINE_VERTICES));
-
-        if (line_vertex_count > 0) {
-            const uint32_t bytes = line_vertex_count * sizeof(LineVertex);
-            void* map = SDL_MapGPUTransferBuffer(m_gpu_device, m_line_transfer_buffer, true);
-            if (map) {
-                std::memcpy(map, m_pending_lines.data(), bytes);
-                SDL_UnmapGPUTransferBuffer(m_gpu_device, m_line_transfer_buffer);
-
-                SDL_GPUCopyPass* copy = SDL_BeginGPUCopyPass(cmd);
-                SDL_GPUTransferBufferLocation src{};
-                src.transfer_buffer = m_line_transfer_buffer;
-                src.offset = 0;
-                SDL_GPUBufferRegion dst{};
-                dst.buffer = m_line_vbo;
-                dst.offset = 0;
-                dst.size = bytes;
-                SDL_UploadToGPUBuffer(copy, &src, &dst, true);
-                SDL_EndGPUCopyPass(copy);
-            }
-        }
 
         SDL_GPUColorTargetInfo ct{};
         ct.texture = m_offscreen_color;
@@ -75,7 +51,6 @@ namespace hob {
             SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
             if (!pass) {
                 m_pending_sprites.clear();
-                m_pending_lines.clear();
                 return;
             }
 
@@ -97,25 +72,8 @@ namespace hob {
                 ShaderId bound_shader = INVALID_SHADER_ID;
 
                 for (const Sprite& sp : m_pending_sprites) {
-                    record_sprite(pass, sp, m_projection, bound_shader);
+                    record_sprite(pass, sp, m_offscreen_projection, bound_shader);
                 }
-            }
-
-            // Line pipeline
-            if (line_vertex_count > 0) {
-                SDL_BindGPUGraphicsPipeline(pass, m_line_pipeline);
-
-                SDL_GPUBufferBinding vb{};
-                vb.buffer = m_line_vbo;
-                vb.offset = 0;
-                SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
-
-                SDL_PushGPUVertexUniformData(cmd,
-                                             0,
-                                             m_projection.data(),
-                                             static_cast<uint32_t>(m_projection.size() * sizeof(float)));
-
-                SDL_DrawGPUPrimitives(pass, line_vertex_count, 1, 0, 0);
             }
 
             SDL_EndGPURenderPass(pass);
@@ -125,7 +83,6 @@ namespace hob {
         debug_sprite_queue();
 
         m_pending_sprites.clear();
-        m_pending_lines.clear();
     }
 
     void Renderer::render_blit_pass() {
@@ -152,6 +109,74 @@ namespace hob {
 
             SDL_EndGPURenderPass(pass);
         }
+    }
+
+    void Renderer::render_debug_pass() {
+        if (m_pending_debug_lines.empty()) {
+            return;
+        }
+
+        SDL_GPUCommandBuffer* cmd = m_command_buffer;
+
+        // Upload pending line vertices into the persistent debug-line VBO before the
+        // render pass starts (copy passes can't run inside a graphics render pass).
+        const uint32_t line_vertex_count = static_cast<uint32_t>(
+            std::min<size_t>(m_pending_debug_lines.size(), MAX_DEBUG_LINE_VERTICES));
+
+        const uint32_t bytes = line_vertex_count * sizeof(DebugLineVertex);
+        void* map = SDL_MapGPUTransferBuffer(m_gpu_device, m_debug_line_transfer_buffer, true);
+        if (!map) {
+            m_pending_debug_lines.clear();
+            return;
+        }
+        std::memcpy(map, m_pending_debug_lines.data(), bytes);
+        SDL_UnmapGPUTransferBuffer(m_gpu_device, m_debug_line_transfer_buffer);
+
+        // Copy pass
+        {
+            SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
+            SDL_GPUTransferBufferLocation src{};
+            src.transfer_buffer = m_debug_line_transfer_buffer;
+            src.offset = 0;
+            SDL_GPUBufferRegion dst{};
+            dst.buffer = m_debug_line_vbo;
+            dst.offset = 0;
+            dst.size = bytes;
+            SDL_UploadToGPUBuffer(copy_pass, &src, &dst, true);
+            SDL_EndGPUCopyPass(copy_pass);
+        }
+
+        SDL_GPUColorTargetInfo ct{};
+        ct.texture = m_swap_texture;
+        ct.load_op = SDL_GPU_LOADOP_LOAD;
+        ct.store_op = SDL_GPU_STOREOP_STORE;
+
+        // Render pass
+        {
+            SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
+            if (!pass) {
+                m_pending_debug_lines.clear();
+                return;
+            }
+
+            SDL_BindGPUGraphicsPipeline(pass, m_debug_line_pipeline);
+
+            SDL_GPUBufferBinding vb{};
+            vb.buffer = m_debug_line_vbo;
+            vb.offset = 0;
+            SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+
+            SDL_PushGPUVertexUniformData(cmd,
+                                         0,
+                                         m_swapchain_projection.data(),
+                                         static_cast<uint32_t>(m_swapchain_projection.size() * sizeof(float)));
+
+            SDL_DrawGPUPrimitives(pass, line_vertex_count, 1, 0, 0);
+
+            SDL_EndGPURenderPass(pass);
+        }
+
+        m_pending_debug_lines.clear();
     }
 
     void Renderer::render_overlay_pass() {
@@ -181,7 +206,7 @@ namespace hob {
 
             // Overlay sprites are drawn in push order (no z-sort).
             for (const Sprite& sp : m_pending_overlay_sprites) {
-                record_sprite(pass, sp, m_overlay_projection, bound_shader);
+                record_sprite(pass, sp, m_swapchain_projection, bound_shader);
             }
 
             SDL_EndGPURenderPass(pass);
@@ -209,8 +234,8 @@ namespace hob {
         vsu.screen_pos[1] = sp.screen_pos.y;
         vsu.size[0] = sp.size_pixels.x;
         vsu.size[1] = sp.size_pixels.y;
-        vsu.pivot[0] = sp.pivot_pixel.x;
-        vsu.pivot[1] = sp.pivot_pixel.y;
+        vsu.pivot[0] = sp.pivot_pixels.x;
+        vsu.pivot[1] = sp.pivot_pixels.y;
         // World rotation is y-up CCW; logical screen is y-down. Negate so positive
         // world rotation remains visually CCW.
         vsu.rotation = -sp.rotation_rad;

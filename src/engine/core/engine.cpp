@@ -105,6 +105,7 @@ namespace hob {
             if (m_renderer.acquire_command_buffer()) {
                 m_renderer.render_world_pass();
                 m_renderer.render_blit_pass();
+                m_renderer.render_debug_pass();
                 m_imgui_system.render_pass(m_renderer.get_command_buffer(), m_renderer.get_swap_texture());
                 m_renderer.render_overlay_pass();
 
@@ -239,6 +240,6 @@ namespace hob {
             return;
         }
 
-        debug::flush_draws_to_renderer(m_renderer, camera, delta_time);
+        debug::flush_draws_to_renderer(m_renderer, camera, m_sdl_context.get_window_size(), delta_time);
     }
 }

@@ -47,10 +47,10 @@ namespace hob {
         , m_gpu_device(sdl_context.get_gpu_device())
         , m_logical_width(config.graphics_config.logical_resolution_width)
         , m_logical_height(config.graphics_config.logical_resolution_height)
-        , m_projection(ortho_top_left(static_cast<float>(m_logical_width),
-                                      static_cast<float>(m_logical_height)))
-        , m_overlay_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
-                                                        static_cast<float>(m_logical_height))) {
+        , m_offscreen_projection(ortho_top_left(static_cast<float>(m_logical_width),
+                                                static_cast<float>(m_logical_height)))
+        , m_swapchain_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
+                                                          static_cast<float>(m_logical_height))) {
         if (!m_gpu_device) {
             debug::log_error("Renderer init failed: GPU device is null");
             return;
@@ -72,7 +72,7 @@ namespace hob {
             return;
         if (!init_blit_pipeline())
             return;
-        if (!init_line_pipeline())
+        if (!init_debug_line_pipeline())
             return;
 
         register_cvars(console);
@@ -103,12 +103,12 @@ namespace hob {
         }
         m_textures.clear();
 
-        if (m_line_transfer_buffer)
-            SDL_ReleaseGPUTransferBuffer(m_gpu_device, m_line_transfer_buffer);
-        if (m_line_vbo)
-            SDL_ReleaseGPUBuffer(m_gpu_device, m_line_vbo);
-        if (m_line_pipeline)
-            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_line_pipeline);
+        if (m_debug_line_transfer_buffer)
+            SDL_ReleaseGPUTransferBuffer(m_gpu_device, m_debug_line_transfer_buffer);
+        if (m_debug_line_vbo)
+            SDL_ReleaseGPUBuffer(m_gpu_device, m_debug_line_vbo);
+        if (m_debug_line_pipeline)
+            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_debug_line_pipeline);
         if (m_blit_pipeline)
             SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_blit_pipeline);
 
@@ -185,47 +185,48 @@ namespace hob {
     void Renderer::draw_sprite(TextureRef texture,
                                const Vector2& screen_pos,
                                const Vector2& size_pixels,
-                               const Vector2& pivot_pixel,
+                               const Vector2& pivot_pixels,
                                float rotation_rad,
                                int z_index,
                                const Material& material) {
         m_pending_sprites.push_back(
-            {std::move(texture), screen_pos, size_pixels, pivot_pixel, rotation_rad, z_index, material});
+            {std::move(texture), screen_pos, size_pixels, pivot_pixels, rotation_rad, z_index, material});
     }
 
     void Renderer::draw_overlay_sprite(TextureRef texture,
                                        const Vector2& screen_pos,
                                        const Vector2& size_pixels,
-                                       const Vector2& pivot_pixel,
+                                       const Vector2& pivot_pixels,
                                        float rotation_rad,
                                        const Material& material) {
         m_pending_overlay_sprites.push_back(
-            {std::move(texture), screen_pos, size_pixels, pivot_pixel, rotation_rad, 0, material});
+            {std::move(texture), screen_pos, size_pixels, pivot_pixels, rotation_rad, 0, material});
     }
 
-    void Renderer::draw_line(const Vector2& start, const Vector2& end, const Color& color, float thickness) {
-        // Expand the segment into a screen-aligned quad. Perpendicular extrusion is in
-        // logical-pixel space, so the quad has uniform pixel width on the offscreen target.
-        const Vector2 delta = end - start;
+    void Renderer::draw_debug_line(const Vector2& screen_start,
+                                   const Vector2& screen_end,
+                                   const Color& color,
+                                   float thickness_pixels) {
+        const Vector2 delta = screen_end - screen_start;
         const float len = delta.length();
         if (len <= 0.0f) {
             return;
         }
 
-        const float half = std::max(thickness, 1.0f) * 0.5f;
+        const float half = std::max(thickness_pixels, 1.0f) * 0.5f;
         const Vector2 perp = Vector2(-delta.y, delta.x) / len;
         const Vector2 offset = perp * half;
 
-        const Vector2 p0 = start + offset;
-        const Vector2 p1 = start - offset;
-        const Vector2 p2 = end + offset;
-        const Vector2 p3 = end - offset;
+        const Vector2 p0 = screen_start + offset;
+        const Vector2 p1 = screen_start - offset;
+        const Vector2 p2 = screen_end + offset;
+        const Vector2 p3 = screen_end - offset;
 
-        m_pending_lines.push_back({p0, color});
-        m_pending_lines.push_back({p1, color});
-        m_pending_lines.push_back({p2, color});
-        m_pending_lines.push_back({p2, color});
-        m_pending_lines.push_back({p1, color});
-        m_pending_lines.push_back({p3, color});
+        m_pending_debug_lines.push_back({p0, color});
+        m_pending_debug_lines.push_back({p1, color});
+        m_pending_debug_lines.push_back({p2, color});
+        m_pending_debug_lines.push_back({p2, color});
+        m_pending_debug_lines.push_back({p1, color});
+        m_pending_debug_lines.push_back({p3, color});
     }
 }

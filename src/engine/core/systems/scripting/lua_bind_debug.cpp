@@ -49,7 +49,7 @@ namespace hob {
                                            to,
                                            color,
                                            duration.value_or(0.0f),
-                                           thickness.value_or(2.0f));
+                                           thickness.value_or(1.0f));
                       }, "(from: Vector2, to: Vector2, color: Color, duration: number?, thickness: number?)")
             .func_sig("draw_circle",
                       [](const Vector2& center, float radius, const Color& color,
@@ -58,7 +58,7 @@ namespace hob {
                                              radius,
                                              color,
                                              duration.value_or(0.0f),
-                                             thickness.value_or(2.0f),
+                                             thickness.value_or(1.0f),
                                              segments.value_or(16));
                       },
                       "(center: Vector2, radius: number, color: Color, duration: number?, thickness: number?, segments: integer?)");
