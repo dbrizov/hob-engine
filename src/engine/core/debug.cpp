@@ -27,10 +27,12 @@ namespace hob::debug {
                          const CameraComponent* camera,
                          const Vector2& window_size,
                          const Vector2& logical_size,
+                         const float dpi_scale,
                          const DebugLine& line) {
             const Vector2 start = camera->world_to_screen(line.start);
             const Vector2 end = camera->world_to_screen(line.end);
-            const float thickness = line.thickness * logical_to_window_pixel_ratio(window_size, logical_size);
+            const float pixel_ratio = logical_to_window_pixel_ratio(window_size, logical_size);
+            const float thickness = line.thickness * pixel_ratio * dpi_scale;
             renderer.draw_debug_line(start, end, line.color, thickness);
         }
 
@@ -38,6 +40,7 @@ namespace hob::debug {
                            const CameraComponent* camera,
                            const Vector2& window_size,
                            const Vector2& logical_size,
+                           const float dpi_scale,
                            const DebugCircle& circle) {
             Vector2 prev_point = circle.center + Vector2(circle.radius, 0.0f);
             for (int i = 1; i <= circle.segments; ++i) {
@@ -45,7 +48,7 @@ namespace hob::debug {
                 float angle = ratio * 2.0f * PI;
                 const Vector2 point = circle.center + Vector2(std::cos(angle), std::sin(angle)) * circle.radius;
                 const DebugLine line{prev_point, point, circle.color, 0.0f, circle.thickness};
-                r_draw_line(renderer, camera, window_size, logical_size, line);
+                r_draw_line(renderer, camera, window_size, logical_size, dpi_scale, line);
 
                 prev_point = point;
             }
@@ -55,15 +58,16 @@ namespace hob::debug {
     void flush_draws_to_renderer(Renderer& renderer,
                                  const CameraComponent* camera,
                                  const Vector2& window_size,
+                                 float dpi_scale,
                                  float delta_time) {
         const Vector2 logical_size = renderer.get_logical_size();
 
         for (const auto& line : lines) {
-            r_draw_line(renderer, camera, window_size, logical_size, line);
+            r_draw_line(renderer, camera, window_size, logical_size, dpi_scale, line);
         }
 
         for (const auto& circle : circles) {
-            r_draw_circle(renderer, camera, window_size, logical_size, circle);
+            r_draw_circle(renderer, camera, window_size, logical_size, dpi_scale, circle);
         }
 
         const float window_scale = logical_to_window_pixel_ratio(window_size, logical_size);

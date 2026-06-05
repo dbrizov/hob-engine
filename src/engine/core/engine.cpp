@@ -238,6 +238,10 @@ namespace hob {
             return;
         }
 
-        debug::flush_draws_to_renderer(m_renderer, camera, m_sdl_context.get_window_size(), delta_time);
+        debug::flush_draws_to_renderer(m_renderer,
+                                       camera,
+                                       m_sdl_context.get_window_size(),
+                                       m_sdl_context.get_dpi_scale(),
+                                       delta_time);
     }
 }

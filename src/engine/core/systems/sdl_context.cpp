@@ -120,4 +120,9 @@ namespace hob {
         SDL_GetWindowSize(m_window, &width, &height);
         return Vector2(static_cast<float>(width), static_cast<float>(height));
     }
+
+    float SdlContext::get_dpi_scale() const {
+        const float scale = SDL_GetWindowDisplayScale(m_window);
+        return (scale > 0.0f) ? scale : 1.0f;
+    }
 }

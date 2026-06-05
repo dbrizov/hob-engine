@@ -66,6 +66,7 @@ namespace hob {
         void flush_draws_to_renderer(Renderer& renderer,
                                      const CameraComponent* camera,
                                      const Vector2& window_size,
+                                     float dpi_scale,
                                      float delta_time);
 
         void draw_line(const Vector2& start,

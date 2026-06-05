@@ -32,6 +32,9 @@ namespace hob {
     constexpr uint32_t MAX_DEBUG_TEXT_GLYPHS = 4096;
     constexpr uint32_t MAX_DEBUG_TEXT_VERTICES = MAX_DEBUG_TEXT_GLYPHS * 4;
     constexpr uint32_t MAX_DEBUG_TEXT_INDICES = MAX_DEBUG_TEXT_GLYPHS * 6;
+    // Drop-shadow drawn behind every debug text glyph, in window pixels. Offset 0 disables it.
+    constexpr Color DEBUG_TEXT_SHADOW_COLOR = Color::black();
+    constexpr Vector2 DEBUG_TEXT_SHADOW_OFFSET = Vector2(1.0f, 1.0f);
 
     constexpr float DEBUG_FONT_POINT_SIZE = 14.0f;
 

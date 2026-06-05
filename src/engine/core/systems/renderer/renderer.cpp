@@ -255,44 +255,57 @@ namespace hob {
             return;
         }
 
-        float pen_x = screen_pos.x;
-        const float pen_y = screen_pos.y;
+        auto emit_pass = [&](const Vector2& origin, const Color& glyph_color) {
+            float pen_x = origin.x;
+            const float pen_y = origin.y;
 
-        for (char c : text) {
-            const uint32_t cp = static_cast<uint32_t>(static_cast<unsigned char>(c));
-            const Glyph* g = m_debug_font.get_glyph(cp);
-            if (!g) {
-                continue;
-            }
-
-            // Don't tessellate quads for whitespace glyphs (no ink). Still advances the pen.
-            if (g->width > 0 && g->height > 0) {
-                if (m_pending_debug_text_vertices.size() + 4 > MAX_DEBUG_TEXT_VERTICES) {
-                    break;
+            for (char c : text) {
+                const uint32_t cp = static_cast<uint32_t>(static_cast<unsigned char>(c));
+                const Glyph* g = m_debug_font.get_glyph(cp);
+                if (!g) {
+                    continue;
                 }
 
-                const float x0 = pen_x + static_cast<float>(g->offset_x) * scale;
-                const float y0 = pen_y + static_cast<float>(g->offset_y) * scale;
-                const float x1 = x0 + static_cast<float>(g->width) * scale;
-                const float y1 = y0 + static_cast<float>(g->height) * scale;
+                // Don't tessellate quads for whitespace glyphs (no ink). Still advances the pen.
+                if (g->width > 0 && g->height > 0) {
+                    if (m_pending_debug_text_vertices.size() + 4 > MAX_DEBUG_TEXT_VERTICES) {
+                        break;
+                    }
 
-                const uint16_t base = static_cast<uint16_t>(m_pending_debug_text_vertices.size());
+                    const float x0 = pen_x + static_cast<float>(g->offset_x) * scale;
+                    const float y0 = pen_y + static_cast<float>(g->offset_y) * scale;
+                    const float x1 = x0 + static_cast<float>(g->width) * scale;
+                    const float y1 = y0 + static_cast<float>(g->height) * scale;
 
-                m_pending_debug_text_vertices.push_back({Vector2(x0, y0), Vector2(g->u0, g->v0), color});
-                m_pending_debug_text_vertices.push_back({Vector2(x1, y0), Vector2(g->u1, g->v0), color});
-                m_pending_debug_text_vertices.push_back({Vector2(x0, y1), Vector2(g->u0, g->v1), color});
-                m_pending_debug_text_vertices.push_back({Vector2(x1, y1), Vector2(g->u1, g->v1), color});
+                    const uint16_t base = static_cast<uint16_t>(m_pending_debug_text_vertices.size());
 
-                m_pending_debug_text_indices.push_back(base + 0);
-                m_pending_debug_text_indices.push_back(base + 2);
-                m_pending_debug_text_indices.push_back(base + 1);
-                m_pending_debug_text_indices.push_back(base + 1);
-                m_pending_debug_text_indices.push_back(base + 2);
-                m_pending_debug_text_indices.push_back(base + 3);
+                    m_pending_debug_text_vertices.push_back({Vector2(x0, y0), Vector2(g->u0, g->v0), glyph_color});
+                    m_pending_debug_text_vertices.push_back({Vector2(x1, y0), Vector2(g->u1, g->v0), glyph_color});
+                    m_pending_debug_text_vertices.push_back({Vector2(x0, y1), Vector2(g->u0, g->v1), glyph_color});
+                    m_pending_debug_text_vertices.push_back({Vector2(x1, y1), Vector2(g->u1, g->v1), glyph_color});
+
+                    m_pending_debug_text_indices.push_back(base + 0);
+                    m_pending_debug_text_indices.push_back(base + 2);
+                    m_pending_debug_text_indices.push_back(base + 1);
+                    m_pending_debug_text_indices.push_back(base + 1);
+                    m_pending_debug_text_indices.push_back(base + 2);
+                    m_pending_debug_text_indices.push_back(base + 3);
+                }
+
+                pen_x += static_cast<float>(g->advance) * scale;
             }
+        };
 
-            pen_x += static_cast<float>(g->advance) * scale;
+        // Shadow first (all glyphs).
+        if (DEBUG_TEXT_SHADOW_OFFSET.x != 0.0f || DEBUG_TEXT_SHADOW_OFFSET.y != 0.0f) {
+            Color shadow = DEBUG_TEXT_SHADOW_COLOR;
+            shadow.a *= color.a;
+            const Vector2 shadow_origin = screen_pos + DEBUG_TEXT_SHADOW_OFFSET * scale;
+            emit_pass(shadow_origin, shadow);
         }
+
+        // Then text on top (all glyphs).
+        emit_pass(screen_pos, color);
     }
 
     int Renderer::get_debug_font_line_height() const {
