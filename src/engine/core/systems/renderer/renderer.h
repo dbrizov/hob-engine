@@ -25,6 +25,21 @@ namespace hob {
 
     constexpr Color CLEAR_COLOR = Color(0.17f, 0.18f, 0.47f, 1.0f);
 
+    // 6 verts per line segment (two triangles): 65536 verts = ~10,922 lines/frame.
+    constexpr uint32_t MAX_DEBUG_LINE_VERTICES = 65536;
+
+    // 4 verts and 6 indices per glyph quad.
+    constexpr uint32_t MAX_DEBUG_TEXT_GLYPHS = 4096;
+    constexpr uint32_t MAX_DEBUG_TEXT_VERTICES = MAX_DEBUG_TEXT_GLYPHS * 4;
+    constexpr uint32_t MAX_DEBUG_TEXT_INDICES = MAX_DEBUG_TEXT_GLYPHS * 6;
+
+    constexpr float DEBUG_FONT_POINT_SIZE = 24.0f;
+
+    // Builtin asset paths, relative to the assets root.
+    inline constexpr std::string_view BUILTIN_SHADERS_DIR = "builtin/shaders";
+    inline constexpr std::string_view DEFAULT_SPRITE_SHADER = "builtin/shaders/sprite";
+    inline constexpr std::string_view DEBUG_FONT_PATH = "builtin/fonts/jetbrains_mono_bold.ttf";
+
     class Renderer {
         struct Sprite {
             TextureRef texture;
@@ -95,7 +110,7 @@ namespace hob {
         SDL_GPUTextureFormat m_offscreen_format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 
         // Sprite pipelines indexed by ShaderId, plus path-dedupe map. Slot 0 holds the
-        // default pipeline (built from "builtin/shaders/sprite") and is pre-warmed at init,
+        // default pipeline (built from DEFAULT_SPRITE_SHADER) and is pre-warmed at init,
         // so DEFAULT_SPRITE_SHADER_ID is always valid. Failed builds alias the default id.
         std::vector<SDL_GPUGraphicsPipeline*> m_sprite_pipelines;
         std::unordered_map<std::string, ShaderId> m_shader_path_to_id;
@@ -110,11 +125,8 @@ namespace hob {
         SDL_GPUGraphicsPipeline* m_debug_line_pipeline = nullptr;
         SDL_GPUBuffer* m_debug_line_vbo = nullptr;
         SDL_GPUTransferBuffer* m_debug_line_transfer_buffer = nullptr;
-        // 6 verts per line segment (two triangles): 65536 verts = ~10,922 lines/frame.
-        static constexpr uint32_t MAX_DEBUG_LINE_VERTICES = 65536;
 
         // Debug-text pipeline + persistent dynamic VBO/IBO and matching upload transfer buffer.
-        // 4 verts and 6 indices per glyph quad: 4096 glyphs = 16384 verts, 24576 indices.
         SDL_GPUGraphicsPipeline* m_debug_text_pipeline = nullptr;
         SDL_GPUBuffer* m_debug_text_vbo = nullptr;
         SDL_GPUBuffer* m_debug_text_ibo = nullptr;
@@ -122,9 +134,6 @@ namespace hob {
         SDL_GPUTransferBuffer* m_debug_text_ibo_transfer = nullptr;
         SDL_GPUSampler* m_debug_text_sampler = nullptr;
         Font m_debug_font;
-        static constexpr uint32_t MAX_DEBUG_TEXT_GLYPHS = 4096;
-        static constexpr uint32_t MAX_DEBUG_TEXT_VERTICES = MAX_DEBUG_TEXT_GLYPHS * 4;
-        static constexpr uint32_t MAX_DEBUG_TEXT_INDICES = MAX_DEBUG_TEXT_GLYPHS * 6;
 
         // Samplers:
         //  sprite: MIN=LINEAR, MAG=NEAREST  (smooth when shrunk, crisp pixel edges when enlarged)

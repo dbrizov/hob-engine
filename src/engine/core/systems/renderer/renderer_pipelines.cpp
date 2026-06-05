@@ -176,7 +176,8 @@ namespace hob {
     }
 
     bool Renderer::init_default_sprite_pipeline() {
-        const std::string default_key = std::filesystem::path("builtin/shaders/sprite").lexically_normal().string();
+        const std::string default_key =
+            std::filesystem::path(DEFAULT_SPRITE_SHADER).lexically_normal().string();
         SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(default_key);
         if (!pipeline) {
             return false;
@@ -189,7 +190,7 @@ namespace hob {
     }
 
     bool Renderer::init_blit_pipeline() {
-        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / BUILTIN_SHADERS_DIR;
 
         SDL_GPUShader* vs = load_shader(m_gpu_device,
                                         shader_dir / "blit.vert.hlsl",
@@ -239,7 +240,7 @@ namespace hob {
     }
 
     bool Renderer::init_debug_line_pipeline() {
-        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / BUILTIN_SHADERS_DIR;
 
         SDL_GPUShader* vs = load_shader(m_gpu_device,
                                         shader_dir / "line.vert.hlsl",
@@ -334,7 +335,7 @@ namespace hob {
     }
 
     bool Renderer::init_debug_text_pipeline() {
-        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / "builtin" / "shaders";
+        const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / BUILTIN_SHADERS_DIR;
 
         SDL_GPUShader* vs = load_shader(m_gpu_device,
                                         shader_dir / "debug_text.vert.hlsl",
@@ -465,9 +466,7 @@ namespace hob {
     }
 
     bool Renderer::init_debug_font() {
-        const std::filesystem::path font_path =
-            PathUtils::get_assets_root_path() / "builtin" / "fonts" / "jetbrains_mono_bold.ttf";
-        constexpr float DEBUG_FONT_POINT_SIZE = 24.0f;
+        const std::filesystem::path font_path = PathUtils::get_assets_root_path() / DEBUG_FONT_PATH;
 
         if (!m_debug_font.init(*this, font_path, DEBUG_FONT_POINT_SIZE)) {
             debug::log_error("Failed to init debug font from {}", font_path.string());
