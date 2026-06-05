@@ -233,7 +233,7 @@ namespace hob {
             return;
         }
 
-        const float half = std::max(thickness_pixels, 1.0f) * 0.5f;
+        const float half = thickness_pixels * 0.5f;
         const Vector2 perp = Vector2(-delta.y, delta.x) / len;
         const Vector2 offset = perp * half;
 
