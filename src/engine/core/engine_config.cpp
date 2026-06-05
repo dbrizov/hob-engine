@@ -23,10 +23,10 @@ namespace hob {
                 g.value("window_width", graphics_config.window_width);
             graphics_config.window_height =
                 g.value("window_height", graphics_config.window_height);
-            graphics_config.logical_resolution_width =
-                g.value("logical_resolution_width", graphics_config.logical_resolution_width);
-            graphics_config.logical_resolution_height =
-                g.value("logical_resolution_height", graphics_config.logical_resolution_height);
+            graphics_config.logical_width =
+                g.value("logical_width", graphics_config.logical_width);
+            graphics_config.logical_height =
+                g.value("logical_height", graphics_config.logical_height);
             graphics_config.target_fps =
                 g.value("target_fps", graphics_config.target_fps);
             graphics_config.vsync_enabled =

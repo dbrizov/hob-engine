@@ -11,8 +11,8 @@ namespace hob {
         std::string window_title = "Hob Engine";
         uint32_t window_width = 1152;
         uint32_t window_height = 648;
-        uint32_t logical_resolution_width = 1152;
-        uint32_t logical_resolution_height = 648;
+        uint32_t logical_width = 1152;
+        uint32_t logical_height = 648;
         uint32_t target_fps = 60;
         bool vsync_enabled = true;
     };

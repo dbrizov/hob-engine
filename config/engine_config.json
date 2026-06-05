@@ -3,8 +3,8 @@
     "window_title": "Hob Engine",
     "window_width": 1152,
     "window_height": 648,
-    "logical_resolution_width": 1920,
-    "logical_resolution_height": 1080,
+    "logical_width": 1920,
+    "logical_height": 1080,
     "target_fps": 60,
     "vsync_enabled": false
   },

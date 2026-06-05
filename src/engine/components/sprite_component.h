@@ -15,7 +15,7 @@ namespace hob {
         Vector2 m_pivot = Vector2(0.5f, 0.5f);
         Vector2 m_scale = Vector2(1.0f, 1.0f);
         int m_z_index = 0;
-        uint32_t m_pixels_per_meter = 64;
+        int m_pixels_per_meter = 64;
 
     public:
         explicit SpriteComponent(Entity& entity);
@@ -40,8 +40,8 @@ namespace hob {
         int get_z_index() const;
         void set_z_index(int z_index);
 
-        uint32_t get_pixels_per_meter() const;
+        int get_pixels_per_meter() const;
         float get_pixels_per_meter_f() const;
-        void set_pixels_per_meter(uint32_t value);
+        void set_pixels_per_meter(int value);
     };
 }

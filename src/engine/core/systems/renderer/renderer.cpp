@@ -45,8 +45,8 @@ namespace hob {
     Renderer::Renderer(const EngineConfig& config, const SdlContext& sdl_context, Console& console)
         : m_sdl_context(sdl_context)
         , m_gpu_device(sdl_context.get_gpu_device())
-        , m_logical_width(config.graphics_config.logical_resolution_width)
-        , m_logical_height(config.graphics_config.logical_resolution_height)
+        , m_logical_width(config.graphics_config.logical_width)
+        , m_logical_height(config.graphics_config.logical_height)
         , m_offscreen_projection(ortho_top_left(static_cast<float>(m_logical_width),
                                                 static_cast<float>(m_logical_height)))
         , m_swapchain_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
