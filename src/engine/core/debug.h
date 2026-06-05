@@ -3,7 +3,6 @@
 #include <format>
 #include <iostream>
 #include <string>
-#include <string_view>
 
 #include "engine/math/color.h"
 #include "engine/math/vector2.h"
@@ -13,6 +12,19 @@ namespace hob {
     class Renderer;
 
     namespace debug {
+        constexpr Color DEFAULT_DRAW_COLOR = Color::white();
+        constexpr float DEFAULT_DRAW_DURATION = 0.0f;
+        constexpr float DEFAULT_LINE_THICKNESS = 1.0f;
+        constexpr int DEFAULT_CIRCLE_SEGMENTS = 16;
+
+        constexpr Color DEFAULT_MESSAGE_COLOR = Color::green();
+        constexpr float DEFAULT_MESSAGE_DURATION = 2.0f;
+        constexpr float DEFAULT_MESSAGE_SCALE = 1.0f;
+        constexpr float MESSAGE_MARGIN_X = 8.0f;
+        constexpr float MESSAGE_MARGIN_Y = 8.0f;
+        constexpr float MESSAGE_FADE_DURATION = 0.3f;
+        constexpr uint32_t MAX_ON_SCREEN_MESSAGES = 32;
+
         // --- Console logging ---
 
         template<typename... Args>
@@ -30,24 +42,25 @@ namespace hob {
         struct DebugLine {
             Vector2 start;
             Vector2 end;
-            Color color;
-            float duration = 0.0f;
-            float thickness = 1.0f;
+            Color color = DEFAULT_DRAW_COLOR;
+            float duration = DEFAULT_DRAW_DURATION;
+            float thickness = DEFAULT_LINE_THICKNESS;
         };
 
         struct DebugCircle {
             Vector2 center;
             float radius = 0.5f;
-            Color color;
-            float duration = 0.0f;
-            float thickness = 1.0f;
-            int segments = 16;
+            Color color = DEFAULT_DRAW_COLOR;
+            float duration = DEFAULT_DRAW_DURATION;
+            float thickness = DEFAULT_LINE_THICKNESS;
+            int segments = DEFAULT_CIRCLE_SEGMENTS;
         };
 
         struct DebugMessage {
             std::string text;
-            Color color;
-            float duration = 0.0f;
+            Color color = DEFAULT_MESSAGE_COLOR;
+            float duration = DEFAULT_MESSAGE_DURATION;
+            float scale = DEFAULT_MESSAGE_SCALE;
         };
 
         void flush_draws_to_renderer(Renderer& renderer,
@@ -57,44 +70,46 @@ namespace hob {
 
         void draw_line(const Vector2& start,
                        const Vector2& end,
-                       const Color& color,
-                       float duration = 0.0f,
-                       float thickness = 1.0f);
+                       const Color& color = DEFAULT_DRAW_COLOR,
+                       float duration = DEFAULT_DRAW_DURATION,
+                       float thickness = DEFAULT_LINE_THICKNESS);
 
         void draw_circle(const Vector2& center,
                          float radius,
-                         const Color& color,
-                         float duration = 0.0f,
-                         float thickness = 1.0f,
-                         int segments = 16);
+                         const Color& color = DEFAULT_DRAW_COLOR,
+                         float duration = DEFAULT_DRAW_DURATION,
+                         float thickness = DEFAULT_LINE_THICKNESS,
+                         int segments = DEFAULT_CIRCLE_SEGMENTS);
 
         // --- On-screen messages  ---
 
-        // Non-template entry point; called by all print(...) overloads.
-        void add_on_screen_message(std::string text, Color color, float duration);
-
         namespace detail {
-            inline constexpr float DEFAULT_PRINT_DURATION = 2.0f;
-            inline constexpr Color DEFAULT_PRINT_COLOR = Color::green();
+            // Non-template entry point; called by all print(...) overloads.
+            void add_on_screen_debug_message(std::string text, const Color& color, float duration, float scale);
 
             template<typename... Args>
-            void print_dispatch(float duration, Color color, std::format_string<Args...> fmt, Args&&... args) {
+            void print_dispatch(const Color& color,
+                                float duration,
+                                float scale,
+                                std::format_string<Args...> fmt,
+                                Args&&... args) {
                 log(fmt, args...);
-                add_on_screen_message(std::format(fmt, args...), color, duration);
+                add_on_screen_debug_message(std::format(fmt, args...), color, duration, scale);
             }
         }
 
         template<typename... Args>
         void print(std::format_string<Args...> fmt, Args&&... args) {
-            detail::print_dispatch(detail::DEFAULT_PRINT_DURATION,
-                                   detail::DEFAULT_PRINT_COLOR,
+            detail::print_dispatch(DEFAULT_MESSAGE_COLOR,
+                                   DEFAULT_MESSAGE_DURATION,
+                                   DEFAULT_MESSAGE_SCALE,
                                    fmt,
                                    std::forward<Args>(args)...);
         }
 
         template<typename... Args>
-        void print(Color color, float duration, std::format_string<Args...> fmt, Args&&... args) {
-            detail::print_dispatch(duration, color, fmt, std::forward<Args>(args)...);
+        void print(const Color& color, float duration, float scale, std::format_string<Args...> fmt, Args&&... args) {
+            detail::print_dispatch(color, duration, scale, fmt, std::forward<Args>(args)...);
         }
     }
 }

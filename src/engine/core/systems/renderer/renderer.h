@@ -33,7 +33,7 @@ namespace hob {
     constexpr uint32_t MAX_DEBUG_TEXT_VERTICES = MAX_DEBUG_TEXT_GLYPHS * 4;
     constexpr uint32_t MAX_DEBUG_TEXT_INDICES = MAX_DEBUG_TEXT_GLYPHS * 6;
 
-    constexpr float DEBUG_FONT_POINT_SIZE = 24.0f;
+    constexpr float DEBUG_FONT_POINT_SIZE = 14.0f;
 
     // Builtin asset paths, relative to the assets root.
     inline constexpr std::string_view BUILTIN_SHADERS_DIR = "builtin/shaders";
@@ -207,8 +207,7 @@ namespace hob {
                              float thickness_pixels);
 
         /// Draws a debug text string in logical screen space (top-left origin, y-down).
-        /// `screen_pos` is the top-left of the line. ASCII only; unknown codepoints fall back to '?'.
-        void draw_debug_text(const Vector2& screen_pos, std::string_view text, const Color& color);
+        void draw_debug_text(const Vector2& screen_pos, std::string_view text, const Color& color, float scale);
 
         /// Returns the line height of the debug font in logical pixels.
         int get_debug_font_line_height() const;

@@ -250,7 +250,7 @@ namespace hob {
         m_pending_debug_line_vertices.push_back({p3, color});
     }
 
-    void Renderer::draw_debug_text(const Vector2& screen_pos, std::string_view text, const Color& color) {
+    void Renderer::draw_debug_text(const Vector2& screen_pos, std::string_view text, const Color& color, float scale) {
         if (!m_debug_font.is_initialized() || text.empty()) {
             return;
         }
@@ -271,10 +271,10 @@ namespace hob {
                     break;
                 }
 
-                const float x0 = pen_x + static_cast<float>(g->offset_x);
-                const float y0 = pen_y + static_cast<float>(g->offset_y);
-                const float x1 = x0 + static_cast<float>(g->width);
-                const float y1 = y0 + static_cast<float>(g->height);
+                const float x0 = pen_x + static_cast<float>(g->offset_x) * scale;
+                const float y0 = pen_y + static_cast<float>(g->offset_y) * scale;
+                const float x1 = x0 + static_cast<float>(g->width) * scale;
+                const float y1 = y0 + static_cast<float>(g->height) * scale;
 
                 const uint16_t base = static_cast<uint16_t>(m_pending_debug_text_vertices.size());
 
@@ -291,7 +291,7 @@ namespace hob {
                 m_pending_debug_text_indices.push_back(base + 3);
             }
 
-            pen_x += static_cast<float>(g->advance);
+            pen_x += static_cast<float>(g->advance) * scale;
         }
     }
 

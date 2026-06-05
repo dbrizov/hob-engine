@@ -186,18 +186,19 @@ function Debug.log_error(...) end
 ---@param message string
 ---@param color Color?
 ---@param duration number?
-function Debug.print(message, color, duration) end
+---@param scale number?
+function Debug.print(message, color, duration, scale) end
 
 ---@param from Vector2
 ---@param to Vector2
----@param color Color
+---@param color Color?
 ---@param duration number?
 ---@param thickness number?
 function Debug.draw_line(from, to, color, duration, thickness) end
 
 ---@param center Vector2
 ---@param radius number
----@param color Color
+---@param color Color?
 ---@param duration number?
 ---@param thickness number?
 ---@param segments integer?

@@ -45,32 +45,41 @@ namespace hob {
                       [](sol::this_state ts,
                          const std::string& message,
                          sol::optional<Color> color,
-                         sol::optional<float> duration) {
+                         sol::optional<float> duration,
+                         sol::optional<float> scale) {
                           (void)ts;
-                          debug::print(color.value_or(Color::green()),
-                                       duration.value_or(2.0f),
+                          debug::print(color.value_or(debug::DEFAULT_MESSAGE_COLOR),
+                                       duration.value_or(debug::DEFAULT_MESSAGE_DURATION),
+                                       scale.value_or(debug::DEFAULT_MESSAGE_SCALE),
                                        "{}",
                                        message);
-                      }, "(message: string, color: Color?, duration: number?)")
+                      }, "(message: string, color: Color?, duration: number?, scale: number?)")
             .func_sig("draw_line",
-                      [](const Vector2& from, const Vector2& to, const Color& color,
-                         sol::optional<float> duration, sol::optional<float> thickness) {
+                      [](const Vector2& from,
+                         const Vector2& to,
+                         sol::optional<Color> color,
+                         sol::optional<float> duration,
+                         sol::optional<float> thickness) {
                           debug::draw_line(from,
                                            to,
-                                           color,
-                                           duration.value_or(0.0f),
-                                           thickness.value_or(1.0f));
-                      }, "(from: Vector2, to: Vector2, color: Color, duration: number?, thickness: number?)")
+                                           color.value_or(debug::DEFAULT_DRAW_COLOR),
+                                           duration.value_or(debug::DEFAULT_DRAW_DURATION),
+                                           thickness.value_or(debug::DEFAULT_LINE_THICKNESS));
+                      }, "(from: Vector2, to: Vector2, color: Color?, duration: number?, thickness: number?)")
             .func_sig("draw_circle",
-                      [](const Vector2& center, float radius, const Color& color,
-                         sol::optional<float> duration, sol::optional<float> thickness, sol::optional<int> segments) {
+                      [](const Vector2& center,
+                         float radius,
+                         sol::optional<Color> color,
+                         sol::optional<float> duration,
+                         sol::optional<float> thickness,
+                         sol::optional<int> segments) {
                           debug::draw_circle(center,
                                              radius,
-                                             color,
-                                             duration.value_or(0.0f),
-                                             thickness.value_or(1.0f),
-                                             segments.value_or(16));
+                                             color.value_or(debug::DEFAULT_DRAW_COLOR),
+                                             duration.value_or(debug::DEFAULT_DRAW_DURATION),
+                                             thickness.value_or(debug::DEFAULT_LINE_THICKNESS),
+                                             segments.value_or(debug::DEFAULT_CIRCLE_SEGMENTS));
                       },
-                      "(center: Vector2, radius: number, color: Color, duration: number?, thickness: number?, segments: integer?)");
+                      "(center: Vector2, radius: number, color: Color?, duration: number?, thickness: number?, segments: integer?)");
     }
 }
