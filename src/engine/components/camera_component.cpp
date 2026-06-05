@@ -55,8 +55,7 @@ namespace hob {
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position, const Vector2& camera_position) const {
         const Renderer& renderer = get_engine().get_renderer();
 
-        float half_width = renderer.get_logical_width_f() * 0.5f;
-        float half_height = renderer.get_logical_height_f() * 0.5f;
+        Vector2 half_size = renderer.get_logical_size() * 0.5f;
 
         // 1) Calculate world delta relative to camera
         Vector2 delta_meters = world_position - camera_position;
@@ -68,7 +67,7 @@ namespace hob {
         delta_pixels.y = -delta_pixels.y;
 
         // 4) Calculate screen position
-        Vector2 screen_position = Vector2(delta_pixels.x + half_width, delta_pixels.y + half_height);
+        Vector2 screen_position = Vector2(delta_pixels.x + half_size.x, delta_pixels.y + half_size.y);
 
         return screen_position;
     }
@@ -84,11 +83,10 @@ namespace hob {
     Vector2 CameraComponent::screen_to_world(const Vector2& screen_position, const Vector2& camera_position) const {
         const Renderer& renderer = get_engine().get_renderer();
 
-        float half_width = renderer.get_logical_width_f() * 0.5f;
-        float half_height = renderer.get_logical_height_f() * 0.5f;
+        Vector2 half_size = renderer.get_logical_size() * 0.5f;
 
         // 1) Move origin from top-left to screen center
-        Vector2 delta_pixels = Vector2(screen_position.x - half_width, screen_position.y - half_height);
+        Vector2 delta_pixels = Vector2(screen_position.x - half_size.x, screen_position.y - half_size.y);
 
         // 2) Undo Y flip (because world positive Y goes up)
         delta_pixels.y = -delta_pixels.y;

@@ -2,7 +2,6 @@
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_mouse.h>
-#include <SDL3/SDL_video.h>
 
 #include "engine/core/path_utils.h"
 #include "renderer/renderer.h"
@@ -121,16 +120,12 @@ namespace hob {
 
         // Map window pixels to logical (FBO) pixels. The FBO is blitted to the window with a
         // uniform STRETCH (no letterboxing today), so the mapping is just an axis-wise scale.
-        int window_w = 0;
-        int window_h = 0;
-        SDL_GetWindowSize(m_sdl_context.get_window(), &window_w, &window_h);
+        const Vector2 window_size = m_sdl_context.get_window_size();
+        const Vector2 logical_size = m_renderer.get_logical_size();
 
-        const float logical_w = m_renderer.get_logical_width_f();
-        const float logical_h = m_renderer.get_logical_height_f();
-
-        if (window_w > 0 && window_h > 0) {
-            x = x * (logical_w / static_cast<float>(window_w));
-            y = y * (logical_h / static_cast<float>(window_h));
+        if (window_size.x > 0.0f && window_size.y > 0.0f) {
+            x = x * (logical_size.x / window_size.x);
+            y = y * (logical_size.y / window_size.y);
         }
 
         m_mouse_screen_position = Vector2(x, y);

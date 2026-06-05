@@ -1,4 +1,4 @@
-DefineTexture.Cursor = "images/cursor_48px.png"
+DefineTexture.Cursor = "images/cursor.png"
 
 DefineTexture.PlayerIdle01 = "images/player/HJ_idle01.png"
 DefineTexture.PlayerIdle02 = "images/player/HJ_idle02.png"

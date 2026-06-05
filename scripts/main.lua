@@ -1,8 +1,7 @@
 Cursor.set_texture(unwrap_def(Textures.Cursor))
 Cursor.get_material():set_outline_color(Color.black())
-Cursor.get_material():set_outline_width(2.0)
+Cursor.get_material():set_outline_width(1.0)
 Cursor.set_pivot(Vector2(0.2, 0.1))
-Cursor.set_scale(Vector2(0.8, 0.8))
 
 local SCALE = 2.0
 local ARENA_HALF_W = 10

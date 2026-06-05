@@ -131,10 +131,7 @@ namespace hob {
 
         void set_frame_time(float time);
 
-        uint32_t get_logical_width() const;
-        uint32_t get_logical_height() const;
-        float get_logical_width_f() const;
-        float get_logical_height_f() const;
+        Vector2 get_logical_size() const;
 
         // --- Per-frame command buffer (renderer.cpp) ---
 

@@ -3,6 +3,8 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_video.h>
 
+#include "engine/math/vector2.h"
+
 namespace hob {
     struct GraphicsConfig;
 
@@ -24,5 +26,7 @@ namespace hob {
         bool is_initialized() const;
         SDL_Window* get_window() const;
         SDL_GPUDevice* get_gpu_device() const;
+
+        Vector2 get_window_size() const;
     };
 }

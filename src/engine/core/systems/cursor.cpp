@@ -107,7 +107,15 @@ namespace hob {
 
         const float width = static_cast<float>(m_texture->get_width());
         const float height = static_cast<float>(m_texture->get_height());
-        const Vector2 size(width * m_scale.x, height * m_scale.y);
+
+        // The FBO is stretched to the window, so counter-scale the cursor by the window-to-logical
+        // ratio to keep it a constant pixel size on screen regardless of window size.
+        const Vector2 window_size = m_sdl_context.get_window_size();
+        const Vector2 logical_size = m_renderer.get_logical_size();
+        const float size_x_multiplier = (window_size.x > 0.0f) ? (logical_size.x / window_size.x) : 1.0f;
+        const float size_y_multiplier = (window_size.y > 0.0f) ? (logical_size.y / window_size.y) : 1.0f;
+
+        const Vector2 size(width * m_scale.x * size_x_multiplier, height * m_scale.y * size_y_multiplier);
         const Vector2 pivot(size.x * m_pivot.x, size.y * m_pivot.y);
         const float rotation_rad = 0.0f;
         Vector2 mouse_screen = m_input.get_mouse_screen_position();

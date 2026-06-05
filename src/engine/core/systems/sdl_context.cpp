@@ -113,4 +113,11 @@ namespace hob {
     SDL_GPUDevice* SdlContext::get_gpu_device() const {
         return m_gpu_device;
     }
+
+    Vector2 SdlContext::get_window_size() const {
+        int width = 0;
+        int height = 0;
+        SDL_GetWindowSize(m_window, &width, &height);
+        return Vector2(static_cast<float>(width), static_cast<float>(height));
+    }
 }

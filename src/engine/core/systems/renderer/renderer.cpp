@@ -147,20 +147,8 @@ namespace hob {
         m_frame_time = time;
     }
 
-    uint32_t Renderer::get_logical_width() const {
-        return m_logical_width;
-    }
-
-    uint32_t Renderer::get_logical_height() const {
-        return m_logical_height;
-    }
-
-    float Renderer::get_logical_width_f() const {
-        return static_cast<float>(m_logical_width);
-    }
-
-    float Renderer::get_logical_height_f() const {
-        return static_cast<float>(m_logical_height);
+    Vector2 Renderer::get_logical_size() const {
+        return Vector2(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height));
     }
 
     bool Renderer::acquire_command_buffer() {
