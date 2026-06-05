@@ -3,17 +3,17 @@ DefineComponent.ContactLogger = {}
 local ContactLogger = ContactLogger
 
 function ContactLogger:on_collision_enter(other)
-    Debug.print("collision_enter: " .. other:get_entity():get_id())
+    Debug.print("collision_enter: " .. other)
 end
 
 function ContactLogger:on_collision_exit(other)
-    Debug.print("collision_exit: " .. other:get_entity():get_id())
+    Debug.print("collision_exit: " .. other)
 end
 
 function ContactLogger:on_trigger_enter(other)
-    Debug.print("trigger_enter: " .. other:get_entity():get_id())
+    Debug.print("trigger_enter: " .. other)
 end
 
 function ContactLogger:on_trigger_exit(other)
-    Debug.print("trigger_exit: " .. other:get_entity():get_id())
+    Debug.print("trigger_exit: " .. other)
 end

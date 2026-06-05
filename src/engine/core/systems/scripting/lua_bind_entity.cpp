@@ -124,6 +124,10 @@ namespace hob {
             .op_tostring([](const EntityRef& r) {
                 Entity* e = r.resolve();
                 return e ? e->to_string() : std::format("Entity(invalid, id = {})", r.get_id());
+            })
+            .op_concat([](const EntityRef& r) {
+                Entity* e = r.resolve();
+                return e ? e->to_string() : std::format("Entity(invalid, id = {})", r.get_id());
             });
     }
 }

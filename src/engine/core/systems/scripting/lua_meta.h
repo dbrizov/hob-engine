@@ -233,6 +233,12 @@ namespace hob {
         std::vector<LuaMethodInfo> methods;
         std::vector<LuaOperatorInfo> operators;
         std::vector<LuaCtorInfo> ctors;
+
+        // sol2 doesn't propagate metamethods (__tostring, __concat, etc.) through
+        // sol::bases — those are looked up directly on the metatable, not via __index.
+        // We cache them here so derived usertypes can re-install them at bind time.
+        sol::function metamethod_tostring;
+        sol::function metamethod_concat;
     };
 
     struct LuaEnumEntry {
@@ -321,6 +327,9 @@ namespace hob {
             , m_info(&reg.add_usertype(LuaTypeName<T>::value, base_name<B...>())) {
             static_assert(LuaTypeName<T>::value != nullptr,
                           "Missing HOB_LUA_TYPE specialization for this usertype; declare it in lua_type_names.h");
+
+            // Pull metamethods from each base (they don't propagate through sol::bases).
+            (inherit_metamethods_from<B>(reg), ...);
         }
 
         // ----- Constructors. Pass each ctor as sol::types<Args...>. -----
@@ -430,7 +439,33 @@ namespace hob {
         }
 
         template<typename F> UsertypeBuilder& op_tostring(F func) {
-            m_usertype[sol::meta_function::to_string] = func;
+            sol::function fn = wrap_self_callable(func);
+            m_usertype[sol::meta_function::to_string] = fn;
+            m_info->metamethod_tostring = std::move(fn);
+            return *this;
+        }
+
+        template<typename F>
+        UsertypeBuilder& op_concat(F tostring_func) {
+            auto concat_lambda = [tostring_func](const sol::object& a, const sol::object& b) -> std::string {
+                auto to_str = [&](const sol::object& obj) -> std::string {
+                    if (obj.is<T>()) {
+                        T& self = obj.as<T&>();
+                        if constexpr (std::is_member_function_pointer_v<F>) {
+                            return (self.*tostring_func)();
+                        }
+                        else {
+                            return tostring_func(self);
+                        }
+                    }
+                    return obj.as<std::string>();
+                };
+                return to_str(a) + to_str(b);
+            };
+
+            sol::function fn = make_function(concat_lambda);
+            m_usertype[sol::meta_function::concatenation] = fn;
+            m_info->metamethod_concat = std::move(fn);
             return *this;
         }
 
@@ -438,6 +473,55 @@ namespace hob {
         sol::usertype<T>& sol() { return m_usertype; }
 
     private:
+        // sol::function can't be constructed directly from a raw lambda; sol2 needs the
+        // value to be pushed into the Lua state first. Stash through a temporary global,
+        // read back as sol::function, then clear the global.
+        template<typename F>
+        sol::function make_function(F func) {
+            sol::state_view lua(m_usertype.lua_state());
+            lua["__hob_meta_tmp__"] = std::move(func);
+            sol::function fn = lua["__hob_meta_tmp__"];
+            lua["__hob_meta_tmp__"] = sol::nil;
+            return fn;
+        }
+
+        // Wraps `func` into a sol::function so it can be stored on LuaUsertypeInfo and
+        // re-installed onto derived metatables. Member-function pointers need to go through
+        // a lambda first since make_function can't push a member ptr alone.
+        template<typename F>
+        sol::function wrap_self_callable(F func) {
+            if constexpr (std::is_member_function_pointer_v<F>) {
+                return make_function([func](T& self) { return (self.*func)(); });
+            }
+            else {
+                return make_function(func);
+            }
+        }
+
+        template<typename B>
+        void inherit_metamethods_from(LuaMetaRegistry& reg) {
+            const char* base_type_name = LuaTypeName<B>::value;
+            if (!base_type_name) {
+                return;
+            }
+
+            LuaUsertypeInfo* base_info = reg.find_usertype(base_type_name);
+            if (!base_info) {
+                return;
+            }
+
+            // Forward-chain so a grandchild type binding also sees these.
+            if (base_info->metamethod_tostring.valid()) {
+                m_usertype[sol::meta_function::to_string] = base_info->metamethod_tostring;
+                m_info->metamethod_tostring = base_info->metamethod_tostring;
+            }
+
+            if (base_info->metamethod_concat.valid()) {
+                m_usertype[sol::meta_function::concatenation] = base_info->metamethod_concat;
+                m_info->metamethod_concat = base_info->metamethod_concat;
+            }
+        }
+
         template<typename F>
         UsertypeBuilder& binary_op(sol::meta_function mf, const char* op_name, F func) {
             m_usertype[mf] = func;

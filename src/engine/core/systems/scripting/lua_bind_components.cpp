@@ -37,7 +37,8 @@ namespace hob {
             .method("get_entity", [](Component& c) {
                 return EntityRef(c.get_entity().get_id(), c.get_engine().get_entity_spawner());
             })
-            .op_tostring(&Component::to_string);
+            .op_tostring(&Component::to_string)
+            .op_concat(&Component::to_string);
 
         bind_usertype<TransformComponent>(lua, meta, Bases<Component>{})
             .method("get_position", &TransformComponent::get_position)
