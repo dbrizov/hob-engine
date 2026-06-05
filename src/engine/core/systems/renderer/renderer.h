@@ -23,27 +23,27 @@ namespace hob {
     class SdlContext;
     class Console;
 
-    constexpr Color CLEAR_COLOR = Color(0.17f, 0.18f, 0.47f, 1.0f);
-
-    // 6 verts per line segment (two triangles): 65536 verts = ~10,922 lines/frame.
-    constexpr uint32_t MAX_DEBUG_LINE_VERTICES = 65536;
-
-    // 4 verts and 6 indices per glyph quad.
-    constexpr uint32_t MAX_DEBUG_TEXT_GLYPHS = 4096;
-    constexpr uint32_t MAX_DEBUG_TEXT_VERTICES = MAX_DEBUG_TEXT_GLYPHS * 4;
-    constexpr uint32_t MAX_DEBUG_TEXT_INDICES = MAX_DEBUG_TEXT_GLYPHS * 6;
-    // Drop-shadow drawn behind every debug text glyph, in window pixels. Offset 0 disables it.
-    constexpr Color DEBUG_TEXT_SHADOW_COLOR = Color::black();
-    constexpr Vector2 DEBUG_TEXT_SHADOW_OFFSET = Vector2(1.0f, 1.0f);
-
-    constexpr float DEBUG_FONT_POINT_SIZE = 14.0f;
-
-    // Builtin asset paths, relative to the assets root.
-    inline constexpr std::string_view BUILTIN_SHADERS_DIR = "builtin/shaders";
-    inline constexpr std::string_view DEFAULT_SPRITE_SHADER = "builtin/shaders/sprite";
-    inline constexpr std::string_view DEBUG_FONT_PATH = "builtin/fonts/jetbrains_mono_bold.ttf";
-
     class Renderer {
+        static constexpr Color CLEAR_COLOR = Color(0.17f, 0.18f, 0.47f, 1.0f);
+
+        // 6 verts per line segment (two triangles): 65536 verts = ~10,922 lines/frame.
+        static constexpr uint32_t MAX_DEBUG_LINE_VERTICES = 65536;
+
+        // 4 verts and 6 indices per glyph quad.
+        static constexpr uint32_t MAX_DEBUG_TEXT_GLYPHS = 4096;
+        static constexpr uint32_t MAX_DEBUG_TEXT_VERTICES = MAX_DEBUG_TEXT_GLYPHS * 4;
+        static constexpr uint32_t MAX_DEBUG_TEXT_INDICES = MAX_DEBUG_TEXT_GLYPHS * 6;
+        // Drop-shadow drawn behind every debug text glyph, in window pixels. Offset 0 disables it.
+        static constexpr Color DEBUG_TEXT_SHADOW_COLOR = Color::black();
+        static constexpr Vector2 DEBUG_TEXT_SHADOW_OFFSET = Vector2(1.0f, 1.0f);
+
+        static constexpr float DEBUG_FONT_SIZE_PX = 14.0f;
+
+        // Builtin asset paths, relative to the assets root.
+        static constexpr std::string_view BUILTIN_SHADERS_DIR = "builtin/shaders";
+        static constexpr std::string_view DEFAULT_SPRITE_SHADER = "builtin/shaders/sprite";
+        static constexpr std::string_view DEBUG_FONT_PATH = "builtin/fonts/jetbrains_mono_bold.ttf";
+
         struct Sprite {
             TextureRef texture;
             Vector2 screen_pos;

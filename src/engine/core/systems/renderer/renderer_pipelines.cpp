@@ -470,8 +470,8 @@ namespace hob {
 
         // Rasterize the atlas at the display's content scale so debug text keeps a constant
         // physical size on hi-DPI monitors instead of becoming pin-sized.
-        const float point_size = DEBUG_FONT_POINT_SIZE * m_sdl_context.get_dpi_scale();
-        if (!m_debug_font.init(*this, font_path, point_size)) {
+        const float size_px = DEBUG_FONT_SIZE_PX * m_sdl_context.get_dpi_scale();
+        if (!m_debug_font.init(*this, font_path, size_px)) {
             debug::log_error("Failed to init debug font from {}", font_path.string());
             return false;
         }

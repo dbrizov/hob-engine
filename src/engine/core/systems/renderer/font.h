@@ -45,8 +45,7 @@ namespace hob {
         Font(Font&&) = delete;
         Font& operator=(Font&&) = delete;
 
-        // Loads `ttf_path` at `point_size`, rasterizes ASCII 32..126 into a single RGBA8 atlas
-        bool init(Renderer& renderer, const std::filesystem::path& ttf_path, float point_size);
+        bool init(Renderer& renderer, const std::filesystem::path& ttf_path, float size_px);
         void shutdown();
 
         bool is_initialized() const { return m_initialized; }

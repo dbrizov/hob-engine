@@ -29,7 +29,7 @@ namespace hob {
         shutdown();
     }
 
-    bool Font::init(Renderer& renderer, const std::filesystem::path& ttf_path, float point_size) {
+    bool Font::init(Renderer& renderer, const std::filesystem::path& ttf_path, float size_px) {
         if (m_initialized) {
             return true;
         }
@@ -39,7 +39,7 @@ namespace hob {
             return false;
         }
 
-        TTF_Font* font = TTF_OpenFont(ttf_path.string().c_str(), point_size);
+        TTF_Font* font = TTF_OpenFont(ttf_path.string().c_str(), size_px);
         if (!font) {
             debug::log_error("TTF_OpenFont('{}') failed: {}", ttf_path.string(), SDL_GetError());
             TTF_Quit();

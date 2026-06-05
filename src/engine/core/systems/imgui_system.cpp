@@ -32,7 +32,13 @@ namespace hob {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
         io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
+        const float dpi_scale = sdl_context.get_dpi_scale();
+        ImFontConfig font_cfg{};
+        font_cfg.SizePixels = DEFAULT_FONT_SIZE_PX * dpi_scale;
+        io.Fonts->AddFontDefault(&font_cfg);
+
         ImGui::StyleColorsDark();
+        ImGui::GetStyle().ScaleAllSizes(dpi_scale);
 
         if (!ImGui_ImplSDL3_InitForSDLGPU(window)) {
             debug::log_error("ImGui_ImplSDL3_InitForSDLGPU failed");
