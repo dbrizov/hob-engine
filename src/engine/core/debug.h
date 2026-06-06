@@ -19,7 +19,6 @@ namespace hob {
 
         constexpr Color DEFAULT_MESSAGE_COLOR = Color::green();
         constexpr float DEFAULT_MESSAGE_DURATION = 2.0f;
-        constexpr float DEFAULT_MESSAGE_SCALE = 1.0f;
         constexpr float MESSAGE_MARGIN_X = 8.0f;
         constexpr float MESSAGE_MARGIN_Y = 8.0f;
         constexpr float MESSAGE_FADE_DURATION = 0.3f;
@@ -60,7 +59,6 @@ namespace hob {
             std::string text;
             Color color = DEFAULT_MESSAGE_COLOR;
             float duration = DEFAULT_MESSAGE_DURATION;
-            float scale = DEFAULT_MESSAGE_SCALE;
         };
 
         void flush_draws_to_renderer(Renderer& renderer,
@@ -85,16 +83,15 @@ namespace hob {
 
         namespace detail {
             // Non-template entry point; called by all print(...) overloads.
-            void add_on_screen_debug_message(std::string text, const Color& color, float duration, float scale);
+            void add_on_screen_debug_message(std::string text, const Color& color, float duration);
 
             template<typename... Args>
             void print_dispatch(const Color& color,
                                 float duration,
-                                float scale,
                                 std::format_string<Args...> fmt,
                                 Args&&... args) {
                 log(fmt, args...);
-                add_on_screen_debug_message(std::format(fmt, args...), color, duration, scale);
+                add_on_screen_debug_message(std::format(fmt, args...), color, duration);
             }
         }
 
@@ -102,14 +99,13 @@ namespace hob {
         void print(std::format_string<Args...> fmt, Args&&... args) {
             detail::print_dispatch(DEFAULT_MESSAGE_COLOR,
                                    DEFAULT_MESSAGE_DURATION,
-                                   DEFAULT_MESSAGE_SCALE,
                                    fmt,
                                    std::forward<Args>(args)...);
         }
 
         template<typename... Args>
-        void print(const Color& color, float duration, float scale, std::format_string<Args...> fmt, Args&&... args) {
-            detail::print_dispatch(color, duration, scale, fmt, std::forward<Args>(args)...);
+        void print(const Color& color, float duration, std::format_string<Args...> fmt, Args&&... args) {
+            detail::print_dispatch(color, duration, fmt, std::forward<Args>(args)...);
         }
     }
 }

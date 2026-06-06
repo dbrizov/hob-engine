@@ -24,9 +24,11 @@ namespace hob {
         SdlContext& operator=(SdlContext&&) = delete;
 
         bool is_initialized() const;
+
         SDL_Window* get_window() const;
         SDL_GPUDevice* get_gpu_device() const;
 
         Vector2 get_window_size() const;
+        float get_pixel_density() const;
     };
 }

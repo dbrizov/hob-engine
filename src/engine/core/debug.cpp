@@ -67,17 +67,16 @@ namespace hob::debug {
             r_draw_circle(renderer, camera, window_size, logical_size, circle);
         }
 
-        const float window_scale = logical_to_window_pixel_ratio(window_size, logical_size);
+        const float scale_factor = logical_to_window_pixel_ratio(window_size, logical_size);
         const float base_line_height = static_cast<float>(renderer.get_debug_font_line_height());
-        const float margin_x = MESSAGE_MARGIN_X * window_scale;
-        float pen_y = MESSAGE_MARGIN_Y * window_scale;
+        const float margin_x = MESSAGE_MARGIN_X * scale_factor;
+        float pen_y = MESSAGE_MARGIN_Y * scale_factor;
         for (const DebugMessage& msg : messages) {
             const float fade = std::clamp(msg.duration / MESSAGE_FADE_DURATION, 0.0f, 1.0f);
             Color c = msg.color;
             c.a *= fade;
-            const float text_scale = window_scale * msg.scale;
-            renderer.draw_debug_text(Vector2(margin_x, pen_y), msg.text, c, text_scale);
-            pen_y += base_line_height * text_scale;
+            renderer.draw_debug_text(Vector2(margin_x, pen_y), msg.text, c, scale_factor);
+            pen_y += base_line_height * scale_factor;
         }
 
         std::erase_if(lines, [delta_time](DebugLine& l) {
@@ -114,12 +113,12 @@ namespace hob::debug {
     }
 
     namespace detail {
-        void add_on_screen_debug_message(std::string text, const Color& color, float duration, float scale) {
+        void add_on_screen_debug_message(std::string text, const Color& color, float duration) {
             if (messages.size() >= MAX_ON_SCREEN_MESSAGES) {
                 messages.erase(messages.begin());
             }
 
-            messages.emplace_back(std::move(text), color, duration, scale);
+            messages.emplace_back(std::move(text), color, duration);
         }
     }
 }

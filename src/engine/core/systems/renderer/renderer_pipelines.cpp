@@ -468,11 +468,17 @@ namespace hob {
     bool Renderer::init_debug_font() {
         const std::filesystem::path font_path = PathUtils::get_assets_root_path() / DEBUG_FONT_PATH;
 
-        if (!m_debug_font.init(*this, font_path, DEBUG_FONT_SIZE_PX)) {
+        // Bake the atlas scaled by pixel_density for crispness on HiDPI displays.
+        const float pixel_density = m_sdl_context.get_pixel_density();
+        const float font_size_px = DEBUG_FONT_SIZE_PX * pixel_density;
+        if (!m_debug_font.init(*this, font_path, font_size_px)) {
             debug::log_error("Failed to init debug font from {}", font_path.string());
             return false;
         }
 
+        // Cache the inverse of the density we actually baked at, so draw-time down-scaling always
+        // matches this atlas even if the window's live pixel density later changes.
+        m_debug_font_baked_inverse_pixel_density = (pixel_density > 0.0f) ? (1.0f / pixel_density) : 1.0f;
         return true;
     }
 

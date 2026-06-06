@@ -186,8 +186,7 @@ function Debug.log_error(...) end
 ---@param message string
 ---@param color Color?
 ---@param duration number?
----@param scale number?
-function Debug.print(message, color, duration, scale) end
+function Debug.print(message, color, duration) end
 
 ---@param from Vector2
 ---@param to Vector2

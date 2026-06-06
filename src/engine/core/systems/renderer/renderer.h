@@ -137,6 +137,7 @@ namespace hob {
         SDL_GPUTransferBuffer* m_debug_text_ibo_transfer = nullptr;
         SDL_GPUSampler* m_debug_text_sampler = nullptr;
         Font m_debug_font;
+        float m_debug_font_baked_inverse_pixel_density = 1.0f;
 
         // Samplers:
         //  sprite: MIN=LINEAR, MAG=NEAREST  (smooth when shrunk, crisp pixel edges when enlarged)

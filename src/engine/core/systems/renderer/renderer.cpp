@@ -255,6 +255,10 @@ namespace hob {
             return;
         }
 
+        // The atlas is baked scaled by pixel_density for crispness; down-scale by the baked inverse
+        // density so glyphs render at the nominal DEBUG_FONT_SIZE_PX before the caller's logical scale.
+        const float glyph_scale = scale * m_debug_font_baked_inverse_pixel_density;
+
         auto emit_pass = [&](const Vector2& origin, const Color& glyph_color) {
             float pen_x = origin.x;
             const float pen_y = origin.y;
@@ -272,10 +276,10 @@ namespace hob {
                         break;
                     }
 
-                    const float x0 = pen_x + static_cast<float>(g->offset_x) * scale;
-                    const float y0 = pen_y + static_cast<float>(g->offset_y) * scale;
-                    const float x1 = x0 + static_cast<float>(g->width) * scale;
-                    const float y1 = y0 + static_cast<float>(g->height) * scale;
+                    const float x0 = pen_x + static_cast<float>(g->offset_x) * glyph_scale;
+                    const float y0 = pen_y + static_cast<float>(g->offset_y) * glyph_scale;
+                    const float x1 = x0 + static_cast<float>(g->width) * glyph_scale;
+                    const float y1 = y0 + static_cast<float>(g->height) * glyph_scale;
 
                     const uint16_t base = static_cast<uint16_t>(m_pending_debug_text_vertices.size());
 
@@ -292,7 +296,7 @@ namespace hob {
                     m_pending_debug_text_indices.push_back(base + 3);
                 }
 
-                pen_x += static_cast<float>(g->advance) * scale;
+                pen_x += static_cast<float>(g->advance) * glyph_scale;
             }
         };
 
@@ -311,6 +315,8 @@ namespace hob {
     }
 
     int Renderer::get_debug_font_line_height() const {
-        return m_debug_font.get_line_height();
+        // The atlas is baked scaled by pixel_density for crispness; report the nominal (DEBUG_FONT_SIZE_PX) height.
+        return static_cast<int>(std::round(
+            static_cast<float>(m_debug_font.get_line_height()) * m_debug_font_baked_inverse_pixel_density));
     }
 }
