@@ -32,8 +32,6 @@ namespace hob {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
         io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
-        // The window uses SDL_WINDOW_HIGH_PIXEL_DENSITY and the ImGui SDL3 backend already
-        // renders at the framebuffer scale, so no extra DPI scaling is applied here.
         ImFontConfig font_cfg{};
         font_cfg.SizePixels = DEFAULT_FONT_SIZE_PX;
         io.Fonts->AddFontDefault(&font_cfg);

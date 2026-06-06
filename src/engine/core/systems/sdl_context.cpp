@@ -14,17 +14,12 @@ namespace hob {
 
         debug::log("SDL_Init");
 
-        // Treat the configured window size as physical pixels. SDL_CreateWindow takes
-        // logical points, and on HiDPI displays (e.g. macOS Retina) the logical desktop
-        // is smaller than the pixel resolution — so passing pixels as points makes the
-        // window overflow the display. Convert pixels -> points by dividing by the
-        // display's pixel density (2.0 on Retina; macOS expresses HiDPI via density, not
-        // content scale), and request a high-density backing buffer so the drawable ends
-        // up at the configured pixel size. The desktop display mode gives the density
-        // before any window exists.
+        // Treat window size as physical pixels.
+        // SDL_CreateWindow takes logical points, and on HiDPI displays (e.g. macOS Retina) the logical desktop
+        // is smaller than the pixel resolution — so passing pixels as points makes the window overflow the display.
         float pixel_density = 1.0f;
-        if (const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
-            mode != nullptr && mode->pixel_density > 0.0f) {
+        const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+        if (mode != nullptr && mode->pixel_density > 0.0f) {
             pixel_density = mode->pixel_density;
         }
 
@@ -49,7 +44,11 @@ namespace hob {
         int pixel_height = 0;
         SDL_GetWindowSizeInPixels(m_window, &pixel_width, &pixel_height);
         debug::log("SDL_CreateWindow ({}x{} pts, {}x{} px, density {})",
-                   window_width_points, window_height_points, pixel_width, pixel_height, pixel_density);
+                   window_width_points,
+                   window_height_points,
+                   pixel_width,
+                   pixel_height,
+                   pixel_density);
 
         const SDL_GPUShaderFormat shader_formats =
             SDL_GPU_SHADERFORMAT_SPIRV |

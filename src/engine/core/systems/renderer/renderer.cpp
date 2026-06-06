@@ -296,8 +296,8 @@ namespace hob {
             }
         };
 
-        // Shadow first (all glyphs). The shadow offset is in nominal/logical pixels, scaled
-        // by the caller's logical scale to stay proportional to the glyphs.
+        // Shadow first (all glyphs). The shadow offset is in nominal/logical pixels,
+        // scaled by the caller's logical scale to stay proportional to the glyphs.
         if (DEBUG_TEXT_SHADOW_OFFSET.x != 0.0f || DEBUG_TEXT_SHADOW_OFFSET.y != 0.0f) {
             Color shadow = DEBUG_TEXT_SHADOW_COLOR;
             shadow.a *= color.a;
