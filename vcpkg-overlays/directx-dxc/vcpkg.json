@@ -4,7 +4,7 @@
   "description": "DirectX Shader Compiler (LLVM/Clang) - arm64-osx overlay providing prebuilt dylibs.",
   "homepage": "https://github.com/microsoft/DirectXShaderCompiler",
   "documentation": "https://github.com/microsoft/DirectXShaderCompiler/wiki",
-  "license": "",
+  "license": null,
   "supports": "osx & arm64",
   "dependencies": [
     {
