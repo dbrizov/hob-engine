@@ -85,9 +85,6 @@ namespace hob {
 
         debug::log("SDL_ClaimWindowForGPUDevice");
 
-        // MAILBOX is not supported on all backends (e.g. Metal).
-        // Query first so we don't trigger the driver's "Present mode not supported" error log.
-        // VSYNC is mandatory and always available.
         SDL_GPUPresentMode present_mode = SDL_GPU_PRESENTMODE_VSYNC;
         if (!graphics_config.vsync_enabled &&
             SDL_WindowSupportsGPUPresentMode(m_gpu_device, m_window, SDL_GPU_PRESENTMODE_MAILBOX)) {
