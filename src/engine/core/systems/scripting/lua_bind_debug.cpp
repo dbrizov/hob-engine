@@ -16,12 +16,12 @@ namespace hob {
         auto stringify_args = [](sol::this_state ts, sol::variadic_args args) -> std::string {
             lua_State* L = ts;
             sol::state_view sv(L);
-            sol::protected_function tostring = sv["tostring"];
+            const sol::protected_function tostring = sv["tostring"];
             std::string out;
             bool first = true;
             for (auto v : args) {
-                sol::protected_function_result r = tostring(sol::object(v));
-                std::string piece = r.valid() ? r.get<std::string>() : "<tostring failed>";
+                const sol::protected_function_result r = tostring(sol::object(v));
+                const std::string piece = r.valid() ? r.get<std::string>() : "<tostring failed>";
                 if (!first) {
                     out += '\t';
                 }

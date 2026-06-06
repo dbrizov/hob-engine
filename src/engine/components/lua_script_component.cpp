@@ -20,15 +20,15 @@ namespace hob {
                 return;
             }
 
-            sol::object fn = inst[method];
+            const sol::object fn = inst[method];
             if (!fn.is<sol::protected_function>()) {
                 return;
             }
 
-            sol::protected_function pfn = fn;
-            sol::protected_function_result result = pfn(inst, std::forward<Args>(args)...);
+            const sol::protected_function pfn = fn;
+            const sol::protected_function_result result = pfn(inst, std::forward<Args>(args)...);
             if (!result.valid()) {
-                sol::error err = result;
+                const sol::error err = result;
                 debug::log_error("Lua error in {}: {}", method, err.what());
             }
         }
@@ -67,14 +67,14 @@ namespace hob {
 
         sol::state& lua = get_engine().get_lua_script_system().get_lua();
 
-        sol::object registry_obj = lua["__component_registry"];
+        const sol::object registry_obj = lua["__component_registry"];
         if (!registry_obj.is<sol::table>()) {
             debug::log_error("__component_registry is missing — engine bootstrap did not run");
             return;
         }
 
         sol::table registry = registry_obj;
-        sol::object class_obj = registry[m_class_name];
+        const sol::object class_obj = registry[m_class_name];
         if (!class_obj.is<sol::table>()) {
             debug::log_error("DefineComponent '{}' is not registered", m_class_name);
             return;
@@ -82,24 +82,24 @@ namespace hob {
 
         sol::table class_table = class_obj;
 
-        sol::optional<int> priority = class_table["priority"];
+        const sol::optional<int> priority = class_table["priority"];
         m_priority = priority.value_or(component_priority::CP_DEFAULT);
 
-        sol::object new_fn_obj = class_table["new"];
+        const sol::object new_fn_obj = class_table["new"];
         if (!new_fn_obj.is<sol::protected_function>()) {
             debug::log_error("'{}' does not have a 'new' function", m_class_name);
             return;
         }
 
-        sol::protected_function new_fn = new_fn_obj;
-        sol::protected_function_result inst_result = new_fn();
+        const sol::protected_function new_fn = new_fn_obj;
+        const sol::protected_function_result inst_result = new_fn();
         if (!inst_result.valid()) {
-            sol::error err = inst_result;
+            const sol::error err = inst_result;
             debug::log_error("Failed to instantiate '{}': {}", m_class_name, err.what());
             return;
         }
 
-        sol::object inst_obj = inst_result;
+        const sol::object inst_obj = inst_result;
         if (!inst_obj.is<sol::table>()) {
             debug::log_error("'{}'.new() did not return a table", m_class_name);
             return;

@@ -15,8 +15,8 @@ namespace hob {
 
     void RigidbodyComponent::enter_play() {
         const TransformComponent* transform = get_entity().get_transform();
-        Vector2 position = transform->get_position();
-        float radians = transform->get_rotation();
+        const Vector2 position = transform->get_position();
+        const float radians = transform->get_rotation();
 
         b2BodyDef body_def = b2DefaultBodyDef();
         body_def.position = Physics::vec2_to_b2Vec2(position);
@@ -78,40 +78,40 @@ namespace hob {
     }
 
     Vector2 RigidbodyComponent::get_velocity() const {
-        b2Vec2 b2_velocity = b2Body_GetLinearVelocity(m_body_id);
-        Vector2 velocity = Physics::b2Vec2_to_vec2(b2_velocity);
+        const b2Vec2 b2_velocity = b2Body_GetLinearVelocity(m_body_id);
+        const Vector2 velocity = Physics::b2Vec2_to_vec2(b2_velocity);
 
         return velocity;
     }
 
     void RigidbodyComponent::set_velocity(const Vector2& velocity) {
-        b2Vec2 b2_velocity = Physics::vec2_to_b2Vec2(velocity);
+        const b2Vec2 b2_velocity = Physics::vec2_to_b2Vec2(velocity);
         b2Body_SetLinearVelocity(m_body_id, b2_velocity);
     }
 
     Vector2 RigidbodyComponent::get_position() const {
-        b2Vec2 b2_position = b2Body_GetPosition(m_body_id);
-        Vector2 position = Physics::b2Vec2_to_vec2(b2_position);
+        const b2Vec2 b2_position = b2Body_GetPosition(m_body_id);
+        const Vector2 position = Physics::b2Vec2_to_vec2(b2_position);
 
         return position;
     }
 
     void RigidbodyComponent::set_position(const Vector2& position) {
-        b2Vec2 b2_position = Physics::vec2_to_b2Vec2(position);
-        b2Rot b2_rotation = b2Body_GetRotation(m_body_id);
+        const b2Vec2 b2_position = Physics::vec2_to_b2Vec2(position);
+        const b2Rot b2_rotation = b2Body_GetRotation(m_body_id);
         b2Body_SetTransform(m_body_id, b2_position, b2_rotation);
     }
 
     float RigidbodyComponent::get_rotation() const {
-        b2Rot b2_rotation = b2Body_GetRotation(m_body_id);
-        float radians = Physics::b2Rot_to_radians(b2_rotation);
+        const b2Rot b2_rotation = b2Body_GetRotation(m_body_id);
+        const float radians = Physics::b2Rot_to_radians(b2_rotation);
 
         return radians;
     }
 
     void RigidbodyComponent::set_rotation(float radians) {
-        b2Vec2 b2_position = b2Body_GetPosition(m_body_id);
-        b2Rot b2_rotation = Physics::radians_to_b2Rot(radians);
+        const b2Vec2 b2_position = b2Body_GetPosition(m_body_id);
+        const b2Rot b2_rotation = Physics::radians_to_b2Rot(radians);
         b2Body_SetTransform(m_body_id, b2_position, b2_rotation);
     }
 }

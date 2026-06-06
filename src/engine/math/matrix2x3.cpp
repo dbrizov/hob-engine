@@ -4,8 +4,8 @@
 
 namespace hob {
     Matrix2x3 Matrix2x3::make_rotate_around(const Vector2& pivot, float radians) {
-        float cos = std::cos(radians);
-        float sin = std::sin(radians);
+        const float cos = std::cos(radians);
+        const float sin = std::sin(radians);
 
         Matrix2x3 matrix;
         matrix.x = Vector2(cos, sin);

@@ -30,7 +30,7 @@ namespace hob {
     }
 
     BindingId InputComponent::bind_axis(const char* axis_name, AxisBindingFunc function) {
-        BindingId binding_id = m_next_binding_id;
+        const BindingId binding_id = m_next_binding_id;
         m_next_binding_id += 1;
 
         auto& axis_bindings = m_axis_bindings[axis_name];
@@ -61,7 +61,7 @@ namespace hob {
     BindingId InputComponent::bind_action(const char* action_name,
                                           InputEventType event_type,
                                           ActionBindingFunc function) {
-        BindingId binding_id = m_next_binding_id;
+        const BindingId binding_id = m_next_binding_id;
         m_next_binding_id += 1;
 
         if (event_type == InputEventType::Pressed) {

@@ -127,7 +127,7 @@ namespace hob {
                             return self.bind_axis(name.c_str(), [fn, name](float v) {
                                 auto result = fn(v);
                                 if (!result.valid()) {
-                                    sol::error err = result;
+                                    const sol::error err = result;
                                     debug::log_error("Lua error in axis '{}' handler: {}", name, err.what());
                                 }
                             });
@@ -142,7 +142,7 @@ namespace hob {
                             return self.bind_action(name.c_str(), type, [fn, name]() {
                                 auto result = fn();
                                 if (!result.valid()) {
-                                    sol::error err = result;
+                                    const sol::error err = result;
                                     debug::log_error("Lua error in action '{}' handler: {}", name, err.what());
                                 }
                             });
@@ -227,7 +227,7 @@ namespace hob {
                             if (!kv.first.is<std::string>()) {
                                 continue;
                             }
-                            std::string name = kv.first.as<std::string>();
+                            const std::string name = kv.first.as<std::string>();
                             auto clip = kv.second.as<sol::optional<std::shared_ptr<AnimationClip>>>();
                             if (clip) {
                                 self.add_clip(name, *clip);

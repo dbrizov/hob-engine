@@ -17,7 +17,7 @@ namespace hob {
 
             char* end = s + std::strlen(s);
             while (end > s) {
-                unsigned char c = static_cast<unsigned char>(end[-1]);
+                const unsigned char c = static_cast<unsigned char>(end[-1]);
                 if (!std::isspace(c)) {
                     break;
                 }
@@ -118,17 +118,17 @@ namespace hob {
 
     // Console Variable
     bool ConsoleVariable::bool_value() const {
-        bool bool_value = parse_bool(value).value();
+        const bool bool_value = parse_bool(value).value();
         return bool_value;
     }
 
     int ConsoleVariable::int_value() const {
-        int int_value = parse_int(value).value();
+        const int int_value = parse_int(value).value();
         return int_value;
     }
 
     float ConsoleVariable::float_value() const {
-        float float_value = parse_float(value).value();
+        const float float_value = parse_float(value).value();
         return float_value;
     }
 
@@ -154,7 +154,7 @@ namespace hob {
         command.help = std::string(help);
         command.func = std::move(func);
 
-        bool registered = m_commands.emplace(std::move(key), std::move(command)).second;
+        const bool registered = m_commands.emplace(std::move(key), std::move(command)).second;
         return registered;
     }
 
@@ -227,7 +227,7 @@ namespace hob {
             return;
         }
 
-        std::string key = key_of(tokens[0]);
+        const std::string key = key_of(tokens[0]);
         auto args = tokens | std::views::drop(1);
 
         // Command?
@@ -289,7 +289,7 @@ namespace hob {
         }
 
         if (cvar.type == ConsoleVariableType::Int) {
-            std::optional<int> int_value = parse_int(new_value);
+            const std::optional<int> int_value = parse_int(new_value);
             if (!int_value.has_value()) {
                 if (print_error) {
                     print_error(std::format("'{}' is not an integer", new_value));
@@ -300,7 +300,7 @@ namespace hob {
         }
 
         if (cvar.type == ConsoleVariableType::Float) {
-            std::optional<float> float_value = parse_float(new_value);
+            const std::optional<float> float_value = parse_float(new_value);
             if (!float_value.has_value()) {
                 if (print_error) {
                     print_error(std::format("'{}' is not a floating point number", new_value));
@@ -339,7 +339,7 @@ namespace hob {
             }
         };
 
-        for (char ch : line) {
+        for (const char ch : line) {
             if (ch == '"') {
                 in_quotes = !in_quotes;
                 continue;
@@ -377,7 +377,7 @@ namespace hob {
         for (const auto& [_, cmd] : m_commands) {
             names.push_back(cmd.name);
 
-            uint32_t name_size = cmd.name.size();
+            const uint32_t name_size = cmd.name.size();
             if (name_size > max_name_size) {
                 max_name_size = name_size;
             }
@@ -405,7 +405,7 @@ namespace hob {
         for (const auto& [_, cvar] : m_cvars) {
             names.push_back(cvar.name);
 
-            uint32_t name_size = cvar.name.size();
+            const uint32_t name_size = cvar.name.size();
             if (name_size > max_name_size) {
                 max_name_size = name_size;
             }
@@ -413,7 +413,7 @@ namespace hob {
 
         std::sort(names.begin(), names.end());
 
-        std::vector<std::string> dummy_args;
+        const std::vector<std::string> dummy_args;
         for (const auto& name : names) {
             const ConsoleVariable* cvar = find_cvar(name);
             print(std::format("- {}", cvar->to_string_long(max_name_size)));

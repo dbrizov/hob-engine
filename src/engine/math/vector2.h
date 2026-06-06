@@ -36,7 +36,7 @@ namespace hob {
         }
 
         Vector2 normalized() const {
-            float len = length();
+            const float len = length();
             if (len <= EPSILON) {
                 return Vector2::zero();
             }

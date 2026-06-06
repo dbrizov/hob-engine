@@ -263,7 +263,7 @@ namespace hob {
             float pen_x = origin.x;
             const float pen_y = origin.y;
 
-            for (char c : text) {
+            for (const char c : text) {
                 const uint32_t cp = static_cast<unsigned char>(c);
                 const Glyph* g = m_debug_font.get_glyph(cp);
                 if (!g) {

@@ -46,8 +46,8 @@ namespace hob {
 
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position) const {
         TransformComponent* transform = get_entity().get_transform();
-        Vector2 camera_position = transform->get_position();
-        Vector2 screen_position = world_to_screen(world_position, camera_position);
+        const Vector2 camera_position = transform->get_position();
+        const Vector2 screen_position = world_to_screen(world_position, camera_position);
 
         return screen_position;
     }
@@ -55,10 +55,10 @@ namespace hob {
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position, const Vector2& camera_position) const {
         const Renderer& renderer = get_engine().get_renderer();
 
-        Vector2 half_size = renderer.get_logical_size() * 0.5f;
+        const Vector2 half_size = renderer.get_logical_size() * 0.5f;
 
         // 1) Calculate world delta relative to camera
-        Vector2 delta_meters = world_position - camera_position;
+        const Vector2 delta_meters = world_position - camera_position;
 
         // 2) Convert meters to pixels using this camera's scale
         Vector2 delta_pixels = delta_meters * m_screen_pixels_per_meter;
@@ -67,15 +67,15 @@ namespace hob {
         delta_pixels.y = -delta_pixels.y;
 
         // 4) Calculate screen position
-        Vector2 screen_position = Vector2(delta_pixels.x + half_size.x, delta_pixels.y + half_size.y);
+        const Vector2 screen_position = Vector2(delta_pixels.x + half_size.x, delta_pixels.y + half_size.y);
 
         return screen_position;
     }
 
     Vector2 CameraComponent::screen_to_world(const Vector2& screen_position) const {
         TransformComponent* transform = get_entity().get_transform();
-        Vector2 camera_position = transform->get_position();
-        Vector2 world_position = screen_to_world(screen_position, camera_position);
+        const Vector2 camera_position = transform->get_position();
+        const Vector2 world_position = screen_to_world(screen_position, camera_position);
 
         return world_position;
     }
@@ -83,7 +83,7 @@ namespace hob {
     Vector2 CameraComponent::screen_to_world(const Vector2& screen_position, const Vector2& camera_position) const {
         const Renderer& renderer = get_engine().get_renderer();
 
-        Vector2 half_size = renderer.get_logical_size() * 0.5f;
+        const Vector2 half_size = renderer.get_logical_size() * 0.5f;
 
         // 1) Move origin from top-left to screen center
         Vector2 delta_pixels = Vector2(screen_position.x - half_size.x, screen_position.y - half_size.y);
@@ -92,10 +92,10 @@ namespace hob {
         delta_pixels.y = -delta_pixels.y;
 
         // 3) Convert pixels to meters using this camera's scale
-        Vector2 delta_meters = delta_pixels / m_screen_pixels_per_meter;
+        const Vector2 delta_meters = delta_pixels / m_screen_pixels_per_meter;
 
         // 4) Calculate world position
-        Vector2 world_position = camera_position + delta_meters;
+        const Vector2 world_position = camera_position + delta_meters;
 
         return world_position;
     }

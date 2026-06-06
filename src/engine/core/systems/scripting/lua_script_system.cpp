@@ -63,7 +63,7 @@ namespace hob {
 
         auto result = m_impl->lua.safe_script_file(full_path.string(), sol::script_pass_on_error);
         if (!result.valid()) {
-            sol::error err = result;
+            const sol::error err = result;
             debug::log_error("Lua error in {}: {}", full_path.string(), err.what());
             return false;
         }
@@ -112,7 +112,7 @@ namespace hob {
         for (const auto& file : files) {
             auto result = m_impl->lua.safe_script_file(file.string(), sol::script_pass_on_error);
             if (!result.valid()) {
-                sol::error err = result;
+                const sol::error err = result;
                 debug::log_error("Lua error in {}: {}", file.string(), err.what());
                 all_ok = false;
             }

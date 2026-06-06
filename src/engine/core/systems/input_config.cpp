@@ -8,7 +8,7 @@
 
 namespace hob {
     static SDL_Scancode scancode_from_name(const std::string& name) {
-        SDL_Scancode scancode = SDL_GetScancodeFromName(name.c_str());
+        const SDL_Scancode scancode = SDL_GetScancodeFromName(name.c_str());
         if (scancode == SDL_SCANCODE_UNKNOWN) {
             debug::log_error("Unknown key: {}", name);
         }
@@ -29,7 +29,7 @@ namespace hob {
         for (auto& [action_name, keys] : json["action_mappings"].items()) {
             ActionConfig action_config;
             for (auto& key : keys) {
-                SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
+                const SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
                 if (scancode != SDL_SCANCODE_UNKNOWN) {
                     action_config.keys.push_back(scancode);
                 }
@@ -45,14 +45,14 @@ namespace hob {
             axis_config.deceleration = cfg["deceleration"].get<float>();
 
             for (auto& key : cfg["positive"]) {
-                SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
+                const SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
                 if (scancode != SDL_SCANCODE_UNKNOWN) {
                     axis_config.positive_keys.push_back(scancode);
                 }
             }
 
             for (auto& key : cfg["negative"]) {
-                SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
+                const SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
                 if (scancode != SDL_SCANCODE_UNKNOWN) {
                     axis_config.negative_keys.push_back(scancode);
                 }

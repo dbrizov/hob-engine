@@ -32,8 +32,8 @@ namespace hob {
         // Dispatch action events
         for (auto& [action, mapping] : m_input_config.actions) {
             for (auto key : mapping.keys) {
-                bool pressed_now = m_pressed_keys_this_frame.test(key);
-                bool pressed_before = m_pressed_keys_last_frame.test(key);
+                const bool pressed_now = m_pressed_keys_this_frame.test(key);
+                const bool pressed_before = m_pressed_keys_last_frame.test(key);
 
                 if (pressed_now && !pressed_before) {
                     dispatch_event(InputEvent(action.c_str(), InputEventType::Pressed, 0.0f));
@@ -46,7 +46,7 @@ namespace hob {
 
         // Dispatch axis events
         auto any_pressed = [&](const auto& keys) {
-            for (SDL_Scancode key : keys) {
+            for (const SDL_Scancode key : keys) {
                 if (m_pressed_keys_this_frame.test(key)) {
                     return true;
                 }
@@ -56,8 +56,8 @@ namespace hob {
         };
 
         for (auto& [axis, mapping] : m_input_config.axes) {
-            bool any_positive = any_pressed(mapping.positive_keys);
-            bool any_negative = any_pressed(mapping.negative_keys);
+            const bool any_positive = any_pressed(mapping.positive_keys);
+            const bool any_negative = any_pressed(mapping.negative_keys);
 
             float& axis_value = m_axis_values[axis];
 
@@ -81,7 +81,7 @@ namespace hob {
     }
 
     InputEventHandlerId Input::add_input_event_handler(InputEventHandler handler) {
-        InputEventHandlerId handler_id = m_next_handler_id;
+        const InputEventHandlerId handler_id = m_next_handler_id;
         m_next_handler_id += 1;
 
         m_handler_index_by_id[handler_id] = m_handlers.size();
@@ -96,8 +96,8 @@ namespace hob {
             return false;
         }
 
-        size_t index = it->second;
-        size_t last_index = m_handlers.size() - 1;
+        const size_t index = it->second;
+        const size_t last_index = m_handlers.size() - 1;
 
         if (index != last_index) {
             m_handlers[index] = std::move(m_handlers[last_index]); // move last into hole
@@ -133,7 +133,7 @@ namespace hob {
 
     void Input::update_pressed_keys() {
         const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
-        for (SDL_Scancode key : m_relevant_keys) {
+        for (const SDL_Scancode key : m_relevant_keys) {
             m_pressed_keys_last_frame.set(key, m_pressed_keys_this_frame.test(key));
             m_pressed_keys_this_frame.set(key, keyboard_state[key]);
         }

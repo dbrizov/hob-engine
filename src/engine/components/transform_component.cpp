@@ -78,8 +78,8 @@ namespace hob {
     }
 
     void TransformComponent::rebuild_local_matrix() {
-        float cos = std::cos(m_rotation);
-        float sin = std::sin(m_rotation);
+        const float cos = std::cos(m_rotation);
+        const float sin = std::sin(m_rotation);
 
         m_local_matrix.x = Vector2(cos * m_scale.x, sin * m_scale.x);
         m_local_matrix.y = Vector2(-sin * m_scale.y, cos * m_scale.y);

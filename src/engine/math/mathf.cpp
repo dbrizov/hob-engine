@@ -17,10 +17,10 @@ namespace hob::math {
     }
 
     float lerp_angle(float a_deg, float b_deg, float t) {
-        float diff = std::remainder(b_deg - a_deg, 360.0f); // in range [-180, 180]
-        float b_wrapped = a_deg + diff;
-        float result = a_deg * (1.0f - t) + b_wrapped * t;
-        float normalized = normalize_angle(result);
+        const float diff = std::remainder(b_deg - a_deg, 360.0f); // in range [-180, 180]
+        const float b_wrapped = a_deg + diff;
+        const float result = a_deg * (1.0f - t) + b_wrapped * t;
+        const float normalized = normalize_angle(result);
 
         return normalized;
     }

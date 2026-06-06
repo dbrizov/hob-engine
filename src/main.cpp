@@ -3,7 +3,7 @@
 #include "engine/core/path_utils.h"
 
 int main(int argc, char* argv[]) {
-    hob::EngineConfig config(hob::PathUtils::get_engine_config_path());
+    const hob::EngineConfig config(hob::PathUtils::get_engine_config_path());
     hob::Engine engine(config);
 
     if (!engine.is_initialized()) {

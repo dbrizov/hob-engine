@@ -18,7 +18,7 @@ namespace hob {
     Entity& EntitySpawner::spawn_entity() {
         std::unique_ptr<Entity> entity = std::unique_ptr<Entity>(new Entity(m_engine));
 
-        EntityId entity_id = m_next_entity_id;
+        const EntityId entity_id = m_next_entity_id;
         m_next_entity_id += 1;
         entity->set_id(entity_id);
         entity->add_component<TransformComponent>();
@@ -115,7 +115,7 @@ namespace hob {
         spawn_requests.swap(m_entity_spawn_requests);
 
         for (auto& entity : spawn_requests) {
-            EntityId entity_id = entity->get_id();
+            const EntityId entity_id = entity->get_id();
             m_entity_records[entity_id].live_index = m_entities.size();
             m_entities.emplace_back(std::move(entity));
             m_entities.back()->enter_play();
@@ -128,7 +128,7 @@ namespace hob {
         destroy_requests.swap(m_entity_destroy_requests);
 
         // exit_play() while entities are still present in the map
-        for (EntityId id : destroy_requests) {
+        for (const EntityId id : destroy_requests) {
             Entity* entity = get_entity(id);
             if (entity != nullptr) {
                 entity->exit_play();
@@ -136,15 +136,15 @@ namespace hob {
         }
 
         // Erase the entities
-        for (EntityId id : destroy_requests) {
+        for (const EntityId id : destroy_requests) {
             auto it = m_entity_records.find(id);
             if (it == m_entity_records.end()) {
                 continue;
             }
 
-            size_t index = it->second.live_index;
+            const size_t index = it->second.live_index;
             if (index != INVALID_ENTITY_INDEX) {
-                size_t last_index = m_entities.size() - 1;
+                const size_t last_index = m_entities.size() - 1;
                 if (index != last_index) {
                     m_entities[index] = std::move(m_entities[last_index]); // move last into hole
                     m_entity_records[m_entities[index]->get_id()].live_index = index; // fix record's index

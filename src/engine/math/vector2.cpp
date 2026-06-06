@@ -10,8 +10,8 @@ namespace hob {
     }
 
     Vector2 Vector2::rotate_around(const Vector2& point, const Vector2& pivot, float radians) {
-        Matrix2x3 rotation_matrix = Matrix2x3::make_rotate_around(pivot, radians);
-        Vector2 rotated_point = rotation_matrix.transform_point(point);
+        const Matrix2x3 rotation_matrix = Matrix2x3::make_rotate_around(pivot, radians);
+        const Vector2 rotated_point = rotation_matrix.transform_point(point);
 
         return rotated_point;
     }

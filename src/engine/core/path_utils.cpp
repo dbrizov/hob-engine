@@ -5,7 +5,7 @@ namespace hob {
 #ifndef NDEBUG
         // (IN DEBUG MODE)
         // Return the root directory of the project
-        std::filesystem::path source_file_path = __FILE__;
+        const std::filesystem::path source_file_path = __FILE__;
         std::filesystem::path project_root_path = source_file_path
             .parent_path() // root/src/engine/core
             .parent_path() // root/src/engine
@@ -22,19 +22,19 @@ namespace hob {
     }
 
     std::filesystem::path PathUtils::get_assets_root_path() {
-        std::filesystem::path root_path = get_root_path();
+        const std::filesystem::path root_path = get_root_path();
         std::filesystem::path assets_root_path = root_path / "assets";
         return assets_root_path;
     }
 
     std::filesystem::path PathUtils::get_engine_config_path() {
-        std::filesystem::path root_path = get_root_path();
+        const std::filesystem::path root_path = get_root_path();
         std::filesystem::path engine_config_path = root_path / "config" / "engine_config.json";
         return engine_config_path;
     }
 
     std::filesystem::path PathUtils::get_input_config_path() {
-        std::filesystem::path root_path = get_root_path();
+        const std::filesystem::path root_path = get_root_path();
         std::filesystem::path input_config_path = root_path / "config" / "input_config.json";
         return input_config_path;
     }

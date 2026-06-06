@@ -48,8 +48,8 @@ namespace hob {
     }
 
     void Timer::frame_start() {
-        uint64_t now_ticks = SDL_GetPerformanceCounter();
-        uint64_t diff_ticks = now_ticks - m_last_frame_start_ticks;
+        const uint64_t now_ticks = SDL_GetPerformanceCounter();
+        const uint64_t diff_ticks = now_ticks - m_last_frame_start_ticks;
 
         m_frame_start_ticks = now_ticks; // Remember (for frame_end)
         m_last_frame_start_ticks = now_ticks; // Remember (for next frame_start)
@@ -75,8 +75,8 @@ namespace hob {
         const double target_frame_seconds = 1.0 / static_cast<double>(m_target_fps);
 
         while (true) {
-            uint64_t now_ticks = SDL_GetPerformanceCounter();
-            double elapsed_seconds =
+            const uint64_t now_ticks = SDL_GetPerformanceCounter();
+            const double elapsed_seconds =
                 static_cast<double>(now_ticks - m_frame_start_ticks) / static_cast<double>(m_frequency);
 
             if (elapsed_seconds >= target_frame_seconds) {
@@ -84,12 +84,12 @@ namespace hob {
             }
 
             // Sleep most of the remaining time (avoid oversleep, because SDL_Delay tends to oversleep)
-            double remaining_seconds = target_frame_seconds - elapsed_seconds;
+            const double remaining_seconds = target_frame_seconds - elapsed_seconds;
             if (remaining_seconds > 0.002 /* ~2ms */) {
                 // We subtract 1ms from the remaining time to prevent oversleep.
                 // 1ms is usually larger than the OS wake-up jitter.
                 // It gives us a safety margin so we don’t overshoot.
-                uint32_t milliseconds = static_cast<uint32_t>((remaining_seconds - 0.001) * 1000.0);
+                const uint32_t milliseconds = static_cast<uint32_t>((remaining_seconds - 0.001) * 1000.0);
                 SDL_Delay(milliseconds);
             }
         }

@@ -95,7 +95,7 @@ namespace hob {
                 .field("distance", &RaycastHit::distance)
                 .field("hit", &RaycastHit::hit)
                 .property_sig("entity", [](const RaycastHit& h, const sol::this_state ts) -> sol::object {
-                    sol::state_view sv(ts);
+                    const sol::state_view sv(ts);
                     if (h.collider == nullptr) {
                         return sol::lua_nil;
                     }

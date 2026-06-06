@@ -186,7 +186,7 @@ namespace hob {
 
         const float camera_ppm = camera->get_screen_pixels_per_meter();
         TransformComponent* camera_transform = camera->get_entity().get_transform();
-        Vector2 camera_position = camera_transform->get_position();
+        const Vector2 camera_position = camera_transform->get_position();
 
         for (const Entity* entity : entities) {
             const TransformComponent* transform_comp = entity->get_transform();

@@ -53,7 +53,7 @@ namespace hob {
                         }
                     }
                 }
-                std::string params = (close != std::string::npos) ? sig.substr(1, close - 1) : "";
+                const std::string params = (close != std::string::npos) ? sig.substr(1, close - 1) : "";
                 std::string ret;
                 if (close != std::string::npos) {
                     auto colon = sig.find(':', close);
@@ -71,7 +71,7 @@ namespace hob {
                 {
                     std::string cur;
                     int d = 0;
-                    for (char c : params) {
+                    for (const char c : params) {
                         if (c == '(') {
                             ++d;
                             cur.push_back(c);

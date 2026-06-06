@@ -42,8 +42,8 @@ namespace hob::debug {
                            const DebugCircle& circle) {
             Vector2 prev_point = circle.center + Vector2(circle.radius, 0.0f);
             for (int i = 1; i <= circle.segments; ++i) {
-                float ratio = static_cast<float>(i) / static_cast<float>(circle.segments);
-                float angle = ratio * 2.0f * PI;
+                const float ratio = static_cast<float>(i) / static_cast<float>(circle.segments);
+                const float angle = ratio * 2.0f * PI;
                 const Vector2 point = circle.center + Vector2(std::cos(angle), std::sin(angle)) * circle.radius;
                 const DebugLine line{prev_point, point, circle.color, 0.0f, circle.thickness};
                 r_draw_line(renderer, camera, window_size, logical_size, line);

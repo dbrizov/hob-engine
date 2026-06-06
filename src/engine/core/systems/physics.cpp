@@ -72,11 +72,11 @@ namespace hob {
             // Sync transforms for all rigidbodies
             for (Entity* entity : entities) {
                 const RigidbodyComponent* rigidbody = entity->get_rigidbody();
-                b2Vec2 b2_position = b2Body_GetPosition(rigidbody->get_body_id());
-                b2Rot b2_rotation = b2Body_GetRotation(rigidbody->get_body_id());
+                const b2Vec2 b2_position = b2Body_GetPosition(rigidbody->get_body_id());
+                const b2Rot b2_rotation = b2Body_GetRotation(rigidbody->get_body_id());
 
-                Vector2 position = b2Vec2_to_vec2(b2_position);
-                float radians = b2Rot_to_radians(b2_rotation);
+                const Vector2 position = b2Vec2_to_vec2(b2_position);
+                const float radians = b2Rot_to_radians(b2_rotation);
 
                 TransformComponent* transform = entity->get_transform();
                 transform->set_position(position);
@@ -121,7 +121,7 @@ namespace hob {
         b2QueryFilter filter = b2DefaultQueryFilter();
         filter.maskBits = layer_mask;
 
-        b2RayResult ray = b2World_CastRayClosest(m_physics_world.get_id(),
+        const b2RayResult ray = b2World_CastRayClosest(m_physics_world.get_id(),
                                                  vec2_to_b2Vec2(origin),
                                                  vec2_to_b2Vec2(translation),
                                                  filter);
@@ -215,7 +215,7 @@ namespace hob {
     }
 
     void Physics::dispatch_collision_events() const {
-        b2ContactEvents contact_events = b2World_GetContactEvents(m_physics_world.get_id());
+        const b2ContactEvents contact_events = b2World_GetContactEvents(m_physics_world.get_id());
 
         // Dispatch on_collision_enter
         for (int i = 0; i < contact_events.beginCount; ++i) {
@@ -255,7 +255,7 @@ namespace hob {
     }
 
     void Physics::dispatch_trigger_events() const {
-        b2SensorEvents sensor_events = b2World_GetSensorEvents(m_physics_world.get_id());
+        const b2SensorEvents sensor_events = b2World_GetSensorEvents(m_physics_world.get_id());
 
         // Dispatch on_trigger_enter
         for (int i = 0; i < sensor_events.beginCount; ++i) {

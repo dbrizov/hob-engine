@@ -33,23 +33,23 @@ namespace hob {
     }
 
     b2ShapeId BoxColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
-        AABB scaled = scale_aabb(m_aabb, scale);
-        b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
+        const AABB scaled = scale_aabb(m_aabb, scale);
+        const b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
         return b2CreatePolygonShape(get_body_id(), &shape_def, &box);
     }
 
     void BoxColliderComponent::rebuild_shape(const Vector2& scale) {
-        AABB scaled = scale_aabb(m_aabb, scale);
-        b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
+        const AABB scaled = scale_aabb(m_aabb, scale);
+        const b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
         b2Shape_SetPolygon(get_shape_id(), &box);
     }
 
     void BoxColliderComponent::debug_draw_shape(const Color& color, const Vector2& scale) const {
         const TransformComponent* transform = get_entity().get_transform();
-        Vector2 position = transform->get_position();
-        float radians = transform->get_rotation();
+        const Vector2 position = transform->get_position();
+        const float radians = transform->get_rotation();
 
-        AABB scaled = scale_aabb(m_aabb, scale);
+        const AABB scaled = scale_aabb(m_aabb, scale);
 
         Vector2 top_left = position + Vector2::left() * scaled.extents.x + Vector2::up() * scaled.extents.y;
         Vector2 top_right = position + Vector2::right() * scaled.extents.x + Vector2::up() * scaled.extents.y;
@@ -68,8 +68,8 @@ namespace hob {
     }
 
     AABB BoxColliderComponent::scale_aabb(const AABB& local, const Vector2& scale) {
-        Vector2 center(local.center.x * scale.x, local.center.y * scale.y);
-        Vector2 extents(local.extents.x * std::abs(scale.x), local.extents.y * std::abs(scale.y));
+        const Vector2 center(local.center.x * scale.x, local.center.y * scale.y);
+        const Vector2 extents(local.extents.x * std::abs(scale.x), local.extents.y * std::abs(scale.y));
         return AABB(center, extents);
     }
 }

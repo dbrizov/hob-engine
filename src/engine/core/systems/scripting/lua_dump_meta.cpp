@@ -34,7 +34,7 @@ namespace hob {
                 return values;
             }
             for (std::size_t i = 1; i <= t.size(); ++i) {
-                sol::object v = t[i];
+                const sol::object v = t[i];
                 if (v.is<std::string>()) {
                     values.push_back(v.as<std::string>());
                 }
@@ -97,7 +97,7 @@ namespace hob {
         const std::filesystem::path out_path =
             PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "path_aliases_meta.generated.lua";
 
-        sol::object names_obj = m_impl->lua["__path_alias_names"];
+        const sol::object names_obj = m_impl->lua["__path_alias_names"];
         sol::table names_by_registry = names_obj.is<sol::table>() ? names_obj.as<sol::table>() : sol::table{};
 
         std::ostringstream out;
@@ -111,7 +111,7 @@ namespace hob {
         for (const auto& s : m_impl->path_schemas.get_schemas()) {
             sol::table entry;
             if (names_by_registry.valid()) {
-                sol::object obj = names_by_registry[s.registry_name];
+                const sol::object obj = names_by_registry[s.registry_name];
                 if (obj.is<sol::table>()) {
                     entry = obj.as<sol::table>();
                 }
@@ -156,7 +156,7 @@ namespace hob {
         const std::filesystem::path out_path =
             PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "factory_aliases_meta.generated.lua";
 
-        sol::object names_obj = m_impl->lua["__factory_alias_names"];
+        const sol::object names_obj = m_impl->lua["__factory_alias_names"];
         sol::table names_by_registry = names_obj.is<sol::table>() ? names_obj.as<sol::table>() : sol::table{};
 
         std::ostringstream out;
@@ -169,7 +169,7 @@ namespace hob {
         for (const auto& s : m_impl->factory_schemas.get_schemas()) {
             sol::table entry;
             if (names_by_registry.valid()) {
-                sol::object obj = names_by_registry[s.registry_name];
+                const sol::object obj = names_by_registry[s.registry_name];
                 if (obj.is<sol::table>()) {
                     entry = obj.as<sol::table>();
                 }
@@ -205,8 +205,8 @@ namespace hob {
         const std::filesystem::path out_path =
             PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "entity_registry_meta.generated.lua";
 
-        sol::object reg = m_impl->lua["__entity_prefab_registry"];
-        sol::table reg_table = reg.is<sol::table>() ? reg.as<sol::table>() : sol::table{};
+        const sol::object reg = m_impl->lua["__entity_prefab_registry"];
+        const sol::table reg_table = reg.is<sol::table>() ? reg.as<sol::table>() : sol::table{};
         const auto names = collect_table_keys(reg_table);
 
         const bool ok = write_name_registry_meta(
@@ -229,13 +229,13 @@ namespace hob {
         // finalize_components() runs; any still-pending ones live in __component_pending.
         std::vector<std::string> names;
         {
-            sol::object reg = m_impl->lua["__component_registry"];
+            const sol::object reg = m_impl->lua["__component_registry"];
             if (reg.is<sol::table>()) {
                 const auto ks = collect_table_keys(reg.as<sol::table>());
                 names.insert(names.end(), ks.begin(), ks.end());
             }
 
-            sol::object pending = m_impl->lua["__component_pending"];
+            const sol::object pending = m_impl->lua["__component_pending"];
             if (pending.is<sol::table>()) {
                 const auto ks = collect_table_keys(pending.as<sol::table>());
                 names.insert(names.end(), ks.begin(), ks.end());

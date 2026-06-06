@@ -33,7 +33,7 @@ namespace hob {
     }
 
     b2ShapeId CapsuleColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
-        Capsule scaled = scale_capsule(m_capsule, scale);
+        const Capsule scaled = scale_capsule(m_capsule, scale);
         b2Capsule b2_capsule;
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
         b2_capsule.center2 = Physics::vec2_to_b2Vec2(scaled.center_b);
@@ -42,7 +42,7 @@ namespace hob {
     }
 
     void CapsuleColliderComponent::rebuild_shape(const Vector2& scale) {
-        Capsule scaled = scale_capsule(m_capsule, scale);
+        const Capsule scaled = scale_capsule(m_capsule, scale);
         b2Capsule b2_capsule;
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
         b2_capsule.center2 = Physics::vec2_to_b2Vec2(scaled.center_b);
@@ -52,14 +52,14 @@ namespace hob {
 
     void CapsuleColliderComponent::debug_draw_shape(const Color& color, const Vector2& scale) const {
         const TransformComponent* transform = get_entity().get_transform();
-        Vector2 position = transform->get_position();
-        float radians = transform->get_rotation();
+        const Vector2 position = transform->get_position();
+        const float radians = transform->get_rotation();
 
-        Capsule scaled = scale_capsule(m_capsule, scale);
+        const Capsule scaled = scale_capsule(m_capsule, scale);
 
         // Capsule's centers in world space
-        Vector2 c1_world = Vector2::rotate_around(position + scaled.center_a, position, radians);
-        Vector2 c2_world = Vector2::rotate_around(position + scaled.center_b, position, radians);
+        const Vector2 c1_world = Vector2::rotate_around(position + scaled.center_a, position, radians);
+        const Vector2 c2_world = Vector2::rotate_around(position + scaled.center_b, position, radians);
 
         // Capsule's axis and its perpendicular (both unit length)
         Vector2 axis = (c2_world - c1_world);
@@ -70,13 +70,13 @@ namespace hob {
             axis = Vector2::up(); // Arbitrary if it's basically a circle
         }
 
-        Vector2 perp(-axis.y, axis.x);
+        const Vector2 perp(-axis.y, axis.x);
 
         // Capsule's side line endpoints (tangent lines)
-        Vector2 p1 = c1_world + perp * scaled.radius;
-        Vector2 p2 = c2_world + perp * scaled.radius;
-        Vector2 p3 = c2_world - perp * scaled.radius;
-        Vector2 p4 = c1_world - perp * scaled.radius;
+        const Vector2 p1 = c1_world + perp * scaled.radius;
+        const Vector2 p2 = c2_world + perp * scaled.radius;
+        const Vector2 p3 = c2_world - perp * scaled.radius;
+        const Vector2 p4 = c1_world - perp * scaled.radius;
 
         // Draw
         debug::draw_line(p1, p2, color);
@@ -87,9 +87,9 @@ namespace hob {
     }
 
     Capsule CapsuleColliderComponent::scale_capsule(const Capsule& local, const Vector2& scale) {
-        Vector2 center_a(local.center_a.x * scale.x, local.center_a.y * scale.y);
-        Vector2 center_b(local.center_b.x * scale.x, local.center_b.y * scale.y);
-        float radius = local.radius * std::max(std::abs(scale.x), std::abs(scale.y));
+        const Vector2 center_a(local.center_a.x * scale.x, local.center_a.y * scale.y);
+        const Vector2 center_b(local.center_b.x * scale.x, local.center_b.y * scale.y);
+        const float radius = local.radius * std::max(std::abs(scale.x), std::abs(scale.y));
         return Capsule(center_a, center_b, radius);
     }
 }

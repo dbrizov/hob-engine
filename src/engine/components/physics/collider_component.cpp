@@ -47,7 +47,7 @@ namespace hob {
             color = Color::cyan();
         }
         else {
-            BodyType body_type = get_entity().get_rigidbody()->get_body_type();
+            const BodyType body_type = get_entity().get_rigidbody()->get_body_type();
             switch (body_type) {
                 case BodyType::Static:
                     color = Color::orange();
@@ -71,7 +71,7 @@ namespace hob {
     }
 
     b2BodyId ColliderComponent::get_body_id() const {
-        b2BodyId body_id = get_entity().get_rigidbody()->get_body_id();
+        const b2BodyId body_id = get_entity().get_rigidbody()->get_body_id();
         return body_id;
     }
 
@@ -136,7 +136,7 @@ namespace hob {
             return; // not in play yet; enter_play() will bake the scale.
         }
 
-        Vector2 current_scale = get_entity().get_transform()->get_scale();
+        const Vector2 current_scale = get_entity().get_transform()->get_scale();
         if (current_scale == m_baked_scale) {
             return;
         }
