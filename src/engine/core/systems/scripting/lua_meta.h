@@ -481,7 +481,7 @@ namespace hob {
             sol::state_view lua(m_usertype.lua_state());
             lua["__hob_meta_tmp__"] = std::move(func);
             sol::function fn = lua["__hob_meta_tmp__"];
-            lua["__hob_meta_tmp__"] = sol::nil;
+            lua["__hob_meta_tmp__"] = sol::lua_nil;
             return fn;
         }
 

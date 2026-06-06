@@ -44,6 +44,30 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo "Synced scripts to $<TARGET_FILE_DIR:${PROJECT_NAME}>/scripts"
 )
 
+# On macOS, DXC ships as libdxcompiler.dylib with install name
+# @rpath/libdxcompiler.dylib (provided by the arm64-osx directx-dxc overlay port).
+# Add @executable_path to the rpath and copy the dylib next to the executable so
+# the runtime loader can resolve it both in dev and when the binary is relocated.
+if (APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+            BUILD_RPATH "@executable_path"
+            INSTALL_RPATH "@executable_path")
+
+    find_file(DXCOMPILER_DYLIB
+            NAMES libdxcompiler.dylib
+            PATHS "${CMAKE_PREFIX_PATH}" "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}"
+            PATH_SUFFIXES lib
+            NO_DEFAULT_PATH)
+
+    if (DXCOMPILER_DYLIB)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DXCOMPILER_DYLIB}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
+                COMMAND ${CMAKE_COMMAND} -E echo "Copied libdxcompiler.dylib next to $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+    else ()
+        message(WARNING "libdxcompiler.dylib not found; runtime HLSL compilation will fail until it is on the loader path.")
+    endif ()
+endif ()
+
 # Find and link nlohmann-json.
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)

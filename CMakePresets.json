@@ -39,6 +39,7 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays",
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
@@ -51,6 +52,7 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays",
         "CMAKE_BUILD_TYPE": "Release"
       }
     },

@@ -62,20 +62,19 @@ namespace hob {
 
         debug::log("SDL_ClaimWindowForGPUDevice");
 
-        const SDL_GPUPresentMode present_mode = graphics_config.vsync_enabled
-                                                    ? SDL_GPU_PRESENTMODE_VSYNC
-                                                    : SDL_GPU_PRESENTMODE_MAILBOX;
-
-        if (!SDL_SetGPUSwapchainParameters(m_gpu_device,
-                                           m_window,
-                                           SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-                                           present_mode)) {
-            // MAILBOX may not be supported on all drivers; fall back to VSYNC, which is mandatory.
-            SDL_SetGPUSwapchainParameters(m_gpu_device,
-                                          m_window,
-                                          SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-                                          SDL_GPU_PRESENTMODE_VSYNC);
+        // MAILBOX is not supported on all backends (e.g. Metal); query first so we
+        // don't trigger the driver's "Present mode not supported" error log.
+        // VSYNC is mandatory and always available.
+        SDL_GPUPresentMode present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+        if (!graphics_config.vsync_enabled &&
+            SDL_WindowSupportsGPUPresentMode(m_gpu_device, m_window, SDL_GPU_PRESENTMODE_MAILBOX)) {
+            present_mode = SDL_GPU_PRESENTMODE_MAILBOX;
         }
+
+        SDL_SetGPUSwapchainParameters(m_gpu_device,
+                                      m_window,
+                                      SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
+                                      present_mode);
 
         m_is_initialized = true;
     }

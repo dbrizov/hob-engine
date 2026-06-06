@@ -1,0 +1,11 @@
+The DirectX Shader Compiler package provides CMake targets:
+
+    find_package(directx-dxc CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE Microsoft::DirectXShaderCompiler)
+
+The CMake variable DIRECTX_DXC_TOOL is also set to point to the dxc command-line tool.
+
+Note: this is an arm64-osx overlay shipping prebuilt dylibs
+(libdxcompiler.dylib, libdxil.dylib). libdxcompiler.dylib has install name
+@rpath/libdxcompiler.dylib, so consuming executables need an rpath that resolves
+it at runtime (e.g. @executable_path next to a copied dylib, or the vcpkg lib dir).
