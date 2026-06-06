@@ -36,6 +36,9 @@ namespace hob {
     void Component::physics_tick(float fixed_delta_time) {
     }
 
+    void Component::late_tick(float delta_time) {
+    }
+
     void Component::debug_draw_tick(float delta_time) {
     }
 

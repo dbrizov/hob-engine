@@ -1,8 +1,5 @@
 DefineEntity.Player = {
     ticking = true,
-    transform = {
-        interpolate_physics = false,
-    },
     input = {},
     character_body = {
         collision_layer = Collision.Kinematic,

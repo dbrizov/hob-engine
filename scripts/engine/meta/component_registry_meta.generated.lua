@@ -8,5 +8,4 @@
 ---@field Character string
 ---@field ContactLogger string
 ---@field Player string
----@field ZoomPulse string
 Components = {}

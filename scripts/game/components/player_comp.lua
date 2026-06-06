@@ -45,29 +45,19 @@ end
 
 function Player:physics_tick(fixed_delta_time)
     self:move(self.movement_input, fixed_delta_time)
+end
+
+function Player:late_tick(delta_time)
+    self:update_animation()
 
     local position = self.entity:get_transform():get_position()
-    self:update_camera_position(position, fixed_delta_time)
-    self:update_rotation(fixed_delta_time)
-end
+    self:update_camera_position(position, delta_time)
+    self:update_rotation(delta_time)
 
-function Player:tick(delta_time)
-    self:update_animation()
-end
-
-function Player:update_animation()
-    local animator = self.entity:get_sprite_animator()
-    if animator == nil then
-        return
-    end
-
-    local velocity = self.entity:get_character_body():get_velocity()
-    local moving = velocity:length_sqr() > 0.01
-    local desired = moving and "run" or "idle"
-
-    if animator:get_current_clip() ~= desired then
-        animator:play(desired)
-    end
+    -- self.time = self.time + delta_time
+    -- local t = (math.sin(self.time * self.speed) + 1.0) * 0.5
+    -- local zoom = Math.lerp(self.min_zoom, self.max_zoom, t)
+    -- Camera.set_zoom(zoom)
 end
 
 function Player:debug_draw_tick(delta_time)
@@ -84,6 +74,21 @@ function Player:debug_draw_tick(delta_time)
         Debug.draw_circle(hit.point, 0.1, Color.red())
     else
         Debug.draw_line(player_pos, mouse_world, Color.green())
+    end
+end
+
+function Player:update_animation()
+    local animator = self.entity:get_sprite_animator()
+    if animator == nil then
+        return
+    end
+
+    local velocity = self.entity:get_character_body():get_velocity()
+    local moving = velocity:length_sqr() > 0.01
+    local desired = moving and "run" or "idle"
+
+    if animator:get_current_clip() ~= desired then
+        animator:play(desired)
     end
 end
 

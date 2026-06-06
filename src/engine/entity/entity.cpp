@@ -37,6 +37,12 @@ namespace hob {
         }
     }
 
+    void Entity::late_tick(float delta_time) {
+        for (auto& component : m_components) {
+            component->late_tick(delta_time);
+        }
+    }
+
     void Entity::debug_draw_tick(float delta_time) {
         for (auto& component : m_components) {
             component->debug_draw_tick(delta_time);

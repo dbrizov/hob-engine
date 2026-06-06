@@ -37,7 +37,7 @@ namespace hob {
         static constexpr Color DEBUG_TEXT_SHADOW_COLOR = Color::black();
         static constexpr Vector2 DEBUG_TEXT_SHADOW_OFFSET = Vector2(1.0f, 1.0f);
 
-        static constexpr float DEBUG_FONT_SIZE_PX = 14.0f;
+        static constexpr float DEBUG_FONT_SIZE_PX = 13.0f;
 
         // Builtin asset paths, relative to the assets root.
         static constexpr std::string_view BUILTIN_SHADERS_DIR = "builtin/shaders";

@@ -15,6 +15,6 @@
     },
     "ticks_per_second": 60,
     "sub_steps_per_tick": 4,
-    "interpolation_enabled": false
+    "interpolation_enabled": true
   }
 }

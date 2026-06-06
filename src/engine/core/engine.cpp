@@ -82,6 +82,10 @@ namespace hob {
 
             m_physics.tick_entities(scaled_delta_time, physics_entities);
 
+            for (Entity* entity : ticking_entities) {
+                entity->late_tick(scaled_delta_time);
+            }
+
 #ifndef NDEBUG
             for (Entity* entity : entities) {
                 entity->debug_draw_tick(scaled_delta_time);

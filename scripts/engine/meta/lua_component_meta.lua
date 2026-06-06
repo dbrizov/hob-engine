@@ -33,6 +33,10 @@ function LuaComponent:tick(delta_time) end
 ---@param fixed_delta_time number
 function LuaComponent:physics_tick(fixed_delta_time) end
 
+--- Called every frame after physics_tick. Ideal for camera control that needs post-physics transforms.
+---@param delta_time number
+function LuaComponent:late_tick(delta_time) end
+
 --- Called every frame after all ticks, intended for debug visualization (Debug.draw_line / Debug.draw_circle).
 ---@param delta_time number
 function LuaComponent:debug_draw_tick(delta_time) end

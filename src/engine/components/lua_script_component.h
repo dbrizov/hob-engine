@@ -29,6 +29,7 @@ namespace hob {
         void exit_play() override;
         void tick(float delta_time) override;
         void physics_tick(float fixed_delta_time) override;
+        void late_tick(float delta_time) override;
         void debug_draw_tick(float delta_time) override;
         void on_collision_enter(const ColliderComponent* other_collider) override;
         void on_collision_exit(const ColliderComponent* other_collider) override;

@@ -44,6 +44,7 @@ namespace hob {
         void exit_play();
         void tick(float delta_time);
         void physics_tick(float fixed_delta_time);
+        void late_tick(float delta_time);
         void debug_draw_tick(float delta_time);
         void on_collision_enter(const ColliderComponent* other_collider);
         void on_collision_exit(const ColliderComponent* other_collider);

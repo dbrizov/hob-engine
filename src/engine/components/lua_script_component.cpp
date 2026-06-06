@@ -128,6 +128,10 @@ namespace hob {
         call_hook(*m_impl, "physics_tick", fixed_delta_time);
     }
 
+    void LuaScriptComponent::late_tick(float delta_time) {
+        call_hook(*m_impl, "late_tick", delta_time);
+    }
+
     void LuaScriptComponent::debug_draw_tick(float delta_time) {
         call_hook(*m_impl, "debug_draw_tick", delta_time);
     }
