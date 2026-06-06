@@ -26,7 +26,7 @@ namespace hob {
             }
 
             const sol::protected_function pfn = fn;
-            const sol::protected_function_result result = pfn(inst, std::forward<Args>(args)...);
+            sol::protected_function_result result = pfn(inst, std::forward<Args>(args)...);
             if (!result.valid()) {
                 const sol::error err = result;
                 debug::log_error("Lua error in {}: {}", method, err.what());
@@ -92,7 +92,7 @@ namespace hob {
         }
 
         const sol::protected_function new_fn = new_fn_obj;
-        const sol::protected_function_result inst_result = new_fn();
+        sol::protected_function_result inst_result = new_fn();
         if (!inst_result.valid()) {
             const sol::error err = inst_result;
             debug::log_error("Failed to instantiate '{}': {}", m_class_name, err.what());

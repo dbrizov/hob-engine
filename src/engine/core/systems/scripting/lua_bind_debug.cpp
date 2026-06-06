@@ -20,7 +20,7 @@ namespace hob {
             std::string out;
             bool first = true;
             for (auto v : args) {
-                const sol::protected_function_result r = tostring(sol::object(v));
+                sol::protected_function_result r = tostring(sol::object(v));
                 const std::string piece = r.valid() ? r.get<std::string>() : "<tostring failed>";
                 if (!first) {
                     out += '\t';
