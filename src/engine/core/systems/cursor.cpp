@@ -109,13 +109,11 @@ namespace hob {
         const float height = static_cast<float>(m_texture->get_height());
 
         // The FBO is stretched to the window, so counter-scale the cursor by the window-to-logical
-        // ratio to keep it a constant pixel size on screen regardless of window size.
-        // Multiplying by dpi_scale keeps it at a constant physical size on hi-DPI displays.
+        // ratio to keep it a constant physical size on screen regardless of window size and DPI.
         const Vector2 window_size = m_sdl_context.get_window_size();
         const Vector2 logical_size = m_renderer.get_logical_size();
-        const float dpi_scale = m_sdl_context.get_dpi_scale();
-        const float scale_factor_x = (window_size.x > 0.0f) ? (logical_size.x / window_size.x) * dpi_scale : 1.0f;
-        const float scale_factor_y = (window_size.y > 0.0f) ? (logical_size.y / window_size.y) * dpi_scale : 1.0f;
+        const float scale_factor_x = (window_size.x > 0.0f) ? (logical_size.x / window_size.x) : 1.0f;
+        const float scale_factor_y = (window_size.y > 0.0f) ? (logical_size.y / window_size.y) : 1.0f;
 
         const Vector2 size(width * m_scale.x * scale_factor_x, height * m_scale.y * scale_factor_y);
         const Vector2 pivot(size.x * m_pivot.x, size.y * m_pivot.y);

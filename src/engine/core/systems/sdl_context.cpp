@@ -14,11 +14,30 @@ namespace hob {
 
         debug::log("SDL_Init");
 
+        // Treat the configured window size as physical pixels. SDL_CreateWindow takes
+        // logical points, and on HiDPI displays (e.g. macOS Retina) the logical desktop
+        // is smaller than the pixel resolution — so passing pixels as points makes the
+        // window overflow the display. Convert pixels -> points by dividing by the
+        // display's pixel density (2.0 on Retina; macOS expresses HiDPI via density, not
+        // content scale), and request a high-density backing buffer so the drawable ends
+        // up at the configured pixel size. The desktop display mode gives the density
+        // before any window exists.
+        float pixel_density = 1.0f;
+        if (const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+            mode != nullptr && mode->pixel_density > 0.0f) {
+            pixel_density = mode->pixel_density;
+        }
+
+        const int window_width_points =
+            static_cast<int>(static_cast<float>(graphics_config.window_width) / pixel_density);
+        const int window_height_points =
+            static_cast<int>(static_cast<float>(graphics_config.window_height) / pixel_density);
+
         m_window = SDL_CreateWindow(
             graphics_config.window_title.c_str(),
-            static_cast<int>(graphics_config.window_width),
-            static_cast<int>(graphics_config.window_height),
-            0);
+            window_width_points,
+            window_height_points,
+            SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
         if (!m_window) {
             debug::log_error("SDL_CreateWindow Error: {}", SDL_GetError());
@@ -26,7 +45,11 @@ namespace hob {
             return;
         }
 
-        debug::log("SDL_CreateWindow");
+        int pixel_width = 0;
+        int pixel_height = 0;
+        SDL_GetWindowSizeInPixels(m_window, &pixel_width, &pixel_height);
+        debug::log("SDL_CreateWindow ({}x{} pts, {}x{} px, density {})",
+                   window_width_points, window_height_points, pixel_width, pixel_height, pixel_density);
 
         const SDL_GPUShaderFormat shader_formats =
             SDL_GPU_SHADERFORMAT_SPIRV |
@@ -62,8 +85,8 @@ namespace hob {
 
         debug::log("SDL_ClaimWindowForGPUDevice");
 
-        // MAILBOX is not supported on all backends (e.g. Metal); query first so we
-        // don't trigger the driver's "Present mode not supported" error log.
+        // MAILBOX is not supported on all backends (e.g. Metal).
+        // Query first so we don't trigger the driver's "Present mode not supported" error log.
         // VSYNC is mandatory and always available.
         SDL_GPUPresentMode present_mode = SDL_GPU_PRESENTMODE_VSYNC;
         if (!graphics_config.vsync_enabled &&
@@ -118,10 +141,5 @@ namespace hob {
         int height = 0;
         SDL_GetWindowSize(m_window, &width, &height);
         return Vector2(static_cast<float>(width), static_cast<float>(height));
-    }
-
-    float SdlContext::get_dpi_scale() const {
-        const float scale = SDL_GetWindowDisplayScale(m_window);
-        return (scale > 0.0f) ? scale : 1.0f;
     }
 }

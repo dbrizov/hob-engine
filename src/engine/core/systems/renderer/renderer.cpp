@@ -296,12 +296,12 @@ namespace hob {
             }
         };
 
-        // Shadow first (all glyphs). The shadow offset is in 96-DPI window pixels; multiplying
-        // by dpi_scale keeps it proportional to the (DPI-rasterized) glyphs on hi-DPI displays.
+        // Shadow first (all glyphs). The shadow offset is in nominal/logical pixels, scaled
+        // by the caller's logical scale to stay proportional to the glyphs.
         if (DEBUG_TEXT_SHADOW_OFFSET.x != 0.0f || DEBUG_TEXT_SHADOW_OFFSET.y != 0.0f) {
             Color shadow = DEBUG_TEXT_SHADOW_COLOR;
             shadow.a *= color.a;
-            const Vector2 shadow_offset = DEBUG_TEXT_SHADOW_OFFSET * scale * m_sdl_context.get_dpi_scale();
+            const Vector2 shadow_offset = DEBUG_TEXT_SHADOW_OFFSET * scale;
             const Vector2 shadow_origin = screen_pos + shadow_offset;
             emit_pass(shadow_origin, shadow);
         }

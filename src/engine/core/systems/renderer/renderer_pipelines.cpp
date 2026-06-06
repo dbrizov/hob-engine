@@ -468,10 +468,7 @@ namespace hob {
     bool Renderer::init_debug_font() {
         const std::filesystem::path font_path = PathUtils::get_assets_root_path() / DEBUG_FONT_PATH;
 
-        // Rasterize the atlas at the display's content scale so debug text keeps a constant
-        // physical size on hi-DPI monitors instead of becoming pin-sized.
-        const float size_px = DEBUG_FONT_SIZE_PX * m_sdl_context.get_dpi_scale();
-        if (!m_debug_font.init(*this, font_path, size_px)) {
+        if (!m_debug_font.init(*this, font_path, DEBUG_FONT_SIZE_PX)) {
             debug::log_error("Failed to init debug font from {}", font_path.string());
             return false;
         }
