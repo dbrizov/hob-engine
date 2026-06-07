@@ -10,4 +10,5 @@
 
 ---@class Materials
 ---@field Psychedelic Material
+---@field WhiteOutline Material
 

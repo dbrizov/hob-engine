@@ -21,3 +21,8 @@ DefineShader.Psychedelic = "shaders/psychedelic"
 DefineMaterial.Psychedelic = {
     shader = Shaders.Psychedelic,
 }
+
+DefineMaterial.WhiteOutline = {
+    outline_color = Color.white(),
+    outline_width = 2.0,
+}

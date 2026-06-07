@@ -12,8 +12,7 @@ local S = Vector2(SCALE, SCALE)
 EntitySpawner.spawn_entity(Entities.Camera, Vector2(0.0, 0.0))
 
 -- Player at the center
-local player = EntitySpawner.spawn_entity(Entities.Player, Vector2(0.0, 0.0))
-player:get_sprite():set_material(unwrap_def(Materials.Psychedelic));
+EntitySpawner.spawn_entity(Entities.Player, Vector2(0.0, 0.0))
 
 -- Stationary enemies for testing
 local red_enemy = EntitySpawner.spawn_entity(Entities.Enemy, Vector2(0.0, 4.0), -90.0)

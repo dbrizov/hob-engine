@@ -56,3 +56,10 @@ function LuaComponent:on_trigger_enter(other) end
 --- Called when a collider leaves a trigger volume.
 ---@param other ColliderComponent
 function LuaComponent:on_trigger_exit(other) end
+
+--- Called after a Lua hot reload, once per live instance, right after its metatable
+--- has been re-pointed at the rebuilt class. Per-instance state is preserved (it lives
+--- on the instance table); use this hook to migrate state when a field's shape changed
+--- or to re-apply spawn-time data (e.g. swap a sprite material from the entity prefab).
+--- init() is NOT re-run on reload.
+function LuaComponent:on_hot_reload() end

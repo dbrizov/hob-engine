@@ -6,7 +6,9 @@
 #include <vector>
 
 #include "engine/core/debug.h"
+#include "engine/core/engine.h"
 #include "engine/core/path_utils.h"
+#include "engine/core/systems/console.h"
 
 namespace hob {
     LuaScriptSystem::LuaScriptSystem(Engine& engine)
@@ -28,6 +30,8 @@ namespace hob {
         const std::string lib_path = (PathUtils::get_root_path() / "scripts" / "engine" / "lib" / "?.lua").string();
         sol::table package = lua["package"];
         package["path"] = lib_path + ";" + package["path"].get<std::string>();
+
+        register_cvars(m_engine.get_console());
 
         register_bindings();
 
@@ -56,6 +60,10 @@ namespace hob {
 
     sol::state& LuaScriptSystem::get_lua() {
         return m_impl->lua;
+    }
+
+    bool LuaScriptSystem::hot_reload() {
+        return run_file("scripts/engine/hot_reload.lua");
     }
 
     bool LuaScriptSystem::run_file(const std::filesystem::path& relative_path) {
@@ -123,6 +131,12 @@ namespace hob {
 
     bool LuaScriptSystem::run_bootstrap() {
         return run_file("scripts/engine/bootstrap.lua");
+    }
+
+    void LuaScriptSystem::register_cvars(Console& console) {
+        console.register_command("l_reload", "Hot-reload Lua scripts", [this](CommandArgs) {
+            hot_reload();
+        });
     }
 
     void LuaScriptSystem::register_bindings() {

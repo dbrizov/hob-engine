@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "systems/console.h"
 #include "systems/cursor.h"
 #include "systems/entity_spawner.h"
@@ -32,6 +34,12 @@ namespace hob {
 
         bool m_is_os_cursor_visible_before_console_opened = false;
 
+#ifndef NDEBUG
+        // Debug-only Lua hot reload: polls scripts/**.lua N times and reloads on change.
+        std::filesystem::file_time_type m_last_script_write_time{};
+        float m_script_watch_accumulator = 0.0f;
+#endif
+
     public:
         explicit Engine(const EngineConfig& config);
         ~Engine();
@@ -57,5 +65,10 @@ namespace hob {
     private:
         void draw_entities(std::vector<const Entity*>& entities);
         void flush_debug_draws_to_renderer(float delta_time);
+
+#ifndef NDEBUG
+        // Reloads Lua scripts when any scripts/**.lua file changes on disk.
+        void poll_script_hot_reload(float delta_time);
+#endif
     };
 }

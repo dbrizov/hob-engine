@@ -109,3 +109,11 @@ function Player:update_rotation(delta_time)
     local radians = math.atan(direction.y, direction.x)
     character_body:set_rotation(radians)
 end
+
+function Player:on_hot_reload()
+    local prefab = DefineEntity.Player
+    local material = prefab and prefab.sprite and prefab.sprite.material
+    if material then
+        self.entity:get_sprite():set_material(unwrap_def(material))
+    end
+end

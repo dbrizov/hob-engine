@@ -11,6 +11,7 @@ namespace sol {
 
 namespace hob {
     class Engine;
+    class Console;
     struct LuaScriptSystemImpl;
 
     class LuaScriptSystem {
@@ -26,10 +27,14 @@ namespace hob {
 
         sol::state& get_lua();
 
+        bool hot_reload();
+
     private:
         bool run_file(const std::filesystem::path& relative_path);
         bool run_folder(const std::filesystem::path& relative_path, const std::vector<std::string>& excludes = {});
         bool run_bootstrap();
+
+        void register_cvars(Console& console);
 
         void register_bindings();
 

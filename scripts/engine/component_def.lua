@@ -33,6 +33,13 @@
 _G.__component_registry = _G.__component_registry or {}
 _G.__component_pending = _G.__component_pending or {}
 
+-- Weak-keyed set of every live component instance, used by hot reload to re-point
+-- each instance's metatable at its rebuilt class. Weak keys (not values) so the GC
+-- genuinely removes collected instances and the set self-compacts toward the live
+-- set. C++ holds each instance strongly (LuaScriptComponent::m_impl->lua_instance),
+-- so an entry lives exactly as long as its component.
+_G.__live_instances = _G.__live_instances or setmetatable({}, { __mode = "k" })
+
 --- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
 --- and creates a global `Foo`. The table may contain default fields,
 --- and methods (`init`, `enter_play`, `exit_play`, `tick`, ...).
@@ -158,7 +165,9 @@ local function build_class(name)
     -- Allocates an instance. The engine sets self.entity and calls init()
     -- from C++ after this returns, so do not invoke init() here.
     function class.new()
-        return setmetatable({}, class)
+        local inst = setmetatable({}, class)
+        _G.__live_instances[inst] = true -- track for hot reload; weak-keyed, self-prunes on GC
+        return inst
     end
 
     _G.__component_registry[name] = class

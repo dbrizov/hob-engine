@@ -2,6 +2,7 @@
 #include "engine_config.h"
 
 #include "debug.h"
+#include "path_utils.h"
 #include "engine/components/camera_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
@@ -71,6 +72,10 @@ namespace hob {
 
             const float delta_time = m_timer.get_delta_time();
             const float scaled_delta_time = delta_time * m_timer.get_time_scale();
+
+#ifndef NDEBUG
+            poll_script_hot_reload(delta_time);
+#endif
 
             if (!m_console.is_open()) {
                 m_input.tick(scaled_delta_time);
@@ -247,4 +252,46 @@ namespace hob {
                                        m_sdl_context.get_window_size(),
                                        delta_time);
     }
+
+#ifndef NDEBUG
+    void Engine::poll_script_hot_reload(float delta_time) {
+        // Throttle the directory scan so we don't stat the tree every frame.
+        constexpr float POLL_INTERVAL = 0.5f;
+        m_script_watch_accumulator += delta_time;
+        if (m_script_watch_accumulator < POLL_INTERVAL) {
+            return;
+        }
+        m_script_watch_accumulator = 0.0f;
+
+        const std::filesystem::path scripts_root = PathUtils::get_root_path() / "scripts";
+
+        std::filesystem::file_time_type newest{};
+        std::error_code ec;
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(scripts_root, ec)) {
+            if (ec) {
+                return;
+            }
+
+            if (!entry.is_regular_file() || entry.path().extension() != ".lua") {
+                continue;
+            }
+
+            const std::filesystem::file_time_type t = entry.last_write_time(ec);
+            if (!ec && t > newest) {
+                newest = t;
+            }
+        }
+
+        // First poll just records the baseline; never reload on startup.
+        if (m_last_script_write_time == std::filesystem::file_time_type{}) {
+            m_last_script_write_time = newest;
+            return;
+        }
+
+        if (newest > m_last_script_write_time) {
+            m_last_script_write_time = newest;
+            m_lua_script_system.hot_reload();
+        }
+    }
+#endif
 }
