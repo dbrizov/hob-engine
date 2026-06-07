@@ -7,12 +7,22 @@
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"
+#include "engine/core/debug.h"
 #include "engine/core/engine_config.h"
 #include "engine/entity/entity.h"
 
 namespace hob {
+    namespace {
+        int box2d_assert_handler(const char* condition, const char* file_name, int line_number) {
+            debug::log_error("Box2D assertion: {} ({}:{})", condition, file_name, line_number);
+            return 1;
+        }
+    }
+
     PhysicsWorld::PhysicsWorld(const Vector2& gravity)
         : m_id(b2_nullWorldId) {
+        b2SetAssertFcn(box2d_assert_handler);
+
         b2WorldDef world_def = b2DefaultWorldDef();
         world_def.gravity = Physics::vec2_to_b2Vec2(gravity);
         m_id = b2CreateWorld(&world_def);
@@ -122,9 +132,9 @@ namespace hob {
         filter.maskBits = layer_mask;
 
         const b2RayResult ray = b2World_CastRayClosest(m_physics_world.get_id(),
-                                                 vec2_to_b2Vec2(origin),
-                                                 vec2_to_b2Vec2(translation),
-                                                 filter);
+                                                       vec2_to_b2Vec2(origin),
+                                                       vec2_to_b2Vec2(translation),
+                                                       filter);
 
         if (!ray.hit) {
             return result;

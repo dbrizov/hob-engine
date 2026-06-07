@@ -38,21 +38,14 @@ namespace hob {
     }
 
     b2ShapeId CapsuleColliderComponent::create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) {
-        const Capsule scaled = scale_capsule(m_capsule, scale);
-        b2Capsule b2_capsule;
-        b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
-        b2_capsule.center2 = Physics::vec2_to_b2Vec2(scaled.center_b);
-        b2_capsule.radius = scaled.radius;
-
+        const Capsule scaled_capsule = scale_capsule(m_capsule, scale);
+        const b2Capsule b2_capsule = Physics::capsule_to_b2Capsule(scaled_capsule);
         return b2CreateCapsuleShape(get_body_id(), &shape_def, &b2_capsule);
     }
 
     void CapsuleColliderComponent::update_geometry(const Vector2& scale) {
-        const Capsule scaled = scale_capsule(m_capsule, scale);
-        b2Capsule b2_capsule;
-        b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
-        b2_capsule.center2 = Physics::vec2_to_b2Vec2(scaled.center_b);
-        b2_capsule.radius = scaled.radius;
+        const Capsule scaled_capsule = scale_capsule(m_capsule, scale);
+        const b2Capsule b2_capsule = Physics::capsule_to_b2Capsule(scaled_capsule);
         b2Shape_SetCapsule(get_shape_id(), &b2_capsule);
     }
 

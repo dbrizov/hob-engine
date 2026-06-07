@@ -49,7 +49,6 @@ namespace hob {
         void set_trigger(bool trigger);
 
         void on_geometry_changed();
-        void on_material_changed();
 
     protected:
         // Builds the Box2D shape primitive (with the given def) and returns its id;
@@ -57,8 +56,6 @@ namespace hob {
 
         // Replaces the existing shape's geometry in place.
         virtual void update_geometry(const Vector2& scale) = 0;
-
-        virtual void update_material();
 
         virtual void debug_draw_shape(const Color& color, const Vector2& scale) const = 0;
 

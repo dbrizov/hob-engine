@@ -40,7 +40,6 @@ namespace hob {
     b2ShapeId BoxColliderComponent::create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) {
         const AABB scaled = scale_aabb(m_aabb, scale);
         const b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
-
         return b2CreatePolygonShape(get_body_id(), &shape_def, &box);
     }
 

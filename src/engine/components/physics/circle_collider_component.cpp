@@ -43,7 +43,6 @@ namespace hob {
         b2Circle b2_circle;
         b2_circle.center = Physics::vec2_to_b2Vec2(scaled.center);
         b2_circle.radius = scaled.radius;
-
         return b2CreateCircleShape(get_body_id(), &shape_def, &b2_circle);
     }
 
