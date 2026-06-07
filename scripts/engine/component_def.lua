@@ -38,7 +38,7 @@ _G.__component_pending = _G.__component_pending or {}
 -- genuinely removes collected instances and the set self-compacts toward the live
 -- set. C++ holds each instance strongly (LuaScriptComponent::m_impl->lua_instance),
 -- so an entry lives exactly as long as its component.
-_G.__live_instances = _G.__live_instances or setmetatable({}, { __mode = "k" })
+_G.__live_component_instances = _G.__live_component_instances or setmetatable({}, { __mode = "k" })
 
 --- Assigning `DefineComponent.Foo = { ... }` registers a Lua component class
 --- and creates a global `Foo`. The table may contain default fields,
@@ -166,7 +166,7 @@ local function build_class(name)
     -- from C++ after this returns, so do not invoke init() here.
     function class.new()
         local inst = setmetatable({}, class)
-        _G.__live_instances[inst] = true -- track for hot reload; weak-keyed, self-prunes on GC
+        _G.__live_component_instances[inst] = true -- track for hot reload; weak-keyed, self-prunes on GC
         return inst
     end
 

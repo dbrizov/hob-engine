@@ -8,8 +8,9 @@
 namespace hob {
     void LuaComponentSchemaRegistry::add_schema(std::string key,
                                                 std::string add_method,
+                                                std::string get_method,
                                                 std::vector<std::pair<std::string, std::string>> setters) {
-        m_schemas.push_back({std::move(key), std::move(add_method), std::move(setters)});
+        m_schemas.push_back({std::move(key), std::move(add_method), std::move(get_method), std::move(setters)});
     }
 
     bool LuaComponentSchemaRegistry::write_to_file(const std::filesystem::path& path) const {
@@ -21,6 +22,7 @@ namespace hob {
         for (const auto& s : m_schemas) {
             out << "    " << s.key << " = {\n";
             out << "        add = \"" << s.add_method << "\",\n";
+            out << "        get = \"" << s.get_method << "\",\n";
 
             if (s.setters.empty()) {
                 out << "        setters = {},\n";

@@ -25,20 +25,25 @@ namespace hob {
     }
 
     void BoxColliderComponent::set_aabb(const AABB& aabb) {
+        if (m_aabb == aabb) {
+            return;
+        }
+
         m_aabb = aabb;
+        on_changed();
     }
 
     AABB BoxColliderComponent::get_scaled_aabb() const {
-        return scale_aabb(m_aabb, get_baked_scale());
+        return scale_aabb(m_aabb, get_entity().get_transform()->get_scale());
     }
 
-    b2ShapeId BoxColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
+    b2ShapeId BoxColliderComponent::create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) {
         const AABB scaled = scale_aabb(m_aabb, scale);
         const b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
         return b2CreatePolygonShape(get_body_id(), &shape_def, &box);
     }
 
-    void BoxColliderComponent::rebuild_shape(const Vector2& scale) {
+    void BoxColliderComponent::update_geometry(const Vector2& scale) {
         const AABB scaled = scale_aabb(m_aabb, scale);
         const b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
         b2Shape_SetPolygon(get_shape_id(), &box);

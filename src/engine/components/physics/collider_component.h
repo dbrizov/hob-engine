@@ -18,9 +18,6 @@ namespace hob {
         uint64_t m_collision_mask = ~0ull; // What this collider collides with
         bool m_is_trigger = false;
 
-        // Transform scale baked into the physics shape; refreshed on enter_play / on_scale_changed.
-        Vector2 m_baked_scale = Vector2(1.0f, 1.0f);
-
     public:
         explicit ColliderComponent(Entity& entity);
 
@@ -51,15 +48,19 @@ namespace hob {
         bool is_trigger() const;
         void set_trigger(bool trigger);
 
-        Vector2 get_baked_scale() const;
-
-        // Rebuilds the physics shape if the transform's scale changed.
-        // Auto-invoked by TransformComponent::set_scale.
-        void on_scale_changed();
+        void on_changed();
 
     protected:
-        virtual b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) = 0;
-        virtual void rebuild_shape(const Vector2& scale) = 0;
+        // Type-specific geometry hooks.
+        // - create_geometry builds the Box2D shape primitive (with the given def) and returns its id;
+        // - update_geometry replaces the existing shape's geometry in place.
+        virtual b2ShapeId create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) = 0;
+        virtual void update_geometry(const Vector2& scale) = 0;
         virtual void debug_draw_shape(const Color& color, const Vector2& scale) const = 0;
+
+    private:
+        // Destroys (if present) and fully builds the physics shape from current state. Used by
+        // enter_play and by set_trigger (b2Shape.isSensor can't be toggled on a live shape in place).
+        void build_shape();
     };
 }

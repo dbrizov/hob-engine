@@ -90,8 +90,9 @@ namespace hob {
                                 float duration,
                                 std::format_string<Args...> fmt,
                                 Args&&... args) {
-                log(fmt, args...);
-                add_on_screen_debug_message(std::format(fmt, args...), color, duration);
+                std::string text = std::format(fmt, std::forward<Args>(args)...);
+                log("{}", text);
+                add_on_screen_debug_message(std::move(text), color, duration);
             }
         }
 

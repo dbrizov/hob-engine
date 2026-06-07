@@ -25,14 +25,19 @@ namespace hob {
     }
 
     void CapsuleColliderComponent::set_capsule(const Capsule& capsule) {
+        if (m_capsule == capsule) {
+            return;
+        }
+
         m_capsule = capsule;
+        on_changed();
     }
 
     Capsule CapsuleColliderComponent::get_scaled_capsule() const {
-        return scale_capsule(m_capsule, get_baked_scale());
+        return scale_capsule(m_capsule, get_entity().get_transform()->get_scale());
     }
 
-    b2ShapeId CapsuleColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
+    b2ShapeId CapsuleColliderComponent::create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) {
         const Capsule scaled = scale_capsule(m_capsule, scale);
         b2Capsule b2_capsule;
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
@@ -41,7 +46,7 @@ namespace hob {
         return b2CreateCapsuleShape(get_body_id(), &shape_def, &b2_capsule);
     }
 
-    void CapsuleColliderComponent::rebuild_shape(const Vector2& scale) {
+    void CapsuleColliderComponent::update_geometry(const Vector2& scale) {
         const Capsule scaled = scale_capsule(m_capsule, scale);
         b2Capsule b2_capsule;
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);

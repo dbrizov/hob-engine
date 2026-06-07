@@ -26,14 +26,19 @@ namespace hob {
     }
 
     void CircleColliderComponent::set_circle(const Circle& circle) {
+        if (m_circle == circle) {
+            return;
+        }
+
         m_circle = circle;
+        on_changed();
     }
 
     Circle CircleColliderComponent::get_scaled_circle() const {
-        return scale_circle(m_circle, get_baked_scale());
+        return scale_circle(m_circle, get_entity().get_transform()->get_scale());
     }
 
-    b2ShapeId CircleColliderComponent::create_shape(const b2ShapeDef& shape_def, const Vector2& scale) {
+    b2ShapeId CircleColliderComponent::create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) {
         const Circle scaled = scale_circle(m_circle, scale);
         b2Circle b2_circle;
         b2_circle.center = Physics::vec2_to_b2Vec2(scaled.center);
@@ -41,7 +46,7 @@ namespace hob {
         return b2CreateCircleShape(get_body_id(), &shape_def, &b2_circle);
     }
 
-    void CircleColliderComponent::rebuild_shape(const Vector2& scale) {
+    void CircleColliderComponent::update_geometry(const Vector2& scale) {
         const Circle scaled = scale_circle(m_circle, scale);
         b2Circle b2_circle;
         b2_circle.center = Physics::vec2_to_b2Vec2(scaled.center);

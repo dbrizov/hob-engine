@@ -18,6 +18,7 @@ namespace hob {
     struct LuaComponentSchemaInfo {
         std::string key; // Prefab section key, e.g. "rigidbody"
         std::string add_method; // Entity method, e.g. "add_rigidbody"
+        std::string get_method; // Entity method, e.g. "get_rigidbody"
         std::vector<std::pair<std::string, std::string>> setters; // {field, set_method}
     };
 
@@ -27,6 +28,7 @@ namespace hob {
     public:
         void add_schema(std::string key,
                         std::string add_method,
+                        std::string get_method,
                         std::vector<std::pair<std::string, std::string>> setters);
 
         bool write_to_file(const std::filesystem::path& path) const;
@@ -44,6 +46,7 @@ namespace hob {
                                LuaComponentSchemaRegistry& schemas,
                                const char* key,
                                const char* add_method,
+                               const char* get_method,
                                std::initializer_list<std::pair<const char*, const char*>> setters) {
         const char* entity_lua_name = LuaTypeName<EntityRef>::value;
         sol::table entity_ut = lua[entity_lua_name];
@@ -66,7 +69,7 @@ namespace hob {
             v.emplace_back(s.first, s.second);
         }
 
-        schemas.add_schema(key, add_method, std::move(v));
+        schemas.add_schema(key, add_method, get_method, std::move(v));
     }
 
     // Overload for components that are always present on every entity. No `add_X` is
@@ -83,6 +86,7 @@ namespace hob {
             v.emplace_back(s.first, s.second);
         }
 
-        schemas.add_schema(key, existing_method, std::move(v));
+        // Always-present component: `existing_method` is its getter, so add == get.
+        schemas.add_schema(key, existing_method, existing_method, std::move(v));
     }
 }

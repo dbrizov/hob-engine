@@ -8,6 +8,7 @@
 
 #include "engine/components/lua_script_component.h"
 #include "engine/components/lua_script_component_impl.h"
+#include "engine/components/camera_component.h"
 #include "engine/components/input_component.h"
 #include "engine/components/sprite_animator_component.h"
 #include "engine/components/sprite_component.h"
@@ -91,6 +92,10 @@ namespace hob {
             .method("get_input", [](const EntityRef& r) -> InputComponent* {
                 Entity* e = r.resolve();
                 return e ? e->get_component<InputComponent>() : nullptr;
+            })
+            .method("get_camera", [](const EntityRef& r) -> CameraComponent* {
+                Entity* e = r.resolve();
+                return e ? e->get_component<CameraComponent>() : nullptr;
             })
             .method_sig("get_lua_component",
                         [](const EntityRef& r, const std::string& class_name) -> sol::object {

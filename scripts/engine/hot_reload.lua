@@ -16,13 +16,12 @@ _G.__component_pending = {}
 _G.__mixin_registry = {}
 
 -- 2. Re-run the same definition files bootstrap uses, then re-finalize.
---    (Lua owns the file set via load_game_definitions — C++ never sees it.)
-load_game_definitions()
+_G.load_game_definitions()
 
--- 3. Re-point every live instance at its rebuilt class. Optional on_hot_reload()
---    lets a component migrate state when a field's shape changed.
+-- 3. Re-point every live component instance at its rebuilt class.
+--    Optional on_hot_reload() lets a component migrate state when a field's shape changed.
 --    Weak-keyed set, so iterate keys: `for inst in pairs(...)`.
-for inst in pairs(_G.__live_instances) do
+for inst in pairs(_G.__live_component_instances) do
     local class = _G.__component_registry[inst.class_name]
     if class then
         setmetatable(inst, class)
@@ -31,5 +30,8 @@ for inst in pairs(_G.__live_instances) do
         end
     end
 end
+
+-- 4. Push changed prefab data onto already-spawned entities (setters only; no re-add).
+_G.reapply_prefabs_to_spawned_entities()
 
 Debug.print("Lua hot reload complete", Color.white(), 4.0)

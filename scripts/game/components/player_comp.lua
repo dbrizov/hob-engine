@@ -13,10 +13,12 @@ function Player:init()
     self.y_axis_id = nil
     self.slow_motion_action_id = nil
 
-    -- Damageable state.
-    self.hp = 100
-    -- Stunnable state.
-    self.stun_timer = 0
+    self.camera_zoom_time = 0.0
+    self.camera_min_zoom = 0.5
+    self.camera_max_zoom = 2.0
+
+    self.hp = 100       -- Damageable state.
+    self.stun_timer = 0 -- Stunnable state.
 end
 
 function Player:enter_play()
@@ -54,9 +56,9 @@ function Player:late_tick(delta_time)
     self:update_camera_position(position, delta_time)
     self:update_rotation(delta_time)
 
-    -- self.time = self.time + delta_time
-    -- local t = (math.sin(self.time * self.speed) + 1.0) * 0.5
-    -- local zoom = Math.lerp(self.min_zoom, self.max_zoom, t)
+    -- self.camera_zoom_time = self.camera_zoom_time + delta_time
+    -- local t = (math.sin(self.camera_zoom_time) + 1.0) * 0.5
+    -- local zoom = Math.lerp(self.camera_min_zoom, self.camera_max_zoom, t)
     -- Camera.set_zoom(zoom)
 end
 
@@ -108,12 +110,4 @@ function Player:update_rotation(delta_time)
 
     local radians = math.atan(direction.y, direction.x)
     character_body:set_rotation(radians)
-end
-
-function Player:on_hot_reload()
-    local prefab = DefineEntity.Player
-    local material = prefab and prefab.sprite and prefab.sprite.material
-    if material then
-        self.entity:get_sprite():set_material(unwrap_def(material))
-    end
 end

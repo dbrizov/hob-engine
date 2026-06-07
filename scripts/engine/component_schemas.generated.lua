@@ -4,12 +4,14 @@
 local schemas = {
     transform = {
         add = "get_transform",
+        get = "get_transform",
         setters = {
             interpolate_physics = "set_interpolate_physics",
         },
     },
     rigidbody = {
         add = "add_rigidbody",
+        get = "get_rigidbody",
         setters = {
             body_type = "set_body_type",
             fixed_rotation = "set_fixed_rotation",
@@ -17,6 +19,7 @@ local schemas = {
     },
     character_body = {
         add = "add_character_body",
+        get = "get_character_body",
         setters = {
             collision_layer = "set_collision_layer",
             collision_mask = "set_collision_mask",
@@ -26,6 +29,7 @@ local schemas = {
     },
     box_collider = {
         add = "add_box_collider",
+        get = "get_box_collider",
         setters = {
             aabb = "set_aabb",
             density = "set_density",
@@ -38,6 +42,7 @@ local schemas = {
     },
     capsule_collider = {
         add = "add_capsule_collider",
+        get = "get_capsule_collider",
         setters = {
             capsule = "set_capsule",
             density = "set_density",
@@ -50,6 +55,7 @@ local schemas = {
     },
     circle_collider = {
         add = "add_circle_collider",
+        get = "get_circle_collider",
         setters = {
             circle = "set_circle",
             density = "set_density",
@@ -62,6 +68,7 @@ local schemas = {
     },
     sprite = {
         add = "add_sprite",
+        get = "get_sprite",
         setters = {
             texture = "set_texture",
             pivot = "set_pivot",
@@ -73,6 +80,7 @@ local schemas = {
     },
     sprite_animator = {
         add = "add_sprite_animator",
+        get = "get_sprite_animator",
         setters = {
             clips = "set_clips",
             default_clip = "set_default_clip",
@@ -80,10 +88,12 @@ local schemas = {
     },
     input = {
         add = "add_input",
+        get = "get_input",
         setters = {},
     },
     camera = {
         add = "add_camera",
+        get = "get_camera",
         setters = {
             screen_pixels_per_meter = "set_screen_pixels_per_meter",
         },

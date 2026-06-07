@@ -18,20 +18,7 @@ namespace hob {
         const RigidbodyComponent* rigidbody = get_entity().get_rigidbody();
         assert(rigidbody != nullptr && rigidbody->has_body() && "Collider requires a Rigidbody to function");
 
-        b2ShapeDef shape_def = b2DefaultShapeDef();
-        shape_def.density = m_density;
-        shape_def.material.friction = m_friction;
-        shape_def.material.restitution = m_bounciness;
-        shape_def.filter.categoryBits = m_collision_layer;
-        shape_def.filter.maskBits = m_collision_mask;
-        shape_def.isSensor = m_is_trigger;
-
-        m_baked_scale = get_entity().get_transform()->get_scale();
-        m_shape_id = create_shape(shape_def, m_baked_scale);
-
-        b2Shape_SetUserData(m_shape_id, this);
-        b2Shape_EnableSensorEvents(m_shape_id, true);
-        b2Shape_EnableContactEvents(m_shape_id, !m_is_trigger); // enable contact events if it's NOT a sensor (trigger)
+        build_shape();
     }
 
     void ColliderComponent::exit_play() {
@@ -62,7 +49,7 @@ namespace hob {
         }
 
         if (get_engine().get_physics().cvar_debug_draw) {
-            debug_draw_shape(color, m_baked_scale);
+            debug_draw_shape(color, get_entity().get_transform()->get_scale());
         }
     }
 
@@ -84,7 +71,12 @@ namespace hob {
     }
 
     void ColliderComponent::set_density(float density) {
+        if (m_density == density) {
+            return;
+        }
+
         m_density = density;
+        on_changed();
     }
 
     float ColliderComponent::get_friction() const {
@@ -92,7 +84,12 @@ namespace hob {
     }
 
     void ColliderComponent::set_friction(float friction) {
+        if (m_friction == friction) {
+            return;
+        }
+
         m_friction = friction;
+        on_changed();
     }
 
     float ColliderComponent::get_bounciness() const {
@@ -100,7 +97,12 @@ namespace hob {
     }
 
     void ColliderComponent::set_bounciness(float bounciness) {
+        if (m_bounciness == bounciness) {
+            return;
+        }
+
         m_bounciness = bounciness;
+        on_changed();
     }
 
     uint64_t ColliderComponent::get_collision_layer() const {
@@ -108,7 +110,12 @@ namespace hob {
     }
 
     void ColliderComponent::set_collision_layer(uint64_t collision_layer) {
+        if (m_collision_layer == collision_layer) {
+            return;
+        }
+
         m_collision_layer = collision_layer;
+        on_changed();
     }
 
     uint64_t ColliderComponent::get_collision_mask() const {
@@ -116,7 +123,12 @@ namespace hob {
     }
 
     void ColliderComponent::set_collision_mask(uint64_t collision_mask) {
+        if (m_collision_mask == collision_mask) {
+            return;
+        }
+
         m_collision_mask = collision_mask;
+        on_changed();
     }
 
     bool ColliderComponent::is_trigger() const {
@@ -124,24 +136,52 @@ namespace hob {
     }
 
     void ColliderComponent::set_trigger(bool trigger) {
-        m_is_trigger = trigger;
-    }
-
-    Vector2 ColliderComponent::get_baked_scale() const {
-        return m_baked_scale;
-    }
-
-    void ColliderComponent::on_scale_changed() {
-        if (!b2Shape_IsValid(m_shape_id)) {
-            return; // not in play yet; enter_play() will bake the scale.
-        }
-
-        const Vector2 current_scale = get_entity().get_transform()->get_scale();
-        if (current_scale == m_baked_scale) {
+        if (m_is_trigger == trigger) {
             return;
         }
 
-        m_baked_scale = current_scale;
-        rebuild_shape(m_baked_scale);
+        m_is_trigger = trigger;
+
+        // b2Shape.isSensor is fixed at shape creation; Box2D has no in-place setter, so rebuild.
+        if (b2Shape_IsValid(m_shape_id)) {
+            build_shape();
+        }
+    }
+
+    void ColliderComponent::on_changed() {
+        if (!b2Shape_IsValid(m_shape_id)) {
+            return; // not in play yet; enter_play() will build the shape from current state.
+        }
+
+        update_geometry(get_entity().get_transform()->get_scale());
+        b2Shape_SetDensity(m_shape_id, m_density, true); // true: recompute the body's mass
+        b2Shape_SetFriction(m_shape_id, m_friction);
+        b2Shape_SetRestitution(m_shape_id, m_bounciness);
+
+        b2Filter filter = b2Shape_GetFilter(m_shape_id);
+        filter.categoryBits = m_collision_layer;
+        filter.maskBits = m_collision_mask;
+        b2Shape_SetFilter(m_shape_id, filter);
+    }
+
+    void ColliderComponent::build_shape() {
+        if (b2Shape_IsValid(m_shape_id)) {
+            b2DestroyShape(m_shape_id, false);
+            m_shape_id = b2_nullShapeId;
+        }
+
+        b2ShapeDef shape_def = b2DefaultShapeDef();
+        shape_def.density = m_density;
+        shape_def.material.friction = m_friction;
+        shape_def.material.restitution = m_bounciness;
+        shape_def.filter.categoryBits = m_collision_layer;
+        shape_def.filter.maskBits = m_collision_mask;
+        shape_def.isSensor = m_is_trigger;
+
+        m_shape_id = create_geometry(shape_def, get_entity().get_transform()->get_scale());
+
+        b2Shape_SetUserData(m_shape_id, this);
+        b2Shape_EnableSensorEvents(m_shape_id, true);
+        b2Shape_EnableContactEvents(m_shape_id, !m_is_trigger); // enable contact events if it's NOT a sensor (trigger)
     }
 }

@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cmath>
 #include <string>
 
+#include "constants.h"
 #include "vector2.h"
 
 namespace hob {
@@ -17,6 +19,16 @@ namespace hob {
         }
 
         std::string to_string() const;
+
+        bool operator==(const Capsule& right) const {
+            return center_a == right.center_a &&
+                   center_b == right.center_b &&
+                   std::abs(radius - right.radius) < EPSILON;
+        }
+
+        bool operator!=(const Capsule& right) const {
+            return !operator==(right);
+        }
 
         float get_height() const {
             return Vector2::distance(center_a, center_b) + (radius * 2.0f);

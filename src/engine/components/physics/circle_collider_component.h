@@ -21,8 +21,8 @@ namespace hob {
         Circle get_scaled_circle() const;
 
     protected:
-        b2ShapeId create_shape(const b2ShapeDef& shape_def, const Vector2& scale) override;
-        void rebuild_shape(const Vector2& scale) override;
+        b2ShapeId create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) override;
+        void update_geometry(const Vector2& scale) override;
         void debug_draw_shape(const Color& color, const Vector2& scale) const override;
 
     private:

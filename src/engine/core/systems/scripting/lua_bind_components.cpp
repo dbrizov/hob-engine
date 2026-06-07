@@ -96,9 +96,7 @@ namespace hob {
             .method("get_collision_mask", &ColliderComponent::get_collision_mask)
             .method("set_collision_mask", &ColliderComponent::set_collision_mask, {"mask"})
             .method("is_trigger", &ColliderComponent::is_trigger)
-            .method("set_trigger", &ColliderComponent::set_trigger, {"trigger"})
-            .method("get_baked_scale", &ColliderComponent::get_baked_scale)
-            .method("on_scale_changed", &ColliderComponent::on_scale_changed);
+            .method("set_trigger", &ColliderComponent::set_trigger, {"trigger"});
 
         bind_usertype<BoxColliderComponent>(lua, meta, Bases<ColliderComponent, Component>{})
             .method("get_aabb", &BoxColliderComponent::get_aabb)
@@ -255,13 +253,13 @@ namespace hob {
             });
 
         bind_component_schema<RigidbodyComponent>(
-            lua, meta, schemas, "rigidbody", "add_rigidbody", {
+            lua, meta, schemas, "rigidbody", "add_rigidbody", "get_rigidbody", {
                 {"body_type", "set_body_type"},
                 {"fixed_rotation", "set_fixed_rotation"},
             });
 
         bind_component_schema<CharacterBodyComponent>(
-            lua, meta, schemas, "character_body", "add_character_body", {
+            lua, meta, schemas, "character_body", "add_character_body", "get_character_body", {
                 {"collision_layer", "set_collision_layer"},
                 {"collision_mask", "set_collision_mask"},
                 {"solver_ignore_mask", "set_solver_ignore_mask"},
@@ -269,7 +267,7 @@ namespace hob {
             });
 
         bind_component_schema<BoxColliderComponent>(
-            lua, meta, schemas, "box_collider", "add_box_collider", {
+            lua, meta, schemas, "box_collider", "add_box_collider", "get_box_collider", {
                 {"aabb", "set_aabb"},
                 {"density", "set_density"},
                 {"friction", "set_friction"},
@@ -280,7 +278,7 @@ namespace hob {
             });
 
         bind_component_schema<CapsuleColliderComponent>(
-            lua, meta, schemas, "capsule_collider", "add_capsule_collider", {
+            lua, meta, schemas, "capsule_collider", "add_capsule_collider", "get_capsule_collider", {
                 {"capsule", "set_capsule"},
                 {"density", "set_density"},
                 {"friction", "set_friction"},
@@ -291,7 +289,7 @@ namespace hob {
             });
 
         bind_component_schema<CircleColliderComponent>(
-            lua, meta, schemas, "circle_collider", "add_circle_collider", {
+            lua, meta, schemas, "circle_collider", "add_circle_collider", "get_circle_collider", {
                 {"circle", "set_circle"},
                 {"density", "set_density"},
                 {"friction", "set_friction"},
@@ -302,7 +300,7 @@ namespace hob {
             });
 
         bind_component_schema<SpriteComponent>(
-            lua, meta, schemas, "sprite", "add_sprite", {
+            lua, meta, schemas, "sprite", "add_sprite", "get_sprite", {
                 {"texture", "set_texture"},
                 {"pivot", "set_pivot"},
                 {"scale", "set_scale"},
@@ -312,16 +310,16 @@ namespace hob {
             });
 
         bind_component_schema<SpriteAnimatorComponent>(
-            lua, meta, schemas, "sprite_animator", "add_sprite_animator", {
+            lua, meta, schemas, "sprite_animator", "add_sprite_animator", "get_sprite_animator", {
                 {"clips", "set_clips"},
                 {"default_clip", "set_default_clip"},
             });
 
         bind_component_schema<InputComponent>(
-            lua, meta, schemas, "input", "add_input", {});
+            lua, meta, schemas, "input", "add_input", "get_input", {});
 
         bind_component_schema<CameraComponent>(
-            lua, meta, schemas, "camera", "add_camera", {
+            lua, meta, schemas, "camera", "add_camera", "get_camera", {
                 {"screen_pixels_per_meter", "set_screen_pixels_per_meter"},
             });
     }

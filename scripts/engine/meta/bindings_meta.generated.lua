@@ -422,6 +422,9 @@ function Entity:get_sprite_animator() end
 ---@return InputComponent?
 function Entity:get_input() end
 
+---@return CameraComponent?
+function Entity:get_camera() end
+
 ---@param class_name string
 ---@return LuaComponent?
 function Entity:get_lua_component(class_name) end
@@ -621,11 +624,6 @@ function ColliderComponent:is_trigger() end
 
 ---@param trigger boolean
 function ColliderComponent:set_trigger(trigger) end
-
----@return Vector2
-function ColliderComponent:get_baked_scale() end
-
-function ColliderComponent:on_scale_changed() end
 
 _G.ColliderComponent = ColliderComponent
 

@@ -44,12 +44,16 @@ namespace hob {
     }
 
     void TransformComponent::set_scale(const Vector2& scale) {
+        if (m_scale == scale) {
+            return;
+        }
+
         m_scale = scale;
         rebuild_local_matrix();
 
-        // Physics shapes can't be resized in place; have each collider rebuild.
+        // Scale feeds into the physics shape geometry; have each collider re-sync.
         for (ColliderComponent* collider : get_entity().get_components<ColliderComponent>()) {
-            collider->on_scale_changed();
+            collider->on_changed();
         }
     }
 
