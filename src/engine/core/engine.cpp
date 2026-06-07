@@ -265,7 +265,7 @@ namespace hob {
 
         const std::filesystem::path scripts_root = PathUtils::get_root_path() / "scripts";
 
-        std::filesystem::file_time_type newest{};
+        std::filesystem::file_time_type newest = std::filesystem::file_time_type::min();
         std::error_code ec;
         for (const auto& entry : std::filesystem::recursive_directory_iterator(scripts_root, ec)) {
             if (ec) {
@@ -283,8 +283,9 @@ namespace hob {
         }
 
         // First poll just records the baseline; never reload on startup.
-        if (m_last_script_write_time == std::filesystem::file_time_type{}) {
+        if (!m_has_script_write_baseline) {
             m_last_script_write_time = newest;
+            m_has_script_write_baseline = true;
             return;
         }
 

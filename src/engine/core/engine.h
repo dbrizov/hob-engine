@@ -37,6 +37,7 @@ namespace hob {
 #ifndef NDEBUG
         // Debug-only Lua hot reload: polls scripts/**.lua N times and reloads on change.
         std::filesystem::file_time_type m_last_script_write_time{};
+        bool m_has_script_write_baseline = false;
         float m_script_watch_accumulator = 0.0f;
 #endif
 
