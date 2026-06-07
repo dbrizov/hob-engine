@@ -79,10 +79,10 @@ local function install_path_registry(define_name, registry_name, type_label)
     })
 end
 
-function _G.install_path_registries()
+function _G.__install_path_registries()
     local schemas = _G.__path_schemas
     if schemas == nil then
-        Debug.log_error("install_path_registries: __path_schemas is missing (did path_schemas.generated.lua run?)")
+        Debug.log_error("__install_path_registries: __path_schemas is missing (did path_schemas.generated.lua run?)")
         return
     end
 

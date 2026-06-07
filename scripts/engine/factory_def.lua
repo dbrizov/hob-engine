@@ -86,11 +86,11 @@ local function install_factory_registry(registry_name, schema)
     })
 end
 
-function _G.install_factory_registries()
+function _G.__install_factory_registries()
     local schemas = _G.__factory_schemas
     if schemas == nil then
         Debug.log_error(
-            "install_factory_registries: __factory_schemas is missing (did factory_schemas.generated.lua run?)")
+            "__install_factory_registries: __factory_schemas is missing (did factory_schemas.generated.lua run?)")
         return
     end
 

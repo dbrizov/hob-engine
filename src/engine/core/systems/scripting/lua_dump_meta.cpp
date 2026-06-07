@@ -226,7 +226,7 @@ namespace hob {
             PathUtils::get_root_path() / "scripts" / "engine" / "meta" / "component_registry_meta.generated.lua";
 
         // Components defined via DefineComponent end up in __component_registry after
-        // finalize_components() runs; any still-pending ones live in __component_pending.
+        // __finalize_components() runs; any still-pending ones live in __component_pending.
         std::vector<std::string> names;
         {
             const sol::object reg = m_impl->lua["__component_registry"];

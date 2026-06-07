@@ -176,7 +176,7 @@ local function build_class(name)
     return class
 end
 
-function _G.finalize_components()
+function _G.__finalize_components()
     local names = {}
     local n = 0
     for name in pairs(_G.__component_pending) do

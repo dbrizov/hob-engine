@@ -16,7 +16,7 @@ _G.__component_pending = {}
 _G.__mixin_registry = {}
 
 -- 2. Re-run the same definition files bootstrap uses, then re-finalize.
-_G.load_game_definitions()
+__load_game_definitions()
 
 -- 3. Re-point every live component instance at its rebuilt class.
 --    Optional on_hot_reload() lets a component migrate state when a field's shape changed.
@@ -32,6 +32,6 @@ for inst in pairs(_G.__live_component_instances) do
 end
 
 -- 4. Push changed prefab data onto already-spawned entities (setters only; no re-add).
-_G.reapply_prefabs_to_spawned_entities()
+__reapply_prefabs_to_spawned_entities()
 
 Debug.print("Lua hot reload complete", Color.white(), 4.0)

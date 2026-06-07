@@ -15,10 +15,8 @@
 
 _G.__entity_prefab_registry = _G.__entity_prefab_registry or {}
 
--- Entities spawned from a prefab, tracked so hot reload can re-apply changed prefab data to them.
--- Strong list (an EntityRef's Lua lifetime != the entity's lifetime, so weak keys would
--- drop live entities); destroyed entities are pruned on each reload via EntityRef:is_valid().
-_G.__spawned_entities = _G.__spawned_entities or {}
+-- Maps entity id -> the prefab name it was spawned from, so hot reload can re-apply changed prefab data to live entities.
+_G.__entity_prefab_by_id = _G.__entity_prefab_by_id or {}
 
 --- Assigning `DefineEntity.Foo = { ... }` registers a prefab usable via
 --- `EntitySpawner.spawn_entity("Foo", ...)`. Recognized section keys are
@@ -107,47 +105,27 @@ local function reapply_prefab(entity, prefab)
     end
 end
 
--- Drop entries whose entity has been destroyed (single forward pass, preserves order).
-local function compact_spawned_entities()
-    local list = _G.__spawned_entities
-    local n = 0
-    for i = 1, #list do
-        local entry = list[i]
-        if entry.entity:is_valid() then
-            n = n + 1
-            list[n] = entry
+-- Re-applies current prefab data to every live spawned entity (called by hot_reload.lua).
+-- Rebuilds the id->prefab map from the live set as it goes, dropping ids of entities that were
+-- destroyed outside the Lua wrapper (e.g. by C++ spawning/destroying directly).
+function _G.__reapply_prefabs_to_spawned_entities()
+    local live = {}
+    EntitySpawner.for_each(function(entity)
+        local id = entity:get_id()
+        local name = _G.__entity_prefab_by_id[id]
+        if name then
+            live[id] = name
+            local prefab = _G.__entity_prefab_registry[name]
+            if prefab then
+                reapply_prefab(entity, prefab)
+            end
         end
-    end
-    for i = #list, n + 1, -1 do
-        list[i] = nil
-    end
+    end)
+    _G.__entity_prefab_by_id = live
 end
 
--- Re-applies current prefab data to every live spawned entity.
--- Called by hot_reload.lua after component classes have been rebuilt.
-function _G.reapply_prefabs_to_spawned_entities()
-    compact_spawned_entities()
-    for _, entry in ipairs(_G.__spawned_entities) do
-        local prefab = _G.__entity_prefab_registry[entry.prefab]
-        if prefab then
-            reapply_prefab(entry.entity, prefab)
-        end
-    end
-end
-
--- Without reloads the spawn list never gets compacted, so bound its growth: compact once it
--- grows past a threshold, then set the next threshold to ~2x the live count (amortized O(1) per
--- spawn, list stays within ~2x the number of live spawned-from-prefab entities).
-local spawned_compact_threshold = 64
-
-local function track_spawned_entity(entity, name)
-    local list = _G.__spawned_entities
-    list[#list + 1] = { entity = entity, prefab = name }
-    if #list >= spawned_compact_threshold then
-        compact_spawned_entities()
-        spawned_compact_threshold = math.max(64, #list * 2)
-    end
-end
+-- Wrap spawn so a prefab name resolves to a fully-built entity, keeping the raw C++ spawn private.
+local spawn_entity_c = EntitySpawner.spawn_entity
 
 ---@param name string
 ---@param position? Vector2
@@ -161,10 +139,10 @@ EntitySpawner.spawn_entity = function(name, position, rotation_deg, scale)
         return nil
     end
 
-    local entity = EntitySpawner.spawn_entity_c()
+    local entity = spawn_entity_c()
 
     apply_prefab(entity, prefab)
-    track_spawned_entity(entity, name)
+    _G.__entity_prefab_by_id[entity:get_id()] = name
 
     local transform = entity:get_transform()
     transform:set_position(position or Vector2())
@@ -172,4 +150,15 @@ EntitySpawner.spawn_entity = function(name, position, rotation_deg, scale)
     transform:set_scale(scale or Vector2.one())
 
     return entity
+end
+
+-- Wrap destroy to release the entity's id->prefab entry, keeping the map bounded to live entities.
+local destroy_entity_c = EntitySpawner.destroy_entity
+
+---@param entity Entity
+EntitySpawner.destroy_entity = function(entity)
+    if entity then
+        _G.__entity_prefab_by_id[entity:get_id()] = nil
+    end
+    destroy_entity_c(entity)
 end

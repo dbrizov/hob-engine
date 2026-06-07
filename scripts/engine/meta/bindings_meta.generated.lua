@@ -124,7 +124,7 @@ function Cursor.set_mode(mode) end
 EntitySpawner = {}
 
 ---@return Entity
-function EntitySpawner.spawn_entity_c() end
+function EntitySpawner.spawn_entity() end
 
 ---@param entity Entity
 function EntitySpawner.destroy_entity(entity) end
@@ -132,6 +132,9 @@ function EntitySpawner.destroy_entity(entity) end
 ---@param id integer
 ---@return Entity
 function EntitySpawner.get_entity(id) end
+
+---@param fn fun(entity: Entity)
+function EntitySpawner.for_each(fn) end
 
 -- Scripts
 ---@class Scripts
