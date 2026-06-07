@@ -53,7 +53,7 @@ namespace hob {
 
         // Scale feeds into the physics shape geometry; have each collider re-sync.
         for (ColliderComponent* collider : get_entity().get_components<ColliderComponent>()) {
-            collider->on_changed();
+            collider->on_geometry_changed();
         }
     }
 

@@ -48,19 +48,21 @@ namespace hob {
         bool is_trigger() const;
         void set_trigger(bool trigger);
 
-        void on_changed();
+        void on_geometry_changed();
+        void on_material_changed();
 
     protected:
-        // Type-specific geometry hooks.
-        // - create_geometry builds the Box2D shape primitive (with the given def) and returns its id;
-        // - update_geometry replaces the existing shape's geometry in place.
+        // Builds the Box2D shape primitive (with the given def) and returns its id;
         virtual b2ShapeId create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) = 0;
+
+        // Replaces the existing shape's geometry in place.
         virtual void update_geometry(const Vector2& scale) = 0;
+
+        virtual void update_material();
+
         virtual void debug_draw_shape(const Color& color, const Vector2& scale) const = 0;
 
     private:
-        // Destroys (if present) and fully builds the physics shape from current state. Used by
-        // enter_play and by set_trigger (b2Shape.isSensor can't be toggled on a live shape in place).
         void build_shape();
     };
 }

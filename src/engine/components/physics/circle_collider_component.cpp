@@ -31,7 +31,7 @@ namespace hob {
         }
 
         m_circle = circle;
-        on_changed();
+        on_geometry_changed();
     }
 
     Circle CircleColliderComponent::get_scaled_circle() const {
@@ -43,6 +43,7 @@ namespace hob {
         b2Circle b2_circle;
         b2_circle.center = Physics::vec2_to_b2Vec2(scaled.center);
         b2_circle.radius = scaled.radius;
+
         return b2CreateCircleShape(get_body_id(), &shape_def, &b2_circle);
     }
 
@@ -72,6 +73,7 @@ namespace hob {
     Circle CircleColliderComponent::scale_circle(const Circle& local, const Vector2& scale) {
         const Vector2 center(local.center.x * scale.x, local.center.y * scale.y);
         const float radius = local.radius * std::max(std::abs(scale.x), std::abs(scale.y));
+
         return Circle(center, radius);
     }
 }

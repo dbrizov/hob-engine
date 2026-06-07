@@ -76,7 +76,7 @@ namespace hob {
         }
 
         m_density = density;
-        on_changed();
+        on_material_changed();
     }
 
     float ColliderComponent::get_friction() const {
@@ -89,7 +89,7 @@ namespace hob {
         }
 
         m_friction = friction;
-        on_changed();
+        on_material_changed();
     }
 
     float ColliderComponent::get_bounciness() const {
@@ -102,7 +102,7 @@ namespace hob {
         }
 
         m_bounciness = bounciness;
-        on_changed();
+        on_material_changed();
     }
 
     uint64_t ColliderComponent::get_collision_layer() const {
@@ -115,7 +115,7 @@ namespace hob {
         }
 
         m_collision_layer = collision_layer;
-        on_changed();
+        on_material_changed();
     }
 
     uint64_t ColliderComponent::get_collision_mask() const {
@@ -128,7 +128,7 @@ namespace hob {
         }
 
         m_collision_mask = collision_mask;
-        on_changed();
+        on_material_changed();
     }
 
     bool ColliderComponent::is_trigger() const {
@@ -148,12 +148,23 @@ namespace hob {
         }
     }
 
-    void ColliderComponent::on_changed() {
+    void ColliderComponent::on_geometry_changed() {
         if (!b2Shape_IsValid(m_shape_id)) {
             return; // not in play yet; enter_play() will build the shape from current state.
         }
 
         update_geometry(get_entity().get_transform()->get_scale());
+    }
+
+    void ColliderComponent::on_material_changed() {
+        if (!b2Shape_IsValid(m_shape_id)) {
+            return; // not in play yet; enter_play() will build the shape from current state.
+        }
+
+        update_material();
+    }
+
+    void ColliderComponent::update_material() {
         b2Shape_SetDensity(m_shape_id, m_density, true); // true: recompute the body's mass
         b2Shape_SetFriction(m_shape_id, m_friction);
         b2Shape_SetRestitution(m_shape_id, m_bounciness);

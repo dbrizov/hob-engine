@@ -30,7 +30,7 @@ namespace hob {
         }
 
         m_aabb = aabb;
-        on_changed();
+        on_geometry_changed();
     }
 
     AABB BoxColliderComponent::get_scaled_aabb() const {
@@ -40,6 +40,7 @@ namespace hob {
     b2ShapeId BoxColliderComponent::create_geometry(const b2ShapeDef& shape_def, const Vector2& scale) {
         const AABB scaled = scale_aabb(m_aabb, scale);
         const b2Polygon box = b2MakeBox(scaled.extents.x, scaled.extents.y);
+
         return b2CreatePolygonShape(get_body_id(), &shape_def, &box);
     }
 
@@ -75,6 +76,7 @@ namespace hob {
     AABB BoxColliderComponent::scale_aabb(const AABB& local, const Vector2& scale) {
         const Vector2 center(local.center.x * scale.x, local.center.y * scale.y);
         const Vector2 extents(local.extents.x * std::abs(scale.x), local.extents.y * std::abs(scale.y));
+
         return AABB(center, extents);
     }
 }

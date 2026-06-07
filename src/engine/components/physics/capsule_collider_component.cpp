@@ -30,7 +30,7 @@ namespace hob {
         }
 
         m_capsule = capsule;
-        on_changed();
+        on_geometry_changed();
     }
 
     Capsule CapsuleColliderComponent::get_scaled_capsule() const {
@@ -43,6 +43,7 @@ namespace hob {
         b2_capsule.center1 = Physics::vec2_to_b2Vec2(scaled.center_a);
         b2_capsule.center2 = Physics::vec2_to_b2Vec2(scaled.center_b);
         b2_capsule.radius = scaled.radius;
+
         return b2CreateCapsuleShape(get_body_id(), &shape_def, &b2_capsule);
     }
 
@@ -95,6 +96,7 @@ namespace hob {
         const Vector2 center_a(local.center_a.x * scale.x, local.center_a.y * scale.y);
         const Vector2 center_b(local.center_b.x * scale.x, local.center_b.y * scale.y);
         const float radius = local.radius * std::max(std::abs(scale.x), std::abs(scale.y));
+
         return Capsule(center_a, center_b, radius);
     }
 }
