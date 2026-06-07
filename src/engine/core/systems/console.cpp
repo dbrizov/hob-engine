@@ -493,7 +493,7 @@ namespace hob {
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
         static ImGuiTextFilter filter;
-        filter.Draw("Filter", width - 125.0f);
+        filter.Draw("Filter", width - 75.0f);
         ImGui::PopStyleVar();
 
         ImGui::Separator();
@@ -556,7 +556,7 @@ namespace hob {
         ImGui::Separator();
 
         // Command-line
-        ImGui::SetNextItemWidth(width - 125.0f);
+        ImGui::SetNextItemWidth(width - 75.0f);
         if (ImGui::InputText("Input",
                              m_input_buffer,
                              IM_ARRAYSIZE(m_input_buffer),
