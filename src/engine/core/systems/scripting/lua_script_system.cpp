@@ -43,9 +43,8 @@ namespace hob {
         run_bootstrap();
 
 #ifndef NDEBUG
-        // Meta files are LuaCATS-only (no runtime effect), so they're written after bootstrap.
-        // dump_path_aliases_meta in particular needs the user-script `DefineTexture.Foo = "..."`
-        // lines to have already run.
+        // Meta files are LuaCATS-only (no runtime effect),
+        // so they're written after bootstrap which runs all user-defined scripts.
         dump_bindings_meta();
         dump_path_schemas_meta();
         dump_path_aliases_meta();
