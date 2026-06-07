@@ -155,8 +155,8 @@ namespace hob {
 
         void bind_entity_spawner(sol::state& lua, LuaMetaRegistry& meta, EntitySpawner& spawner) {
             bind_table(lua, meta, "EntitySpawner")
-                .func("spawn_entity", [&spawner]() { return EntityRef(spawner.spawn_entity().get_id(), spawner); })
-                .func("destroy_entity",
+                .func("spawn_entity_c", [&spawner]() { return EntityRef(spawner.spawn_entity().get_id(), spawner); })
+                .func("destroy_entity_c",
                       [&spawner](const EntityRef& r) { spawner.destroy_entity(r.get_id()); },
                       {"entity"})
                 .func("get_entity", [&spawner](EntityId id) { return EntityRef(id, spawner); }, {"id"})

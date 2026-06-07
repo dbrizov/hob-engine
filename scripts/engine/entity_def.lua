@@ -124,8 +124,8 @@ function _G.__reapply_prefabs_to_spawned_entities()
     _G.__entity_prefab_by_id = live
 end
 
--- Wrap spawn so a prefab name resolves to a fully-built entity, keeping the raw C++ spawn private.
-local spawn_entity_c = EntitySpawner.spawn_entity
+-- Wrap spawn so a prefab name resolves to a fully-built entity (spawn_entity_c is the raw C++ spawn).
+local spawn_entity_c = EntitySpawner.spawn_entity_c
 
 ---@param name string
 ---@param position? Vector2
@@ -152,8 +152,8 @@ EntitySpawner.spawn_entity = function(name, position, rotation_deg, scale)
     return entity
 end
 
--- Wrap destroy to release the entity's id->prefab entry, keeping the map bounded to live entities.
-local destroy_entity_c = EntitySpawner.destroy_entity
+-- Wrap destroy to release the entity's id->prefab entry (destroy_entity_c is the raw C++ destroy).
+local destroy_entity_c = EntitySpawner.destroy_entity_c
 
 ---@param entity Entity
 EntitySpawner.destroy_entity = function(entity)

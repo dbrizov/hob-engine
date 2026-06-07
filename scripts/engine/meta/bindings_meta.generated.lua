@@ -124,10 +124,10 @@ function Cursor.set_mode(mode) end
 EntitySpawner = {}
 
 ---@return Entity
-function EntitySpawner.spawn_entity() end
+function EntitySpawner.spawn_entity_c() end
 
 ---@param entity Entity
-function EntitySpawner.destroy_entity(entity) end
+function EntitySpawner.destroy_entity_c(entity) end
 
 ---@param id integer
 ---@return Entity
