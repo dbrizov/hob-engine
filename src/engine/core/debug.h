@@ -17,7 +17,7 @@ namespace hob {
         constexpr float DEFAULT_LINE_THICKNESS = 1.0f;
         constexpr int DEFAULT_CIRCLE_SEGMENTS = 16;
 
-        constexpr Color DEFAULT_MESSAGE_COLOR = Color::green();
+        constexpr Color DEFAULT_MESSAGE_COLOR = Color::white();
         constexpr float DEFAULT_MESSAGE_DURATION = 2.0f;
         constexpr float MESSAGE_MARGIN_X = 8.0f;
         constexpr float MESSAGE_MARGIN_Y = 8.0f;

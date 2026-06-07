@@ -32,4 +32,4 @@ for inst in pairs(_G.__live_instances) do
     end
 end
 
-Debug.print("Lua hot reload complete", Color.white())
+Debug.print("Lua hot reload complete", Color.white(), 4.0)
