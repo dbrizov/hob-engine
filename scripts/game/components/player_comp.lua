@@ -1,8 +1,7 @@
 DefineComponent.Player = {
-    __parent = "Character",
-    __mixins = { "Damageable", "Stunnable" },
+    __parent = Components.Character,
 }
----@class Player : Character, Damageable, Stunnable
+---@class Player : Character
 local Player = Player
 
 function Player:init()
@@ -16,9 +15,6 @@ function Player:init()
     self.camera_zoom_time = 0.0
     self.camera_min_zoom = 0.5
     self.camera_max_zoom = 2.0
-
-    self.hp = 100       -- Damageable state.
-    self.stun_timer = 0 -- Stunnable state.
 end
 
 function Player:enter_play()

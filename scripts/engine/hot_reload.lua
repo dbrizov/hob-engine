@@ -1,6 +1,6 @@
--- Lua hot reload. Running this file IS the reload: it rebuilds every component /
--- mixin class from the current source files and re-points all live instances at
--- the rebuilt classes, preserving per-instance state.
+-- Lua hot reload. Running this file IS the reload: it rebuilds every component
+-- class from the current source files and re-points all live instances at the
+-- rebuilt classes, preserving per-instance state.
 --
 -- This file is imperative top-level code, so it is excluded from the normal
 -- bootstrap load (see bootstrap.lua) and is only executed when C++ explicitly
@@ -13,7 +13,6 @@
 -- 1. Wipe registries so definitions rebuild cleanly.
 _G.__component_registry = {}
 _G.__component_pending = {}
-_G.__mixin_registry = {}
 
 -- 2. Re-run the same definition files bootstrap uses, then re-finalize.
 __load_game_definitions()

@@ -4,10 +4,10 @@
 --   1. DefineComponent.X = {...}  -- registers a placeholder class table immediately
 --                                    so `local X = X` and `function X:foo() end` work.
 --   2. finalize_components()      -- called by bootstrap.lua after ALL user scripts have
---                                    loaded. Resolves __parent and __mixins for every
---                                    pending component, walking the inheritance graph.
+--                                    loaded. Resolves __parent for every pending
+--                                    component, walking the inheritance graph.
 --
--- This means DefineMixin / DefineComponent calls can appear in ANY file in ANY order;
+-- This means DefineComponent calls can appear in ANY file in ANY order;
 -- references only need to be resolvable by the time finalize_components() runs.
 --
 -- Usage:
@@ -15,7 +15,6 @@
 --       speed = 7.0,                          -- scalar default; per-instance via Lua shadowing
 --       priority = 1,                         -- priority execution order for this type of component; NOT per-instance data
 --       __parent = "Character",               -- optional single-inheritance (must be a registered Component)
---       __mixins = { "Damageable" },          -- optional orthogonal capabilities (see mixin_def.lua)
 --   }
 --
 --   ---@class Player : Character              -- these 2 lines are a hint to the LuaLS
@@ -57,7 +56,7 @@ _G.DefineComponent = setmetatable({}, {
         -- (e.g. `speed = 7.0`) are visible right away.
         local class = {}
         for k, v in pairs(def) do
-            if k ~= "__parent" and k ~= "__mixins" then
+            if k ~= "__parent" then
                 class[k] = v
             end
         end
@@ -103,11 +102,10 @@ local function build_class(name)
     local class = pending.class
     local def = pending.def
 
-    -- 1. Single parent (must be a registered Component). Resolve recursively so
-    --    parents in any file/load-order get built before children. Subclass-on-class
-    --    methods (defined via `function X:foo()`) are already on `class`; parent
-    --    entries that collide are skipped (override semantics).
-    local parent_keys = {}
+    -- Single parent (must be a registered Component). Resolve recursively so
+    -- parents in any file/load-order get built before children. Subclass-on-class
+    -- methods (defined via `function X:foo()`) are already on `class`; parent
+    -- entries that collide are skipped (override semantics).
     if def.__parent then
         if type(def.__parent) ~= "string" then
             Debug.log_error("DefineComponent." .. name .. ": __parent must be a string component name")
@@ -122,38 +120,6 @@ local function build_class(name)
                         if rawget(class, k) == nil then
                             class[k] = v
                         end
-
-                        parent_keys[k] = true
-                    end
-                end
-            end
-        end
-    end
-
-    -- 2. Mixins: orthogonal capabilities. Collisions between mixins, or between a
-    --    mixin and the parent, are errors. The host component may explicitly
-    --    override a mixin method (defining `function X:foo()` after DefineComponent)
-    --    and that's allowed silently.
-    if def.__mixins then
-        local mixin_keys = {}
-        for _, mixin_name in ipairs(def.__mixins) do
-            if type(mixin_name) ~= "string" then
-                Debug.log_error("DefineComponent." .. name .. ": __mixins entries must be string mixin names")
-            else
-                local mixin = _G.__mixin_registry and _G.__mixin_registry[mixin_name]
-                if not mixin then
-                    Debug.log_error("DefineComponent." .. name .. ": mixin '" .. mixin_name .. "' is not registered")
-                else
-                    for k, v in pairs(mixin) do
-                        if parent_keys[k] or mixin_keys[k] then
-                            Debug.log_error("DefineComponent." .. name ..
-                                ": mixin '" .. mixin_name .. "' key '" .. k ..
-                                "' collides with an existing definition (from parent or earlier mixin)")
-                        elseif rawget(class, k) == nil then
-                            class[k] = v
-                        end
-
-                        mixin_keys[k] = true
                     end
                 end
             end
