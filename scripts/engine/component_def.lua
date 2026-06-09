@@ -102,10 +102,10 @@ local function build_class(name)
     local class = pending.class
     local def = pending.def
 
-    -- Single parent (must be a registered Component). Resolve recursively so
-    -- parents in any file/load-order get built before children. Subclass-on-class
-    -- methods (defined via `function X:foo()`) are already on `class`; parent
-    -- entries that collide are skipped (override semantics).
+    -- Single parent (must be a registered Component).
+    -- Resolve recursively so parents in any file/load-order get built before children.
+    -- Subclass-on-class methods (defined via `function X:foo()`) are already on `class`.
+    -- Parent entries that collide are skipped (override semantics).
     if def.__parent then
         if type(def.__parent) ~= "string" then
             Debug.log_error("DefineComponent." .. name .. ": __parent must be a string component name")
