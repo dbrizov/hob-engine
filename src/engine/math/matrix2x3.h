@@ -20,6 +20,28 @@ namespace hob {
             return origin + x * p.x + y * p.y;
         }
 
+        Matrix2x3 inverse() const {
+            const float det = x.x * y.y - y.x * x.y;
+            if (std::abs(det) <= EPSILON) {
+                return Matrix2x3::identity();
+            }
+
+            const float inv_det = 1.0f / det;
+            Matrix2x3 out;
+            out.x = Vector2(y.y * inv_det, -x.y * inv_det);
+            out.y = Vector2(-y.x * inv_det, x.x * inv_det);
+            out.origin = -(out.x * origin.x + out.y * origin.y);
+            return out;
+        }
+
+        static Matrix2x3 identity() {
+            return {
+                Vector2::right(),
+                Vector2::up(),
+                Vector2::zero()
+            };
+        }
+
         static Matrix2x3 multiply(const Matrix2x3& a, const Matrix2x3& b) {
             Matrix2x3 out;
             out.x = a.x * b.x.x + a.y * b.x.y;

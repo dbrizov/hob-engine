@@ -5,6 +5,7 @@
 #include <box2d/box2d.h>
 
 #include "engine//components/transform_component.h"
+#include "engine/core/debug.h"
 #include "engine/core/engine.h"
 #include "engine/entity/entity.h"
 
@@ -15,6 +16,24 @@ namespace hob {
 
     void RigidbodyComponent::enter_play() {
         const TransformComponent* transform = get_entity().get_transform();
+
+        // Warn when a dynamic body is parented under a moving (non-static) transform: the body is
+        // simulated in world space, so the parent's motion won't drive it as a transform hierarchy implies.
+        if (m_body_type == BodyType::Dynamic) {
+            if (const TransformComponent* parent = transform->get_parent()) {
+                const RigidbodyComponent* parent_body = parent->get_entity().get_rigidbody();
+                const bool parent_is_static = parent_body != nullptr &&
+                                              parent_body->get_body_type() == BodyType::Static;
+
+                if (!parent_is_static) {
+                    debug::log_error(
+                        "RigidbodyComponent: dynamic body (entity_id = {}) is parented under a non-static transform; "
+                        "parent motion will not drive the simulated body.",
+                        get_entity().get_id());
+                }
+            }
+        }
+
         const Vector2 position = transform->get_position();
         const float radians = transform->get_rotation();
 

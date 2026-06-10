@@ -47,6 +47,19 @@ namespace hob {
             .method("set_rotation", &TransformComponent::set_rotation, {"radians"})
             .method("get_scale", &TransformComponent::get_scale)
             .method("set_scale", &TransformComponent::set_scale, {"scale"})
+            .method("get_local_position", &TransformComponent::get_local_position)
+            .method("set_local_position", &TransformComponent::set_local_position, {"position"})
+            .method("get_local_rotation", &TransformComponent::get_local_rotation)
+            .method("set_local_rotation", &TransformComponent::set_local_rotation, {"radians"})
+            .method("get_local_scale", &TransformComponent::get_local_scale)
+            .method("set_local_scale", &TransformComponent::set_local_scale, {"scale"})
+            .method("get_parent", &TransformComponent::get_parent)
+            .method("set_parent",
+                    [](TransformComponent& self, TransformComponent* parent, sol::optional<bool> keep_world_transform) {
+                        self.set_parent(parent, keep_world_transform.value_or(true));
+                    },
+                    {"parent", "keep_world_transform"})
+            .method("get_children", &TransformComponent::get_children)
             .method("get_interpolate_physics", &TransformComponent::get_interpolate_physics)
             .method("set_interpolate_physics", &TransformComponent::set_interpolate_physics, {"value"});
 

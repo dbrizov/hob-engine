@@ -495,6 +495,34 @@ function TransformComponent:get_scale() end
 ---@param scale Vector2
 function TransformComponent:set_scale(scale) end
 
+---@return Vector2
+function TransformComponent:get_local_position() end
+
+---@param position Vector2
+function TransformComponent:set_local_position(position) end
+
+---@return number
+function TransformComponent:get_local_rotation() end
+
+---@param radians number
+function TransformComponent:set_local_rotation(radians) end
+
+---@return Vector2
+function TransformComponent:get_local_scale() end
+
+---@param scale Vector2
+function TransformComponent:set_local_scale(scale) end
+
+---@return TransformComponent?
+function TransformComponent:get_parent() end
+
+---@param parent TransformComponent?
+---@param keep_world_transform boolean?
+function TransformComponent:set_parent(parent, keep_world_transform) end
+
+---@return TransformComponent[]
+function TransformComponent:get_children() end
+
 ---@return boolean
 function TransformComponent:get_interpolate_physics() end
 

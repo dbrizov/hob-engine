@@ -31,19 +31,37 @@ namespace hob {
     }
 
     void EntitySpawner::destroy_entity(EntityId id) {
-        // Remove from pending spawns if present.
-        // The unique_ptr is freed here, so also drop the record to avoid leaving a dangling pointer behind.
-        const size_t erased_count = std::erase_if(m_entity_spawn_requests, [&](const std::unique_ptr<Entity>& e) {
-            return e->get_id() == id;
-        });
+        auto record_it = m_entity_records.find(id);
+        if (record_it == m_entity_records.end()) {
+            return; // already destroyed or never existed
+        }
 
-        const bool was_pending = erased_count > 0;
+        Entity* entity = record_it->second.ptr;
+        const bool was_pending = record_it->second.live_index == INVALID_ENTITY_INDEX;
+
+        // Destroy the whole subtree. Snapshot the children because each recursive call mutates this list.
+        TransformComponent* transform = entity->get_transform();
+        const std::vector<TransformComponent*> children = transform->get_children();
+        for (const TransformComponent* child : children) {
+            destroy_entity(child->get_entity().get_id());
+        }
+
         if (was_pending) {
+            // Pending entities never enter play, so exit_play()/detach won't run.
+            // Detach synchronously to avoid leaving a dangling pointer in a surviving parent (or in a still-in-play child).
+            transform->detach_from_hierarchy();
+
+            // Drop the pending spawn request, which frees the Entity's unique_ptr.
+            std::erase_if(m_entity_spawn_requests, [&](const std::unique_ptr<Entity>& e) {
+                return e->get_id() == id;
+            });
+
+            // The record's raw Entity* now dangles, so erase it too.
             m_entity_records.erase(id);
             return;
         }
 
-        // Mark for destroy if already in play
+        // Mark for destroy if already in play. In-play subtree members detach in exit_play() during resolve.
         m_entity_destroy_requests.insert(id);
     }
 

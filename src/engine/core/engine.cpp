@@ -207,11 +207,14 @@ namespace hob {
             }
 
             const Matrix2x3 matrix = transform_comp->get_interpolate_physics()
-                                         ? Matrix2x3::lerp(transform_comp->get_prev_local_matrix(),
-                                                           transform_comp->get_local_matrix(),
+                                         ? Matrix2x3::lerp(transform_comp->get_prev_world_matrix(),
+                                                           transform_comp->get_world_matrix(),
                                                            m_physics.get_interpolation_fraction())
-                                         : transform_comp->get_local_matrix();
+                                         : transform_comp->get_world_matrix();
 
+            // Read world scale directly rather than decomposing the interpolated matrix: lerping two
+            // rotation matrices ~180 deg apart shrinks the basis toward zero at the midpoint, which would
+            // momentarily collapse the sprite. World scale is not interpolated (matches pre-nesting behavior).
             const Vector2 tr_scale = transform_comp->get_scale();
             const Vector2 sp_scale = sprite_comp->get_scale();
             const Vector2 scale = Vector2(tr_scale.x * sp_scale.x, tr_scale.y * sp_scale.y);
