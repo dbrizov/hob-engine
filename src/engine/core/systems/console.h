@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <format>
 #include <functional>
 #include <imgui.h>

@@ -109,6 +109,13 @@ if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
 endif ()
 
+# Force-include <cstdint> into every translation unit.
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /FIcstdint)
+else ()
+    target_compile_options(${PROJECT_NAME} PRIVATE -include cstdint)
+endif ()
+
 # Precompiled header.
 target_precompile_headers(${PROJECT_NAME} PRIVATE
         # Standard library — slow parsers first.

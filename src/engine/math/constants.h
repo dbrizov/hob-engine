@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cfloat>
-#include <cstdint>
 
 namespace hob {
     constexpr float EPSILON = 0.0001f;
