@@ -13,7 +13,12 @@ namespace hob {
         }
 
         Vector2 get_scale() const {
-            return Vector2(x.length(), y.length());
+            // A reflection (negative determinant) can't be split into unique per-axis signs, so by
+            // convention attach the flip to Y. Combined with get_rotation() this still reconstructs the
+            // matrix, which is what lets a mirrored parent flip its children.
+            const float det = x.x * y.y - y.x * x.y;
+            const float sign_y = (det < 0.0f) ? -1.0f : 1.0f;
+            return Vector2(x.length(), sign_y * y.length());
         }
 
         Vector2 transform_point(const Vector2& p) const {

@@ -23,7 +23,6 @@ namespace hob {
     }
 
     Vector2 TransformComponent::get_position() const {
-        // Unparented: return the stored position directly for optimization.
         return (m_parent != nullptr) ? get_world_matrix().origin : m_local_position;
     }
 
@@ -37,7 +36,6 @@ namespace hob {
     }
 
     float TransformComponent::get_rotation() const {
-        // Unparented: return the stored angle directly for optimization.
         return (m_parent != nullptr) ? get_world_matrix().get_rotation() : m_local_rotation;
     }
 
@@ -47,7 +45,6 @@ namespace hob {
     }
 
     Vector2 TransformComponent::get_scale() const {
-        // Unparented: return the stored scalar so the sign survives (matrix decomposition would drop it).
         return (m_parent != nullptr) ? get_world_matrix().get_scale() : m_local_scale;
     }
 
@@ -73,8 +70,8 @@ namespace hob {
         m_local_matrix.origin = m_local_position;
 
         if (!get_entity().is_in_play()) {
-            // The entity isn't spawned yet. Match local matrices to prevent initial Physics interpolation
-            // (only the origin changed here, so copying the whole matrix is equivalent to rebuilding it).
+            // The entity isn't spawned yet. Match local matrices to prevent initial Physics interpolation.
+            // Only the origin changed here, so copying the whole matrix is equivalent to rebuilding it.
             set_prev_local_matrix(m_local_matrix);
         }
 
@@ -231,7 +228,7 @@ namespace hob {
         m_local_matrix.origin = m_local_position;
 
         if (!get_entity().is_in_play()) {
-            // The entity isn't spawned yet. Match local matrices to prevent initial Physics interpolation
+            // The entity isn't spawned yet. Match local matrices to prevent initial Physics interpolation.
             set_prev_local_matrix(m_local_matrix);
         }
     }
