@@ -75,7 +75,7 @@ namespace hob {
             set_prev_local_matrix(m_local_matrix);
         }
 
-        mark_world_dirty();
+        mark_world_matrix_dirty();
     }
 
     float TransformComponent::get_local_rotation() const {
@@ -85,7 +85,7 @@ namespace hob {
     void TransformComponent::set_local_rotation(float radians) {
         m_local_rotation = radians;
         rebuild_local_matrix();
-        mark_world_dirty();
+        mark_world_matrix_dirty();
     }
 
     Vector2 TransformComponent::get_local_scale() const {
@@ -99,7 +99,7 @@ namespace hob {
 
         m_local_scale = scale;
         rebuild_local_matrix();
-        mark_world_dirty();
+        mark_world_matrix_dirty();
 
         // Scale feeds into the physics shape geometry; have each collider re-sync.
         for (ColliderComponent* collider : get_entity().get_components<ColliderComponent>()) {
@@ -108,11 +108,11 @@ namespace hob {
     }
 
     const Matrix2x3& TransformComponent::get_world_matrix() const {
-        if (m_world_dirty) {
+        if (m_world_matrix_dirty) {
             m_world_matrix = (m_parent != nullptr)
                                  ? m_parent->get_world_matrix() * m_local_matrix
                                  : m_local_matrix;
-            m_world_dirty = false;
+            m_world_matrix_dirty = false;
         }
 
         return m_world_matrix;
@@ -185,7 +185,7 @@ namespace hob {
             rebuild_local_matrix();
         }
 
-        mark_world_dirty();
+        mark_world_matrix_dirty();
 
         // Resync prev to the new parent frame so the next render doesn't interpolate across the reparent
         // (a non-physics child's prev is never otherwise refreshed -> it would teleport every frame).
@@ -240,15 +240,14 @@ namespace hob {
     bool TransformComponent::consume_render_dirty() {
         const bool was_dirty = m_render_dirty;
         m_render_dirty = false;
-
         return was_dirty;
     }
 
-    void TransformComponent::mark_world_dirty() {
-        m_world_dirty = true;
+    void TransformComponent::mark_world_matrix_dirty() {
+        m_world_matrix_dirty = true;
         m_render_dirty = true;
         for (TransformComponent* child : m_children) {
-            child->mark_world_dirty();
+            child->mark_world_matrix_dirty();
         }
     }
 

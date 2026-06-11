@@ -101,9 +101,9 @@ namespace hob {
         std::vector<SpriteDrawHandle> m_free_handles; // recycled handles
         std::vector<uint32_t> m_sprite_draw_order;
 
-        // View-projection mapping world meters -> offscreen NDC, refreshed by the active
-        // camera each frame (set_sprite_view_projection). Camera pan/zoom only touches this.
+        // View-projection mapping world meters -> offscreen NDC.
         Matrix4x4 m_sprite_view_projection;
+        bool m_has_sprite_view_projection = false;
 
         // Per-frame batch for overlay sprites (screen space), drained by the overlay pass.
         std::vector<Sprite> m_pending_overlay_sprites;

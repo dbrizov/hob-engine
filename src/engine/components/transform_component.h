@@ -18,11 +18,9 @@ namespace hob {
 
         // World matrix is derived (parent_world * local) and cached with a downward dirty flag.
         mutable Matrix2x3 m_world_matrix;
-        mutable bool m_world_dirty = true;
+        mutable bool m_world_matrix_dirty = true;
 
-        // Separate "world changed since the renderer last consumed it" flag, used to skip
-        // rewriting a sprite's draw data when its transform hasn't moved. Set (downward) by
-        // mark_world_dirty(); cleared by consume_render_dirty() in the world draw pass.
+        // Set by mark_world_matrix_dirty(), consumed by the world draw pass.
         bool m_render_dirty = true;
 
         TransformComponent* m_parent = nullptr;
@@ -79,7 +77,7 @@ namespace hob {
         bool consume_render_dirty();
 
     private:
-        void mark_world_dirty();
+        void mark_world_matrix_dirty();
         void rebuild_local_matrix();
         void set_prev_local_matrix(const Matrix2x3& prev_local_matrix);
         bool is_ancestor_of(const TransformComponent* node) const;

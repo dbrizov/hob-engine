@@ -75,7 +75,7 @@ namespace hob {
                                  return da.material.shader_id < db.material.shader_id;
                              });
 
-            if (!m_sprite_draw_order.empty()) {
+            if (m_has_sprite_view_projection && !m_sprite_draw_order.empty()) {
                 SDL_GPUBufferBinding vb{};
                 vb.buffer = m_quad_vbo;
                 vb.offset = 0;
