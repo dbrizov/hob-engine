@@ -20,7 +20,8 @@ namespace hob {
         mutable Matrix2x3 m_world_matrix;
         mutable bool m_world_matrix_dirty = true;
 
-        // Set by mark_world_matrix_dirty(), consumed by the world draw pass.
+        // "The world transform changed since the renderer last consumed it" -- lets the
+        // world draw pass skip re-resolving a sprite whose transform hasn't moved.
         bool m_render_dirty = true;
 
         TransformComponent* m_parent = nullptr;
