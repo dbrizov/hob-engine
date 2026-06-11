@@ -1,12 +1,12 @@
 // Psychedelic sprite vertex shader.
-// Identical to builtin/shaders/sprite.vert.hlsl — the pipeline VBO layout and
-// SpriteVS cbuffer pushed by the renderer are fixed, so this just forwards
-// the unit-quad position+UV through the standard ortho+rotate path.
+// Identical to builtin/shaders/sprite.vert.hlsl — the pipeline VBO layout and SpriteVS
+// cbuffer pushed by the renderer are fixed, so this just forwards the unit-quad
+// position+UV through the standard world-space view-projection path.
 
 cbuffer SpriteVS : register(b0, space1)
 {
-    float4x4 proj;
-    float2 screen_pos;
+    float4x4 view_proj;
+    float2 world_pos;
     float2 size;
     float2 pivot;
     float rotation;
@@ -27,15 +27,17 @@ struct VSOutput
 
 VSOutput main(VSInput input)
 {
-    float2 p = input.pos * size;
-    float2 d = p - pivot;
+    float2 q = input.pos - pivot;
+    float2 local = float2(size.x * q.x, -size.y * q.y);
+
     float c = cos(rotation);
     float s = sin(rotation);
-    float2 r = float2(c * d.x - s * d.y, s * d.x + c * d.y);
-    float2 screen = screen_pos + pivot + r;
+    float2 r = float2(c * local.x - s * local.y, s * local.x + c * local.y);
+
+    float2 world = world_pos + r;
 
     VSOutput o;
-    o.pos = mul(proj, float4(screen, 0.0, 1.0));
+    o.pos = mul(view_proj, float4(world, 0.0, 1.0));
     o.uv = input.uv;
     return o;
 }

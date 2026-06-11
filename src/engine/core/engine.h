@@ -64,7 +64,8 @@ namespace hob {
         void clear_active_camera(CameraComponent* camera);
 
     private:
-        void draw_entities(std::vector<const Entity*>& entities);
+        void draw_entities();
+        bool has_nonstatic_body(const Entity& entity) const;
         void flush_debug_draws_to_renderer(float delta_time);
 
 #ifndef NDEBUG

@@ -178,6 +178,7 @@ namespace hob {
     bool Renderer::init_default_sprite_pipeline() {
         const std::string default_key =
             std::filesystem::path(DEFAULT_SPRITE_SHADER).lexically_normal().string();
+
         SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(default_key);
         if (!pipeline) {
             return false;
@@ -187,6 +188,14 @@ namespace hob {
         m_sprite_pipelines.push_back(pipeline);
         m_shader_path_to_id.emplace(default_key, DEFAULT_SPRITE_SHADER_ID);
         return true;
+    }
+
+    bool Renderer::init_overlay_pipeline() {
+        const std::string overlay_key =
+            std::filesystem::path(OVERLAY_SPRITE_SHADER).lexically_normal().string();
+
+        m_overlay_pipeline = build_sprite_pipeline(overlay_key);
+        return m_overlay_pipeline != nullptr;
     }
 
     bool Renderer::init_blit_pipeline() {

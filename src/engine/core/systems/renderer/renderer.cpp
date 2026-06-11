@@ -12,45 +12,15 @@
 #include "engine/core/systems/sdl_context.h"
 
 namespace hob {
-    namespace {
-        // SDL_GPU clip space is y-down (Vulkan/D3D convention). Logical screen space is also
-        // y-down (top-left origin), so we map x:[0,w]->[-1,+1] and y:[0,h]->[-1,+1]
-        std::array<float, 16> ortho_top_left(float w, float h) {
-            std::array<float, 16> m{};
-            m[0] = 2.0f / w;
-            m[5] = 2.0f / h;
-            m[10] = 1.0f;
-            m[12] = -1.0f;
-            m[13] = -1.0f;
-            m[15] = 1.0f;
-            return m;
-        }
-
-        // Same logical-pixel input range as ortho_top_left, but maps y:[0,h] -> [+1,-1].
-        // Used for passes that target the swapchain directly (overlay) — the swap's NDC
-        // y convention is opposite to the offscreen target's, and without flipping here
-        // the overlay would render vertically mirrored relative to the world.
-        std::array<float, 16> ortho_top_left_y_flipped(float w, float h) {
-            std::array<float, 16> m{};
-            m[0] = 2.0f / w;
-            m[5] = -2.0f / h;
-            m[10] = 1.0f;
-            m[12] = -1.0f;
-            m[13] = 1.0f;
-            m[15] = 1.0f;
-            return m;
-        }
-    }
-
     Renderer::Renderer(const EngineConfig& config, const SdlContext& sdl_context, Console& console)
         : m_sdl_context(sdl_context)
         , m_gpu_device(sdl_context.get_gpu_device())
         , m_logical_width(config.graphics_config.logical_width)
         , m_logical_height(config.graphics_config.logical_height)
-        , m_offscreen_projection(ortho_top_left(static_cast<float>(m_logical_width),
-                                                static_cast<float>(m_logical_height)))
-        , m_swapchain_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
-                                                          static_cast<float>(m_logical_height))) {
+        , m_offscreen_projection(Matrix4x4::ortho_top_left(static_cast<float>(m_logical_width),
+                                                           static_cast<float>(m_logical_height)))
+        , m_swapchain_projection(Matrix4x4::ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
+                                                                     static_cast<float>(m_logical_height))) {
         if (!m_gpu_device) {
             debug::log_error("Renderer init failed: GPU device is null");
             return;
@@ -69,6 +39,8 @@ namespace hob {
         if (!init_quad_vbo())
             return;
         if (!init_default_sprite_pipeline())
+            return;
+        if (!init_overlay_pipeline())
             return;
         if (!init_blit_pipeline())
             return;
@@ -131,6 +103,8 @@ namespace hob {
             SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_debug_line_pipeline);
         if (m_blit_pipeline)
             SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_blit_pipeline);
+        if (m_overlay_pipeline)
+            SDL_ReleaseGPUGraphicsPipeline(m_gpu_device, m_overlay_pipeline);
 
         // Sprite pipelines: failed builds alias the default-slot pointer, so dedupe by
         // pointer identity before releasing to avoid double-free.
@@ -202,15 +176,65 @@ namespace hob {
         return m_swap_texture;
     }
 
-    void Renderer::draw_sprite(TextureRef texture,
-                               const Vector2& screen_pos,
-                               const Vector2& size_pixels,
-                               const Vector2& pivot_pixels,
-                               float rotation_rad,
-                               int z_index,
-                               const Material& material) {
-        m_pending_sprites.push_back(
-            {std::move(texture), screen_pos, size_pixels, pivot_pixels, rotation_rad, z_index, material});
+    void Renderer::set_sprite_view_projection(const Matrix4x4& view_projection) {
+        m_sprite_view_projection = view_projection;
+    }
+
+    SpriteDrawHandle Renderer::register_sprite_draw() {
+        const int64_t index = static_cast<int64_t>(m_sprite_draws.size());
+        m_sprite_draws.emplace_back();
+
+        SpriteDrawHandle handle;
+        if (!m_free_handles.empty()) {
+            handle = m_free_handles.back();
+            m_free_handles.pop_back();
+            m_handle_to_index[handle] = index;
+        }
+        else {
+            handle = static_cast<SpriteDrawHandle>(m_handle_to_index.size());
+            m_handle_to_index.push_back(index);
+        }
+
+        m_index_to_handle.push_back(handle);
+        return handle;
+    }
+
+    void Renderer::unregister_sprite_draw(SpriteDrawHandle handle) {
+        if (handle < 0 || handle >= static_cast<SpriteDrawHandle>(m_handle_to_index.size())) {
+            return;
+        }
+
+        const int64_t index = m_handle_to_index[handle];
+        if (index == INVALID_SPRITE_DRAW_HANDLE) {
+            return;
+        }
+
+        // Swap-pop the packed draw, then fix up the moved element's handle->index mapping.
+        const int64_t last_index = static_cast<int64_t>(m_sprite_draws.size()) - 1;
+        if (index != last_index) {
+            m_sprite_draws[index] = std::move(m_sprite_draws[last_index]);
+            const SpriteDrawHandle moved_handle = m_index_to_handle[last_index];
+            m_index_to_handle[index] = moved_handle;
+            m_handle_to_index[moved_handle] = index;
+        }
+
+        m_sprite_draws.pop_back();
+        m_index_to_handle.pop_back();
+        m_handle_to_index[handle] = INVALID_SPRITE_DRAW_HANDLE;
+        m_free_handles.push_back(handle);
+    }
+
+    void Renderer::update_sprite_draw(SpriteDrawHandle handle, const SpriteDrawData& draw) {
+        if (handle < 0 || handle >= static_cast<SpriteDrawHandle>(m_handle_to_index.size())) {
+            return;
+        }
+
+        const int64_t index = m_handle_to_index[handle];
+        if (index == INVALID_SPRITE_DRAW_HANDLE) {
+            return;
+        }
+
+        m_sprite_draws[index] = draw;
     }
 
     void Renderer::draw_overlay_sprite(TextureRef texture,
@@ -220,7 +244,7 @@ namespace hob {
                                        float rotation_rad,
                                        const Material& material) {
         m_pending_overlay_sprites.push_back(
-            {std::move(texture), screen_pos, size_pixels, pivot_pixels, rotation_rad, 0, material});
+            {std::move(texture), material, screen_pos, size_pixels, pivot_pixels, rotation_rad, 0});
     }
 
     void Renderer::draw_debug_line(const Vector2& screen_start,

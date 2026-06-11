@@ -20,6 +20,11 @@ namespace hob {
         mutable Matrix2x3 m_world_matrix;
         mutable bool m_world_dirty = true;
 
+        // Separate "world changed since the renderer last consumed it" flag, used to skip
+        // rewriting a sprite's draw data when its transform hasn't moved. Set (downward) by
+        // mark_world_dirty(); cleared by consume_render_dirty() in the world draw pass.
+        bool m_render_dirty = true;
+
         TransformComponent* m_parent = nullptr;
         std::vector<TransformComponent*> m_children;
 
@@ -71,10 +76,12 @@ namespace hob {
         bool get_interpolate_physics() const;
         void set_interpolate_physics(bool value);
 
+        bool consume_render_dirty();
+
     private:
+        void mark_world_dirty();
         void rebuild_local_matrix();
         void set_prev_local_matrix(const Matrix2x3& prev_local_matrix);
-        void mark_world_dirty();
         bool is_ancestor_of(const TransformComponent* node) const;
         void detach_from_hierarchy();
     };

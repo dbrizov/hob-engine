@@ -40,11 +40,11 @@ namespace hob {
         }
 
         static Matrix2x3 identity() {
-            return {
-                Vector2::right(),
-                Vector2::up(),
-                Vector2::zero()
-            };
+            Matrix2x3 out;
+            out.x = Vector2::right();
+            out.y = Vector2::up();
+            out.origin = Vector2::zero();
+            return out;
         }
 
         static Matrix2x3 multiply(const Matrix2x3& a, const Matrix2x3& b) {
@@ -56,13 +56,18 @@ namespace hob {
         }
 
         static Matrix2x3 lerp(const Matrix2x3& a, const Matrix2x3& b, float t) {
-            return {
-                a.x * (1.0f - t) + b.x * t,
-                a.y * (1.0f - t) + b.y * t,
-                a.origin * (1.0f - t) + b.origin * t
-            };
+            Matrix2x3 out;
+            out.x = a.x * (1.0f - t) + b.x * t;
+            out.y = a.y * (1.0f - t) + b.y * t;
+            out.origin = a.origin * (1.0f - t) + b.origin * t;
+            return out;
+
         }
 
         static Matrix2x3 make_rotate_around(const Vector2& pivot, float radians);
     };
+
+    inline Matrix2x3 operator*(const Matrix2x3& a, const Matrix2x3& b) {
+        return Matrix2x3::multiply(a, b);
+    }
 }

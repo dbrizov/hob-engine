@@ -96,12 +96,12 @@ namespace hob {
             return false;
         }
 
+        // Swap-pop; fix the moved handler's stored index.
         const size_t index = it->second;
         const size_t last_index = m_handlers.size() - 1;
-
         if (index != last_index) {
-            m_handlers[index] = std::move(m_handlers[last_index]); // move last into hole
-            m_handler_index_by_id[m_handlers[index].handler_id] = index; // fix moved id's index
+            m_handlers[index] = std::move(m_handlers[last_index]);
+            m_handler_index_by_id[m_handlers[index].handler_id] = index;
         }
 
         m_handlers.pop_back();

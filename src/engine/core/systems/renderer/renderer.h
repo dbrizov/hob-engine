@@ -11,10 +11,12 @@
 #include <SDL3/SDL_gpu.h>
 
 #include "engine/math/color.h"
+#include "engine/math/matrix4x4.h"
 #include "engine/math/vector2.h"
 
 #include "font.h"
 #include "material.h"
+#include "sprite_draw_data.h"
 #include "texture.h"
 
 namespace hob {
@@ -41,16 +43,17 @@ namespace hob {
         // Builtin asset paths, relative to the assets root.
         static constexpr std::string_view BUILTIN_SHADERS_DIR = "builtin/shaders";
         static constexpr std::string_view DEFAULT_SPRITE_SHADER = "builtin/shaders/sprite";
+        static constexpr std::string_view OVERLAY_SPRITE_SHADER = "builtin/shaders/sprite_overlay";
         static constexpr std::string_view DEBUG_FONT_PATH = "builtin/fonts/jetbrains_mono_bold.ttf";
 
         struct Sprite {
             TextureRef texture;
+            Material material;
             Vector2 screen_pos;
             Vector2 size_pixels;
             Vector2 pivot_pixels;
             float rotation_rad = 0.0;
             int z_index = 0;
-            Material material;
         };
 
         struct DebugLineVertex {
@@ -80,10 +83,10 @@ namespace hob {
 
         // Projection used when rendering into the offscreen color target. SDL_GPU clip-space
         // ortho mapping (0,0)..(w,h) -> (-1,-1)..(+1,+1) with y-down. Input is logical pixels.
-        std::array<float, 16> m_offscreen_projection{};
+        Matrix4x4 m_offscreen_projection;
         // Projection used when rendering directly into the swapchain. Same logical-pixel input
         // range as m_offscreen_projection, but y-flipped because the swap target has the opposite NDC y convention.
-        std::array<float, 16> m_swapchain_projection{};
+        Matrix4x4 m_swapchain_projection;
 
         // --- Per-frame state ---
 
@@ -91,8 +94,18 @@ namespace hob {
         SDL_GPUCommandBuffer* m_command_buffer = nullptr;
         SDL_GPUTexture* m_swap_texture = nullptr;
 
-        // Per-frame batches, drained by the render passes.
-        std::vector<Sprite> m_pending_sprites;
+        // World sprites: a persistent pool of camera-independent draw data.
+        std::vector<SpriteDrawData> m_sprite_draws;
+        std::vector<int64_t> m_handle_to_index; // handle -> packed index (-1 if free)
+        std::vector<SpriteDrawHandle> m_index_to_handle; // packed index -> handle
+        std::vector<SpriteDrawHandle> m_free_handles; // recycled handles
+        std::vector<uint32_t> m_sprite_draw_order;
+
+        // View-projection mapping world meters -> offscreen NDC, refreshed by the active
+        // camera each frame (set_sprite_view_projection). Camera pan/zoom only touches this.
+        Matrix4x4 m_sprite_view_projection;
+
+        // Per-frame batch for overlay sprites (screen space), drained by the overlay pass.
         std::vector<Sprite> m_pending_overlay_sprites;
         std::vector<DebugLineVertex> m_pending_debug_line_vertices;
         std::vector<DebugTextVertex> m_pending_debug_text_vertices;
@@ -117,6 +130,9 @@ namespace hob {
         std::vector<SDL_GPUGraphicsPipeline*> m_sprite_pipelines;
         std::unordered_map<std::string, ShaderId> m_shader_path_to_id;
         SDL_GPUBuffer* m_quad_vbo = nullptr;
+
+        // Screen-space pipeline for the overlay pass (built from OVERLAY_SPRITE_SHADER).
+        SDL_GPUGraphicsPipeline* m_overlay_pipeline = nullptr;
 
         // Fullscreen blit pipeline (no VBO; vertex shader synthesizes a triangle from SV_VertexID).
         SDL_GPUGraphicsPipeline* m_blit_pipeline = nullptr;
@@ -181,21 +197,24 @@ namespace hob {
         SDL_GPUCommandBuffer* get_command_buffer() const;
         SDL_GPUTexture* get_swap_texture() const;
 
+        // --- World sprite draws (renderer.cpp) ---
+
+        void set_sprite_view_projection(const Matrix4x4& view_projection);
+
+        // Allocates a world sprite draw and returns an opaque handle.
+        // It starts empty (no texture) and is populated via update_sprite_draw.
+        SpriteDrawHandle register_sprite_draw();
+
+        // Releases a previously registered sprite draw. Safe to pass INVALID_SPRITE_DRAW_HANDLE.
+        void unregister_sprite_draw(SpriteDrawHandle handle);
+
+        // Overwrites the sprite draw's world-space data. O(1).
+        void update_sprite_draw(SpriteDrawHandle handle, const SpriteDrawData& draw);
+
         // --- Draw queueing (renderer.cpp) ---
 
-        /// Draws a textured quad in logical screen space (top-left origin, y-down).
-        /// All pixel-valued parameters are in logical pixels — the same space the
-        /// orthographic projection is configured in, NOT window pixels.
-        void draw_sprite(TextureRef texture,
-                         const Vector2& screen_pos,
-                         const Vector2& size_pixels,
-                         const Vector2& pivot_pixels,
-                         float rotation_rad,
-                         int z_index,
-                         const Material& material);
-
-        /// Queues a sprite to be drawn in the overlay pass — on top of the world AND ImGui.
-        /// Same coordinate space as draw_sprite (logical screen pixels). No z_index: overlays are drawn in push order.
+        // Queues a sprite to be drawn in the overlay pass — on top of the world AND ImGui.
+        // Logical screen pixels (top-left origin, y-down). No z_index: overlays are drawn in push order.
         void draw_overlay_sprite(TextureRef texture,
                                  const Vector2& screen_pos,
                                  const Vector2& size_pixels,
@@ -203,16 +222,16 @@ namespace hob {
                                  float rotation_rad,
                                  const Material& material);
 
-        /// Draws a debug line segment in logical screen space (top-left origin, y-down).
+        // Draws a debug line segment in logical screen space (top-left origin, y-down).
         void draw_debug_line(const Vector2& screen_start,
                              const Vector2& screen_end,
                              const Color& color,
                              float thickness_pixels);
 
-        /// Draws a debug text string in logical screen space (top-left origin, y-down).
+        // Draws a debug text string in logical screen space (top-left origin, y-down).
         void draw_debug_text(const Vector2& screen_pos, std::string_view text, const Color& color, float scale);
 
-        /// Returns the line height of the debug font in logical pixels.
+        // Returns the line height of the debug font in logical pixels.
         int get_debug_font_line_height() const;
 
         // --- Render passes (renderer_passes.cpp) ---
@@ -266,6 +285,7 @@ namespace hob {
         bool init_samplers();
         bool init_quad_vbo();
         bool init_default_sprite_pipeline();
+        bool init_overlay_pipeline();
         bool init_blit_pipeline();
         bool init_debug_line_pipeline();
         bool init_debug_text_pipeline();
@@ -277,13 +297,16 @@ namespace hob {
 
         // --- Render passes (renderer_passes.cpp) ---
 
-        // Records one sprite's draw commands into `pass`. Reads m_command_buffer for
-        // uniform pushes. Updates `bound_shader` so callers can skip redundant pipeline
-        // binds across a batch of sprites.
-        void record_sprite(SDL_GPURenderPass* pass,
-                           const Sprite& sp,
-                           const std::array<float, 16>& projection,
-                           ShaderId& bound_shader);
+        // Records one world sprite draw into `pass` using m_sprite_view_projection.
+        // Updates`bound_shader` so callers can skip redundant pipeline binds across a batch.
+        void record_sprite_draw(SDL_GPURenderPass* pass, const SpriteDrawData& draw, ShaderId& bound_shader);
+
+        // Records one overlay sprite (screen space) into `pass` using m_swapchain_projection.
+        // The caller binds the overlay pipeline once; this only pushes uniforms, binds the texture, and draws.
+        void record_overlay_sprite(SDL_GPURenderPass* pass, const Sprite& sprite);
+
+        // Pushes the shared sprite fragment uniforms (tint/outline/texel size/time) for a draw.
+        void push_sprite_fragment_uniforms(const Texture& texture, const Material& material);
 
         // --- Debug (renderer_debug.cpp) ---
 

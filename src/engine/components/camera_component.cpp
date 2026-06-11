@@ -44,6 +44,27 @@ namespace hob {
         m_screen_pixels_per_meter = m_base_screen_pixels_per_meter * multiplier;
     }
 
+    Matrix4x4 CameraComponent::build_sprite_view_projection() const {
+        const Renderer& renderer = get_engine().get_renderer();
+        const Vector2 logical_size = renderer.get_logical_size();
+        const float w = logical_size.x;
+        const float h = logical_size.y;
+
+        const Vector2 camera_position = get_entity().get_transform()->get_position();
+        const float ppm = m_screen_pixels_per_meter;
+
+        // World meters -> logical pixels (matches world_to_screen): scale by ppm, flip y, recenter on the camera.
+        // Column-major, translation in m[12]/m[13].
+        Matrix4x4 world_to_pixels = Matrix4x4::identity();
+        world_to_pixels.m[0] = ppm;
+        world_to_pixels.m[5] = -ppm;
+        world_to_pixels.m[12] = w * 0.5f - ppm * camera_position.x;
+        world_to_pixels.m[13] = h * 0.5f + ppm * camera_position.y;
+
+        // Compose with the offscreen ortho (logical pixels -> NDC, y-down) to get world -> NDC.
+        return Matrix4x4::ortho_top_left(w, h) * world_to_pixels;
+    }
+
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position) const {
         TransformComponent* transform = get_entity().get_transform();
         const Vector2 camera_position = transform->get_position();

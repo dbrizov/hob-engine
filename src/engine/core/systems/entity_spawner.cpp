@@ -109,17 +109,30 @@ namespace hob {
         }
     }
 
-    void EntitySpawner::get_renderable_entities(std::vector<const Entity*>& out_entities) const {
-        out_entities.clear();
-        out_entities.reserve(m_entities.size());
-        for (const auto& entity : m_entities) {
-            const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
-            if (sprite_comp == nullptr) {
-                continue;
-            }
+    void EntitySpawner::register_renderable(SpriteComponent* sprite) {
+        sprite->m_renderable_index = m_renderables.size();
+        m_renderables.push_back(sprite);
+    }
 
-            out_entities.push_back(entity.get());
+    void EntitySpawner::unregister_renderable(SpriteComponent* sprite) {
+        const size_t index = sprite->m_renderable_index;
+        if (index == INVALID_RENDERABLE_INDEX || index >= m_renderables.size()) {
+            return;
         }
+
+        // Swap-pop; fix the moved sprite's stored index.
+        const size_t last_index = m_renderables.size() - 1;
+        if (index != last_index) {
+            m_renderables[index] = m_renderables[last_index];
+            m_renderables[index]->m_renderable_index = index;
+        }
+
+        m_renderables.pop_back();
+        sprite->m_renderable_index = INVALID_RENDERABLE_INDEX;
+    }
+
+    const std::vector<SpriteComponent*>& EntitySpawner::get_renderables() const {
+        return m_renderables;
     }
 
     void EntitySpawner::resolve_requests() {
@@ -162,10 +175,11 @@ namespace hob {
 
             const size_t index = it->second.live_index;
             if (index != INVALID_ENTITY_INDEX) {
+                // Swap-pop; fix the moved entity's stored index in its record.
                 const size_t last_index = m_entities.size() - 1;
                 if (index != last_index) {
-                    m_entities[index] = std::move(m_entities[last_index]); // move last into hole
-                    m_entity_records[m_entities[index]->get_id()].live_index = index; // fix record's index
+                    m_entities[index] = std::move(m_entities[last_index]);
+                    m_entity_records[m_entities[index]->get_id()].live_index = index;
                 }
 
                 m_entities.pop_back();
@@ -184,5 +198,6 @@ namespace hob {
         m_entity_records.clear();
         m_entity_spawn_requests.clear();
         m_entity_destroy_requests.clear();
+        m_renderables.clear();
     }
 }

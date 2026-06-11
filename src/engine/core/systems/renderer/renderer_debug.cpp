@@ -52,13 +52,13 @@ namespace hob {
         }
 
         if (ImGui::Begin("Texture Refs")) {
-            // Count per-texture refs held by pending sprite queues. Each draw_sprite
-            // call copies the TextureRef into the pending vector for the duration of
-            // the frame, which inflates use_count() but is not a "logical" holder.
+            // Count per-texture refs held by the renderer's draw data.
+            // World sprite draws hold a persistent TextureRef and overlay sprites a per-frame one;
+            // both inflate use_count() without being "logical" holders.
             std::unordered_map<const Texture*, int> pending_refs;
-            for (const auto& sp : m_pending_sprites) {
-                if (sp.texture) {
-                    pending_refs[sp.texture.get()] += 1;
+            for (const auto& draw : m_sprite_draws) {
+                if (draw.texture) {
+                    pending_refs[draw.texture.get()] += 1;
                 }
             }
             for (const auto& sp : m_pending_overlay_sprites) {
@@ -123,17 +123,17 @@ namespace hob {
 
     void Renderer::debug_sprite_queue() {
         if (m_cvar_log_sprite_queue) {
-            debug::log("Renderer sprite order ({} sprites):", m_pending_sprites.size());
-            for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                const Sprite& sp = m_pending_sprites[i];
-                const char* tex_path = sp.texture ? sp.texture->get_path().c_str() : "<unknown>";
-                debug::log("  [{}] z={} shader={} tex={}", i, sp.z_index, sp.material.shader_id, tex_path);
+            debug::log("Renderer sprite order ({} draws):", m_sprite_draw_order.size());
+            for (size_t i = 0; i < m_sprite_draw_order.size(); ++i) {
+                const SpriteDrawData& draw = m_sprite_draws[m_sprite_draw_order[i]];
+                const char* tex_path = draw.texture ? draw.texture->get_path().c_str() : "<unknown>";
+                debug::log("  [{}] z={} shader={} tex={}", i, draw.z_index, draw.material.shader_id, tex_path);
             }
         }
 
         if (m_cvar_show_sprite_queue) {
             if (ImGui::Begin("Sprite Queue")) {
-                ImGui::Text("Total: %zu", m_pending_sprites.size());
+                ImGui::Text("Total: %zu", m_sprite_draw_order.size());
                 const int columns = 4;
                 const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
                                                ImGuiTableFlags_RowBg |
@@ -146,16 +146,16 @@ namespace hob {
                     ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableHeadersRow();
 
-                    for (size_t i = 0; i < m_pending_sprites.size(); ++i) {
-                        const Sprite& sp = m_pending_sprites[i];
-                        const char* tex_path = sp.texture ? sp.texture->get_path().c_str() : "<unknown>";
+                    for (size_t i = 0; i < m_sprite_draw_order.size(); ++i) {
+                        const SpriteDrawData& draw = m_sprite_draws[m_sprite_draw_order[i]];
+                        const char* tex_path = draw.texture ? draw.texture->get_path().c_str() : "<unknown>";
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("%zu", i);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("%d", sp.z_index);
+                        ImGui::Text("%d", draw.z_index);
                         ImGui::TableSetColumnIndex(2);
-                        ImGui::Text("%d", sp.material.shader_id);
+                        ImGui::Text("%d", draw.material.shader_id);
                         ImGui::TableSetColumnIndex(3);
                         ImGui::TextUnformatted(tex_path);
                     }

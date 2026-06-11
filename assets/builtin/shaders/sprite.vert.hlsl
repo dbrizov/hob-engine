@@ -1,14 +1,18 @@
-// Sprite vertex shader.
+// World-space sprite vertex shader.
 //
 // Vertex input: unit-quad position in [0,1] x [0,1] and matching UV (top-left origin).
-// Per-draw uniform block holds the orthographic projection plus the sprite's screen-space
-// transform: top-left in logical pixels, size in pixels, pivot in pixels (relative to top-left),
-// and rotation in radians (CCW in screen space).
+// Per-draw uniform block holds the view-projection (world meters -> NDC) plus the sprite's
+// world-space transform: world_pos is the pivot point in meters, size is the quad size in
+// meters, pivot is a 0..1 fraction of the quad, and rotation is in radians (world y-up CCW).
+//
+// The quad is built in world space. Because world is y-up but the texture's UV origin is
+// top-left (uv.y increases downward), the local Y offset is negated so the texture stays
+// upright after the view-projection (which maps world y-up to the offscreen's y-down NDC).
 
 cbuffer SpriteVS : register(b0, space1)
 {
-    float4x4 proj;
-    float2 screen_pos;
+    float4x4 view_proj;
+    float2 world_pos;
     float2 size;
     float2 pivot;
     float rotation;
@@ -29,15 +33,17 @@ struct VSOutput
 
 VSOutput main(VSInput input)
 {
-    float2 p = input.pos * size;
-    float2 d = p - pivot;
+    float2 q = input.pos - pivot;
+    float2 local = float2(size.x * q.x, -size.y * q.y);
+
     float c = cos(rotation);
     float s = sin(rotation);
-    float2 r = float2(c * d.x - s * d.y, s * d.x + c * d.y);
-    float2 screen = screen_pos + pivot + r;
+    float2 r = float2(c * local.x - s * local.y, s * local.x + c * local.y);
+
+    float2 world = world_pos + r;
 
     VSOutput o;
-    o.pos = mul(proj, float4(screen, 0.0, 1.0));
+    o.pos = mul(view_proj, float4(world, 0.0, 1.0));
     o.uv = input.uv;
     return o;
 }

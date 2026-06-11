@@ -9,13 +9,16 @@ namespace hob {
     namespace {
         SDL_FColor to_sdl_color(const Color& c) { return {c.r, c.g, c.b, c.a}; }
 
-        // Must match the HLSL cbuffer layout in sprite.vert.hlsl (cbuffer @ b0, space1).
-        // HLSL default packing: each non-vector member can't cross a 16-byte boundary;
-        // float2 pairs pack into a single 16-byte slot.
+        // Shared byte layout for both sprite vertex shaders (cbuffer @ b0, space1):
+        //  - world sprite.vert.hlsl:      { view_proj, world_pos, size(meters), pivot(fraction), rotation }
+        //  - overlay sprite_overlay.vert.hlsl: { proj, screen_pos, size(pixels), pivot(pixels), rotation }
+        // The two shaders interpret the same 96 bytes differently, so the field names here are kept
+        // space-agnostic (e.g. 'position' is world meters for one, screen pixels for the other).
+        // HLSL default packing: float2 pairs share a 16-byte slot.
         struct SpriteVSUniforms {
             float proj[16]; // 0..64
-            float screen_pos[2]; // 64..72
-            float size[2]; // 72..80   (packs with screen_pos)
+            float position[2]; // 64..72
+            float size[2]; // 72..80   (packs with position)
             float pivot[2]; // 80..88
             float rotation; // 88..92
             float _pad; // 92..96
@@ -50,20 +53,29 @@ namespace hob {
         {
             SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmd, &ct, 1, nullptr);
             if (!pass) {
-                m_pending_sprites.clear();
                 return;
             }
 
-            // Sprite pipelines
-            if (!m_pending_sprites.empty()) {
-                std::stable_sort(m_pending_sprites.begin(), m_pending_sprites.end(),
-                                 [](const Sprite& a, const Sprite& b) {
-                                     if (a.z_index != b.z_index) {
-                                         return a.z_index < b.z_index;
-                                     }
-                                     return a.material.shader_id < b.material.shader_id;
-                                 });
+            // World sprites: build the draw order as a sorted index list (sorting the pool itself
+            // would scramble the handle->index mapping) by (z, shader). Rebuilt every frame so it
+            // stays in sync with the pool — the debug sprite-queue view reads it too.
+            m_sprite_draw_order.resize(m_sprite_draws.size());
+            for (uint32_t i = 0; i < m_sprite_draw_order.size(); ++i) {
+                m_sprite_draw_order[i] = i;
+            }
 
+            std::stable_sort(m_sprite_draw_order.begin(), m_sprite_draw_order.end(),
+                             [this](uint32_t a, uint32_t b) {
+                                 const SpriteDrawData& da = m_sprite_draws[a];
+                                 const SpriteDrawData& db = m_sprite_draws[b];
+                                 if (da.z_index != db.z_index) {
+                                     return da.z_index < db.z_index;
+                                 }
+
+                                 return da.material.shader_id < db.material.shader_id;
+                             });
+
+            if (!m_sprite_draw_order.empty()) {
                 SDL_GPUBufferBinding vb{};
                 vb.buffer = m_quad_vbo;
                 vb.offset = 0;
@@ -71,8 +83,8 @@ namespace hob {
 
                 ShaderId bound_shader = INVALID_SHADER_ID;
 
-                for (const Sprite& sp : m_pending_sprites) {
-                    record_sprite(pass, sp, m_offscreen_projection, bound_shader);
+                for (const uint32_t index : m_sprite_draw_order) {
+                    record_sprite_draw(pass, m_sprite_draws[index], bound_shader);
                 }
             }
 
@@ -81,8 +93,6 @@ namespace hob {
 
         debug_texture_refs();
         debug_sprite_queue();
-
-        m_pending_sprites.clear();
     }
 
     void Renderer::render_blit_pass() {
@@ -169,7 +179,7 @@ namespace hob {
             SDL_PushGPUVertexUniformData(cmd,
                                          0,
                                          m_swapchain_projection.data(),
-                                         static_cast<uint32_t>(m_swapchain_projection.size() * sizeof(float)));
+                                         Matrix4x4::byte_size());
 
             SDL_DrawGPUPrimitives(pass, line_vertex_count, 1, 0, 0);
 
@@ -275,7 +285,7 @@ namespace hob {
             SDL_PushGPUVertexUniformData(cmd,
                                          0,
                                          m_swapchain_projection.data(),
-                                         static_cast<uint32_t>(m_swapchain_projection.size() * sizeof(float)));
+                                         Matrix4x4::byte_size());
 
             SDL_DrawGPUIndexedPrimitives(pass, index_count, 1, 0, 0, 0);
 
@@ -304,16 +314,17 @@ namespace hob {
                 return;
             }
 
+            // Overlay sprites use one screen-space pipeline (per-material shader ids are ignored).
+            SDL_BindGPUGraphicsPipeline(pass, m_overlay_pipeline);
+
             SDL_GPUBufferBinding vb{};
             vb.buffer = m_quad_vbo;
             vb.offset = 0;
             SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
 
-            ShaderId bound_shader = INVALID_SHADER_ID;
-
             // Overlay sprites are drawn in push order (no z-sort).
             for (const Sprite& sp : m_pending_overlay_sprites) {
-                record_sprite(pass, sp, m_swapchain_projection, bound_shader);
+                record_overlay_sprite(pass, sp);
             }
 
             SDL_EndGPURenderPass(pass);
@@ -322,55 +333,81 @@ namespace hob {
         m_pending_overlay_sprites.clear();
     }
 
-    void Renderer::record_sprite(SDL_GPURenderPass* pass,
-                                 const Sprite& sp,
-                                 const std::array<float, 16>& projection,
-                                 ShaderId& bound_shader) {
-        if (!sp.texture || !sp.texture->m_gpu_texture) {
+    void Renderer::record_sprite_draw(SDL_GPURenderPass* pass, const SpriteDrawData& draw, ShaderId& bound_shader) {
+        if (!draw.texture || !draw.texture->m_gpu_texture) {
             return;
         }
 
-        if (sp.material.shader_id != bound_shader) {
-            SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[sp.material.shader_id]);
-            bound_shader = sp.material.shader_id;
+        if (draw.material.shader_id != bound_shader) {
+            SDL_BindGPUGraphicsPipeline(pass, m_sprite_pipelines[draw.material.shader_id]);
+            bound_shader = draw.material.shader_id;
         }
 
         SpriteVSUniforms vsu{};
-        std::memcpy(vsu.proj, projection.data(), sizeof(vsu.proj));
-        vsu.screen_pos[0] = sp.screen_pos.x;
-        vsu.screen_pos[1] = sp.screen_pos.y;
-        vsu.size[0] = sp.size_pixels.x;
-        vsu.size[1] = sp.size_pixels.y;
-        vsu.pivot[0] = sp.pivot_pixels.x;
-        vsu.pivot[1] = sp.pivot_pixels.y;
-        // World rotation is y-up CCW; logical screen is y-down. Negate so positive
-        // world rotation remains visually CCW.
-        vsu.rotation = -sp.rotation_rad;
+        std::memcpy(vsu.proj, m_sprite_view_projection.data(), sizeof(vsu.proj));
+        vsu.position[0] = draw.world_pos.x;
+        vsu.position[1] = draw.world_pos.y;
+        vsu.size[0] = draw.size.x;
+        vsu.size[1] = draw.size.y;
+        vsu.pivot[0] = draw.pivot.x;
+        vsu.pivot[1] = draw.pivot.y;
+        vsu.rotation = draw.rotation;
         SDL_PushGPUVertexUniformData(m_command_buffer, 0, &vsu, sizeof(vsu));
 
-        SpriteFSUniforms fsu{};
-        fsu.tint[0] = sp.material.tint.r;
-        fsu.tint[1] = sp.material.tint.g;
-        fsu.tint[2] = sp.material.tint.b;
-        fsu.tint[3] = sp.material.tint.a;
-        fsu.outline_color[0] = sp.material.outline_color.r;
-        fsu.outline_color[1] = sp.material.outline_color.g;
-        fsu.outline_color[2] = sp.material.outline_color.b;
-        fsu.outline_color[3] = sp.material.outline_color.a;
-        fsu.outline_width = sp.material.outline_width;
-        fsu.alpha_threshold = sp.material.alpha_threshold;
-        const uint32_t tex_w = sp.texture->get_width();
-        const uint32_t tex_h = sp.texture->get_height();
-        fsu.texel_size[0] = tex_w > 0 ? 1.0f / static_cast<float>(tex_w) : 0.0f;
-        fsu.texel_size[1] = tex_h > 0 ? 1.0f / static_cast<float>(tex_h) : 0.0f;
-        fsu.time = m_frame_time;
-        SDL_PushGPUFragmentUniformData(m_command_buffer, 0, &fsu, sizeof(fsu));
+        push_sprite_fragment_uniforms(*draw.texture, draw.material);
 
         SDL_GPUTextureSamplerBinding ts{};
-        ts.texture = sp.texture->m_gpu_texture;
+        ts.texture = draw.texture->m_gpu_texture;
         ts.sampler = m_sprite_sampler;
         SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
 
         SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+    }
+
+    void Renderer::record_overlay_sprite(SDL_GPURenderPass* pass, const Sprite& sprite) {
+        if (!sprite.texture || !sprite.texture->m_gpu_texture) {
+            return;
+        }
+
+        SpriteVSUniforms vsu{};
+        std::memcpy(vsu.proj, m_swapchain_projection.data(), sizeof(vsu.proj));
+        vsu.position[0] = sprite.screen_pos.x;
+        vsu.position[1] = sprite.screen_pos.y;
+        vsu.size[0] = sprite.size_pixels.x;
+        vsu.size[1] = sprite.size_pixels.y;
+        vsu.pivot[0] = sprite.pivot_pixels.x;
+        vsu.pivot[1] = sprite.pivot_pixels.y;
+        // Logical screen is y-down; negate so positive world rotation remains visually CCW.
+        vsu.rotation = -sprite.rotation_rad;
+        SDL_PushGPUVertexUniformData(m_command_buffer, 0, &vsu, sizeof(vsu));
+
+        push_sprite_fragment_uniforms(*sprite.texture, sprite.material);
+
+        SDL_GPUTextureSamplerBinding ts{};
+        ts.texture = sprite.texture->m_gpu_texture;
+        ts.sampler = m_sprite_sampler;
+        SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
+
+        SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+    }
+
+    void Renderer::push_sprite_fragment_uniforms(const Texture& texture, const Material& material) {
+        SpriteFSUniforms fsu{};
+        fsu.tint[0] = material.tint.r;
+        fsu.tint[1] = material.tint.g;
+        fsu.tint[2] = material.tint.b;
+        fsu.tint[3] = material.tint.a;
+        fsu.outline_color[0] = material.outline_color.r;
+        fsu.outline_color[1] = material.outline_color.g;
+        fsu.outline_color[2] = material.outline_color.b;
+        fsu.outline_color[3] = material.outline_color.a;
+        fsu.outline_width = material.outline_width;
+        fsu.alpha_threshold = material.alpha_threshold;
+        const uint32_t tex_w = texture.get_width();
+        const uint32_t tex_h = texture.get_height();
+        fsu.texel_size[0] = tex_w > 0 ? 1.0f / static_cast<float>(tex_w) : 0.0f;
+        fsu.texel_size[1] = tex_h > 0 ? 1.0f / static_cast<float>(tex_h) : 0.0f;
+        fsu.time = m_frame_time;
+        SDL_PushGPUFragmentUniformData(m_command_buffer, 0, &fsu, sizeof(fsu));
     }
 }

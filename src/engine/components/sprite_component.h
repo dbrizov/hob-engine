@@ -4,10 +4,13 @@
 
 #include "component.h"
 #include "engine/core/systems/renderer/material.h"
+#include "engine/core/systems/renderer/sprite_draw_data.h"
 #include "engine/core/systems/renderer/texture.h"
 #include "engine/math/vector2.h"
 
 namespace hob {
+    constexpr size_t INVALID_RENDERABLE_INDEX = static_cast<size_t>(-1);
+
     class SpriteComponent : public Component {
         TextureRef m_texture;
         Material m_material;
@@ -16,10 +19,29 @@ namespace hob {
         int m_z_index = 0;
         int m_pixels_per_meter = 64;
 
+        // Renderer-owned world sprite draw this component drives (allocated on enter_play).
+        SpriteDrawHandle m_sprite_draw_handle = INVALID_SPRITE_DRAW_HANDLE;
+
+        // Slot in EntitySpawner's renderable registry, for O(1) swap-pop unregister.
+        size_t m_renderable_index = INVALID_RENDERABLE_INDEX;
+
+        // "A draw-affecting property changed since the renderer last consumed it" — lets the
+        // world draw pass skip re-resolving a static sprite's draw data every frame.
+        bool m_render_dirty = true;
+
+        friend class EntitySpawner;
+
     public:
         explicit SpriteComponent(Entity& entity);
 
+        void enter_play() override;
+        void exit_play() override;
+
         std::string to_string() const override;
+
+        SpriteDrawHandle get_sprite_draw_handle() const;
+
+        bool consume_render_dirty();
 
         const TextureRef& get_texture() const;
         void set_texture(TextureRef texture);

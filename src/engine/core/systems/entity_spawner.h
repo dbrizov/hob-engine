@@ -10,6 +10,7 @@
 
 namespace hob {
     class Engine;
+    class SpriteComponent;
 
     constexpr size_t INVALID_ENTITY_INDEX = std::numeric_limits<size_t>::max();
 
@@ -32,6 +33,9 @@ namespace hob {
         std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
         std::unordered_set<EntityId> m_entity_destroy_requests;
 
+        // Registry of in-play sprites, maintained incrementally by SpriteComponent's enter_play/exit_play.
+        std::vector<SpriteComponent*> m_renderables;
+
         // Engine is a friend of EntitySpawner so that:
         // - It can handle the lifecycle of entities
         friend class Engine;
@@ -47,7 +51,10 @@ namespace hob {
         void get_entities(std::vector<Entity*>& out_entities) const;
         void get_ticking_entities(std::vector<Entity*>& out_entities) const;
         void get_physics_entities(std::vector<Entity*>& out_entities) const;
-        void get_renderable_entities(std::vector<const Entity*>& out_entities) const;
+
+        void register_renderable(SpriteComponent* sprite);
+        void unregister_renderable(SpriteComponent* sprite);
+        const std::vector<SpriteComponent*>& get_renderables() const;
 
     private:
         void resolve_requests();

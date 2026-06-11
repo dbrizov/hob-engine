@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "path_utils.h"
 #include "engine/components/camera_component.h"
+#include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/math/matrix2x3.h"
@@ -35,7 +36,6 @@ namespace hob {
         std::vector<Entity*> entities;
         std::vector<Entity*> ticking_entities;
         std::vector<Entity*> physics_entities;
-        std::vector<const Entity*> renderable_entities;
 
         while (is_running) {
             m_timer.frame_start();
@@ -68,7 +68,6 @@ namespace hob {
             m_entity_spawner.get_entities(entities);
             m_entity_spawner.get_ticking_entities(ticking_entities);
             m_entity_spawner.get_physics_entities(physics_entities);
-            m_entity_spawner.get_renderable_entities(renderable_entities);
 
             const float delta_time = m_timer.get_delta_time();
             const float scaled_delta_time = delta_time * m_timer.get_time_scale();
@@ -98,7 +97,7 @@ namespace hob {
 #endif
 
             // Draw
-            draw_entities(renderable_entities);
+            draw_entities();
             flush_debug_draws_to_renderer(scaled_delta_time);
             m_cursor.draw();
 
@@ -187,61 +186,70 @@ namespace hob {
         }
     }
 
-    void Engine::draw_entities(std::vector<const Entity*>& entities) {
-        CameraComponent* camera = get_active_camera();
+    void Engine::draw_entities() {
+        const CameraComponent* camera = get_active_camera();
         if (camera == nullptr) {
             return;
         }
 
-        const float camera_ppm = camera->get_screen_pixels_per_meter();
-        TransformComponent* camera_transform = camera->get_entity().get_transform();
-        const Vector2 camera_position = camera_transform->get_position();
+        // Camera pan/zoom lives entirely in the view-projection; sprite draws stay in world
+        // space, so a static sprite's draw data never needs rewriting when the camera moves.
+        m_renderer.set_sprite_view_projection(camera->build_sprite_view_projection());
 
-        for (const Entity* entity : entities) {
-            const TransformComponent* transform_comp = entity->get_transform();
-            const SpriteComponent* sprite_comp = entity->get_component<SpriteComponent>();
+        const float interpolation_fraction = m_physics.get_interpolation_fraction();
 
-            const TextureRef& texture = sprite_comp->get_texture();
-            if (texture == nullptr) {
+        for (SpriteComponent* sprite_comp : m_entity_spawner.get_renderables()) {
+            TransformComponent* transform_comp = sprite_comp->get_entity().get_transform();
+
+            const bool sprite_dirty = sprite_comp->consume_render_dirty();
+            const bool transform_dirty = transform_comp->consume_render_dirty();
+            const bool interpolating = transform_comp->get_interpolate_physics() &&
+                                       has_nonstatic_body(sprite_comp->get_entity());
+
+            if (!sprite_dirty && !transform_dirty && !interpolating) {
                 continue;
             }
 
             const Matrix2x3 matrix = transform_comp->get_interpolate_physics()
                                          ? Matrix2x3::lerp(transform_comp->get_prev_world_matrix(),
                                                            transform_comp->get_world_matrix(),
-                                                           m_physics.get_interpolation_fraction())
+                                                           interpolation_fraction)
                                          : transform_comp->get_world_matrix();
 
-            // Read world scale directly rather than decomposing the interpolated matrix: lerping two
-            // rotation matrices ~180 deg apart shrinks the basis toward zero at the midpoint, which would
-            // momentarily collapse the sprite. World scale is not interpolated (matches pre-nesting behavior).
-            const Vector2 tr_scale = transform_comp->get_scale();
-            const Vector2 sp_scale = sprite_comp->get_scale();
-            const Vector2 scale = Vector2(tr_scale.x * sp_scale.x, tr_scale.y * sp_scale.y);
+            SpriteDrawData draw_data;
+            draw_data.texture = sprite_comp->get_texture();
+            // const overload: reading the material here must not mark the sprite dirty every frame.
+            draw_data.material = static_cast<const SpriteComponent*>(sprite_comp)->get_material();
+            draw_data.z_index = sprite_comp->get_z_index();
+            draw_data.pivot = sprite_comp->get_pivot();
+            draw_data.world_pos = matrix.origin;
+            draw_data.rotation = matrix.get_rotation();
 
-            const float texture_width = static_cast<float>(texture->get_width());
-            const float texture_height = static_cast<float>(texture->get_height());
-            const float sprite_ppm = sprite_comp->get_pixels_per_meter_f();
-            const Vector2 size_pixels = Vector2((texture_width / sprite_ppm) * camera_ppm * scale.x,
-                                                (texture_height / sprite_ppm) * camera_ppm * scale.y);
+            if (draw_data.texture != nullptr) {
+                // Read world scale directly rather than decomposing the interpolated matrix:
+                // lerping two rotation matrices ~180 deg apart shrinks the basis toward zero at the midpoint,
+                // which would momentarily collapse the sprite. World scale is not interpolated.
+                const Vector2 tr_scale = transform_comp->get_scale();
+                const Vector2 sp_scale = sprite_comp->get_scale();
+                const float sprite_ppm = sprite_comp->get_pixels_per_meter_f();
+                const float texture_width = static_cast<float>(draw_data.texture->get_width());
+                const float texture_height = static_cast<float>(draw_data.texture->get_height());
+                // Size is in world meters (camera ppm is applied by the view-projection).
+                draw_data.size = Vector2((texture_width / sprite_ppm) * tr_scale.x * sp_scale.x,
+                                         (texture_height / sprite_ppm) * tr_scale.y * sp_scale.y);
+            }
 
-            const Vector2 sprite_pivot = sprite_comp->get_pivot();
-            const Vector2 world_position = matrix.origin;
-            Vector2 screen_pos = camera->world_to_screen(world_position, camera_position);
-            screen_pos.x -= size_pixels.x * sprite_pivot.x;
-            screen_pos.y -= size_pixels.y * sprite_pivot.y;
-
-            const Vector2 pivot_pixel(size_pixels.x * sprite_pivot.x, size_pixels.y * sprite_pivot.y);
-
-            m_renderer.draw_sprite(
-                texture,
-                screen_pos,
-                size_pixels,
-                pivot_pixel,
-                matrix.get_rotation(),
-                sprite_comp->get_z_index(),
-                sprite_comp->get_material());
+            m_renderer.update_sprite_draw(sprite_comp->get_sprite_draw_handle(), draw_data);
         }
+    }
+
+    bool Engine::has_nonstatic_body(const Entity& entity) const {
+        const RigidbodyComponent* rigidbody = entity.get_rigidbody();
+        const bool result = rigidbody != nullptr &&
+                            rigidbody->has_body() &&
+                            rigidbody->get_body_type() != BodyType::Static;
+
+        return result;
     }
 
     void Engine::flush_debug_draws_to_renderer(float delta_time) {

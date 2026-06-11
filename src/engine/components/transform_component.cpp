@@ -110,7 +110,7 @@ namespace hob {
     const Matrix2x3& TransformComponent::get_world_matrix() const {
         if (m_world_dirty) {
             m_world_matrix = (m_parent != nullptr)
-                                 ? Matrix2x3::multiply(m_parent->get_world_matrix(), m_local_matrix)
+                                 ? m_parent->get_world_matrix() * m_local_matrix
                                  : m_local_matrix;
             m_world_dirty = false;
         }
@@ -120,7 +120,7 @@ namespace hob {
 
     Matrix2x3 TransformComponent::get_prev_world_matrix() const {
         return (m_parent != nullptr)
-                   ? Matrix2x3::multiply(m_parent->get_prev_world_matrix(), m_prev_local_matrix)
+                   ? m_parent->get_prev_world_matrix() * m_prev_local_matrix
                    : m_prev_local_matrix;
     }
 
@@ -237,8 +237,16 @@ namespace hob {
         m_prev_local_matrix = prev_local_matrix;
     }
 
+    bool TransformComponent::consume_render_dirty() {
+        const bool was_dirty = m_render_dirty;
+        m_render_dirty = false;
+
+        return was_dirty;
+    }
+
     void TransformComponent::mark_world_dirty() {
         m_world_dirty = true;
+        m_render_dirty = true;
         for (TransformComponent* child : m_children) {
             child->mark_world_dirty();
         }
