@@ -204,7 +204,7 @@ namespace hob {
             const bool sprite_dirty = sprite_comp->consume_render_dirty();
             const bool transform_dirty = transform_comp->consume_render_dirty();
             const bool interpolating = transform_comp->get_interpolate_physics() &&
-                                       has_nonstatic_body(sprite_comp->get_entity());
+                                       has_moving_physics_body(sprite_comp->get_entity());
 
             if (!sprite_dirty && !transform_dirty && !interpolating) {
                 continue;
@@ -243,11 +243,14 @@ namespace hob {
         }
     }
 
-    bool Engine::has_nonstatic_body(const Entity& entity) const {
+    bool Engine::has_moving_physics_body(const Entity& entity) const {
+        // A non-static body that is still awake -- once it settles, Box2D sleeps it and its
+        // interpolation endpoints stop changing, so there is nothing left to re-resolve per frame.
         const RigidbodyComponent* rigidbody = entity.get_rigidbody();
         const bool result = rigidbody != nullptr &&
                             rigidbody->has_body() &&
-                            rigidbody->get_body_type() != BodyType::Static;
+                            rigidbody->get_body_type() != BodyType::Static &&
+                            rigidbody->is_awake();
 
         return result;
     }

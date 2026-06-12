@@ -26,7 +26,9 @@ namespace hob {
         std::string to_string() const override;
 
         b2BodyId get_body_id() const;
+
         bool has_body() const;
+        bool is_awake() const; // True while Box2D is still simulating the body
 
         BodyType get_body_type() const;
         void set_body_type(BodyType body_type);

@@ -80,6 +80,10 @@ namespace hob {
         return b2Body_IsValid(m_body_id);
     }
 
+    bool RigidbodyComponent::is_awake() const {
+        return b2Body_IsAwake(m_body_id);
+    }
+
     BodyType RigidbodyComponent::get_body_type() const {
         return m_body_type;
     }

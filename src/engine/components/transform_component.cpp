@@ -66,6 +66,10 @@ namespace hob {
     }
 
     void TransformComponent::set_local_position(const Vector2& position) {
+        if (m_local_position == position) {
+            return;
+        }
+
         m_local_position = position;
         m_local_matrix.origin = m_local_position;
 
@@ -83,6 +87,10 @@ namespace hob {
     }
 
     void TransformComponent::set_local_rotation(float radians) {
+        if (m_local_rotation == radians) {
+            return;
+        }
+
         m_local_rotation = radians;
         rebuild_local_matrix();
         mark_world_matrix_dirty();
