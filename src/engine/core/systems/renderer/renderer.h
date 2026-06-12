@@ -186,6 +186,15 @@ namespace hob {
 
         Vector2 get_logical_size() const;
 
+        // Orthographic projection mapping logical pixels x:[0,w] y:[0,h] -> NDC [-1,+1], y-down.
+        // Matches the offscreen target's NDC y convention.
+        static Matrix4x4 ortho_top_left(float w, float h);
+
+        // Same input range as ortho_top_left, but maps y:[0,h] -> [+1,-1].
+        // Used for passes that target the swapchain directly (overlay/debug),
+        // whose NDC y convention is opposite the offscreen target's.
+        static Matrix4x4 ortho_top_left_y_flipped(float w, float h);
+
         // --- Per-frame command buffer (renderer.cpp) ---
 
         // Engine calls acquire_command_buffer() at frame start; if it returns true the

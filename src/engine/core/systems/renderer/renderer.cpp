@@ -17,10 +17,10 @@ namespace hob {
         , m_gpu_device(sdl_context.get_gpu_device())
         , m_logical_width(config.graphics_config.logical_width)
         , m_logical_height(config.graphics_config.logical_height)
-        , m_offscreen_projection(Matrix4x4::ortho_top_left(static_cast<float>(m_logical_width),
-                                                           static_cast<float>(m_logical_height)))
-        , m_swapchain_projection(Matrix4x4::ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
-                                                                     static_cast<float>(m_logical_height))) {
+        , m_offscreen_projection(ortho_top_left(static_cast<float>(m_logical_width),
+                                                static_cast<float>(m_logical_height)))
+        , m_swapchain_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
+                                                          static_cast<float>(m_logical_height))) {
         if (!m_gpu_device) {
             debug::log_error("Renderer init failed: GPU device is null");
             return;
@@ -143,6 +143,28 @@ namespace hob {
 
     Vector2 Renderer::get_logical_size() const {
         return Vector2(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height));
+    }
+
+    Matrix4x4 Renderer::ortho_top_left(float w, float h) {
+        Matrix4x4 out;
+        out.m[0] = 2.0f / w;
+        out.m[5] = 2.0f / h;
+        out.m[10] = 1.0f;
+        out.m[12] = -1.0f;
+        out.m[13] = -1.0f;
+        out.m[15] = 1.0f;
+        return out;
+    }
+
+    Matrix4x4 Renderer::ortho_top_left_y_flipped(float w, float h) {
+        Matrix4x4 out;
+        out.m[0] = 2.0f / w;
+        out.m[5] = -2.0f / h;
+        out.m[10] = 1.0f;
+        out.m[12] = -1.0f;
+        out.m[13] = 1.0f;
+        out.m[15] = 1.0f;
+        return out;
     }
 
     bool Renderer::acquire_command_buffer() {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "vector2.h"
 
 namespace hob {
@@ -64,7 +66,16 @@ namespace hob {
 
         }
 
-        static Matrix2x3 make_rotate_around(const Vector2& pivot, float radians);
+        static Matrix2x3 make_rotate_around(const Vector2& pivot, float radians) {
+            const float cos = std::cos(radians);
+            const float sin = std::sin(radians);
+
+            Matrix2x3 out;
+            out.x = Vector2(cos, sin);
+            out.y = Vector2(-sin, cos);
+            out.origin = pivot - (out.x * pivot.x + out.y * pivot.y);
+            return out;
+        }
     };
 
     inline Matrix2x3 operator*(const Matrix2x3& a, const Matrix2x3& b) {

@@ -62,7 +62,7 @@ namespace hob {
         world_to_pixels.m[13] = h * 0.5f + ppm * camera_position.y;
 
         // Compose with the offscreen ortho (logical pixels -> NDC, y-down) to get world -> NDC.
-        return Matrix4x4::ortho_top_left(w, h) * world_to_pixels;
+        return Renderer::ortho_top_left(w, h) * world_to_pixels;
     }
 
     Vector2 CameraComponent::world_to_screen(const Vector2& world_position) const {

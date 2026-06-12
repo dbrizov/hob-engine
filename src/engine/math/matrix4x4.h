@@ -23,33 +23,6 @@ namespace hob {
             return out;
         }
 
-        // Orthographic projection mapping logical pixels x:[0,w] y:[0,h] -> NDC [-1,+1], y-down.
-        // Matches the offscreen target's NDC y convention.
-        static Matrix4x4 ortho_top_left(float w, float h) {
-            Matrix4x4 out;
-            out.m[0] = 2.0f / w;
-            out.m[5] = 2.0f / h;
-            out.m[10] = 1.0f;
-            out.m[12] = -1.0f;
-            out.m[13] = -1.0f;
-            out.m[15] = 1.0f;
-            return out;
-        }
-
-        // Same input range as ortho_top_left, but maps y:[0,h] -> [+1,-1].
-        // Used for passes that target the swapchain directly (overlay/debug),
-        // whose NDC y convention is opposite the offscreen target's.
-        static Matrix4x4 ortho_top_left_y_flipped(float w, float h) {
-            Matrix4x4 out;
-            out.m[0] = 2.0f / w;
-            out.m[5] = -2.0f / h;
-            out.m[10] = 1.0f;
-            out.m[12] = -1.0f;
-            out.m[13] = 1.0f;
-            out.m[15] = 1.0f;
-            return out;
-        }
-
         // Column-major matrix product (result = a * b): applies b first, then a.
         static Matrix4x4 multiply(const Matrix4x4& a, const Matrix4x4& b) {
             Matrix4x4 out;
