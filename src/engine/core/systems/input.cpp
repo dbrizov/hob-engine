@@ -116,10 +116,19 @@ namespace hob {
         return m_mouse_screen_position;
     }
 
+    bool Input::is_mouse_button_down(int button) const {
+        switch (button) {
+            case 0: return (m_mouse_button_mask & SDL_BUTTON_LMASK) != 0;
+            case 1: return (m_mouse_button_mask & SDL_BUTTON_RMASK) != 0;
+            case 2: return (m_mouse_button_mask & SDL_BUTTON_MMASK) != 0;
+            default: return false;
+        }
+    }
+
     void Input::update_mouse_screen_position() {
         float x = 0.0f;
         float y = 0.0f;
-        SDL_GetMouseState(&x, &y);
+        m_mouse_button_mask = SDL_GetMouseState(&x, &y);
 
         // Map window pixels to logical (FBO) pixels. The FBO is blitted to the window with a
         // uniform STRETCH (no letterboxing today), so the mapping is just an axis-wise scale.

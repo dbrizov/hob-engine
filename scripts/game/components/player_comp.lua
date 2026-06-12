@@ -15,9 +15,19 @@ function Player:init()
     self.camera_zoom_time = 0.0
     self.camera_min_zoom = 0.5
     self.camera_max_zoom = 2.0
+
+    self.max_health = 5
+    self.health = self.max_health
+    self.spawn_position = Vector2.zero()
+    self.hit_flash_time = 0.0
 end
 
 function Player:enter_play()
+    Game.set_player(self.entity)
+    self.spawn_position = self.entity:get_transform():get_position()
+    self.material = self.entity:get_sprite():get_material()
+    self.base_outline_color = self.material:get_outline_color()
+
     local input = self.entity:get_input()
 
     self.x_axis_id = input:bind_axis("horizontal", function(axis)
@@ -47,6 +57,7 @@ end
 
 function Player:late_tick(delta_time)
     self:update_animation()
+    self:update_hit_flash(delta_time)
 
     local position = self.entity:get_transform():get_position()
     self:update_camera_position(position, delta_time)
@@ -56,23 +67,6 @@ function Player:late_tick(delta_time)
     -- local t = (math.sin(self.camera_zoom_time) + 1.0) * 0.5
     -- local zoom = Math.lerp(self.camera_min_zoom, self.camera_max_zoom, t)
     -- Camera.set_zoom(zoom)
-end
-
-function Player:debug_draw_tick(delta_time)
-    local mouse_screen = Input.get_mouse_screen_position()
-    local mouse_world = Camera.screen_to_world(mouse_screen)
-    local player_pos = self.entity:get_transform():get_position()
-
-    local direction = mouse_world - player_pos
-    local distance = direction:length()
-    local hit = Physics.raycast(player_pos, direction, distance)
-
-    if hit.hit then
-        Debug.draw_line(player_pos, hit.point, Color.red())
-        Debug.draw_circle(hit.point, 0.1, Color.red())
-    else
-        Debug.draw_line(player_pos, mouse_world, Color.green())
-    end
 end
 
 function Player:update_animation()
@@ -106,4 +100,35 @@ function Player:update_rotation(delta_time)
 
     local radians = math.atan(direction.y, direction.x)
     character_body:set_rotation(radians)
+end
+
+function Player:take_damage(amount)
+    self.health = self.health - amount
+
+    -- No UI, so feedback is a red outline flash.
+    self.material:set_outline_color(Color.red())
+    self.hit_flash_time = 0.12
+
+    if self.health <= 0 then
+        self:respawn()
+    end
+end
+
+function Player:respawn()
+    self.health = self.max_health
+
+    local character_body = self.entity:get_character_body()
+    character_body:set_position(self.spawn_position)
+    character_body:set_velocity(Vector2.zero())
+end
+
+function Player:update_hit_flash(delta_time)
+    if self.hit_flash_time <= 0.0 then
+        return
+    end
+
+    self.hit_flash_time = self.hit_flash_time - delta_time
+    if self.hit_flash_time <= 0.0 then
+        self.material:set_outline_color(self.base_outline_color)
+    end
 end

@@ -9,7 +9,10 @@
 ---@field DynamicBox string
 ---@field DynamicCircle string
 ---@field Enemy string
+---@field EnemyBullet string
+---@field EnemySpawner string
 ---@field Player string
+---@field PlayerBullet string
 ---@field StaticBox string
 ---@field StaticCircle string
 ---@field TriggerBox string

@@ -1,8 +1,8 @@
 {
   "graphics": {
     "window_title": "Hob Engine",
-    "window_width": 1152,
-    "window_height": 648,
+    "window_width": 1920,
+    "window_height": 1080,
     "logical_width": 1920,
     "logical_height": 1080,
     "target_fps": 60,

@@ -7,5 +7,11 @@
 ---@class Components
 ---@field Character string
 ---@field ContactLogger string
+---@field Enemy string
+---@field EnemyBullet string
+---@field EnemySpawner string
 ---@field Player string
+---@field PlayerBullet string
+---@field Projectile string
+---@field Weapon string
 Components = {}

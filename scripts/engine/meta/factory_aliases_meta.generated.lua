@@ -9,6 +9,10 @@
 ---@field PlayerRun AnimationClip
 
 ---@class Materials
+---@field EnemyBody Material
+---@field EnemyBullet Material
+---@field PlayerBullet Material
 ---@field Psychedelic Material
+---@field Wall Material
 ---@field WhiteOutline Material
 

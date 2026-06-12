@@ -59,6 +59,10 @@ Input = {}
 ---@return Vector2
 function Input.get_mouse_screen_position() end
 
+---@param arg1 integer
+---@return boolean
+function Input.is_mouse_button_down(arg1) end
+
 -- Physics
 ---@class Physics
 Physics = {}

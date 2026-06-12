@@ -84,7 +84,8 @@ namespace hob {
 
         void bind_input(sol::state& lua, LuaMetaRegistry& meta, Input& input) {
             bind_table(lua, meta, "Input")
-                .func("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); });
+                .func("get_mouse_screen_position", [&input]() { return input.get_mouse_screen_position(); })
+                .func("is_mouse_button_down", [&input](int button) { return input.is_mouse_button_down(button); });
         }
 
         void bind_physics(sol::state& lua, LuaMetaRegistry& meta, Physics& physics) {

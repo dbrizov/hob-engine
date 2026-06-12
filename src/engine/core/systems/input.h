@@ -54,6 +54,7 @@ namespace hob {
         std::bitset<SDL_SCANCODE_COUNT> m_pressed_keys_last_frame{};
 
         Vector2 m_mouse_screen_position;
+        uint32_t m_mouse_button_mask = 0;
 
     public:
         Input(const SdlContext& sdl_context, const Renderer& renderer);
@@ -64,6 +65,8 @@ namespace hob {
         bool remove_input_event_handler(InputEventHandlerId id);
 
         Vector2 get_mouse_screen_position() const;
+        // button: 0 = left, 1 = right, 2 = middle.
+        bool is_mouse_button_down(int button) const;
 
     private:
         void update_mouse_screen_position();

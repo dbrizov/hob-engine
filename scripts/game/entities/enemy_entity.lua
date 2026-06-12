@@ -5,13 +5,14 @@ DefineEntity.Enemy = {
     },
     character_body = {
         collision_layer = Collision.Kinematic,
-        collision_mask = Collision.Static | Collision.Dynamic | Collision.Trigger,
+        collision_mask = Collision.Static | Collision.Dynamic | Collision.Trigger | Collision.Bullet,
         solver_ignore_mask = Collision.Trigger,
         capsule = Capsule(Vector2.zero(), Vector2.zero(), 1.2),
     },
     sprite = {
         texture = Textures.PlayerIdle01,
         z_index = 0,
+        material = Materials.EnemyBody,
     },
     sprite_animator = {
         clips = {
@@ -20,5 +21,5 @@ DefineEntity.Enemy = {
         },
         default_clip = "idle",
     },
-    lua_components = { Components.ContactLogger },
+    lua_components = { Components.Enemy },
 }

@@ -23,6 +23,7 @@
 ---@field PlayerRun08 string
 ---@field PlayerRun09 string
 ---@field PlayerRun10 string
+---@field Rectangle string
 
 ---@class Shaders
 ---@field Psychedelic string
