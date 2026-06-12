@@ -12,7 +12,8 @@ namespace hob {
     class Engine;
     class SpriteComponent;
 
-    constexpr size_t INVALID_ENTITY_INDEX = std::numeric_limits<size_t>::max();
+    using EntityIndex = uint32_t;
+    constexpr EntityIndex INVALID_ENTITY_INDEX = std::numeric_limits<EntityIndex>::max();
 
     // Per-id bookkeeping.
     // - 'ptr' is valid from spawn_entity() until the entity exits play.
@@ -20,7 +21,7 @@ namespace hob {
     //   While the entity is still in m_entity_spawn_requests 'live_index' stays INVALID_ENTITY_INDEX.
     struct EntityRecord {
         Entity* ptr = nullptr;
-        size_t live_index = INVALID_ENTITY_INDEX;
+        EntityIndex live_index = INVALID_ENTITY_INDEX;
     };
 
     class EntitySpawner {

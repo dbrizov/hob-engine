@@ -1,5 +1,7 @@
 #include "entity_spawner.h"
 
+#include <cassert>
+
 #include "engine/entity/entity.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/sprite_component.h"
@@ -110,18 +112,17 @@ namespace hob {
     }
 
     void EntitySpawner::register_renderable(SpriteComponent* sprite) {
-        sprite->m_renderable_index = m_renderables.size();
+        sprite->m_renderable_index = static_cast<RenderableIndex>(m_renderables.size());
         m_renderables.push_back(sprite);
     }
 
     void EntitySpawner::unregister_renderable(SpriteComponent* sprite) {
-        const size_t index = sprite->m_renderable_index;
-        if (index == INVALID_RENDERABLE_INDEX || index >= m_renderables.size()) {
-            return;
-        }
-
         // Swap-pop; fix the moved sprite's stored index.
-        const size_t last_index = m_renderables.size() - 1;
+        const RenderableIndex index = sprite->m_renderable_index;
+        assert(
+            index != INVALID_RENDERABLE_INDEX && index < m_renderables.size() &&
+            "Unregistering a sprite that isn't registered");
+        const RenderableIndex last_index = static_cast<RenderableIndex>(m_renderables.size() - 1);
         if (index != last_index) {
             m_renderables[index] = m_renderables[last_index];
             m_renderables[index]->m_renderable_index = index;
@@ -147,7 +148,7 @@ namespace hob {
 
         for (auto& entity : spawn_requests) {
             const EntityId entity_id = entity->get_id();
-            m_entity_records[entity_id].live_index = m_entities.size();
+            m_entity_records[entity_id].live_index = static_cast<EntityIndex>(m_entities.size());
             m_entities.emplace_back(std::move(entity));
             m_entities.back()->enter_play();
         }
@@ -173,18 +174,18 @@ namespace hob {
                 continue;
             }
 
-            const size_t index = it->second.live_index;
-            if (index != INVALID_ENTITY_INDEX) {
-                // Swap-pop; fix the moved entity's stored index in its record.
-                const size_t last_index = m_entities.size() - 1;
-                if (index != last_index) {
-                    m_entities[index] = std::move(m_entities[last_index]);
-                    m_entity_records[m_entities[index]->get_id()].live_index = index;
-                }
-
-                m_entities.pop_back();
+            // Swap-pop; fix the moved entity's stored index in its record.
+            const EntityIndex index = it->second.live_index;
+            assert(
+                index != INVALID_ENTITY_INDEX && index < m_entities.size() &&
+                "Queued destroy request must be an in-play entity");
+            const EntityIndex last_index = static_cast<EntityIndex>(m_entities.size() - 1);
+            if (index != last_index) {
+                m_entities[index] = std::move(m_entities[last_index]);
+                m_entity_records[m_entities[index]->get_id()].live_index = index;
             }
 
+            m_entities.pop_back();
             m_entity_records.erase(it);
         }
     }

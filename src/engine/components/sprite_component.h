@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <string>
 
 #include "component.h"
@@ -9,7 +10,8 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    constexpr size_t INVALID_RENDERABLE_INDEX = static_cast<size_t>(-1);
+    using RenderableIndex = uint32_t;
+    constexpr RenderableIndex INVALID_RENDERABLE_INDEX = std::numeric_limits<RenderableIndex>::max();
 
     class SpriteComponent : public Component {
         TextureRef m_texture;
@@ -23,7 +25,7 @@ namespace hob {
         SpriteDrawHandle m_sprite_draw_handle = INVALID_SPRITE_DRAW_HANDLE;
 
         // Slot in EntitySpawner's renderable registry, for O(1) swap-pop unregister.
-        size_t m_renderable_index = INVALID_RENDERABLE_INDEX;
+        RenderableIndex m_renderable_index = INVALID_RENDERABLE_INDEX;
 
         // "A draw-affecting property changed since the renderer last consumed it" — lets the
         // world draw pass skip re-resolving a static sprite's draw data every frame.

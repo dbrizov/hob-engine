@@ -28,8 +28,9 @@ namespace hob {
         InputEvent(const char* ev_name, InputEventType ev_type, float ev_axis_value);
     };
 
-    using InputEventHandlerId = int;
     using InputEventHandler = std::function<void(const InputEvent&)>;
+    using InputEventHandlerId = int32_t;
+    using InputEventHandlerIndex = uint32_t;
 
     constexpr InputEventHandlerId INVALID_INPUT_EVENT_HANDLER_ID = -1;
 
@@ -44,7 +45,7 @@ namespace hob {
 
         InputEventHandlerId m_next_handler_id = 0;
         std::vector<HandlerEntry> m_handlers;
-        std::unordered_map<InputEventHandlerId, size_t> m_handler_index_by_id;
+        std::unordered_map<InputEventHandlerId, InputEventHandlerIndex> m_handler_index_by_id;
 
         InputConfig m_input_config;
         std::unordered_map<std::string, float> m_axis_values;
