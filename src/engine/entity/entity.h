@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +16,9 @@ namespace hob {
     using EntityId = int64_t;
     constexpr EntityId INVALID_ENTITY_ID = -1;
 
+    using TickIndex = uint32_t;
+    constexpr TickIndex INVALID_TICK_INDEX = std::numeric_limits<TickIndex>::max();
+
     template<typename T>
     concept ComponentType = std::derived_from<T, Component>;
 
@@ -22,7 +26,10 @@ namespace hob {
         Engine& m_engine;
         EntityId m_id = 0;
         bool m_is_in_play = false;
-        bool m_is_ticking = false;
+
+        TickIndex m_tick_index = INVALID_TICK_INDEX; // Slot in EntitySpawner's ticking registry.
+        bool m_is_ticking_request = false;
+
         std::vector<std::unique_ptr<Component>> m_components;
         mutable TransformComponent* m_transform = nullptr;
         mutable RigidbodyComponent* m_rigidbody = nullptr;

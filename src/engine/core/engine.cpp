@@ -34,7 +34,6 @@ namespace hob {
     void Engine::run() {
         bool is_running = true;
         std::vector<Entity*> entities;
-        std::vector<Entity*> ticking_entities;
 
         while (is_running) {
             m_timer.frame_start();
@@ -65,7 +64,6 @@ namespace hob {
 
             m_entity_spawner.resolve_requests();
             m_entity_spawner.get_entities(entities);
-            m_entity_spawner.get_ticking_entities(ticking_entities);
 
             const float delta_time = m_timer.get_delta_time();
             const float scaled_delta_time = delta_time * m_timer.get_time_scale();
@@ -78,13 +76,13 @@ namespace hob {
                 m_input.tick(scaled_delta_time);
             }
 
-            for (Entity* entity : ticking_entities) {
+            for (Entity* entity : m_entity_spawner.get_ticking_entities()) {
                 entity->tick(scaled_delta_time);
             }
 
             m_physics.tick(scaled_delta_time, m_entity_spawner.get_simulated_rigidbodies());
 
-            for (Entity* entity : ticking_entities) {
+            for (Entity* entity : m_entity_spawner.get_ticking_entities()) {
                 entity->late_tick(scaled_delta_time);
             }
 

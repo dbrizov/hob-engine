@@ -5,6 +5,8 @@
 
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/transform_component.h"
+#include "engine/core/engine.h"
+#include "engine/core/systems/entity_spawner.h"
 
 namespace hob {
     Entity::Entity(Engine& engine)
@@ -16,9 +18,17 @@ namespace hob {
         for (auto& component : m_components) {
             component->enter_play();
         }
+
+        if (m_is_ticking_request) {
+            get_engine().get_entity_spawner().register_ticking_entity(this);
+        }
     }
 
     void Entity::exit_play() {
+        if (is_ticking()) {
+            get_engine().get_entity_spawner().unregister_ticking_entity(this);
+        }
+
         m_is_in_play = false;
         for (auto& component : m_components) {
             component->exit_play();
@@ -111,11 +121,15 @@ namespace hob {
     }
 
     bool Entity::is_ticking() const {
-        return m_is_ticking;
+        return m_tick_index != INVALID_TICK_INDEX;
     }
 
     void Entity::set_ticking(bool is_ticking) {
-        m_is_ticking = is_ticking;
+        m_is_ticking_request = is_ticking;
+
+        if (is_in_play() && is_ticking != this->is_ticking()) {
+            get_engine().get_entity_spawner().request_entity_ticking_sync(get_id());
+        }
     }
 
     TransformComponent* Entity::get_transform() const {

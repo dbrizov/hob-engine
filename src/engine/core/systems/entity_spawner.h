@@ -34,7 +34,9 @@ namespace hob {
 
         std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
         std::unordered_set<EntityId> m_entity_destroy_requests;
+        std::unordered_set<EntityId> m_entity_ticking_sync_requests;
 
+        std::vector<Entity*> m_ticking_entities; // Registry of in-play entities with ticking enabled
         std::vector<SpriteComponent*> m_sprites; // Registry of in-play sprites
         std::vector<RigidbodyComponent*> m_simulated_rigidbodies; // Registry of in-play non-static rigidbodies
 
@@ -51,7 +53,11 @@ namespace hob {
 
         Entity* get_entity(EntityId id) const;
         void get_entities(std::vector<Entity*>& out_entities) const;
-        void get_ticking_entities(std::vector<Entity*>& out_entities) const;
+
+        void register_ticking_entity(Entity* entity);
+        void unregister_ticking_entity(Entity* entity);
+        void request_entity_ticking_sync(EntityId id);
+        const std::vector<Entity*>& get_ticking_entities() const;
 
         void register_sprite(SpriteComponent* sprite);
         void unregister_sprite(SpriteComponent* sprite);
@@ -65,6 +71,7 @@ namespace hob {
         void resolve_requests();
         void resolve_spawn_requests();
         void resolve_destroy_requests();
+        void resolve_ticking_sync_requests();
 
         // Destroy every live and pending entity, calling exit_play on those in play.
         // Call this before Engine's other subsystems start tearing down so that

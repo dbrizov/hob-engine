@@ -84,14 +84,33 @@ namespace hob {
         }
     }
 
-    void EntitySpawner::get_ticking_entities(std::vector<Entity*>& out_entities) const {
-        out_entities.clear();
-        out_entities.reserve(m_entities.size());
-        for (const auto& entity : m_entities) {
-            if (entity->is_ticking()) {
-                out_entities.push_back(entity.get());
-            }
+    void EntitySpawner::register_ticking_entity(Entity* entity) {
+        entity->m_tick_index = static_cast<TickIndex>(m_ticking_entities.size());
+        m_ticking_entities.push_back(entity);
+    }
+
+    void EntitySpawner::unregister_ticking_entity(Entity* entity) {
+        // Swap-pop; fix the moved entity's stored index.
+        const TickIndex index = entity->m_tick_index;
+        assert(
+            index != INVALID_TICK_INDEX && index < m_ticking_entities.size() &&
+            "Unregistering an entity that isn't registered for ticking");
+        const TickIndex last_index = static_cast<TickIndex>(m_ticking_entities.size() - 1);
+        if (index != last_index) {
+            m_ticking_entities[index] = m_ticking_entities[last_index];
+            m_ticking_entities[index]->m_tick_index = index;
         }
+
+        m_ticking_entities.pop_back();
+        entity->m_tick_index = INVALID_TICK_INDEX;
+    }
+
+    void EntitySpawner::request_entity_ticking_sync(EntityId id) {
+        m_entity_ticking_sync_requests.insert(id);
+    }
+
+    const std::vector<Entity*>& EntitySpawner::get_ticking_entities() const {
+        return m_ticking_entities;
     }
 
     void EntitySpawner::register_sprite(SpriteComponent* sprite) {
@@ -147,6 +166,7 @@ namespace hob {
     void EntitySpawner::resolve_requests() {
         resolve_spawn_requests();
         resolve_destroy_requests();
+        resolve_ticking_sync_requests();
     }
 
     void EntitySpawner::resolve_spawn_requests() {
@@ -198,6 +218,29 @@ namespace hob {
         }
     }
 
+    void EntitySpawner::resolve_ticking_sync_requests() {
+        // Swap because someone might request a ticking change in a sync below (register/unregister
+        // doesn't call back here, but stay consistent with the spawn/destroy resolve pattern).
+        std::unordered_set<EntityId> requests;
+        requests.swap(m_entity_ticking_sync_requests);
+
+        for (const EntityId id : requests) {
+            Entity* entity = get_entity(id);
+            if (entity == nullptr) {
+                continue; // Destroyed before the sync; exit_play() already unregistered it.
+            }
+
+            // Sync membership to the requested state (idempotent: a no-op if they already match).
+            const bool request = entity->m_is_ticking_request;
+            if (request && !entity->is_ticking()) {
+                register_ticking_entity(entity);
+            }
+            else if (!request && entity->is_ticking()) {
+                unregister_ticking_entity(entity);
+            }
+        }
+    }
+
     void EntitySpawner::clear() {
         for (auto& entity : m_entities) {
             entity->exit_play();
@@ -207,6 +250,8 @@ namespace hob {
         m_entity_records.clear();
         m_entity_spawn_requests.clear();
         m_entity_destroy_requests.clear();
+        m_entity_ticking_sync_requests.clear();
+        m_ticking_entities.clear();
         m_sprites.clear();
         m_simulated_rigidbodies.clear();
     }
