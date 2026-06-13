@@ -94,23 +94,6 @@ namespace hob {
         }
     }
 
-    void EntitySpawner::get_physics_entities(std::vector<Entity*>& out_entities) const {
-        out_entities.clear();
-        out_entities.reserve(m_entities.size());
-        for (const auto& entity : m_entities) {
-            if (!entity->is_ticking()) {
-                continue;
-            }
-
-            const RigidbodyComponent* rigidbody = entity->get_rigidbody();
-            if (rigidbody == nullptr || !rigidbody->has_body() || rigidbody->get_body_type() == BodyType::Static) {
-                continue;
-            }
-
-            out_entities.push_back(entity.get());
-        }
-    }
-
     void EntitySpawner::register_renderable(SpriteComponent* sprite) {
         sprite->m_renderable_index = static_cast<RenderableIndex>(m_renderables.size());
         m_renderables.push_back(sprite);
@@ -134,6 +117,31 @@ namespace hob {
 
     const std::vector<SpriteComponent*>& EntitySpawner::get_renderables() const {
         return m_renderables;
+    }
+
+    void EntitySpawner::register_simulated_rigidbody(RigidbodyComponent* rigidbody) {
+        rigidbody->m_rigidbody_index = static_cast<RigidbodyIndex>(m_simulated_rigidbodies.size());
+        m_simulated_rigidbodies.push_back(rigidbody);
+    }
+
+    void EntitySpawner::unregister_simulated_rigidbody(RigidbodyComponent* rigidbody) {
+        // Swap-pop; fix the moved rigidbody's stored index.
+        const RigidbodyIndex index = rigidbody->m_rigidbody_index;
+        assert(
+            index != INVALID_RIGIDBODY_INDEX && index < m_simulated_rigidbodies.size() &&
+            "Unregistering a rigidbody that isn't registered");
+        const RigidbodyIndex last_index = static_cast<RigidbodyIndex>(m_simulated_rigidbodies.size() - 1);
+        if (index != last_index) {
+            m_simulated_rigidbodies[index] = m_simulated_rigidbodies[last_index];
+            m_simulated_rigidbodies[index]->m_rigidbody_index = index;
+        }
+
+        m_simulated_rigidbodies.pop_back();
+        rigidbody->m_rigidbody_index = INVALID_RIGIDBODY_INDEX;
+    }
+
+    const std::vector<RigidbodyComponent*>& EntitySpawner::get_simulated_rigidbodies() const {
+        return m_simulated_rigidbodies;
     }
 
     void EntitySpawner::resolve_requests() {
@@ -200,5 +208,6 @@ namespace hob {
         m_entity_spawn_requests.clear();
         m_entity_destroy_requests.clear();
         m_renderables.clear();
+        m_simulated_rigidbodies.clear();
     }
 }

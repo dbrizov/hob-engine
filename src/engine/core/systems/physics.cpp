@@ -54,22 +54,27 @@ namespace hob {
         register_cvars(console);
     }
 
-    void Physics::tick_entities(float frame_delta_time, const std::vector<Entity*>& entities) {
+    void Physics::tick(float frame_delta_time, const std::vector<RigidbodyComponent*>& rigidbodies) {
         m_accumulator += frame_delta_time;
         while (m_accumulator >= m_fixed_delta_time) {
-            // Save previous (start-of-step) state for Physics interpolation
+            // Save previous (start-of-step) state for Physics interpolation.
+            // Runs for every simulated body, independent of is_ticking, so interpolation tracks it.
             if (m_interpolation_enabled) {
-                for (Entity* entity : entities) {
-                    TransformComponent* transform = entity->get_transform();
+                for (RigidbodyComponent* rigidbody : rigidbodies) {
+                    TransformComponent* transform = rigidbody->get_entity().get_transform();
                     if (transform->get_interpolate_physics()) {
                         transform->set_prev_local_matrix(transform->get_local_matrix());
                     }
                 }
             }
 
-            // Let components apply forces / set kinematic velocities
-            for (Entity* entity : entities) {
-                entity->physics_tick(m_fixed_delta_time);
+            // Let components apply forces / set kinematic velocities; physics_tick() is a gameplay
+            // callback, so it honors is_ticking (the body itself still simulates below regardless).
+            for (RigidbodyComponent* rigidbody : rigidbodies) {
+                Entity& entity = rigidbody->get_entity();
+                if (entity.is_ticking()) {
+                    entity.physics_tick(m_fixed_delta_time);
+                }
             }
 
             // Tick the physics world
@@ -79,16 +84,16 @@ namespace hob {
             dispatch_collision_events();
             dispatch_trigger_events();
 
-            // Sync transforms for all rigidbodies
-            for (Entity* entity : entities) {
-                const RigidbodyComponent* rigidbody = entity->get_rigidbody();
+            // Sync transforms from Box2D for every simulated body, independent of is_ticking,
+            // so the transform always reflects what the body actually did this step.
+            for (RigidbodyComponent* rigidbody : rigidbodies) {
                 const b2Vec2 b2_position = b2Body_GetPosition(rigidbody->get_body_id());
                 const b2Rot b2_rotation = b2Body_GetRotation(rigidbody->get_body_id());
 
                 const Vector2 position = b2Vec2_to_vec2(b2_position);
                 const float radians = b2Rot_to_radians(b2_rotation);
 
-                TransformComponent* transform = entity->get_transform();
+                TransformComponent* transform = rigidbody->get_entity().get_transform();
                 transform->set_position(position);
                 transform->set_rotation(radians);
             }

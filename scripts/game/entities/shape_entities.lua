@@ -4,16 +4,27 @@ DefineEntity.StaticBox = {
         collision_layer = Collision.Static,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
+    sprite = {
+        texture = Textures.WhiteRect,
+        material = Material {
+            tint = Color.orange(),
+        },
+    },
 }
 
 DefineEntity.DynamicBox = {
-    ticking = true,
     rigidbody = {
         body_type = BodyType.Dynamic,
     },
     box_collider = {
         collision_layer = Collision.Dynamic,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic | Collision.Trigger,
+    },
+    sprite = {
+        texture = Textures.WhiteRect,
+        material = Material {
+            tint = Color.green(),
+        },
     },
 }
 
@@ -24,7 +35,12 @@ DefineEntity.TriggerBox = {
         collision_layer = Collision.Trigger,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
-    -- lua_components = { Components.ContactLogger },
+    sprite = {
+        texture = Textures.WhiteRect,
+        material = Material {
+            tint = Color.cyan(),
+        },
+    },
 }
 
 DefineEntity.StaticCircle = {
@@ -36,7 +52,6 @@ DefineEntity.StaticCircle = {
 }
 
 DefineEntity.DynamicCircle = {
-    ticking = true,
     rigidbody = {
         body_type = BodyType.Dynamic,
     },
@@ -53,5 +68,4 @@ DefineEntity.TriggerCircle = {
         collision_layer = Collision.Trigger,
         collision_mask = Collision.Static | Collision.Dynamic | Collision.Kinematic,
     },
-    -- lua_components = { Components.ContactLogger },
 }

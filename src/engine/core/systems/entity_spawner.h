@@ -11,6 +11,7 @@
 namespace hob {
     class Engine;
     class SpriteComponent;
+    class RigidbodyComponent;
 
     using EntityIndex = uint32_t;
     constexpr EntityIndex INVALID_ENTITY_INDEX = std::numeric_limits<EntityIndex>::max();
@@ -34,8 +35,8 @@ namespace hob {
         std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
         std::unordered_set<EntityId> m_entity_destroy_requests;
 
-        // Registry of in-play sprites, maintained incrementally by SpriteComponent's enter_play/exit_play.
-        std::vector<SpriteComponent*> m_renderables;
+        std::vector<SpriteComponent*> m_renderables; // Registry of in-play sprites
+        std::vector<RigidbodyComponent*> m_simulated_rigidbodies; // Registry of in-play non-static rigidbodies
 
         // Engine is a friend of EntitySpawner so that:
         // - It can handle the lifecycle of entities
@@ -51,11 +52,14 @@ namespace hob {
         Entity* get_entity(EntityId id) const;
         void get_entities(std::vector<Entity*>& out_entities) const;
         void get_ticking_entities(std::vector<Entity*>& out_entities) const;
-        void get_physics_entities(std::vector<Entity*>& out_entities) const;
 
         void register_renderable(SpriteComponent* sprite);
         void unregister_renderable(SpriteComponent* sprite);
         const std::vector<SpriteComponent*>& get_renderables() const;
+
+        void register_simulated_rigidbody(RigidbodyComponent* rigidbody);
+        void unregister_simulated_rigidbody(RigidbodyComponent* rigidbody);
+        const std::vector<RigidbodyComponent*>& get_simulated_rigidbodies() const;
 
     private:
         void resolve_requests();

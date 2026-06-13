@@ -1,4 +1,5 @@
 DefineTexture.Cursor = "images/cursor.png"
+DefineTexture.WhiteRect = "images/white_rect.png"
 
 DefineTexture.PlayerIdle01 = "images/player/HJ_idle01.png"
 DefineTexture.PlayerIdle02 = "images/player/HJ_idle02.png"

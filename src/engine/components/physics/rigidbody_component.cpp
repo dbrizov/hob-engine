@@ -7,6 +7,7 @@
 #include "engine//components/transform_component.h"
 #include "engine/core/debug.h"
 #include "engine/core/engine.h"
+#include "engine/core/systems/entity_spawner.h"
 #include "engine/entity/entity.h"
 
 namespace hob {
@@ -59,9 +60,17 @@ namespace hob {
         m_body_id = b2CreateBody(physics_world.get_id(), &body_def);
 
         b2Body_SetUserData(m_body_id, this);
+
+        if (m_body_type != BodyType::Static) {
+            get_engine().get_entity_spawner().register_simulated_rigidbody(this);
+        }
     }
 
     void RigidbodyComponent::exit_play() {
+        if (m_body_type != BodyType::Static) {
+            get_engine().get_entity_spawner().unregister_simulated_rigidbody(this);
+        }
+
         if (b2Body_IsValid(m_body_id)) {
             b2DestroyBody(m_body_id);
             m_body_id = b2_nullBodyId;

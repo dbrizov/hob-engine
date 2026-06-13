@@ -12,6 +12,7 @@ namespace hob {
     class Console;
     class Entity;
     class ColliderComponent;
+    class RigidbodyComponent;
 
     struct RaycastHit {
         ColliderComponent* collider = nullptr;
@@ -46,7 +47,7 @@ namespace hob {
 
         Physics(const EngineConfig& config, Console& console);
 
-        void tick_entities(float frame_delta_time, const std::vector<Entity*>& entities);
+        void tick(float frame_delta_time, const std::vector<RigidbodyComponent*>& rigidbodies);
 
         const PhysicsWorld& get_physics_world() const;
 

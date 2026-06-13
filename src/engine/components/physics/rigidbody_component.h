@@ -1,11 +1,16 @@
 #pragma once
 
+#include <limits>
+
 #include <box2d/id.h>
 
 #include "engine/components/component.h"
 #include "engine/math/vector2.h"
 
 namespace hob {
+    using RigidbodyIndex = uint32_t;
+    constexpr RigidbodyIndex INVALID_RIGIDBODY_INDEX = std::numeric_limits<RigidbodyIndex>::max();
+
     enum class BodyType {
         Static,
         Dynamic,
@@ -16,6 +21,11 @@ namespace hob {
         b2BodyId m_body_id = b2_nullBodyId;
         BodyType m_body_type = BodyType::Static;
         bool m_has_fixed_rotation = false;
+
+        // Slot in EntitySpawner's rigidbody registry, for O(1) swap-pop unregister.
+        RigidbodyIndex m_rigidbody_index = INVALID_RIGIDBODY_INDEX;
+
+        friend class EntitySpawner;
 
     public:
         explicit RigidbodyComponent(Entity& entity);
