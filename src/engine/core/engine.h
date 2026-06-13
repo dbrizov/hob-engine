@@ -65,8 +65,9 @@ namespace hob {
 
     private:
         void draw_entities();
-        bool has_moving_physics_body(const Entity& entity) const;
         void flush_debug_draws_to_renderer(float delta_time);
+
+        static bool has_moving_physics_body(const Entity& entity);
 
 #ifndef NDEBUG
         // Reloads Lua scripts when any scripts/**.lua file changes on disk.

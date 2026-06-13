@@ -243,18 +243,6 @@ namespace hob {
         }
     }
 
-    bool Engine::has_moving_physics_body(const Entity& entity) const {
-        // A non-static body that is still awake -- once it settles, Box2D sleeps it and its
-        // interpolation endpoints stop changing, so there is nothing left to re-resolve per frame.
-        const RigidbodyComponent* rigidbody = entity.get_rigidbody();
-        const bool result = rigidbody != nullptr &&
-                            rigidbody->has_body() &&
-                            rigidbody->get_body_type() != BodyType::Static &&
-                            rigidbody->is_awake();
-
-        return result;
-    }
-
     void Engine::flush_debug_draws_to_renderer(float delta_time) {
         CameraComponent* camera = get_active_camera();
         if (camera == nullptr) {
@@ -265,6 +253,18 @@ namespace hob {
                                        camera,
                                        m_sdl_context.get_window_size(),
                                        delta_time);
+    }
+
+    bool Engine::has_moving_physics_body(const Entity& entity) {
+        // A non-static body that is still awake -- once it settles, Box2D sleeps it and its
+        // interpolation endpoints stop changing, so there is nothing left to re-resolve per frame.
+        const RigidbodyComponent* rigidbody = entity.get_rigidbody();
+        const bool result = rigidbody != nullptr &&
+                            rigidbody->has_body() &&
+                            rigidbody->get_body_type() != BodyType::Static &&
+                            rigidbody->is_awake();
+
+        return result;
     }
 
 #ifndef NDEBUG
