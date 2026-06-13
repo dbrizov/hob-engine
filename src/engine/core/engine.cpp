@@ -196,7 +196,7 @@ namespace hob {
 
         const float interpolation_fraction = m_physics.get_interpolation_fraction();
 
-        for (SpriteComponent* sprite_comp : m_entity_spawner.get_renderables()) {
+        for (SpriteComponent* sprite_comp : m_entity_spawner.get_sprites()) {
             TransformComponent* transform_comp = sprite_comp->get_entity().get_transform();
 
             const bool sprite_dirty = sprite_comp->consume_render_dirty();

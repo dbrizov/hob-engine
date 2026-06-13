@@ -35,7 +35,7 @@ namespace hob {
         std::vector<std::unique_ptr<Entity>> m_entity_spawn_requests;
         std::unordered_set<EntityId> m_entity_destroy_requests;
 
-        std::vector<SpriteComponent*> m_renderables; // Registry of in-play sprites
+        std::vector<SpriteComponent*> m_sprites; // Registry of in-play sprites
         std::vector<RigidbodyComponent*> m_simulated_rigidbodies; // Registry of in-play non-static rigidbodies
 
         // Engine is a friend of EntitySpawner so that:
@@ -53,9 +53,9 @@ namespace hob {
         void get_entities(std::vector<Entity*>& out_entities) const;
         void get_ticking_entities(std::vector<Entity*>& out_entities) const;
 
-        void register_renderable(SpriteComponent* sprite);
-        void unregister_renderable(SpriteComponent* sprite);
-        const std::vector<SpriteComponent*>& get_renderables() const;
+        void register_sprite(SpriteComponent* sprite);
+        void unregister_sprite(SpriteComponent* sprite);
+        const std::vector<SpriteComponent*>& get_sprites() const;
 
         void register_simulated_rigidbody(RigidbodyComponent* rigidbody);
         void unregister_simulated_rigidbody(RigidbodyComponent* rigidbody);

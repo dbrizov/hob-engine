@@ -94,29 +94,29 @@ namespace hob {
         }
     }
 
-    void EntitySpawner::register_renderable(SpriteComponent* sprite) {
-        sprite->m_renderable_index = static_cast<RenderableIndex>(m_renderables.size());
-        m_renderables.push_back(sprite);
+    void EntitySpawner::register_sprite(SpriteComponent* sprite) {
+        sprite->m_sprite_index = static_cast<SpriteIndex>(m_sprites.size());
+        m_sprites.push_back(sprite);
     }
 
-    void EntitySpawner::unregister_renderable(SpriteComponent* sprite) {
+    void EntitySpawner::unregister_sprite(SpriteComponent* sprite) {
         // Swap-pop; fix the moved sprite's stored index.
-        const RenderableIndex index = sprite->m_renderable_index;
+        const SpriteIndex index = sprite->m_sprite_index;
         assert(
-            index != INVALID_RENDERABLE_INDEX && index < m_renderables.size() &&
+            index != INVALID_SPRITE_INDEX && index < m_sprites.size() &&
             "Unregistering a sprite that isn't registered");
-        const RenderableIndex last_index = static_cast<RenderableIndex>(m_renderables.size() - 1);
+        const SpriteIndex last_index = static_cast<SpriteIndex>(m_sprites.size() - 1);
         if (index != last_index) {
-            m_renderables[index] = m_renderables[last_index];
-            m_renderables[index]->m_renderable_index = index;
+            m_sprites[index] = m_sprites[last_index];
+            m_sprites[index]->m_sprite_index = index;
         }
 
-        m_renderables.pop_back();
-        sprite->m_renderable_index = INVALID_RENDERABLE_INDEX;
+        m_sprites.pop_back();
+        sprite->m_sprite_index = INVALID_SPRITE_INDEX;
     }
 
-    const std::vector<SpriteComponent*>& EntitySpawner::get_renderables() const {
-        return m_renderables;
+    const std::vector<SpriteComponent*>& EntitySpawner::get_sprites() const {
+        return m_sprites;
     }
 
     void EntitySpawner::register_simulated_rigidbody(RigidbodyComponent* rigidbody) {
@@ -207,7 +207,7 @@ namespace hob {
         m_entity_records.clear();
         m_entity_spawn_requests.clear();
         m_entity_destroy_requests.clear();
-        m_renderables.clear();
+        m_sprites.clear();
         m_simulated_rigidbodies.clear();
     }
 }

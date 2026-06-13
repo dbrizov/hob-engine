@@ -22,8 +22,7 @@ namespace hob {
         BodyType m_body_type = BodyType::Static;
         bool m_has_fixed_rotation = false;
 
-        // Slot in EntitySpawner's rigidbody registry, for O(1) swap-pop unregister.
-        RigidbodyIndex m_rigidbody_index = INVALID_RIGIDBODY_INDEX;
+        RigidbodyIndex m_rigidbody_index = INVALID_RIGIDBODY_INDEX; // Slot in EntitySpawner's rigidbody registry
 
         friend class EntitySpawner;
 

@@ -10,8 +10,8 @@
 #include "engine/math/vector2.h"
 
 namespace hob {
-    using RenderableIndex = uint32_t;
-    constexpr RenderableIndex INVALID_RENDERABLE_INDEX = std::numeric_limits<RenderableIndex>::max();
+    using SpriteIndex = uint32_t;
+    constexpr SpriteIndex INVALID_SPRITE_INDEX = std::numeric_limits<SpriteIndex>::max();
 
     class SpriteComponent : public Component {
         TextureRef m_texture;
@@ -21,11 +21,11 @@ namespace hob {
         int m_z_index = 0;
         int m_pixels_per_meter = 64;
 
-        // Renderer-owned world sprite draw this component drives (allocated on enter_play).
+        // A handle to the Renderer's sprite draw data.
         SpriteDrawHandle m_sprite_draw_handle = INVALID_SPRITE_DRAW_HANDLE;
 
-        // Slot in EntitySpawner's renderable registry, for O(1) swap-pop unregister.
-        RenderableIndex m_renderable_index = INVALID_RENDERABLE_INDEX;
+        // Slot in EntitySpawner's sprite registry.
+        SpriteIndex m_sprite_index = INVALID_SPRITE_INDEX;
 
         // "A draw-affecting property changed since the renderer last consumed it" — lets the
         // world draw pass skip re-resolving a static sprite's draw data every frame.

@@ -15,12 +15,12 @@ namespace hob {
 
     void SpriteComponent::enter_play() {
         m_sprite_draw_handle = get_engine().get_renderer().register_sprite_draw();
-        get_engine().get_entity_spawner().register_renderable(this);
+        get_engine().get_entity_spawner().register_sprite(this);
         m_render_dirty = true;
     }
 
     void SpriteComponent::exit_play() {
-        get_engine().get_entity_spawner().unregister_renderable(this);
+        get_engine().get_entity_spawner().unregister_sprite(this);
         get_engine().get_renderer().unregister_sprite_draw(m_sprite_draw_handle);
         m_sprite_draw_handle = INVALID_SPRITE_DRAW_HANDLE;
     }
