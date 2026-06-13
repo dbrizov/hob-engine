@@ -85,13 +85,27 @@ local function apply_prefab(entity, prefab)
     end
 end
 
--- Hot reload: re-apply a prefab's properties to an already-built entity.
+-- Sentinel so a captured default of `nil` (e.g. an unset texture) survives in a table,
+-- where a raw nil value would just remove the key.
+local NIL_DEFAULT = {}
+
+-- Hot reload: re-apply a prefab's properties to an already-built entity. The prefab is the
+-- source of truth: within a declared section, a present field is applied and an *absent* field is
+-- reset to the component's default (read once per type from a throwaway probe via get_defaults).
+-- Top-level `ticking` is always governed -- absent means the Entity default (not ticking).
 -- Uses each component's getter (never its `add`) so no component is duplicated and no C++ init() re-fires.
--- Geometry/physics changes are diffed inside C++ setters.
--- Deliberately skipped: structure (add), the prefab's lua_components (refreshed by the metatable swap in hot_reload.lua),
--- and the transform's position/rotation/scale (spawn arguments, not prefab data).
-local function reapply_prefab(entity, prefab)
+-- Deliberately skipped: structure (no add/remove) and sections the prefab does not declare (the
+-- component may be owned by another, e.g. CharacterBody configures a Rigidbody, or added at runtime);
+-- the prefab's lua_components (refreshed by the metatable swap in hot_reload.lua); and the transform's
+-- position/rotation/scale (spawn arguments, not prefab data).
+local function reapply_prefab(entity, prefab, get_defaults)
     local schemas = _G.__component_schemas
+
+    local ticking = prefab.ticking
+    if ticking == nil then
+        ticking = false
+    end
+    entity:set_ticking(ticking)
 
     for _, key in ipairs(schemas.__order) do
         local section = prefab[key]
@@ -99,7 +113,24 @@ local function reapply_prefab(entity, prefab)
             local schema = schemas[key]
             local component = entity[schema.get](entity)
             if component ~= nil then
-                apply_setters(component, section, schema.setters)
+                local defaults = get_defaults(key)
+                for field, setter in pairs(schema.setters) do
+                    local value
+                    if section[field] ~= nil then
+                        value = unwrap_def(section[field])
+                    else
+                        value = defaults[field]
+                        if value == NIL_DEFAULT then
+                            value = nil
+                        end
+                    end
+
+                    if type(setter) == "string" then
+                        component[setter](component, value)
+                    else
+                        setter(component, value)
+                    end
+                end
             end
         end
     end
@@ -109,6 +140,41 @@ end
 -- Rebuilds the id->prefab map from the live set as it goes, dropping ids of entities that were
 -- destroyed outside the Lua wrapper (e.g. by C++ spawning/destroying directly).
 function _G.__reapply_prefabs_to_spawned_entities()
+    local schemas = _G.__component_schemas
+
+    -- Per-component-type default snapshots, read lazily from throwaway probe entities. Probes stay
+    -- alive for the whole pass so reference-returning getters (e.g. get_material) remain valid while
+    -- their values are applied, then are destroyed at the end. Nothing persists, so no TextureRefs or
+    -- clips are pinned alive past the reload.
+    local defaults_cache = {}
+    local probes = {}
+
+    local function get_defaults(key)
+        local cached = defaults_cache[key]
+        if cached then
+            return cached
+        end
+
+        local schema = schemas[key]
+        local probe = EntitySpawner.spawn_entity_c()
+        probes[#probes + 1] = probe
+
+        local component = probe[schema.add](probe)
+        local defaults = {}
+        if component ~= nil then
+            for field, getter in pairs(schema.getters) do
+                local v = component[getter](component)
+                if v == nil then
+                    v = NIL_DEFAULT
+                end
+                defaults[field] = v
+            end
+        end
+
+        defaults_cache[key] = defaults
+        return defaults
+    end
+
     local live = {}
     EntitySpawner.for_each(function(entity)
         local id = entity:get_id()
@@ -117,11 +183,16 @@ function _G.__reapply_prefabs_to_spawned_entities()
             live[id] = name
             local prefab = _G.__entity_prefab_registry[name]
             if prefab then
-                reapply_prefab(entity, prefab)
+                reapply_prefab(entity, prefab, get_defaults)
             end
         end
     end)
     _G.__entity_prefab_by_id = live
+
+    -- Probes are pending (never entered play), so this drops them from the spawn queue synchronously.
+    for _, probe in ipairs(probes) do
+        EntitySpawner.destroy_entity_c(probe)
+    end
 end
 
 -- Wrap spawn so a prefab name resolves to a fully-built entity (spawn_entity_c is the raw C++ spawn).

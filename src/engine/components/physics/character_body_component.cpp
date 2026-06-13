@@ -25,6 +25,10 @@ namespace hob {
         return std::format("CharacterBodyComponent(entity_id = {})", get_entity().get_id());
     }
 
+    Capsule CharacterBodyComponent::get_capsule() const {
+        return m_capsule_collider->get_capsule();
+    }
+
     void CharacterBodyComponent::set_capsule(const Capsule& capsule) {
         m_capsule_collider->set_capsule(capsule);
     }
@@ -91,8 +95,8 @@ namespace hob {
             // 2) Solve for the "best" move toward the target given those planes
             const b2Vec2 b2_desired_delta = b2Sub(b2_target_pos, b2_current_pos);
             const b2PlaneSolverResult b2_solver_result = b2SolvePlanes(b2_desired_delta,
-                                                                 m_solver_planes,
-                                                                 m_solver_planes_count);
+                                                                       m_solver_planes,
+                                                                       m_solver_planes_count);
             const b2Vec2 b2_solver_translation = b2_solver_result.translation;
 
             // 3) Cast to make that translation continuous (no tunneling)

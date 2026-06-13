@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <initializer_list>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <sol/sol.hpp>
@@ -15,11 +14,18 @@
 namespace hob {
     class Entity;
 
+    // One authorable prefab field: its name plus the component getter/setter it maps to.
+    struct LuaComponentSchemaField {
+        std::string name; // Prefab field, e.g. "body_type"
+        std::string get_method; // Component method, e.g. "get_body_type"
+        std::string set_method; // Component method, e.g. "set_body_type"
+    };
+
     struct LuaComponentSchemaInfo {
         std::string key; // Prefab section key, e.g. "rigidbody"
         std::string add_method; // Entity method, e.g. "add_rigidbody"
         std::string get_method; // Entity method, e.g. "get_rigidbody"
-        std::vector<std::pair<std::string, std::string>> setters; // {field, set_method}
+        std::vector<LuaComponentSchemaField> fields;
     };
 
     class LuaComponentSchemaRegistry {
@@ -29,7 +35,7 @@ namespace hob {
         void add_schema(std::string key,
                         std::string add_method,
                         std::string get_method,
-                        std::vector<std::pair<std::string, std::string>> setters);
+                        std::vector<LuaComponentSchemaField> fields);
 
         bool write_to_file(const std::filesystem::path& path) const;
     };
@@ -38,7 +44,7 @@ namespace hob {
     // does three things keyed by a single `add_method` string:
     //   1. Adds `entity:<add_method>()` to the already-bound Entity usertype.
     //   2. Records that method in the meta registry for IDE autocomplete.
-    //   3. Records the schema entry (prefab `key` + setters) for the prefab applier.
+    //   3. Records the schema entry (prefab `key` + fields) for the prefab applier.
     // bind_entity() must have run first so the Entity usertype exists.
     template<typename T>
     void bind_component_schema(sol::state& lua,
@@ -47,7 +53,7 @@ namespace hob {
                                const char* key,
                                const char* add_method,
                                const char* get_method,
-                               std::initializer_list<std::pair<const char*, const char*>> setters) {
+                               std::initializer_list<LuaComponentSchemaField> fields) {
         const char* entity_lua_name = LuaTypeName<EntityRef>::value;
         sol::table entity_ut = lua[entity_lua_name];
         entity_ut[add_method] = [](const EntityRef& r) -> T* {
@@ -63,13 +69,10 @@ namespace hob {
             entity_info->methods.push_back(std::move(info));
         }
 
-        std::vector<std::pair<std::string, std::string>> v;
-        v.reserve(setters.size());
-        for (const auto& s : setters) {
-            v.emplace_back(s.first, s.second);
-        }
-
-        schemas.add_schema(key, add_method, get_method, std::move(v));
+        schemas.add_schema(key,
+                           add_method,
+                           get_method,
+                           std::vector<LuaComponentSchemaField>(fields.begin(), fields.end()));
     }
 
     // Overload for components that are always present on every entity. No `add_X` is
@@ -79,14 +82,11 @@ namespace hob {
     void bind_component_schema(LuaComponentSchemaRegistry& schemas,
                                const char* key,
                                const char* existing_method,
-                               std::initializer_list<std::pair<const char*, const char*>> setters) {
-        std::vector<std::pair<std::string, std::string>> v;
-        v.reserve(setters.size());
-        for (const auto& s : setters) {
-            v.emplace_back(s.first, s.second);
-        }
-
+                               std::initializer_list<LuaComponentSchemaField> fields) {
         // Always-present component: `existing_method` is its getter, so add == get.
-        schemas.add_schema(key, existing_method, existing_method, std::move(v));
+        schemas.add_schema(key,
+                           existing_method,
+                           existing_method,
+                           std::vector<LuaComponentSchemaField>(fields.begin(), fields.end()));
     }
 }

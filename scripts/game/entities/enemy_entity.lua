@@ -11,6 +11,7 @@ DefineEntity.Enemy = {
     },
     sprite = {
         texture = Textures.PlayerIdle01,
+        material = Materials.RedOutline,
         z_index = 0,
     },
     sprite_animator = {

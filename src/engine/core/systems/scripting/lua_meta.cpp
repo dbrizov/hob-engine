@@ -66,17 +66,18 @@ namespace hob {
                     }
                 }
 
-                // Split params on top-level commas (depth 0); preserve nested fun(a, b).
+                // Split params on top-level commas (depth 0); preserve commas nested inside
+                // fun(a, b) and generics like table<k, v>.
                 std::vector<std::string> parts;
                 {
                     std::string cur;
                     int d = 0;
                     for (const char c : params) {
-                        if (c == '(') {
+                        if (c == '(' || c == '<') {
                             ++d;
                             cur.push_back(c);
                         }
-                        else if (c == ')') {
+                        else if (c == ')' || c == '>') {
                             --d;
                             cur.push_back(c);
                         }
@@ -126,15 +127,15 @@ namespace hob {
                     }
 
                     // Find the name/type separator ':' at top-level (depth 0),
-                    // skipping any ':' nested inside fun(...).
+                    // skipping any ':' nested inside fun(...) or a generic like table<k, v>.
                     std::size_t sep = std::string::npos;
                     {
                         int d = 0;
                         for (std::size_t i = 0; i < part.size(); ++i) {
-                            if (part[i] == '(') {
+                            if (part[i] == '(' || part[i] == '<') {
                                 ++d;
                             }
-                            else if (part[i] == ')') {
+                            else if (part[i] == ')' || part[i] == '>') {
                                 --d;
                             }
                             else if (part[i] == ':' && d == 0) {

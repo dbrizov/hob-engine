@@ -5,6 +5,9 @@ local schemas = {
     transform = {
         add = "get_transform",
         get = "get_transform",
+        getters = {
+            interpolate_physics = "get_interpolate_physics",
+        },
         setters = {
             interpolate_physics = "set_interpolate_physics",
         },
@@ -12,6 +15,10 @@ local schemas = {
     rigidbody = {
         add = "add_rigidbody",
         get = "get_rigidbody",
+        getters = {
+            body_type = "get_body_type",
+            fixed_rotation = "has_fixed_rotation",
+        },
         setters = {
             body_type = "set_body_type",
             fixed_rotation = "set_fixed_rotation",
@@ -20,6 +27,12 @@ local schemas = {
     character_body = {
         add = "add_character_body",
         get = "get_character_body",
+        getters = {
+            collision_layer = "get_collision_layer",
+            collision_mask = "get_collision_mask",
+            solver_ignore_mask = "get_solver_ignore_mask",
+            capsule = "get_capsule",
+        },
         setters = {
             collision_layer = "set_collision_layer",
             collision_mask = "set_collision_mask",
@@ -30,6 +43,15 @@ local schemas = {
     box_collider = {
         add = "add_box_collider",
         get = "get_box_collider",
+        getters = {
+            aabb = "get_aabb",
+            density = "get_density",
+            friction = "get_friction",
+            bounciness = "get_bounciness",
+            collision_layer = "get_collision_layer",
+            collision_mask = "get_collision_mask",
+            trigger = "is_trigger",
+        },
         setters = {
             aabb = "set_aabb",
             density = "set_density",
@@ -43,6 +65,15 @@ local schemas = {
     capsule_collider = {
         add = "add_capsule_collider",
         get = "get_capsule_collider",
+        getters = {
+            capsule = "get_capsule",
+            density = "get_density",
+            friction = "get_friction",
+            bounciness = "get_bounciness",
+            collision_layer = "get_collision_layer",
+            collision_mask = "get_collision_mask",
+            trigger = "is_trigger",
+        },
         setters = {
             capsule = "set_capsule",
             density = "set_density",
@@ -56,6 +87,15 @@ local schemas = {
     circle_collider = {
         add = "add_circle_collider",
         get = "get_circle_collider",
+        getters = {
+            circle = "get_circle",
+            density = "get_density",
+            friction = "get_friction",
+            bounciness = "get_bounciness",
+            collision_layer = "get_collision_layer",
+            collision_mask = "get_collision_mask",
+            trigger = "is_trigger",
+        },
         setters = {
             circle = "set_circle",
             density = "set_density",
@@ -69,18 +109,30 @@ local schemas = {
     sprite = {
         add = "add_sprite",
         get = "get_sprite",
+        getters = {
+            texture = "get_texture",
+            material = "get_material",
+            pivot = "get_pivot",
+            scale = "get_scale",
+            z_index = "get_z_index",
+            pixels_per_meter = "get_pixels_per_meter",
+        },
         setters = {
             texture = "set_texture",
+            material = "set_material",
             pivot = "set_pivot",
             scale = "set_scale",
             z_index = "set_z_index",
             pixels_per_meter = "set_pixels_per_meter",
-            material = "set_material",
         },
     },
     sprite_animator = {
         add = "add_sprite_animator",
         get = "get_sprite_animator",
+        getters = {
+            clips = "get_clips",
+            default_clip = "get_default_clip",
+        },
         setters = {
             clips = "set_clips",
             default_clip = "set_default_clip",
@@ -89,11 +141,15 @@ local schemas = {
     input = {
         add = "add_input",
         get = "get_input",
+        getters = {},
         setters = {},
     },
     camera = {
         add = "add_camera",
         get = "get_camera",
+        getters = {
+            screen_pixels_per_meter = "get_screen_pixels_per_meter",
+        },
         setters = {
             screen_pixels_per_meter = "set_screen_pixels_per_meter",
         },

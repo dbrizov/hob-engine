@@ -104,17 +104,21 @@ namespace hob {
                                                           h.collider->get_engine().get_entity_spawner()));
                 }, "Entity?");
 
+            // Masks/layers are uint64_t (matching Box2D), but sol2 can't push values above
+            // MAX_INT64, so reinterpret to/from int64_t at the Lua boundary (bit pattern is preserved).
             bind_table(lua, meta, "Physics")
                 .func("raycast",
                       [&physics](const Vector2& origin, const Vector2& direction, float distance,
-                                 sol::optional<uint64_t> layer_mask) {
-                          return physics.raycast(origin, direction, distance, layer_mask.value_or(~0ull));
+                                 sol::optional<int64_t> layer_mask) {
+                          const uint64_t mask = layer_mask ? static_cast<uint64_t>(*layer_mask) : ~0ull;
+                          return physics.raycast(origin, direction, distance, mask);
                       },
                       {"origin", "direction", "distance", "layer_mask"})
                 .func("raycast_all",
                       [&physics](const Vector2& origin, const Vector2& direction, float distance,
-                                 sol::optional<uint64_t> layer_mask) {
-                          return physics.raycast_all(origin, direction, distance, layer_mask.value_or(~0ull));
+                                 sol::optional<int64_t> layer_mask) {
+                          const uint64_t mask = layer_mask ? static_cast<uint64_t>(*layer_mask) : ~0ull;
+                          return physics.raycast_all(origin, direction, distance, mask);
                       },
                       {"origin", "direction", "distance", "layer_mask"});
         }

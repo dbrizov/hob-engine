@@ -9,6 +9,9 @@
 ---@field PlayerRun AnimationClip
 
 ---@class Materials
+---@field BlueOutline Material
+---@field GreenOutline Material
 ---@field Psychedelic Material
+---@field RedOutline Material
 ---@field WhiteOutline Material
 

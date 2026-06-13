@@ -589,6 +589,9 @@ function CharacterBodyComponent:get_solver_ignore_mask() end
 ---@param mask integer
 function CharacterBodyComponent:set_solver_ignore_mask(mask) end
 
+---@return Capsule
+function CharacterBodyComponent:get_capsule() end
+
 ---@param capsule Capsule
 function CharacterBodyComponent:set_capsule(capsule) end
 
@@ -752,7 +755,7 @@ local SpriteComponent = {}
 ---@return Texture?
 function SpriteComponent:get_texture() end
 
----@param path_or_texture string|Texture
+---@param path_or_texture string|Texture|nil
 function SpriteComponent:set_texture(path_or_texture) end
 
 function SpriteComponent:clear_texture() end
@@ -813,6 +816,8 @@ local SpriteAnimatorComponent = {}
 ---@param clip AnimationClip?
 function SpriteAnimatorComponent:add_clip(name, clip) end
 
+function SpriteAnimatorComponent:clear_clips() end
+
 ---@param name string
 function SpriteAnimatorComponent:set_default_clip(name) end
 
@@ -837,7 +842,10 @@ function SpriteAnimatorComponent:stop() end
 ---@return boolean
 function SpriteAnimatorComponent:is_playing() end
 
----@param clips table
+---@return table<string, AnimationClip>
+function SpriteAnimatorComponent:get_clips() end
+
+---@param clips table<string, AnimationClip>
 function SpriteAnimatorComponent:set_clips(clips) end
 
 _G.SpriteAnimatorComponent = SpriteAnimatorComponent

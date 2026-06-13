@@ -33,6 +33,7 @@ namespace hob {
 
         std::string to_string() const override;
 
+        Capsule get_capsule() const;
         void set_capsule(const Capsule& capsule);
 
         uint64_t get_collision_layer() const;

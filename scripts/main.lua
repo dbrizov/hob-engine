@@ -15,17 +15,9 @@ EntitySpawner.spawn_entity(Entities.Camera, Vector2(0.0, 0.0))
 EntitySpawner.spawn_entity(Entities.Player, Vector2(0.0, 0.0))
 
 -- Stationary enemies for testing
-local red_enemy = EntitySpawner.spawn_entity(Entities.Enemy, Vector2(0.0, 4.0), -90.0)
-red_enemy:get_sprite():get_material():set_outline_color(Color:red());
-red_enemy:get_sprite():get_material():set_outline_width(2.0)
-
-local green_enemy = EntitySpawner.spawn_entity(Entities.Enemy, Vector2(-4.0, 0.0))
-green_enemy:get_sprite():get_material():set_outline_color(Color:green())
-green_enemy:get_sprite():get_material():set_outline_width(2.0)
-
-local blue_enemy = EntitySpawner.spawn_entity(Entities.Enemy, Vector2(4.0, 0.0), 180.0)
-blue_enemy:get_sprite():get_material():set_outline_color(Color:blue())
-blue_enemy:get_sprite():get_material():set_outline_width(2.0)
+EntitySpawner.spawn_entity(Entities.Enemy, Vector2(0.0, 4.0), -90.0)
+EntitySpawner.spawn_entity(Entities.Enemy, Vector2(-4.0, 0.0))
+EntitySpawner.spawn_entity(Entities.Enemy, Vector2(4.0, 0.0), 180.0)
 
 -- Perimeter walls
 for x = -ARENA_HALF_W, ARENA_HALF_W do

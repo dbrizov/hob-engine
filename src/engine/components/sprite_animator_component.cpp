@@ -11,10 +11,6 @@ namespace hob {
         : Component(entity) {
     }
 
-    std::string SpriteAnimatorComponent::to_string() const {
-        return std::format("SpriteAnimatorComponent(entity_id = {})", get_entity().get_id());
-    }
-
     void SpriteAnimatorComponent::enter_play() {
         m_sprite = get_entity().get_component<SpriteComponent>();
 
@@ -65,8 +61,24 @@ namespace hob {
         }
     }
 
-    void SpriteAnimatorComponent::add_clip(const std::string& name, std::shared_ptr<AnimationClip> clip) {
+    std::string SpriteAnimatorComponent::to_string() const {
+        return std::format("SpriteAnimatorComponent(entity_id = {})", get_entity().get_id());
+    }
+
+    void SpriteAnimatorComponent::add_clip(const std::string& name, AnimationClipRef clip) {
         m_clips[name] = std::move(clip);
+    }
+
+    const AnimationClips& SpriteAnimatorComponent::get_clips() const {
+        return m_clips;
+    }
+
+    void SpriteAnimatorComponent::set_clips(AnimationClips clips) {
+        m_clips = std::move(clips);
+    }
+
+    void SpriteAnimatorComponent::clear_clips() {
+        m_clips.clear();
     }
 
     void SpriteAnimatorComponent::set_default_clip(const std::string& name) {

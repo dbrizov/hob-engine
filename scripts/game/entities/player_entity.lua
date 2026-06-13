@@ -9,9 +9,9 @@ DefineEntity.Player = {
     },
     sprite = {
         texture = Textures.PlayerIdle01,
-        z_index = 0,
-        material = Materials.WhiteOutline,
+        material = Materials.GreenOutline,
         -- material = Materials.Psychedelic,
+        z_index = 1,
     },
     sprite_animator = {
         clips = {

@@ -9,8 +9,8 @@ namespace hob {
     void LuaComponentSchemaRegistry::add_schema(std::string key,
                                                 std::string add_method,
                                                 std::string get_method,
-                                                std::vector<std::pair<std::string, std::string>> setters) {
-        m_schemas.push_back({std::move(key), std::move(add_method), std::move(get_method), std::move(setters)});
+                                                std::vector<LuaComponentSchemaField> fields) {
+        m_schemas.push_back({std::move(key), std::move(add_method), std::move(get_method), std::move(fields)});
     }
 
     bool LuaComponentSchemaRegistry::write_to_file(const std::filesystem::path& path) const {
@@ -24,13 +24,19 @@ namespace hob {
             out << "        add = \"" << s.add_method << "\",\n";
             out << "        get = \"" << s.get_method << "\",\n";
 
-            if (s.setters.empty()) {
+            if (s.fields.empty()) {
+                out << "        getters = {},\n";
                 out << "        setters = {},\n";
             }
             else {
+                out << "        getters = {\n";
+                for (const auto& f : s.fields) {
+                    out << "            " << f.name << " = \"" << f.get_method << "\",\n";
+                }
+                out << "        },\n";
                 out << "        setters = {\n";
-                for (const auto& [field, method] : s.setters) {
-                    out << "            " << field << " = \"" << method << "\",\n";
+                for (const auto& f : s.fields) {
+                    out << "            " << f.name << " = \"" << f.set_method << "\",\n";
                 }
                 out << "        },\n";
             }

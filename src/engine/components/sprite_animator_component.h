@@ -10,10 +10,12 @@
 namespace hob {
     class SpriteComponent;
 
+    using AnimationClips = std::unordered_map<std::string, AnimationClipRef>;
+
     class SpriteAnimatorComponent : public Component {
         SpriteComponent* m_sprite = nullptr;
-        std::unordered_map<std::string, std::shared_ptr<AnimationClip>> m_clips;
-        std::shared_ptr<AnimationClip> m_current_clip;
+        AnimationClips m_clips;
+        AnimationClipRef m_current_clip;
         std::string m_current_clip_name;
         std::string m_default_clip_name;
         float m_elapsed = 0.0f;
@@ -23,12 +25,16 @@ namespace hob {
     public:
         explicit SpriteAnimatorComponent(Entity& entity);
 
-        std::string to_string() const override;
-
         void enter_play() override;
         void tick(float delta_time) override;
 
-        void add_clip(const std::string& name, std::shared_ptr<AnimationClip> clip);
+        std::string to_string() const override;
+
+        void add_clip(const std::string& name, AnimationClipRef clip);
+        const AnimationClips& get_clips() const;
+        void set_clips(AnimationClips clips);
+        void clear_clips();
+
         void set_default_clip(const std::string& name);
         const std::string& get_default_clip() const;
         const std::string& get_current_clip() const;
