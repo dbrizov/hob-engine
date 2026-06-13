@@ -1,5 +1,6 @@
 #include "renderer.h"
 
+#include <cstring>
 #include <unordered_map>
 
 #include <imgui.h>
@@ -19,7 +20,7 @@ namespace hob {
                               });
 
         console.register_cvar("r_show_texture_refs",
-                              "Show a texture cache window (size, game refs, all refs, path)",
+                              "Show a texture cache window (size, logical refs, all refs, path)",
                               "0",
                               ConsoleVariableType::Bool,
                               ConsoleVariableFlags::None,
@@ -79,7 +80,7 @@ namespace hob {
                     total_game += all - pending;
                 }
             }
-            ImGui::Text("Textures: %zu | Game refs: %d | All refs: %d",
+            ImGui::Text("Textures: %zu | Logical refs: %d | All refs: %d",
                         m_textures.size(),
                         total_game,
                         total_all);
@@ -90,8 +91,8 @@ namespace hob {
 
             if (ImGui::BeginTable("texture_refs", 4, flags)) {
                 ImGui::TableSetupColumn("size", ImGuiTableColumnFlags_WidthFixed, 90.0f);
-                ImGui::TableSetupColumn("game refs", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                ImGui::TableSetupColumn("all refs", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                ImGui::TableSetupColumn("logical refs", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+                ImGui::TableSetupColumn("all refs", ImGuiTableColumnFlags_WidthFixed, 90.0f);
                 ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableHeadersRow();
 
@@ -133,31 +134,67 @@ namespace hob {
 
         if (m_cvar_show_sprite_queue) {
             if (ImGui::Begin("Sprite Queue")) {
-                ImGui::Text("Total: %zu", m_sprite_draw_order.size());
+                // Collapse consecutive draws that share (z_index, shader_id, texture path) into a
+                // single row with a count. Adjacent identical draws form one batch, so grouping by
+                // runs keeps the draw order meaningful while cutting the row count.
+                const auto draw_path = [](const SpriteDrawData& draw) {
+                    return draw.texture ? draw.texture->get_path().c_str() : "<unknown>";
+                };
+
+                const auto same_group = [&](const SpriteDrawData& a, const SpriteDrawData& b) {
+                    return a.z_index == b.z_index &&
+                           a.material.shader_id == b.material.shader_id &&
+                           std::strcmp(draw_path(a), draw_path(b)) == 0;
+                };
+
+                // Pre-count the collapsed groups so the header can show it before the table.
+                size_t group_count = 0;
+                for (size_t i = 0; i < m_sprite_draw_order.size();) {
+                    const SpriteDrawData& draw = m_sprite_draws[m_sprite_draw_order[i]];
+                    size_t run_end = i + 1;
+                    while (run_end < m_sprite_draw_order.size() &&
+                           same_group(draw, m_sprite_draws[m_sprite_draw_order[run_end]])) {
+                        run_end += 1;
+                    }
+                    group_count += 1;
+                    i = run_end;
+                }
+
+                ImGui::Text("Total: %zu draws | %zu groups", m_sprite_draw_order.size(), group_count);
+
                 const int columns = 4;
                 const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
                                                ImGuiTableFlags_RowBg |
                                                ImGuiTableFlags_ScrollY;
 
                 if (ImGui::BeginTable("queue", columns, flags)) {
-                    ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+                    ImGui::TableSetupColumn("count", ImGuiTableColumnFlags_WidthFixed, 60.0f);
                     ImGui::TableSetupColumn("z_index", ImGuiTableColumnFlags_WidthFixed, 80.0f);
                     ImGui::TableSetupColumn("shader_id", ImGuiTableColumnFlags_WidthFixed, 80.0f);
                     ImGui::TableSetupColumn("texture", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableHeadersRow();
 
-                    for (size_t i = 0; i < m_sprite_draw_order.size(); ++i) {
+                    for (size_t i = 0; i < m_sprite_draw_order.size();) {
                         const SpriteDrawData& draw = m_sprite_draws[m_sprite_draw_order[i]];
-                        const char* tex_path = draw.texture ? draw.texture->get_path().c_str() : "<unknown>";
+
+                        size_t run_end = i + 1;
+                        while (run_end < m_sprite_draw_order.size() &&
+                               same_group(draw, m_sprite_draws[m_sprite_draw_order[run_end]])) {
+                            run_end += 1;
+                        }
+                        const size_t run_length = run_end - i;
+
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("%zu", i);
+                        ImGui::Text("%zu", run_length);
                         ImGui::TableSetColumnIndex(1);
                         ImGui::Text("%d", draw.z_index);
                         ImGui::TableSetColumnIndex(2);
                         ImGui::Text("%d", draw.material.shader_id);
                         ImGui::TableSetColumnIndex(3);
-                        ImGui::TextUnformatted(tex_path);
+                        ImGui::TextUnformatted(draw_path(draw));
+
+                        i = run_end;
                     }
                     ImGui::EndTable();
                 }
