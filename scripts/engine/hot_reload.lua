@@ -32,5 +32,3 @@ end
 
 -- 4. Push changed prefab data onto already-spawned entities (setters only; no re-add).
 __reapply_prefabs_to_spawned_entities()
-
-Debug.print("Lua hot reload complete", Color.white(), 4.0)

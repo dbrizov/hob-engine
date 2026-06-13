@@ -62,7 +62,15 @@ namespace hob {
     }
 
     bool LuaScriptSystem::hot_reload() {
-        return run_file("scripts/engine/hot_reload.lua");
+        const bool success = run_file("scripts/engine/hot_reload.lua");
+        if (success) {
+            debug::print("Lua hot reload complete");
+        }
+        else {
+            debug::log_error("Lua hot reload complete");
+        }
+
+        return success;
     }
 
     bool LuaScriptSystem::run_file(const std::filesystem::path& relative_path) {
