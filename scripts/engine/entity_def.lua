@@ -48,35 +48,59 @@ _G.Entities = setmetatable({}, {
     __index = function(_, name) return name end,
 })
 
+-- Dispatch a schema setter, which is either a component method name or a function.
+local function call_setter(component, setter, value)
+    if type(setter) == "string" then
+        component[setter](component, value)
+    else
+        setter(component, value)
+    end
+end
+
+-- The effective ticking state for a prefab: absent means the Entity default (not ticking).
+local function resolve_ticking(prefab)
+    if prefab.ticking == nil then
+        return false
+    end
+    return prefab.ticking
+end
+
+-- Iterate a prefab's declared component sections in registration order.
+-- `accessor` names the schema entry for the entity method used to obtain the component to write to:
+-- "add" at spawn (creates it) or "get" on reload (fetches the existing one; a nil result skips the section).
+-- `fn` receives (key, schema, section, component).
+local function for_each_section(entity, prefab, accessor, fn)
+    local schemas = _G.__component_schemas
+    for _, key in ipairs(schemas.__order) do
+        local section = prefab[key]
+        if section ~= nil then
+            local schema = schemas[key]
+            local component = entity[schema[accessor]](entity)
+            if component ~= nil then
+                fn(key, schema, section, component)
+            end
+        end
+    end
+end
+
+-- Apply the properties present in a section (spawn path); unknown props are reported.
 local function apply_setters(component, section, setters)
     for prop, value in pairs(section) do
-        local unwrapped = unwrap_def(value)
         local setter = setters[prop]
         if setter == nil then
             Debug.log_error("Unknown prefab property '" .. tostring(prop) .. "' for component")
-        elseif type(setter) == "string" then
-            component[setter](component, unwrapped)
         else
-            setter(component, unwrapped)
+            call_setter(component, setter, unwrap_def(value))
         end
     end
 end
 
 local function apply_prefab(entity, prefab)
-    local schemas = _G.__component_schemas
+    entity:set_ticking(resolve_ticking(prefab))
 
-    if prefab.ticking ~= nil then
-        entity:set_ticking(prefab.ticking)
-    end
-
-    for _, key in ipairs(schemas.__order) do
-        local section = prefab[key]
-        if section ~= nil then
-            local schema = schemas[key]
-            local component = entity[schema.add](entity)
-            apply_setters(component, section, schema.setters)
-        end
-    end
+    for_each_section(entity, prefab, "add", function(_, schema, section, component)
+        apply_setters(component, section, schema.setters)
+    end)
 
     if prefab.lua_components then
         for _, entry in ipairs(prefab.lua_components) do
@@ -89,6 +113,21 @@ end
 -- where a raw nil value would just remove the key.
 local NIL_DEFAULT = {}
 
+-- The value to write for a field on reload: the prefab's value if the section declares it,
+-- otherwise the component's captured default (with the nil sentinel resolved back to nil).
+local function resolve_field_value(section, field, defaults)
+    local value = section[field]
+    if value ~= nil then
+        return unwrap_def(value)
+    end
+
+    value = defaults[field]
+    if value == NIL_DEFAULT then
+        return nil
+    end
+    return value
+end
+
 -- Hot reload: re-apply a prefab's properties to an already-built entity. The prefab is the
 -- source of truth: within a declared section, a present field is applied and an *absent* field is
 -- reset to the component's default (read once per type from a throwaway probe via get_defaults).
@@ -99,41 +138,14 @@ local NIL_DEFAULT = {}
 -- the prefab's lua_components (refreshed by the metatable swap in hot_reload.lua); and the transform's
 -- position/rotation/scale (spawn arguments, not prefab data).
 local function reapply_prefab(entity, prefab, get_defaults)
-    local schemas = _G.__component_schemas
+    entity:set_ticking(resolve_ticking(prefab))
 
-    local ticking = prefab.ticking
-    if ticking == nil then
-        ticking = false
-    end
-    entity:set_ticking(ticking)
-
-    for _, key in ipairs(schemas.__order) do
-        local section = prefab[key]
-        if section ~= nil then
-            local schema = schemas[key]
-            local component = entity[schema.get](entity)
-            if component ~= nil then
-                local defaults = get_defaults(key)
-                for field, setter in pairs(schema.setters) do
-                    local value
-                    if section[field] ~= nil then
-                        value = unwrap_def(section[field])
-                    else
-                        value = defaults[field]
-                        if value == NIL_DEFAULT then
-                            value = nil
-                        end
-                    end
-
-                    if type(setter) == "string" then
-                        component[setter](component, value)
-                    else
-                        setter(component, value)
-                    end
-                end
-            end
+    for_each_section(entity, prefab, "get", function(key, schema, section, component)
+        local defaults = get_defaults(key)
+        for field, setter in pairs(schema.setters) do
+            call_setter(component, setter, resolve_field_value(section, field, defaults))
         end
-    end
+    end)
 end
 
 -- Re-applies current prefab data to every live spawned entity (called by hot_reload.lua).
