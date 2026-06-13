@@ -13,20 +13,29 @@
 
 namespace hob {
     namespace {
-        template<typename... Args>
-        void call_hook(LuaScriptComponentImpl& impl, const char* method, Args&&... args) {
-            sol::table& inst = impl.lua_instance;
-            if (!inst.valid()) {
-                return;
+        sol::protected_function resolve_hook(const sol::table& instance, const char* method) {
+            if (!instance.valid()) {
+                return {};
             }
 
-            const sol::object fn = inst[method];
+            sol::object fn = instance[method];
             if (!fn.is<sol::protected_function>()) {
+                return {};
+            }
+
+            return fn;
+        }
+
+        template<typename... Args>
+        void invoke_hook(const sol::protected_function& hook,
+                         const sol::table& instance,
+                         const char* method,
+                         Args&&... args) {
+            if (!hook.valid()) {
                 return;
             }
 
-            const sol::protected_function pfn = fn;
-            sol::protected_function_result result = pfn(inst, std::forward<Args>(args)...);
+            sol::protected_function_result result = hook(instance, std::forward<Args>(args)...);
             if (!result.valid()) {
                 const sol::error err = result;
                 debug::log_error("Lua error in {}: {}", method, err.what());
@@ -53,6 +62,20 @@ namespace hob {
 
     const LuaScriptComponentImpl& LuaScriptComponent::impl() const {
         return *m_impl;
+    }
+
+    void LuaScriptComponent::refresh_hook_cache() {
+        m_impl->init = resolve_hook(m_impl->lua_instance, "init");
+        m_impl->enter_play = resolve_hook(m_impl->lua_instance, "enter_play");
+        m_impl->exit_play = resolve_hook(m_impl->lua_instance, "exit_play");
+        m_impl->tick = resolve_hook(m_impl->lua_instance, "tick");
+        m_impl->physics_tick = resolve_hook(m_impl->lua_instance, "physics_tick");
+        m_impl->late_tick = resolve_hook(m_impl->lua_instance, "late_tick");
+        m_impl->debug_draw_tick = resolve_hook(m_impl->lua_instance, "debug_draw_tick");
+        m_impl->on_collision_enter = resolve_hook(m_impl->lua_instance, "on_collision_enter");
+        m_impl->on_collision_exit = resolve_hook(m_impl->lua_instance, "on_collision_exit");
+        m_impl->on_trigger_enter = resolve_hook(m_impl->lua_instance, "on_trigger_enter");
+        m_impl->on_trigger_exit = resolve_hook(m_impl->lua_instance, "on_trigger_exit");
     }
 
     int LuaScriptComponent::get_priority() const {
@@ -109,47 +132,49 @@ namespace hob {
         m_impl->lua_instance["entity"] = EntityRef(get_entity().get_id(), get_engine().get_entity_spawner());
         m_impl->lua_instance["class_name"] = m_class_name;
 
-        call_hook(*m_impl, "init");
+        refresh_hook_cache();
+
+        invoke_hook(m_impl->init, m_impl->lua_instance, "init");
     }
 
     void LuaScriptComponent::enter_play() {
-        call_hook(*m_impl, "enter_play");
+        invoke_hook(m_impl->enter_play, m_impl->lua_instance, "enter_play");
     }
 
     void LuaScriptComponent::exit_play() {
-        call_hook(*m_impl, "exit_play");
+        invoke_hook(m_impl->exit_play, m_impl->lua_instance, "exit_play");
     }
 
     void LuaScriptComponent::tick(float delta_time) {
-        call_hook(*m_impl, "tick", delta_time);
+        invoke_hook(m_impl->tick, m_impl->lua_instance, "tick", delta_time);
     }
 
     void LuaScriptComponent::physics_tick(float fixed_delta_time) {
-        call_hook(*m_impl, "physics_tick", fixed_delta_time);
+        invoke_hook(m_impl->physics_tick, m_impl->lua_instance, "physics_tick", fixed_delta_time);
     }
 
     void LuaScriptComponent::late_tick(float delta_time) {
-        call_hook(*m_impl, "late_tick", delta_time);
+        invoke_hook(m_impl->late_tick, m_impl->lua_instance, "late_tick", delta_time);
     }
 
     void LuaScriptComponent::debug_draw_tick(float delta_time) {
-        call_hook(*m_impl, "debug_draw_tick", delta_time);
+        invoke_hook(m_impl->debug_draw_tick, m_impl->lua_instance, "debug_draw_tick", delta_time);
     }
 
     void LuaScriptComponent::on_collision_enter(const ColliderComponent* other_collider) {
-        call_hook(*m_impl, "on_collision_enter", other_collider);
+        invoke_hook(m_impl->on_collision_enter, m_impl->lua_instance, "on_collision_enter", other_collider);
     }
 
     void LuaScriptComponent::on_collision_exit(const ColliderComponent* other_collider) {
-        call_hook(*m_impl, "on_collision_exit", other_collider);
+        invoke_hook(m_impl->on_collision_exit, m_impl->lua_instance, "on_collision_exit", other_collider);
     }
 
     void LuaScriptComponent::on_trigger_enter(const ColliderComponent* other_collider) {
-        call_hook(*m_impl, "on_trigger_enter", other_collider);
+        invoke_hook(m_impl->on_trigger_enter, m_impl->lua_instance, "on_trigger_enter", other_collider);
     }
 
     void LuaScriptComponent::on_trigger_exit(const ColliderComponent* other_collider) {
-        call_hook(*m_impl, "on_trigger_exit", other_collider);
+        invoke_hook(m_impl->on_trigger_exit, m_impl->lua_instance, "on_trigger_exit", other_collider);
     }
 
     std::string LuaScriptComponent::to_string() const {

@@ -30,6 +30,8 @@ namespace hob {
         bool hot_reload();
 
     private:
+        void refresh_lua_component_hook_caches();
+
         bool run_file(const std::filesystem::path& relative_path);
         bool run_folder(const std::filesystem::path& relative_path, const std::vector<std::string>& excludes = {});
         bool run_bootstrap();

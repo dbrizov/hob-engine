@@ -22,6 +22,8 @@ namespace hob {
         LuaScriptComponentImpl& impl();
         const LuaScriptComponentImpl& impl() const;
 
+        void refresh_hook_cache();
+
         int get_priority() const override;
 
         void init() override;

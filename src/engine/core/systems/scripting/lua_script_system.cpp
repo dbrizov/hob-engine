@@ -5,10 +5,13 @@
 #include <string>
 #include <vector>
 
+#include "engine/components/lua_script_component.h"
 #include "engine/core/debug.h"
 #include "engine/core/engine.h"
 #include "engine/core/path_utils.h"
 #include "engine/core/systems/console.h"
+#include "engine/core/systems/entity_spawner.h"
+#include "engine/entity/entity.h"
 
 namespace hob {
     LuaScriptSystem::LuaScriptSystem(Engine& engine)
@@ -64,13 +67,25 @@ namespace hob {
     bool LuaScriptSystem::hot_reload() {
         const bool success = run_file("scripts/engine/hot_reload.lua");
         if (success) {
+            refresh_lua_component_hook_caches();
             debug::print("Lua hot reload complete");
         }
         else {
-            debug::log_error("Lua hot reload complete");
+            debug::log_error("Lua hot reload failed");
         }
 
         return success;
+    }
+
+    void LuaScriptSystem::refresh_lua_component_hook_caches() {
+        std::vector<Entity*> entities;
+        m_engine.get_entity_spawner().get_entities(entities);
+
+        for (Entity* entity : entities) {
+            for (LuaScriptComponent* component : entity->get_components<LuaScriptComponent>()) {
+                component->refresh_hook_cache();
+            }
+        }
     }
 
     bool LuaScriptSystem::run_file(const std::filesystem::path& relative_path) {
