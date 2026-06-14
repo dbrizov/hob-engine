@@ -50,13 +50,13 @@
                 "request": "launch",
                 "linux": {
                     "program": {
-                        "command": "${workspaceFolder:scripts}/../build/debug/linux-gcc/hob2d"
+                        "command": "${workspaceFolder:scripts}/../build/debug/linux-gcc/Debug/hob2d"
                     },
                     "cwd": "${workspaceFolder:scripts}/../build/debug/linux-gcc"
                 },
                 "osx": {
                     "program": {
-                        "command": "${workspaceFolder:scripts}/../build/debug/macos-clang/hob2d"
+                        "command": "${workspaceFolder:scripts}/../build/debug/macos-clang/Debug/hob2d"
                     },
                     "cwd": "${workspaceFolder:scripts}/../build/debug/macos-clang"
                 },
