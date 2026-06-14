@@ -1,4 +1,4 @@
-# Generated from CLion C/C++ Code Style settings
+# Hob2D C++ formatting config (clang-format).
 ---
 Language: Cpp
 BasedOnStyle: LLVM
@@ -7,7 +7,12 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
-BraceWrapping: 
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: None
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: false
@@ -26,9 +31,11 @@ BraceWrapping:
   SplitEmptyNamespace: true
 BreakBeforeBraces: Custom
 BreakConstructorInitializers: BeforeComma
+BreakStringLiterals: false
 BreakTemplateDeclarations: Yes
 ColumnLimit: 120
-IncludeCategories: 
+FixNamespaceComments: false
+IncludeCategories:
   - Regex: '^<.*'
     Priority: 1
   - Regex: '^".*'
@@ -43,7 +50,9 @@ MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
+PenaltyReturnTypeOnItsOwnLine: 1000
 PointerAlignment: Left
+SortIncludes: CaseSensitive
 SpaceAfterTemplateKeyword: false
 SpaceInEmptyParentheses: false
 SpacesInAngles: false

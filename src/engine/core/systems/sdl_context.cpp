@@ -2,8 +2,8 @@
 
 #include <SDL3/SDL.h>
 
-#include "engine/core/engine_config.h"
 #include "engine/core/debug.h"
+#include "engine/core/engine_config.h"
 
 namespace hob {
     SdlContext::SdlContext(const GraphicsConfig& graphics_config) {
@@ -28,11 +28,10 @@ namespace hob {
         const int window_height_points =
             static_cast<int>(static_cast<float>(graphics_config.window_height) / pixel_density);
 
-        m_window = SDL_CreateWindow(
-            graphics_config.window_title.c_str(),
-            window_width_points,
-            window_height_points,
-            SDL_WINDOW_HIGH_PIXEL_DENSITY);
+        m_window = SDL_CreateWindow(graphics_config.window_title.c_str(),
+                                    window_width_points,
+                                    window_height_points,
+                                    SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
         if (!m_window) {
             debug::log_error("SDL_CreateWindow Error: {}", SDL_GetError());
@@ -51,9 +50,7 @@ namespace hob {
                    pixel_density);
 
         const SDL_GPUShaderFormat shader_formats =
-            SDL_GPU_SHADERFORMAT_SPIRV |
-            SDL_GPU_SHADERFORMAT_DXIL |
-            SDL_GPU_SHADERFORMAT_MSL;
+            SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
 
 #ifndef NDEBUG
         const bool debug_mode = true;
@@ -90,10 +87,7 @@ namespace hob {
             present_mode = SDL_GPU_PRESENTMODE_MAILBOX;
         }
 
-        SDL_SetGPUSwapchainParameters(m_gpu_device,
-                                      m_window,
-                                      SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-                                      present_mode);
+        SDL_SetGPUSwapchainParameters(m_gpu_device, m_window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, present_mode);
 
         m_is_initialized = true;
     }

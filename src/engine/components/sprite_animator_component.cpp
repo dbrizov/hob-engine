@@ -8,8 +8,7 @@
 
 namespace hob {
     SpriteAnimatorComponent::SpriteAnimatorComponent(Entity& entity)
-        : Component(entity) {
-    }
+        : Component(entity) {}
 
     void SpriteAnimatorComponent::enter_play() {
         m_sprite = get_entity().get_component<SpriteComponent>();

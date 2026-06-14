@@ -6,8 +6,8 @@
 #include <SDL3/SDL.h>
 #include <SDL3_shadercross/SDL_shadercross.h>
 
-#include "engine/core/engine_config.h"
 #include "engine/core/debug.h"
+#include "engine/core/engine_config.h"
 #include "engine/core/systems/console.h"
 #include "engine/core/systems/sdl_context.h"
 
@@ -17,10 +17,10 @@ namespace hob {
         , m_gpu_device(sdl_context.get_gpu_device())
         , m_logical_width(config.graphics_config.logical_width)
         , m_logical_height(config.graphics_config.logical_height)
-        , m_offscreen_projection(ortho_top_left(static_cast<float>(m_logical_width),
-                                                static_cast<float>(m_logical_height)))
-        , m_swapchain_projection(ortho_top_left_y_flipped(static_cast<float>(m_logical_width),
-                                                          static_cast<float>(m_logical_height))) {
+        , m_offscreen_projection(
+              ortho_top_left(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height)))
+        , m_swapchain_projection(
+              ortho_top_left_y_flipped(static_cast<float>(m_logical_width), static_cast<float>(m_logical_height))) {
         if (!m_gpu_device) {
             debug::log_error("Renderer init failed: GPU device is null");
             return;
@@ -172,9 +172,8 @@ namespace hob {
         m_swap_texture = nullptr;
 
         const bool ok = SDL_WaitAndAcquireGPUSwapchainTexture(
-                            m_command_buffer, m_sdl_context.get_window(),
-                            &m_swap_texture, nullptr, nullptr)
-                        && m_swap_texture != nullptr;
+                            m_command_buffer, m_sdl_context.get_window(), &m_swap_texture, nullptr, nullptr) &&
+                        m_swap_texture != nullptr;
         return ok;
     }
 
@@ -365,7 +364,7 @@ namespace hob {
 
     int Renderer::get_debug_font_line_height() const {
         // The atlas is baked scaled by pixel_density for crispness; report the nominal (DEBUG_FONT_SIZE_PX) height.
-        return static_cast<int>(std::round(
-            static_cast<float>(m_debug_font.get_line_height()) * m_debug_font_baked_inverse_pixel_density));
+        return static_cast<int>(
+            std::round(static_cast<float>(m_debug_font.get_line_height()) * m_debug_font_baked_inverse_pixel_density));
     }
 }

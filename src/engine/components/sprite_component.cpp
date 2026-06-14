@@ -10,8 +10,7 @@
 
 namespace hob {
     SpriteComponent::SpriteComponent(Entity& entity)
-        : Component(entity) {
-    }
+        : Component(entity) {}
 
     void SpriteComponent::enter_play() {
         m_sprite_draw_handle = get_engine().get_renderer().register_sprite_draw();

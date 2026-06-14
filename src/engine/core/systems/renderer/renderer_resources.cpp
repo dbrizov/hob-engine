@@ -17,9 +17,7 @@ namespace hob {
         if (tex_it != m_textures.end()) {
             if (auto cached = tex_it->second.lock()) {
                 if (m_cvar_log_texture_ref) {
-                    debug::log("Renderer::get_or_load_texture cache hit: '{}' (rc={})",
-                               key,
-                               cached.use_count());
+                    debug::log("Renderer::get_or_load_texture cache hit: '{}' (rc={})", key, cached.use_count());
                 }
                 return cached;
             }

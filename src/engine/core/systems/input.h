@@ -1,11 +1,11 @@
 #pragma once
 
+#include <SDL3/SDL_scancode.h>
 #include <bitset>
 #include <functional>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <string>
-#include <SDL3/SDL_scancode.h>
 
 #include "engine/math/vector2.h"
 #include "input_config.h"

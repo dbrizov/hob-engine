@@ -5,8 +5,7 @@
 namespace hob {
     EntityRef::EntityRef(EntityId id, EntitySpawner& spawner)
         : m_id(id)
-        , m_spawner(&spawner) {
-    }
+        , m_spawner(&spawner) {}
 
     Entity* EntityRef::resolve() const {
         return m_spawner ? m_spawner->get_entity(m_id) : nullptr;

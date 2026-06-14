@@ -136,10 +136,8 @@ namespace hob {
         b2QueryFilter filter = b2DefaultQueryFilter();
         filter.maskBits = layer_mask;
 
-        const b2RayResult ray = b2World_CastRayClosest(m_physics_world.get_id(),
-                                                       vec2_to_b2Vec2(origin),
-                                                       vec2_to_b2Vec2(translation),
-                                                       filter);
+        const b2RayResult ray = b2World_CastRayClosest(
+            m_physics_world.get_id(), vec2_to_b2Vec2(origin), vec2_to_b2Vec2(translation), filter);
 
         if (!ray.hit) {
             return result;
@@ -219,12 +217,8 @@ namespace hob {
             return 1.0f; // continue past this hit
         };
 
-        b2World_CastRay(m_physics_world.get_id(),
-                        vec2_to_b2Vec2(origin),
-                        vec2_to_b2Vec2(translation),
-                        filter,
-                        callback,
-                        &ctx);
+        b2World_CastRay(
+            m_physics_world.get_id(), vec2_to_b2Vec2(origin), vec2_to_b2Vec2(translation), filter, callback, &ctx);
 
         return hits;
     }

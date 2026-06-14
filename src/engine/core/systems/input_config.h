@@ -1,10 +1,10 @@
 #pragma once
 
+#include <SDL3/SDL_scancode.h>
 #include <filesystem>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <SDL3/SDL_scancode.h>
 
 namespace hob {
     struct ActionConfig {

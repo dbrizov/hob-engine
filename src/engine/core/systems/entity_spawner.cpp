@@ -2,16 +2,15 @@
 
 #include <cassert>
 
-#include "engine/entity/entity.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/core/engine.h"
+#include "engine/entity/entity.h"
 
 namespace hob {
     EntitySpawner::EntitySpawner(Engine& engine)
-        : m_engine(engine) {
-    }
+        : m_engine(engine) {}
 
     EntitySpawner::~EntitySpawner() {
         clear();
@@ -49,8 +48,8 @@ namespace hob {
         }
 
         if (was_pending) {
-            // Pending entities never enter play, so exit_play()/detach won't run.
-            // Detach synchronously to avoid leaving a dangling pointer in a surviving parent (or in a still-in-play child).
+            // Pending entities never enter play, so exit_play()/detach won't run. Detach synchronously to
+            // avoid leaving a dangling pointer in a surviving parent (or in a still-in-play child).
             transform->detach_from_hierarchy();
 
             // Drop the pending spawn request, which frees the Entity's unique_ptr.
@@ -92,9 +91,8 @@ namespace hob {
     void EntitySpawner::unregister_ticking_entity(Entity* entity) {
         // Swap-pop; fix the moved entity's stored index.
         const TickIndex index = entity->m_tick_index;
-        assert(
-            index != INVALID_TICK_INDEX && index < m_ticking_entities.size() &&
-            "Unregistering an entity that isn't registered for ticking");
+        assert(index != INVALID_TICK_INDEX && index < m_ticking_entities.size() &&
+               "Unregistering an entity that isn't registered for ticking");
         const TickIndex last_index = static_cast<TickIndex>(m_ticking_entities.size() - 1);
         if (index != last_index) {
             m_ticking_entities[index] = m_ticking_entities[last_index];
@@ -121,9 +119,8 @@ namespace hob {
     void EntitySpawner::unregister_sprite(SpriteComponent* sprite) {
         // Swap-pop; fix the moved sprite's stored index.
         const SpriteIndex index = sprite->m_sprite_index;
-        assert(
-            index != INVALID_SPRITE_INDEX && index < m_sprites.size() &&
-            "Unregistering a sprite that isn't registered");
+        assert(index != INVALID_SPRITE_INDEX && index < m_sprites.size() &&
+               "Unregistering a sprite that isn't registered");
         const SpriteIndex last_index = static_cast<SpriteIndex>(m_sprites.size() - 1);
         if (index != last_index) {
             m_sprites[index] = m_sprites[last_index];
@@ -146,9 +143,8 @@ namespace hob {
     void EntitySpawner::unregister_simulated_rigidbody(RigidbodyComponent* rigidbody) {
         // Swap-pop; fix the moved rigidbody's stored index.
         const RigidbodyIndex index = rigidbody->m_rigidbody_index;
-        assert(
-            index != INVALID_RIGIDBODY_INDEX && index < m_simulated_rigidbodies.size() &&
-            "Unregistering a rigidbody that isn't registered");
+        assert(index != INVALID_RIGIDBODY_INDEX && index < m_simulated_rigidbodies.size() &&
+               "Unregistering a rigidbody that isn't registered");
         const RigidbodyIndex last_index = static_cast<RigidbodyIndex>(m_simulated_rigidbodies.size() - 1);
         if (index != last_index) {
             m_simulated_rigidbodies[index] = m_simulated_rigidbodies[last_index];
@@ -204,9 +200,8 @@ namespace hob {
 
             // Swap-pop; fix the moved entity's stored index in its record.
             const EntityIndex index = it->second.live_index;
-            assert(
-                index != INVALID_ENTITY_INDEX && index < m_entities.size() &&
-                "Queued destroy request must be an in-play entity");
+            assert(index != INVALID_ENTITY_INDEX && index < m_entities.size() &&
+                   "Queued destroy request must be an in-play entity");
             const EntityIndex last_index = static_cast<EntityIndex>(m_entities.size() - 1);
             if (index != last_index) {
                 m_entities[index] = std::move(m_entities[last_index]);

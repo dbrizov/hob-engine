@@ -86,10 +86,7 @@ namespace hob {
             void add_on_screen_debug_message(std::string text, const Color& color, float duration);
 
             template<typename... Args>
-            void print_dispatch(const Color& color,
-                                float duration,
-                                std::format_string<Args...> fmt,
-                                Args&&... args) {
+            void print_dispatch(const Color& color, float duration, std::format_string<Args...> fmt, Args&&... args) {
                 std::string text = std::format(fmt, std::forward<Args>(args)...);
                 log("{}", text);
                 add_on_screen_debug_message(std::move(text), color, duration);
@@ -98,10 +95,7 @@ namespace hob {
 
         template<typename... Args>
         void print(std::format_string<Args...> fmt, Args&&... args) {
-            detail::print_dispatch(DEFAULT_MESSAGE_COLOR,
-                                   DEFAULT_MESSAGE_DURATION,
-                                   fmt,
-                                   std::forward<Args>(args)...);
+            detail::print_dispatch(DEFAULT_MESSAGE_COLOR, DEFAULT_MESSAGE_DURATION, fmt, std::forward<Args>(args)...);
         }
 
         template<typename... Args>

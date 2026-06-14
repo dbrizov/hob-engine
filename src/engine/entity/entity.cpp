@@ -10,8 +10,7 @@
 
 namespace hob {
     Entity::Entity(Engine& engine)
-        : m_engine(engine) {
-    }
+        : m_engine(engine) {}
 
     void Entity::enter_play() {
         m_is_in_play = true;
@@ -84,10 +83,8 @@ namespace hob {
     }
 
     std::string Entity::to_string() const {
-        std::string result = std::format("Entity(id = {}, in_play = {}, ticking = {})",
-                                         get_id(),
-                                         is_in_play(),
-                                         is_ticking());
+        std::string result =
+            std::format("Entity(id = {}, in_play = {}, ticking = {})", get_id(), is_in_play(), is_ticking());
 
         if (const TransformComponent* transform = get_transform()) {
             result += std::format("\n  position = {}, rotation = {}, scale = {}",
@@ -149,9 +146,8 @@ namespace hob {
     }
 
     void Entity::sort_components() {
-        std::sort(m_components.begin(), m_components.end(),
-                  [](const auto& a, const auto& b) {
-                      return a->get_priority() < b->get_priority();
-                  });
+        std::sort(m_components.begin(), m_components.end(), [](const auto& a, const auto& b) {
+            return a->get_priority() < b->get_priority();
+        });
     }
 }

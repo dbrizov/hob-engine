@@ -22,10 +22,10 @@ namespace hob {
         static constexpr const char* value = nullptr;
     };
 
-#define HOB_LUA_TYPE(CppType, LuaName)                                      \
-    template <>                                                             \
-    struct LuaTypeName<CppType> {                                           \
-        static constexpr const char* value = LuaName;                       \
+#define HOB_LUA_TYPE(CppType, LuaName)                                                                                 \
+    template<>                                                                                                         \
+    struct LuaTypeName<CppType> {                                                                                      \
+        static constexpr const char* value = LuaName;                                                                  \
     };
 
     // clang-format off
@@ -51,28 +51,22 @@ namespace hob {
         using strip_t = std::remove_cv_t<std::remove_reference_t<std::remove_pointer_t<std::remove_cv_t<T>>>>;
 
         template<typename T>
-        struct is_sol_optional : std::false_type {
-        };
+        struct is_sol_optional : std::false_type {};
 
         template<typename T>
-        struct is_sol_optional<sol::optional<T>> : std::true_type {
-        };
+        struct is_sol_optional<sol::optional<T>> : std::true_type {};
 
         template<typename T>
-        struct is_std_vector : std::false_type {
-        };
+        struct is_std_vector : std::false_type {};
 
         template<typename T, typename A>
-        struct is_std_vector<std::vector<T, A>> : std::true_type {
-        };
+        struct is_std_vector<std::vector<T, A>> : std::true_type {};
 
         template<typename T>
-        struct is_shared_ptr : std::false_type {
-        };
+        struct is_shared_ptr : std::false_type {};
 
         template<typename T>
-        struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {
-        };
+        struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
         template<typename T>
         const char* lua_name() {
@@ -120,28 +114,26 @@ namespace hob {
         struct func_traits;
 
         template<typename R, typename... A>
-        struct func_traits<R(*)(A...)> {
+        struct func_traits<R (*)(A...)> {
             using ret = R;
             using args = std::tuple<A...>;
         };
 
         template<typename R, typename C, typename... A>
-        struct func_traits<R(C::*)(A...)> {
+        struct func_traits<R (C::*)(A...)> {
             using ret = R;
             using args = std::tuple<A...>;
         };
 
         template<typename R, typename C, typename... A>
-        struct func_traits<R(C::*)(A...) const> {
+        struct func_traits<R (C::*)(A...) const> {
             using ret = R;
             using args = std::tuple<A...>;
         };
 
         // Lambda / functor: delegate to its const call operator.
         template<typename F>
-        struct func_traits<F, std::void_t<decltype(&F::operator())>>
-            : func_traits<decltype(&F::operator())> {
-        };
+        struct func_traits<F, std::void_t<decltype(&F::operator())>> : func_traits<decltype(&F::operator())> {};
 
         // Tail of a tuple (drop the first element). Undefined for empty tuples;
         // guard with first_arg_is_self<T, Tuple>() before using.
@@ -312,8 +304,7 @@ namespace hob {
     // Bases<...> tag used to declare a usertype's C++ base classes for the
     // builder. Maps to sol::base_classes and the LuaLS ---@class : Base list.
     template<typename... B>
-    struct Bases {
-    };
+    struct Bases {};
 
     template<typename T>
     class UsertypeBuilder {
@@ -412,33 +403,40 @@ namespace hob {
         }
 
         // ----- Operators that emit ---@operator lines -----
-        template<typename F> UsertypeBuilder& op_add(F func) {
+        template<typename F>
+        UsertypeBuilder& op_add(F func) {
             return binary_op(sol::meta_function::addition, "add", func);
         }
 
-        template<typename F> UsertypeBuilder& op_sub(F func) {
+        template<typename F>
+        UsertypeBuilder& op_sub(F func) {
             return binary_op(sol::meta_function::subtraction, "sub", func);
         }
 
-        template<typename F> UsertypeBuilder& op_mul(F func) {
+        template<typename F>
+        UsertypeBuilder& op_mul(F func) {
             return binary_op(sol::meta_function::multiplication, "mul", func);
         }
 
-        template<typename F> UsertypeBuilder& op_div(F func) {
+        template<typename F>
+        UsertypeBuilder& op_div(F func) {
             return binary_op(sol::meta_function::division, "div", func);
         }
 
-        template<typename F> UsertypeBuilder& op_unm(F func) {
+        template<typename F>
+        UsertypeBuilder& op_unm(F func) {
             return unary_op(sol::meta_function::unary_minus, "unm", func);
         }
 
         // Metamethods that have no ---@operator counterpart.
-        template<typename F> UsertypeBuilder& op_eq(F func) {
+        template<typename F>
+        UsertypeBuilder& op_eq(F func) {
             m_usertype[sol::meta_function::equal_to] = func;
             return *this;
         }
 
-        template<typename F> UsertypeBuilder& op_tostring(F func) {
+        template<typename F>
+        UsertypeBuilder& op_tostring(F func) {
             sol::function fn = wrap_self_callable(func);
             m_usertype[sol::meta_function::to_string] = fn;
             m_info->metamethod_tostring = std::move(fn);
@@ -491,7 +489,9 @@ namespace hob {
         template<typename F>
         sol::function wrap_self_callable(F func) {
             if constexpr (std::is_member_function_pointer_v<F>) {
-                return make_function([func](T& self) { return (self.*func)(); });
+                return make_function([func](T& self) {
+                    return (self.*func)();
+                });
             }
             else {
                 return make_function(func);
@@ -552,8 +552,7 @@ namespace hob {
         template<typename... B>
         static sol::usertype<T> make_usertype(sol::state& lua, const char* name) {
             if constexpr (sizeof...(B) > 0) {
-                return lua.new_usertype<T>(name, sol::no_constructor,
-                                           sol::base_classes, sol::bases<B...>());
+                return lua.new_usertype<T>(name, sol::no_constructor, sol::base_classes, sol::bases<B...>());
             }
             else {
                 return lua.new_usertype<T>(name, sol::no_constructor);
@@ -574,7 +573,9 @@ namespace hob {
 
         template<typename... A>
         static auto make_factory(sol::types<A...>) {
-            return [](A... a) { return T(a...); };
+            return [](A... a) {
+                return T(a...);
+            };
         }
 
         template<typename... A>
@@ -637,8 +638,7 @@ namespace hob {
     public:
         TableBuilder(sol::state& lua, LuaMetaRegistry& reg, const char* name)
             : m_table(lua.create_named_table(name))
-            , m_info(&reg.add_table(name)) {
-        }
+            , m_info(&reg.add_table(name)) {}
 
         template<typename V>
         TableBuilder& constant(const char* name, V value) {

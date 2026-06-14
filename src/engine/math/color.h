@@ -10,15 +10,13 @@ namespace hob {
         float a;
 
         constexpr Color()
-            : Color(0.0f, 0.0f, 0.0f, 0.0f) {
-        }
+            : Color(0.0f, 0.0f, 0.0f, 0.0f) {}
 
         constexpr Color(float r_, float g_, float b_, float a_ = 1.0f)
             : r(r_)
             , g(g_)
             , b(b_)
-            , a(a_) {
-        }
+            , a(a_) {}
 
         std::string to_string() const;
 

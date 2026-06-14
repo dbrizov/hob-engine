@@ -68,9 +68,8 @@ namespace hob {
             SDL_free(meta);
 
             if (!shader) {
-                debug::log_error("CompileGraphicsShaderFromSPIRV failed for {}: {}",
-                                 hlsl_path.string(),
-                                 SDL_GetError());
+                debug::log_error(
+                    "CompileGraphicsShaderFromSPIRV failed for {}: {}", hlsl_path.string(), SDL_GetError());
                 return nullptr;
             }
 
@@ -154,6 +153,7 @@ namespace hob {
     bool Renderer::init_quad_vbo() {
         // 6 vertices for two triangles covering the unit square [0,1] x [0,1].
         // Layout per vertex: float2 pos, float2 uv.
+        // clang-format off
         const float verts[] = {
             0.0f, 0.0f, 0.0f, 0.0f,
             1.0f, 0.0f, 1.0f, 0.0f,
@@ -162,6 +162,7 @@ namespace hob {
             1.0f, 0.0f, 1.0f, 0.0f,
             1.0f, 1.0f, 1.0f, 1.0f,
         };
+        // clang-format on
 
         SDL_GPUBufferCreateInfo bci{};
         bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
@@ -176,8 +177,7 @@ namespace hob {
     }
 
     bool Renderer::init_default_sprite_pipeline() {
-        const std::string default_key =
-            std::filesystem::path(DEFAULT_SPRITE_SHADER).lexically_normal().string();
+        const std::string default_key = std::filesystem::path(DEFAULT_SPRITE_SHADER).lexically_normal().string();
 
         SDL_GPUGraphicsPipeline* pipeline = build_sprite_pipeline(default_key);
         if (!pipeline) {
@@ -191,8 +191,7 @@ namespace hob {
     }
 
     bool Renderer::init_overlay_pipeline() {
-        const std::string overlay_key =
-            std::filesystem::path(OVERLAY_SPRITE_SHADER).lexically_normal().string();
+        const std::string overlay_key = std::filesystem::path(OVERLAY_SPRITE_SHADER).lexically_normal().string();
 
         m_overlay_pipeline = build_sprite_pipeline(overlay_key);
         return m_overlay_pipeline != nullptr;
@@ -201,17 +200,15 @@ namespace hob {
     bool Renderer::init_blit_pipeline() {
         const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / BUILTIN_SHADERS_DIR;
 
-        SDL_GPUShader* vs = load_shader(m_gpu_device,
-                                        shader_dir / "blit.vert.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+        SDL_GPUShader* vs =
+            load_shader(m_gpu_device, shader_dir / "blit.vert.hlsl", SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
 
         if (!vs) {
             return false;
         }
 
-        SDL_GPUShader* fs = load_shader(m_gpu_device,
-                                        shader_dir / "blit.frag.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+        SDL_GPUShader* fs =
+            load_shader(m_gpu_device, shader_dir / "blit.frag.hlsl", SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
 
         if (!fs) {
             SDL_ReleaseGPUShader(m_gpu_device, vs);
@@ -251,17 +248,15 @@ namespace hob {
     bool Renderer::init_debug_line_pipeline() {
         const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / BUILTIN_SHADERS_DIR;
 
-        SDL_GPUShader* vs = load_shader(m_gpu_device,
-                                        shader_dir / "line.vert.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+        SDL_GPUShader* vs =
+            load_shader(m_gpu_device, shader_dir / "line.vert.hlsl", SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
 
         if (!vs) {
             return false;
         }
 
-        SDL_GPUShader* fs = load_shader(m_gpu_device,
-                                        shader_dir / "line.frag.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+        SDL_GPUShader* fs =
+            load_shader(m_gpu_device, shader_dir / "line.frag.hlsl", SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
 
         if (!fs) {
             SDL_ReleaseGPUShader(m_gpu_device, vs);
@@ -346,17 +341,15 @@ namespace hob {
     bool Renderer::init_debug_text_pipeline() {
         const std::filesystem::path shader_dir = PathUtils::get_assets_root_path() / BUILTIN_SHADERS_DIR;
 
-        SDL_GPUShader* vs = load_shader(m_gpu_device,
-                                        shader_dir / "debug_text.vert.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
+        SDL_GPUShader* vs =
+            load_shader(m_gpu_device, shader_dir / "debug_text.vert.hlsl", SDL_SHADERCROSS_SHADERSTAGE_VERTEX);
 
         if (!vs) {
             return false;
         }
 
-        SDL_GPUShader* fs = load_shader(m_gpu_device,
-                                        shader_dir / "debug_text.frag.hlsl",
-                                        SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
+        SDL_GPUShader* fs =
+            load_shader(m_gpu_device, shader_dir / "debug_text.frag.hlsl", SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
 
         if (!fs) {
             SDL_ReleaseGPUShader(m_gpu_device, vs);

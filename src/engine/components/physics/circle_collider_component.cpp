@@ -14,8 +14,7 @@
 
 namespace hob {
     CircleColliderComponent::CircleColliderComponent(Entity& entity)
-        : ColliderComponent(entity) {
-    }
+        : ColliderComponent(entity) {}
 
     std::string CircleColliderComponent::to_string() const {
         return std::format("CircleColliderComponent(entity_id = {})", get_entity().get_id());

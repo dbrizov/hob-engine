@@ -142,9 +142,15 @@ namespace hob {
 
     // Console Backend
     ConsoleBackend::ConsoleBackend() {
-        register_command("help", "List commands and cvars", [this](CommandArgs) { cmd_help(); });
-        register_command("cmdlist", "List commands", [this](CommandArgs) { cmd_cmdlist(); });
-        register_command("cvarlist", "List cvars", [this](CommandArgs) { cmd_cvarlist(); });
+        register_command("help", "List commands and cvars", [this](CommandArgs) {
+            cmd_help();
+        });
+        register_command("cmdlist", "List commands", [this](CommandArgs) {
+            cmd_cmdlist();
+        });
+        register_command("cvarlist", "List cvars", [this](CommandArgs) {
+            cmd_cvarlist();
+        });
     }
 
     bool ConsoleBackend::register_command(std::string_view name, std::string_view help, CommandFunc func) {
@@ -560,9 +566,8 @@ namespace hob {
         if (ImGui::InputText("Input",
                              m_input_buffer,
                              IM_ARRAYSIZE(m_input_buffer),
-                             ImGuiInputTextFlags_EnterReturnsTrue |
-                             ImGuiInputTextFlags_CallbackCompletion |
-                             ImGuiInputTextFlags_CallbackHistory,
+                             ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion |
+                                 ImGuiInputTextFlags_CallbackHistory,
                              &text_edit_callback_stub,
                              this)) {
             trim_right_spaces(m_input_buffer);
@@ -575,10 +580,8 @@ namespace hob {
         }
 
         // Keep auto-focus on the input box
-        if (ImGui::IsItemHovered() ||
-            (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-             !ImGui::IsAnyItemActive() &&
-             !ImGui::IsMouseClicked(0))) {
+        if (ImGui::IsItemHovered() || (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+                                       !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))) {
             ImGui::SetKeyboardFocusHere(-1);
         }
 
@@ -613,10 +616,9 @@ namespace hob {
 
         // history (frontend-owned)
         m_history_index = -1;
-        const auto it = std::find_if(m_history.begin(), m_history.end(),
-                                     [&](const std::string& h) {
-                                         return equals_ci(h, command_line);
-                                     });
+        const auto it = std::find_if(m_history.begin(), m_history.end(), [&](const std::string& h) {
+            return equals_ci(h, command_line);
+        });
 
         if (it != m_history.end()) {
             m_history.erase(it);
@@ -659,9 +661,8 @@ namespace hob {
                     data->DeleteChars(static_cast<int>(word_start - data->Buf),
                                       static_cast<int>(word_end - word_start));
 
-                    data->InsertChars(data->CursorPos,
-                                      candidates[0].data(),
-                                      candidates[0].data() + candidates[0].size());
+                    data->InsertChars(
+                        data->CursorPos, candidates[0].data(), candidates[0].data() + candidates[0].size());
 
                     data->InsertChars(data->CursorPos, " ");
                 }
@@ -697,9 +698,7 @@ namespace hob {
                         data->DeleteChars(static_cast<int>(word_start - data->Buf),
                                           static_cast<int>(word_end - word_start));
 
-                        data->InsertChars(data->CursorPos,
-                                          candidates[0].data(),
-                                          candidates[0].data() + match_len);
+                        data->InsertChars(data->CursorPos, candidates[0].data(), candidates[0].data() + match_len);
                     }
 
                     log("Possible matches:");

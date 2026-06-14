@@ -3,17 +3,12 @@
 #include "renderer.h"
 
 namespace hob {
-    Texture::Texture(Renderer& renderer,
-                     SDL_GPUTexture* gpu_texture,
-                     uint32_t width,
-                     uint32_t height,
-                     std::string path)
+    Texture::Texture(Renderer& renderer, SDL_GPUTexture* gpu_texture, uint32_t width, uint32_t height, std::string path)
         : m_renderer(&renderer)
         , m_gpu_texture(gpu_texture)
         , m_width(width)
         , m_height(height)
-        , m_path(std::move(path)) {
-    }
+        , m_path(std::move(path)) {}
 
     Texture::~Texture() {
         if (m_renderer != nullptr) {

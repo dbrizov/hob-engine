@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "engine/components/physics/collider_component.h"
-#include "engine/core/engine.h"
 #include "engine/core/debug.h"
+#include "engine/core/engine.h"
 #include "engine/core/systems/scripting/lua_script_system.h"
 #include "engine/entity/entity.h"
 #include "engine/entity/entity_ref.h"
@@ -47,8 +47,7 @@ namespace hob {
         : Component(entity)
         , m_class_name(std::move(class_name))
         , m_impl(std::make_unique<LuaScriptComponentImpl>())
-        , m_priority(component_priority::CP_DEFAULT) {
-    }
+        , m_priority(component_priority::CP_DEFAULT) {}
 
     LuaScriptComponent::~LuaScriptComponent() = default;
 
@@ -178,8 +177,6 @@ namespace hob {
     }
 
     std::string LuaScriptComponent::to_string() const {
-        return std::format("LuaScriptComponent(entity_id = {}, class = {})",
-                           get_entity().get_id(),
-                           get_class_name());
+        return std::format("LuaScriptComponent(entity_id = {}, class = {})", get_entity().get_id(), get_class_name());
     }
 }

@@ -21,11 +21,7 @@ namespace hob {
         std::string m_path;
 
         friend class Renderer;
-        Texture(Renderer& renderer,
-                SDL_GPUTexture* gpu_texture,
-                uint32_t width,
-                uint32_t height,
-                std::string path);
+        Texture(Renderer& renderer, SDL_GPUTexture* gpu_texture, uint32_t width, uint32_t height, std::string path);
 
     public:
         ~Texture();

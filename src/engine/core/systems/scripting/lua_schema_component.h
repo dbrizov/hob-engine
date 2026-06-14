@@ -7,9 +7,9 @@
 
 #include <sol/sol.hpp>
 
+#include "engine/entity/entity_ref.h"
 #include "lua_meta.h"
 #include "lua_type_names.h"
-#include "engine/entity/entity_ref.h"
 
 namespace hob {
     class Entity;
@@ -69,10 +69,8 @@ namespace hob {
             entity_info->methods.push_back(std::move(info));
         }
 
-        schemas.add_schema(key,
-                           add_method,
-                           get_method,
-                           std::vector<LuaComponentSchemaField>(fields.begin(), fields.end()));
+        schemas.add_schema(
+            key, add_method, get_method, std::vector<LuaComponentSchemaField>(fields.begin(), fields.end()));
     }
 
     // Overload for components that are always present on every entity. No `add_X` is
@@ -84,9 +82,7 @@ namespace hob {
                                const char* existing_method,
                                std::initializer_list<LuaComponentSchemaField> fields) {
         // Always-present component: `existing_method` is its getter, so add == get.
-        schemas.add_schema(key,
-                           existing_method,
-                           existing_method,
-                           std::vector<LuaComponentSchemaField>(fields.begin(), fields.end()));
+        schemas.add_schema(
+            key, existing_method, existing_method, std::vector<LuaComponentSchemaField>(fields.begin(), fields.end()));
     }
 }

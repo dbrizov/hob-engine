@@ -13,8 +13,7 @@ namespace hob {
 
         constexpr Circle(const Vector2& center_, float radius_)
             : center(center_)
-            , radius(radius_) {
-        }
+            , radius(radius_) {}
 
         std::string to_string() const;
 
@@ -22,8 +21,6 @@ namespace hob {
             return center == right.center && std::abs(radius - right.radius) < EPSILON;
         }
 
-        bool operator!=(const Circle& right) const {
-            return !operator==(right);
-        }
+        bool operator!=(const Circle& right) const { return !operator==(right); }
     };
 }

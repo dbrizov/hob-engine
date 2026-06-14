@@ -50,8 +50,8 @@ namespace hob {
 
         for (const auto& s : m_schemas) {
             out << "--- Assigning `" << s.define_name << ".Foo = \"path/under/assets\"` registers a\n";
-            out << "--- named alias for a " << s.type_label << " path. Reference it as `"
-                << s.registry_name << ".Foo` in prefabs and config; the lookup is deferred\n";
+            out << "--- named alias for a " << s.type_label << " path. Reference it as `" << s.registry_name
+                << ".Foo` in prefabs and config; the lookup is deferred\n";
             out << "--- and resolved at dispatch time, so " << s.define_name
                 << " calls can live in any file in any load order.\n";
             out << "--- When passing `" << s.registry_name
@@ -59,8 +59,8 @@ namespace hob {
             out << "---@class " << s.define_name << "\n";
             out << s.define_name << " = {}\n\n";
 
-            out << "--- Registry of " << s.type_label << " aliases declared via `"
-                << s.define_name << "`. `" << s.registry_name << ".Foo` returns a deferred reference\n";
+            out << "--- Registry of " << s.type_label << " aliases declared via `" << s.define_name << "`. `"
+                << s.registry_name << ".Foo` returns a deferred reference\n";
             out << "--- that resolves to the registered path via unwrap_def (see scripts/engine/unwrap.lua).\n";
             out << "---@class " << s.registry_name << "\n";
             out << s.registry_name << " = {}\n\n";

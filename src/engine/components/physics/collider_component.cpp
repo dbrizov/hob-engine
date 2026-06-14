@@ -11,8 +11,7 @@
 
 namespace hob {
     ColliderComponent::ColliderComponent(Entity& entity)
-        : Component(entity) {
-    }
+        : Component(entity) {}
 
     void ColliderComponent::enter_play() {
         const RigidbodyComponent* rigidbody = get_entity().get_rigidbody();

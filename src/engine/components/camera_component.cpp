@@ -9,8 +9,7 @@
 
 namespace hob {
     CameraComponent::CameraComponent(Entity& entity)
-        : Component(entity) {
-    }
+        : Component(entity) {}
 
     void CameraComponent::enter_play() {
         get_engine().set_active_camera(this);

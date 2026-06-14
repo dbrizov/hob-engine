@@ -63,8 +63,8 @@ namespace hob {
 
         for (const auto& s : m_schemas) {
             out << "--- Assigning `" << s.define_name << ".Foo = { ... }` registers a\n";
-            out << "--- named " << s.lua_type << " configuration. Reference it as `"
-                << s.registry_name << ".Foo` in prefabs and config; the actual " << s.lua_type << "\n";
+            out << "--- named " << s.lua_type << " configuration. Reference it as `" << s.registry_name
+                << ".Foo` in prefabs and config; the actual " << s.lua_type << "\n";
             out << "--- is built lazily on first unwrap, so " << s.define_name
                 << " calls can live in any file in any load order.\n";
             out << "--- When passing `" << s.registry_name
@@ -72,8 +72,8 @@ namespace hob {
             out << "---@class " << s.define_name << "\n";
             out << s.define_name << " = {}\n\n";
 
-            out << "--- Registry of " << s.lua_type << " configs declared via `"
-                << s.define_name << "`. `" << s.registry_name << ".Foo` returns a deferred reference\n";
+            out << "--- Registry of " << s.lua_type << " configs declared via `" << s.define_name << "`. `"
+                << s.registry_name << ".Foo` returns a deferred reference\n";
             out << "--- that resolves to the built " << s.lua_type
                 << " via unwrap_def (see scripts/engine/unwrap.lua).\n";
             out << "---@class " << s.registry_name << "\n";

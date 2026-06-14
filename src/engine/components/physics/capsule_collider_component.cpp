@@ -13,8 +13,7 @@
 
 namespace hob {
     CapsuleColliderComponent::CapsuleColliderComponent(Entity& entity)
-        : ColliderComponent(entity) {
-    }
+        : ColliderComponent(entity) {}
 
     std::string CapsuleColliderComponent::to_string() const {
         return std::format("CapsuleColliderComponent(entity_id = {})", get_entity().get_id());

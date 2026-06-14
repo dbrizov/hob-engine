@@ -97,8 +97,7 @@ namespace hob {
             if (converted) {
                 const uint8_t* src = static_cast<const uint8_t*>(converted->pixels);
                 for (int y = 0; y < converted->h; ++y) {
-                    uint8_t* dst_row = atlas_pixels.data()
-                                       + (static_cast<size_t>(y) * m_atlas_width + pen_x) * 4;
+                    uint8_t* dst_row = atlas_pixels.data() + (static_cast<size_t>(y) * m_atlas_width + pen_x) * 4;
                     const uint8_t* src_row = src + static_cast<size_t>(y) * converted->pitch;
                     std::memcpy(dst_row, src_row, static_cast<size_t>(converted->w) * 4);
                 }

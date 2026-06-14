@@ -10,9 +10,7 @@ namespace hob {
         Vector2 y; // basis Y axis (rotation + scale Y)
         Vector2 origin; // translation (position)
 
-        float get_rotation() const {
-            return std::atan2(x.y, x.x);
-        }
+        float get_rotation() const { return std::atan2(x.y, x.x); }
 
         Vector2 get_scale() const {
             // A reflection (negative determinant) can't be split into unique per-axis signs, so by
@@ -23,9 +21,7 @@ namespace hob {
             return Vector2(x.length(), sign_y * y.length());
         }
 
-        Vector2 transform_point(const Vector2& p) const {
-            return origin + x * p.x + y * p.y;
-        }
+        Vector2 transform_point(const Vector2& p) const { return origin + x * p.x + y * p.y; }
 
         Matrix2x3 inverse() const {
             const float det = x.x * y.y - y.x * x.y;
@@ -63,7 +59,6 @@ namespace hob {
             out.y = a.y * (1.0f - t) + b.y * t;
             out.origin = a.origin * (1.0f - t) + b.origin * t;
             return out;
-
         }
 
         static Matrix2x3 make_rotate_around(const Vector2& pivot, float radians) {

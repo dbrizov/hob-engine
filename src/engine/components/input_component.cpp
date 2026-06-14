@@ -7,18 +7,16 @@
 
 namespace hob {
     InputComponent::InputComponent(Entity& entity)
-        : Component(entity) {
-    }
+        : Component(entity) {}
 
     int InputComponent::get_priority() const {
         return component_priority::CP_INPUT;
     }
 
     void InputComponent::enter_play() {
-        m_input_event_handler_id = get_engine().get_input().add_input_event_handler(
-            [this](const InputEvent& event) {
-                this->on_input_event(event);
-            });
+        m_input_event_handler_id = get_engine().get_input().add_input_event_handler([this](const InputEvent& event) {
+            this->on_input_event(event);
+        });
     }
 
     void InputComponent::exit_play() {

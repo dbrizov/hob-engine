@@ -80,14 +80,9 @@ namespace hob {
                     total_game += all - pending;
                 }
             }
-            ImGui::Text("Textures: %zu | Logical refs: %d | All refs: %d",
-                        m_textures.size(),
-                        total_game,
-                        total_all);
+            ImGui::Text("Textures: %zu | Logical refs: %d | All refs: %d", m_textures.size(), total_game, total_all);
 
-            const ImGuiTableFlags flags = ImGuiTableFlags_Borders |
-                                          ImGuiTableFlags_RowBg |
-                                          ImGuiTableFlags_ScrollY;
+            const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 
             if (ImGui::BeginTable("texture_refs", 4, flags)) {
                 ImGui::TableSetupColumn("size", ImGuiTableColumnFlags_WidthFixed, 90.0f);
@@ -142,8 +137,7 @@ namespace hob {
                 };
 
                 const auto same_group = [&](const SpriteDrawData& a, const SpriteDrawData& b) {
-                    return a.z_index == b.z_index &&
-                           a.material.shader_id == b.material.shader_id &&
+                    return a.z_index == b.z_index && a.material.shader_id == b.material.shader_id &&
                            std::strcmp(draw_path(a), draw_path(b)) == 0;
                 };
 
@@ -163,9 +157,8 @@ namespace hob {
                 ImGui::Text("Total: %zu draws | %zu groups", m_sprite_draw_order.size(), group_count);
 
                 const int columns = 4;
-                const ImGuiTabBarFlags flags = ImGuiTableFlags_Borders |
-                                               ImGuiTableFlags_RowBg |
-                                               ImGuiTableFlags_ScrollY;
+                const ImGuiTabBarFlags flags =
+                    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 
                 if (ImGui::BeginTable("queue", columns, flags)) {
                     ImGui::TableSetupColumn("count", ImGuiTableColumnFlags_WidthFixed, 60.0f);

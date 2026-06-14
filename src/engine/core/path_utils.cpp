@@ -7,10 +7,10 @@ namespace hob {
         // Return the root directory of the project
         const std::filesystem::path source_file_path = __FILE__;
         std::filesystem::path project_root_path = source_file_path
-            .parent_path() // root/src/engine/core
-            .parent_path() // root/src/engine
-            .parent_path() // root/src
-            .parent_path(); // root
+                                                      .parent_path() // root/src/engine/core
+                                                      .parent_path() // root/src/engine
+                                                      .parent_path() // root/src
+                                                      .parent_path(); // root
 
         return project_root_path;
 #else

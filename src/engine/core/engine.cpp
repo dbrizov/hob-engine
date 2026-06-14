@@ -2,12 +2,12 @@
 #include "engine_config.h"
 
 #include "debug.h"
-#include "path_utils.h"
 #include "engine/components/camera_component.h"
 #include "engine/components/physics/rigidbody_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
 #include "engine/math/matrix2x3.h"
+#include "path_utils.h"
 
 namespace hob {
     Engine::Engine(const EngineConfig& config)
@@ -20,8 +20,7 @@ namespace hob {
         , m_physics(config, m_console)
         , m_cursor(m_sdl_context, m_renderer, m_input)
         , m_entity_spawner(*this)
-        , m_lua_script_system(*this) {
-    }
+        , m_lua_script_system(*this) {}
 
     Engine::~Engine() {
         // Tear down entities (and their components) while every subsystem is still alive.
@@ -123,9 +122,7 @@ namespace hob {
     }
 
     bool Engine::is_initialized() const {
-        return m_sdl_context.is_initialized() &&
-               m_renderer.is_initialized() &&
-               m_imgui_system.is_initialized();
+        return m_sdl_context.is_initialized() && m_renderer.is_initialized() && m_imgui_system.is_initialized();
     }
 
     SdlContext& Engine::get_sdl_context() {
@@ -199,8 +196,8 @@ namespace hob {
 
             const bool sprite_dirty = sprite_comp->consume_render_dirty();
             const bool transform_dirty = transform_comp->consume_render_dirty();
-            const bool interpolating = transform_comp->get_interpolate_physics() &&
-                                       has_moving_physics_body(sprite_comp->get_entity());
+            const bool interpolating =
+                transform_comp->get_interpolate_physics() && has_moving_physics_body(sprite_comp->get_entity());
 
             if (!sprite_dirty && !transform_dirty && !interpolating) {
                 continue;
@@ -245,20 +242,15 @@ namespace hob {
             return;
         }
 
-        debug::flush_draws_to_renderer(m_renderer,
-                                       camera,
-                                       m_sdl_context.get_window_size(),
-                                       delta_time);
+        debug::flush_draws_to_renderer(m_renderer, camera, m_sdl_context.get_window_size(), delta_time);
     }
 
     bool Engine::has_moving_physics_body(const Entity& entity) {
         // A non-static body that is still awake -- once it settles, Box2D sleeps it and its
         // interpolation endpoints stop changing, so there is nothing left to re-resolve per frame.
         const RigidbodyComponent* rigidbody = entity.get_rigidbody();
-        const bool result = rigidbody != nullptr &&
-                            rigidbody->has_body() &&
-                            rigidbody->get_body_type() != BodyType::Static &&
-                            rigidbody->is_awake();
+        const bool result = rigidbody != nullptr && rigidbody->has_body() &&
+                            rigidbody->get_body_type() != BodyType::Static && rigidbody->is_awake();
 
         return result;
     }

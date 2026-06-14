@@ -209,12 +209,11 @@ namespace hob {
         const sol::table reg_table = reg.is<sol::table>() ? reg.as<sol::table>() : sol::table{};
         const auto names = collect_table_keys(reg_table);
 
-        const bool ok = write_name_registry_meta(
-            out_path,
-            "Entities",
-            "dump_entity_registry_meta",
-            "`DefineEntity.Foo = { ... }` assignments throughout scripts/.",
-            names);
+        const bool ok = write_name_registry_meta(out_path,
+                                                 "Entities",
+                                                 "dump_entity_registry_meta",
+                                                 "`DefineEntity.Foo = { ... }` assignments throughout scripts/.",
+                                                 names);
 
         if (!ok) {
             debug::log_error("LuaScriptSystem::dump_entity_registry_meta: failed to write '{}'", out_path.string());
@@ -245,12 +244,11 @@ namespace hob {
             names.erase(std::unique(names.begin(), names.end()), names.end());
         }
 
-        const bool ok = write_name_registry_meta(
-            out_path,
-            "Components",
-            "dump_component_registry_meta",
-            "`DefineComponent.Foo = { ... }` assignments throughout scripts/.",
-            names);
+        const bool ok = write_name_registry_meta(out_path,
+                                                 "Components",
+                                                 "dump_component_registry_meta",
+                                                 "`DefineComponent.Foo = { ... }` assignments throughout scripts/.",
+                                                 names);
 
         if (!ok) {
             debug::log_error("LuaScriptSystem::dump_component_registry_meta: failed to write '{}'", out_path.string());

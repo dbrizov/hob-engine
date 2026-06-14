@@ -94,9 +94,8 @@ namespace hob {
 
             // 2) Solve for the "best" move toward the target given those planes
             const b2Vec2 b2_desired_delta = b2Sub(b2_target_pos, b2_current_pos);
-            const b2PlaneSolverResult b2_solver_result = b2SolvePlanes(b2_desired_delta,
-                                                                       m_solver_planes,
-                                                                       m_solver_planes_count);
+            const b2PlaneSolverResult b2_solver_result =
+                b2SolvePlanes(b2_desired_delta, m_solver_planes, m_solver_planes_count);
             const b2Vec2 b2_solver_translation = b2_solver_result.translation;
 
             // 3) Cast to make that translation continuous (no tunneling)
@@ -179,8 +178,7 @@ namespace hob {
         // This only prevents collision with self when using default collision filters.
         const b2BodyId self_body_id = self->m_rigidbody->get_body_id();
         const b2BodyId other_body_id = b2Shape_GetBody(other_shape_id);
-        if (self_body_id.index1 == other_body_id.index1 &&
-            self_body_id.generation == other_body_id.generation) {
+        if (self_body_id.index1 == other_body_id.index1 && self_body_id.generation == other_body_id.generation) {
             return true; // ignore self - keep searching
         }
 

@@ -18,16 +18,15 @@ namespace hob {
         : m_engine(engine)
         , m_impl(std::make_unique<LuaScriptSystemImpl>()) {
         sol::state& lua = m_impl->lua;
-        lua.open_libraries(
-            sol::lib::base,
-            sol::lib::string,
-            sol::lib::math,
-            sol::lib::table,
-            sol::lib::io,
-            sol::lib::os,
-            sol::lib::package,
-            sol::lib::coroutine,
-            sol::lib::debug);
+        lua.open_libraries(sol::lib::base,
+                           sol::lib::string,
+                           sol::lib::math,
+                           sol::lib::table,
+                           sol::lib::io,
+                           sol::lib::os,
+                           sol::lib::package,
+                           sol::lib::coroutine,
+                           sol::lib::debug);
 
         // Make `require` find modules in scripts/engine/lib (e.g. vendored lldebugger).
         const std::string lib_path = (PathUtils::get_root_path() / "scripts" / "engine" / "lib" / "?.lua").string();

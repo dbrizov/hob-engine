@@ -1,12 +1,13 @@
-#include "lua_script_system.h"
-#include "lua_script_system_impl.h"
+#include "lua_meta.h"
 #include "lua_schema_component.h"
 #include "lua_schema_factory.h"
-#include "lua_meta.h"
+#include "lua_script_system.h"
+#include "lua_script_system_impl.h"
 #include "lua_type_names.h" // IWYU pragma: keep
 
 #include <string>
 
+#include "engine/animation/animation_clip.h"
 #include "engine/components/camera_component.h"
 #include "engine/components/input_component.h"
 #include "engine/components/physics/box_collider_component.h"
@@ -15,7 +16,6 @@
 #include "engine/components/physics/circle_collider_component.h"
 #include "engine/components/physics/collider_component.h"
 #include "engine/components/physics/rigidbody_component.h"
-#include "engine/animation/animation_clip.h"
 #include "engine/components/sprite_animator_component.h"
 #include "engine/components/sprite_component.h"
 #include "engine/components/transform_component.h"
@@ -34,9 +34,10 @@ namespace hob {
         LuaFactorySchemaRegistry& factory_schemas = m_impl->factory_schemas;
 
         bind_usertype<Component>(lua, meta)
-            .method("get_entity", [](Component& c) {
-                return EntityRef(c.get_entity().get_id(), c.get_engine().get_entity_spawner());
-            })
+            .method("get_entity",
+                    [](Component& c) {
+                        return EntityRef(c.get_entity().get_id(), c.get_engine().get_entity_spawner());
+                    })
             .op_tostring(&Component::to_string)
             .op_concat(&Component::to_string);
 
@@ -63,7 +64,9 @@ namespace hob {
             .method("get_interpolate_physics", &TransformComponent::get_interpolate_physics)
             .method("set_interpolate_physics", &TransformComponent::set_interpolate_physics, {"value"});
 
-        bind_enum<BodyType>(lua, meta, {
+        bind_enum<BodyType>(lua,
+                            meta,
+                            {
                                 {"Static", BodyType::Static},
                                 {"Dynamic", BodyType::Dynamic},
                                 {"Kinematic", BodyType::Kinematic},
@@ -84,24 +87,33 @@ namespace hob {
         bind_usertype<CharacterBodyComponent>(lua, meta, Bases<Component>{})
             // Masks/layers are uint64_t (matching Box2D), but sol2 can't push values above
             // MAX_INT64, so reinterpret to/from int64_t at the Lua boundary (bit pattern is preserved).
-            .method("get_collision_layer", [](const CharacterBodyComponent& c) {
-                return static_cast<int64_t>(c.get_collision_layer());
-            })
-            .method("set_collision_layer", [](CharacterBodyComponent& c, int64_t layer) {
-                c.set_collision_layer(static_cast<uint64_t>(layer));
-            }, {"layer"})
-            .method("get_collision_mask", [](const CharacterBodyComponent& c) {
-                return static_cast<int64_t>(c.get_collision_mask());
-            })
-            .method("set_collision_mask", [](CharacterBodyComponent& c, int64_t mask) {
-                c.set_collision_mask(static_cast<uint64_t>(mask));
-            }, {"mask"})
-            .method("get_solver_ignore_mask", [](const CharacterBodyComponent& c) {
-                return static_cast<int64_t>(c.get_solver_ignore_mask());
-            })
-            .method("set_solver_ignore_mask", [](CharacterBodyComponent& c, int64_t mask) {
-                c.set_solver_ignore_mask(static_cast<uint64_t>(mask));
-            }, {"mask"})
+            .method("get_collision_layer",
+                    [](const CharacterBodyComponent& c) {
+                        return static_cast<int64_t>(c.get_collision_layer());
+                    })
+            .method("set_collision_layer",
+                    [](CharacterBodyComponent& c, int64_t layer) {
+                        c.set_collision_layer(static_cast<uint64_t>(layer));
+                    },
+                    {"layer"})
+            .method("get_collision_mask",
+                    [](const CharacterBodyComponent& c) {
+                        return static_cast<int64_t>(c.get_collision_mask());
+                    })
+            .method("set_collision_mask",
+                    [](CharacterBodyComponent& c, int64_t mask) {
+                        c.set_collision_mask(static_cast<uint64_t>(mask));
+                    },
+                    {"mask"})
+            .method("get_solver_ignore_mask",
+                    [](const CharacterBodyComponent& c) {
+                        return static_cast<int64_t>(c.get_solver_ignore_mask());
+                    })
+            .method("set_solver_ignore_mask",
+                    [](CharacterBodyComponent& c, int64_t mask) {
+                        c.set_solver_ignore_mask(static_cast<uint64_t>(mask));
+                    },
+                    {"mask"})
             .method("get_capsule", &CharacterBodyComponent::get_capsule)
             .method("set_capsule", &CharacterBodyComponent::set_capsule, {"capsule"})
             .method("move_and_slide", &CharacterBodyComponent::move_and_slide, {"velocity", "fixed_dt"})
@@ -121,18 +133,24 @@ namespace hob {
             .method("set_bounciness", &ColliderComponent::set_bounciness, {"bounciness"})
             // Masks/layers are uint64_t (matching Box2D), but sol2 can't push values above
             // MAX_INT64, so reinterpret to/from int64_t at the Lua boundary (bit pattern is preserved).
-            .method("get_collision_layer", [](const ColliderComponent& c) {
-                return static_cast<int64_t>(c.get_collision_layer());
-            })
-            .method("set_collision_layer", [](ColliderComponent& c, int64_t layer) {
-                c.set_collision_layer(static_cast<uint64_t>(layer));
-            }, {"layer"})
-            .method("get_collision_mask", [](const ColliderComponent& c) {
-                return static_cast<int64_t>(c.get_collision_mask());
-            })
-            .method("set_collision_mask", [](ColliderComponent& c, int64_t mask) {
-                c.set_collision_mask(static_cast<uint64_t>(mask));
-            }, {"mask"})
+            .method("get_collision_layer",
+                    [](const ColliderComponent& c) {
+                        return static_cast<int64_t>(c.get_collision_layer());
+                    })
+            .method("set_collision_layer",
+                    [](ColliderComponent& c, int64_t layer) {
+                        c.set_collision_layer(static_cast<uint64_t>(layer));
+                    },
+                    {"layer"})
+            .method("get_collision_mask",
+                    [](const ColliderComponent& c) {
+                        return static_cast<int64_t>(c.get_collision_mask());
+                    })
+            .method("set_collision_mask",
+                    [](ColliderComponent& c, int64_t mask) {
+                        c.set_collision_mask(static_cast<uint64_t>(mask));
+                    },
+                    {"mask"})
             .method("is_trigger", &ColliderComponent::is_trigger)
             .method("set_trigger", &ColliderComponent::set_trigger, {"trigger"});
 
@@ -151,42 +169,54 @@ namespace hob {
             .method("set_circle", &CircleColliderComponent::set_circle, {"circle"})
             .method("get_scaled_circle", &CircleColliderComponent::get_scaled_circle);
 
-        bind_enum<InputEventType>(lua, meta, {
+        bind_enum<InputEventType>(lua,
+                                  meta,
+                                  {
                                       {"Axis", InputEventType::Axis},
                                       {"Pressed", InputEventType::Pressed},
                                       {"Released", InputEventType::Released},
                                   });
 
         bind_usertype<InputComponent>(lua, meta, Bases<Component>{})
-            .method_sig("bind_axis",
-                        [](InputComponent& self, const std::string& name, const sol::protected_function& fn) {
-                            return self.bind_axis(name.c_str(), [fn, name](float v) {
-                                auto result = fn(v);
-                                if (!result.valid()) {
-                                    const sol::error err = result;
-                                    debug::log_error("Lua error in axis '{}' handler: {}", name, err.what());
-                                }
-                            });
-                        }, "(name: string, fn: fun(value: number)): integer")
-            .method_sig("unbind_axis",
-                        [](InputComponent& self, const std::string& name, BindingId id) {
-                            self.unbind_axis(name.c_str(), id);
-                        }, "(name: string, id: integer)")
-            .method_sig("bind_action",
-                        [](InputComponent& self, const std::string& name, InputEventType type,
-                           const sol::protected_function& fn) {
-                            return self.bind_action(name.c_str(), type, [fn, name]() {
-                                auto result = fn();
-                                if (!result.valid()) {
-                                    const sol::error err = result;
-                                    debug::log_error("Lua error in action '{}' handler: {}", name, err.what());
-                                }
-                            });
-                        }, "(name: string, type: InputEventType, fn: fun()): integer")
-            .method_sig("unbind_action",
-                        [](InputComponent& self, const std::string& name, BindingId id) {
-                            self.unbind_action(name.c_str(), id);
-                        }, "(name: string, id: integer)")
+            .method_sig(
+                "bind_axis",
+                [](InputComponent& self, const std::string& name, const sol::protected_function& fn) {
+                    return self.bind_axis(name.c_str(), [fn, name](float v) {
+                        auto result = fn(v);
+                        if (!result.valid()) {
+                            const sol::error err = result;
+                            debug::log_error("Lua error in axis '{}' handler: {}", name, err.what());
+                        }
+                    });
+                },
+                "(name: string, fn: fun(value: number)): integer")
+            .method_sig(
+                "unbind_axis",
+                [](InputComponent& self, const std::string& name, BindingId id) {
+                    self.unbind_axis(name.c_str(), id);
+                },
+                "(name: string, id: integer)")
+            .method_sig(
+                "bind_action",
+                [](InputComponent& self,
+                   const std::string& name,
+                   InputEventType type,
+                   const sol::protected_function& fn) {
+                    return self.bind_action(name.c_str(), type, [fn, name]() {
+                        auto result = fn();
+                        if (!result.valid()) {
+                            const sol::error err = result;
+                            debug::log_error("Lua error in action '{}' handler: {}", name, err.what());
+                        }
+                    });
+                },
+                "(name: string, type: InputEventType, fn: fun()): integer")
+            .method_sig(
+                "unbind_action",
+                [](InputComponent& self, const std::string& name, BindingId id) {
+                    self.unbind_action(name.c_str(), id);
+                },
+                "(name: string, id: integer)")
             .method("clear_all_bindings", &InputComponent::clear_all_bindings);
 
         bind_usertype<Texture>(lua, meta)
@@ -196,21 +226,23 @@ namespace hob {
 
         bind_usertype<SpriteComponent>(lua, meta, Bases<Component>{})
             .method("get_texture", &SpriteComponent::get_texture)
-            .method_sig("set_texture",
-                        [](SpriteComponent& self, const sol::object& value) {
-                            if (!value.valid()) {
-                                self.clear_texture();
-                            }
-                            else if (value.is<TextureRef>()) {
-                                self.set_texture(value.as<TextureRef>());
-                            }
-                            else if (value.is<std::string>()) {
-                                self.set_texture(value.as<std::string>());
-                            }
-                            else {
-                                debug::log_error("SpriteComponent:set_texture expects a string path or a Texture");
-                            }
-                        }, "(path_or_texture: string|Texture|nil)")
+            .method_sig(
+                "set_texture",
+                [](SpriteComponent& self, const sol::object& value) {
+                    if (!value.valid()) {
+                        self.clear_texture();
+                    }
+                    else if (value.is<TextureRef>()) {
+                        self.set_texture(value.as<TextureRef>());
+                    }
+                    else if (value.is<std::string>()) {
+                        self.set_texture(value.as<std::string>());
+                    }
+                    else {
+                        debug::log_error("SpriteComponent:set_texture expects a string path or a Texture");
+                    }
+                },
+                "(path_or_texture: string|Texture|nil)")
             .method("clear_texture", &SpriteComponent::clear_texture)
             .method("get_material", sol::resolve<Material&()>(&SpriteComponent::get_material))
             .method("set_material", &SpriteComponent::set_material, {"material"})
@@ -226,28 +258,36 @@ namespace hob {
         // shared_ptr lets multiple animators share an instance and keeps the TextureRefs alive.
         Renderer& renderer = m_engine.get_renderer();
         bind_usertype<AnimationClip>(lua, meta)
-            .factory_ctor([&renderer](const sol::table& animclip_t) {
-                auto clip = std::make_shared<AnimationClip>();
-                if (auto textures = animclip_t.get<sol::optional<sol::table>>("textures")) {
-                    clip->frames.reserve(textures->size());
-                    for (size_t i = 1; i <= textures->size(); ++i) {
-                        if (auto path = textures->get<sol::optional<std::string>>(i)) {
-                            clip->frames.push_back({renderer.get_or_load_texture(*path)});
+            .factory_ctor(
+                [&renderer](const sol::table& animclip_t) {
+                    auto clip = std::make_shared<AnimationClip>();
+                    if (auto textures = animclip_t.get<sol::optional<sol::table>>("textures")) {
+                        clip->frames.reserve(textures->size());
+                        for (size_t i = 1; i <= textures->size(); ++i) {
+                            if (auto path = textures->get<sol::optional<std::string>>(i)) {
+                                clip->frames.push_back({renderer.get_or_load_texture(*path)});
+                            }
                         }
                     }
-                }
-                clip->fps = animclip_t.get_or("fps", 12.0f);
-                clip->looping = animclip_t.get_or("looping", true);
-                return clip;
-            }, {"config"})
-            .method("get_fps", [](const AnimationClip& self) { return self.fps; })
-            .method("get_looping", [](const AnimationClip& self) { return self.looping; })
+                    clip->fps = animclip_t.get_or("fps", 12.0f);
+                    clip->looping = animclip_t.get_or("looping", true);
+                    return clip;
+                },
+                {"config"})
+            .method("get_fps",
+                    [](const AnimationClip& self) {
+                        return self.fps;
+                    })
+            .method("get_looping",
+                    [](const AnimationClip& self) {
+                        return self.looping;
+                    })
             .method("get_frame_count", [](const AnimationClip& self) {
                 return static_cast<int>(self.frames.size());
             });
 
-        bind_factory_schema<AnimationClip>(factory_schemas, "DefineAnimationClip", "AnimationClips",
-                                           {"textures", "fps", "looping"});
+        bind_factory_schema<AnimationClip>(
+            factory_schemas, "DefineAnimationClip", "AnimationClips", {"textures", "fps", "looping"});
 
         bind_usertype<SpriteAnimatorComponent>(lua, meta, Bases<Component>{})
             .method("add_clip", &SpriteAnimatorComponent::add_clip, {"name", "clip"})
@@ -261,30 +301,34 @@ namespace hob {
             .method("pause", &SpriteAnimatorComponent::pause)
             .method("stop", &SpriteAnimatorComponent::stop)
             .method("is_playing", &SpriteAnimatorComponent::is_playing)
-            .method_sig("get_clips",
-                        [](const SpriteAnimatorComponent& self, sol::this_state ts) {
-                            sol::state_view lua(ts);
-                            sol::table clips_t = lua.create_table();
-                            for (const auto& [name, clip] : self.get_clips()) {
-                                clips_t[name] = clip;
-                            }
-                            return clips_t;
-                        }, "(): table<string, AnimationClip>")
-            .method_sig("set_clips",
-                        [](SpriteAnimatorComponent& self, const sol::table& clips_t) {
-                            AnimationClips clips;
-                            for (auto& kv : clips_t) {
-                                if (!kv.first.is<std::string>()) {
-                                    continue;
-                                }
-                                const std::string name = kv.first.as<std::string>();
-                                auto clip = kv.second.as<sol::optional<AnimationClipRef>>();
-                                if (clip) {
-                                    clips.emplace(name, *clip);
-                                }
-                            }
-                            self.set_clips(std::move(clips));
-                        }, "(clips: table<string, AnimationClip>)");
+            .method_sig(
+                "get_clips",
+                [](const SpriteAnimatorComponent& self, sol::this_state ts) {
+                    sol::state_view lua(ts);
+                    sol::table clips_t = lua.create_table();
+                    for (const auto& [name, clip] : self.get_clips()) {
+                        clips_t[name] = clip;
+                    }
+                    return clips_t;
+                },
+                "(): table<string, AnimationClip>")
+            .method_sig(
+                "set_clips",
+                [](SpriteAnimatorComponent& self, const sol::table& clips_t) {
+                    AnimationClips clips;
+                    for (auto& kv : clips_t) {
+                        if (!kv.first.is<std::string>()) {
+                            continue;
+                        }
+                        const std::string name = kv.first.as<std::string>();
+                        auto clip = kv.second.as<sol::optional<AnimationClipRef>>();
+                        if (clip) {
+                            clips.emplace(name, *clip);
+                        }
+                    }
+                    self.set_clips(std::move(clips));
+                },
+                "(clips: table<string, AnimationClip>)");
 
         bind_usertype<CameraComponent>(lua, meta, Bases<Component>{})
             .method("get_screen_pixels_per_meter", &CameraComponent::get_screen_pixels_per_meter)
@@ -300,18 +344,32 @@ namespace hob {
 
         // Order is load-bearing: Box2D bodies must be attached before colliders.
         bind_component_schema<TransformComponent>(
-            schemas, "transform", "get_transform", {
+            schemas,
+            "transform",
+            "get_transform",
+            {
                 {"interpolate_physics", "get_interpolate_physics", "set_interpolate_physics"},
             });
 
-        bind_component_schema<RigidbodyComponent>(
-            lua, meta, schemas, "rigidbody", "add_rigidbody", "get_rigidbody", {
-                {"body_type", "get_body_type", "set_body_type"},
-                {"fixed_rotation", "has_fixed_rotation", "set_fixed_rotation"},
-            });
+        bind_component_schema<RigidbodyComponent>(lua,
+                                                  meta,
+                                                  schemas,
+                                                  "rigidbody",
+                                                  "add_rigidbody",
+                                                  "get_rigidbody",
+                                                  {
+                                                      {"body_type", "get_body_type", "set_body_type"},
+                                                      {"fixed_rotation", "has_fixed_rotation", "set_fixed_rotation"},
+                                                  });
 
         bind_component_schema<CharacterBodyComponent>(
-            lua, meta, schemas, "character_body", "add_character_body", "get_character_body", {
+            lua,
+            meta,
+            schemas,
+            "character_body",
+            "add_character_body",
+            "get_character_body",
+            {
                 {"collision_layer", "get_collision_layer", "set_collision_layer"},
                 {"collision_mask", "get_collision_mask", "set_collision_mask"},
                 {"solver_ignore_mask", "get_solver_ignore_mask", "set_solver_ignore_mask"},
@@ -319,7 +377,13 @@ namespace hob {
             });
 
         bind_component_schema<BoxColliderComponent>(
-            lua, meta, schemas, "box_collider", "add_box_collider", "get_box_collider", {
+            lua,
+            meta,
+            schemas,
+            "box_collider",
+            "add_box_collider",
+            "get_box_collider",
+            {
                 {"aabb", "get_aabb", "set_aabb"},
                 {"density", "get_density", "set_density"},
                 {"friction", "get_friction", "set_friction"},
@@ -330,7 +394,13 @@ namespace hob {
             });
 
         bind_component_schema<CapsuleColliderComponent>(
-            lua, meta, schemas, "capsule_collider", "add_capsule_collider", "get_capsule_collider", {
+            lua,
+            meta,
+            schemas,
+            "capsule_collider",
+            "add_capsule_collider",
+            "get_capsule_collider",
+            {
                 {"capsule", "get_capsule", "set_capsule"},
                 {"density", "get_density", "set_density"},
                 {"friction", "get_friction", "set_friction"},
@@ -341,7 +411,13 @@ namespace hob {
             });
 
         bind_component_schema<CircleColliderComponent>(
-            lua, meta, schemas, "circle_collider", "add_circle_collider", "get_circle_collider", {
+            lua,
+            meta,
+            schemas,
+            "circle_collider",
+            "add_circle_collider",
+            "get_circle_collider",
+            {
                 {"circle", "get_circle", "set_circle"},
                 {"density", "get_density", "set_density"},
                 {"friction", "get_friction", "set_friction"},
@@ -351,27 +427,42 @@ namespace hob {
                 {"trigger", "is_trigger", "set_trigger"},
             });
 
-        bind_component_schema<SpriteComponent>(
-            lua, meta, schemas, "sprite", "add_sprite", "get_sprite", {
-                {"texture", "get_texture", "set_texture"},
-                {"material", "get_material", "set_material"},
-                {"pivot", "get_pivot", "set_pivot"},
-                {"scale", "get_scale", "set_scale"},
-                {"z_index", "get_z_index", "set_z_index"},
-                {"pixels_per_meter", "get_pixels_per_meter", "set_pixels_per_meter"},
-            });
+        bind_component_schema<SpriteComponent>(lua,
+                                               meta,
+                                               schemas,
+                                               "sprite",
+                                               "add_sprite",
+                                               "get_sprite",
+                                               {
+                                                   {"texture", "get_texture", "set_texture"},
+                                                   {"material", "get_material", "set_material"},
+                                                   {"pivot", "get_pivot", "set_pivot"},
+                                                   {"scale", "get_scale", "set_scale"},
+                                                   {"z_index", "get_z_index", "set_z_index"},
+                                                   {"pixels_per_meter", "get_pixels_per_meter", "set_pixels_per_meter"},
+                                               });
 
-        bind_component_schema<SpriteAnimatorComponent>(
-            lua, meta, schemas, "sprite_animator", "add_sprite_animator", "get_sprite_animator", {
-                {"clips", "get_clips", "set_clips"},
-                {"default_clip", "get_default_clip", "set_default_clip"},
-            });
+        bind_component_schema<SpriteAnimatorComponent>(lua,
+                                                       meta,
+                                                       schemas,
+                                                       "sprite_animator",
+                                                       "add_sprite_animator",
+                                                       "get_sprite_animator",
+                                                       {
+                                                           {"clips", "get_clips", "set_clips"},
+                                                           {"default_clip", "get_default_clip", "set_default_clip"},
+                                                       });
 
-        bind_component_schema<InputComponent>(
-            lua, meta, schemas, "input", "add_input", "get_input", {});
+        bind_component_schema<InputComponent>(lua, meta, schemas, "input", "add_input", "get_input", {});
 
         bind_component_schema<CameraComponent>(
-            lua, meta, schemas, "camera", "add_camera", "get_camera", {
+            lua,
+            meta,
+            schemas,
+            "camera",
+            "add_camera",
+            "get_camera",
+            {
                 {"screen_pixels_per_meter", "get_screen_pixels_per_meter", "set_screen_pixels_per_meter"},
             });
     }

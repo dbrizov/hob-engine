@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "renderer/renderer.h"
 #include "engine/math/vector2.h"
+#include "renderer/renderer.h"
 
 namespace hob {
     class Input;

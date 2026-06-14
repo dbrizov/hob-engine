@@ -13,8 +13,7 @@ namespace hob {
     InputEvent::InputEvent(const char* ev_name, InputEventType ev_type, float ev_axis_value)
         : name(ev_name)
         , type(ev_type)
-        , axis_value(ev_axis_value) {
-    }
+        , axis_value(ev_axis_value) {}
 
     Input::Input(const SdlContext& sdl_context, const Renderer& renderer)
         : m_sdl_context(sdl_context)

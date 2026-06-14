@@ -95,20 +95,12 @@ namespace hob::debug {
         });
     }
 
-    void draw_line(const Vector2& start,
-                   const Vector2& end,
-                   const Color& color,
-                   float duration,
-                   float thickness) {
+    void draw_line(const Vector2& start, const Vector2& end, const Color& color, float duration, float thickness) {
         lines.emplace_back(start, end, color, duration, thickness);
     }
 
-    void draw_circle(const Vector2& center,
-                     float radius,
-                     const Color& color,
-                     float duration,
-                     float thickness,
-                     int segments) {
+    void draw_circle(
+        const Vector2& center, float radius, const Color& color, float duration, float thickness, int segments) {
         circles.emplace_back(center, radius, color, duration, thickness, segments);
     }
 

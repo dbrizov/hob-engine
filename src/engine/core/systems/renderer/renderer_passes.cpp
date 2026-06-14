@@ -7,7 +7,9 @@
 
 namespace hob {
     namespace {
-        SDL_FColor to_sdl_color(const Color& c) { return {c.r, c.g, c.b, c.a}; }
+        SDL_FColor to_sdl_color(const Color& c) {
+            return {c.r, c.g, c.b, c.a};
+        }
 
         // Shared byte layout for both sprite vertex shaders (cbuffer @ b0, space1):
         //  - world sprite.vert.hlsl:      { view_proj, world_pos, size(meters), pivot(fraction), rotation }
@@ -64,16 +66,15 @@ namespace hob {
                 m_sprite_draw_order[i] = i;
             }
 
-            std::stable_sort(m_sprite_draw_order.begin(), m_sprite_draw_order.end(),
-                             [this](uint32_t a, uint32_t b) {
-                                 const SpriteDrawData& da = m_sprite_draws[a];
-                                 const SpriteDrawData& db = m_sprite_draws[b];
-                                 if (da.z_index != db.z_index) {
-                                     return da.z_index < db.z_index;
-                                 }
+            std::stable_sort(m_sprite_draw_order.begin(), m_sprite_draw_order.end(), [this](uint32_t a, uint32_t b) {
+                const SpriteDrawData& da = m_sprite_draws[a];
+                const SpriteDrawData& db = m_sprite_draws[b];
+                if (da.z_index != db.z_index) {
+                    return da.z_index < db.z_index;
+                }
 
-                                 return da.material.shader_id < db.material.shader_id;
-                             });
+                return da.material.shader_id < db.material.shader_id;
+            });
 
             if (m_has_sprite_view_projection && !m_sprite_draw_order.empty()) {
                 SDL_GPUBufferBinding vb{};
@@ -130,8 +131,8 @@ namespace hob {
 
         // Upload pending line vertices into the persistent debug-line VBO before the
         // render pass starts (copy passes can't run inside a graphics render pass).
-        const uint32_t line_vertex_count = static_cast<uint32_t>(
-            std::min<size_t>(m_pending_debug_line_vertices.size(), MAX_DEBUG_LINE_VERTICES));
+        const uint32_t line_vertex_count =
+            static_cast<uint32_t>(std::min<size_t>(m_pending_debug_line_vertices.size(), MAX_DEBUG_LINE_VERTICES));
 
         const uint32_t bytes = line_vertex_count * sizeof(DebugLineVertex);
         void* map = SDL_MapGPUTransferBuffer(m_gpu_device, m_debug_line_transfer_buffer, true);
@@ -176,10 +177,7 @@ namespace hob {
             vb.offset = 0;
             SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
 
-            SDL_PushGPUVertexUniformData(cmd,
-                                         0,
-                                         m_swapchain_projection.data(),
-                                         Matrix4x4::byte_size());
+            SDL_PushGPUVertexUniformData(cmd, 0, m_swapchain_projection.data(), Matrix4x4::byte_size());
 
             SDL_DrawGPUPrimitives(pass, line_vertex_count, 1, 0, 0);
 
@@ -198,10 +196,10 @@ namespace hob {
 
         SDL_GPUCommandBuffer* cmd = m_command_buffer;
 
-        const uint32_t vertex_count = static_cast<uint32_t>(
-            std::min<size_t>(m_pending_debug_text_vertices.size(), MAX_DEBUG_TEXT_VERTICES));
-        const uint32_t index_count = static_cast<uint32_t>(
-            std::min<size_t>(m_pending_debug_text_indices.size(), MAX_DEBUG_TEXT_INDICES));
+        const uint32_t vertex_count =
+            static_cast<uint32_t>(std::min<size_t>(m_pending_debug_text_vertices.size(), MAX_DEBUG_TEXT_VERTICES));
+        const uint32_t index_count =
+            static_cast<uint32_t>(std::min<size_t>(m_pending_debug_text_indices.size(), MAX_DEBUG_TEXT_INDICES));
 
         const uint32_t vbo_bytes = vertex_count * sizeof(DebugTextVertex);
         const uint32_t ibo_bytes = index_count * sizeof(uint16_t);
@@ -282,10 +280,7 @@ namespace hob {
             ts.sampler = m_debug_text_sampler;
             SDL_BindGPUFragmentSamplers(pass, 0, &ts, 1);
 
-            SDL_PushGPUVertexUniformData(cmd,
-                                         0,
-                                         m_swapchain_projection.data(),
-                                         Matrix4x4::byte_size());
+            SDL_PushGPUVertexUniformData(cmd, 0, m_swapchain_projection.data(), Matrix4x4::byte_size());
 
             SDL_DrawGPUIndexedPrimitives(pass, index_count, 1, 0, 0, 0);
 

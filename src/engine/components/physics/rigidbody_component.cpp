@@ -12,8 +12,7 @@
 
 namespace hob {
     RigidbodyComponent::RigidbodyComponent(Entity& entity)
-        : Component(entity) {
-    }
+        : Component(entity) {}
 
     void RigidbodyComponent::enter_play() {
         const TransformComponent* transform = get_entity().get_transform();
@@ -23,8 +22,8 @@ namespace hob {
         if (m_body_type == BodyType::Dynamic) {
             if (const TransformComponent* parent = transform->get_parent()) {
                 const RigidbodyComponent* parent_body = parent->get_entity().get_rigidbody();
-                const bool parent_is_static = parent_body != nullptr &&
-                                              parent_body->get_body_type() == BodyType::Static;
+                const bool parent_is_static =
+                    parent_body != nullptr && parent_body->get_body_type() == BodyType::Static;
 
                 if (!parent_is_static) {
                     debug::log_error(
