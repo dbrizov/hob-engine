@@ -1,4 +1,4 @@
-# hob-engine
+# Hob2D
 A hobby 2D game engine written in C++.
 
 # Requirements
