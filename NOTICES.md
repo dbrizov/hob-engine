@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-`hob-engine` is distributed under the MIT License (see `LICENSE.md`). It uses the following third-party libraries, each under its own license. All are permissive and compatible with MIT.
+`hob2d` is distributed under the MIT License (see `LICENSE.md`). It uses the following third-party libraries, each under its own license. All are permissive and compatible with MIT.
 
 ---
 

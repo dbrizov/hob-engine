@@ -7,7 +7,7 @@
 
 namespace hob {
     struct GraphicsConfig {
-        std::string window_title = "Hob Engine";
+        std::string window_title = "Hob2D";
         uint32_t window_width = 1152;
         uint32_t window_height = 648;
         uint32_t logical_width = 1152;

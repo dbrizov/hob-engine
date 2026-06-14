@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set project name.
-project(hob_engine)
+project(hob2d)
 
 # Use vcpkg to find packages.
 if (CMAKE_TOOLCHAIN_FILE)

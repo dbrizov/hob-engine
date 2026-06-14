@@ -109,5 +109,5 @@ cmake --preset debug-clang     # macOS / Clang
 cmake --build --preset windows-debug-msvc-x64
 
 # Run
-./build/debug/windows-msvc/hob_engine.exe
+./build/debug/windows-msvc/Debug/hob2d.exe
 ```

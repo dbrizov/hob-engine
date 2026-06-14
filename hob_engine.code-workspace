@@ -45,24 +45,24 @@
         "version": "0.2.0",
         "configurations": [
             {
-                "name": "Debug Lua (hob_engine)",
+                "name": "Debug Lua (hob2d)",
                 "type": "lua-local",
                 "request": "launch",
                 "linux": {
                     "program": {
-                        "command": "${workspaceFolder:scripts}/../build/debug/linux-gcc/hob_engine"
+                        "command": "${workspaceFolder:scripts}/../build/debug/linux-gcc/hob2d"
                     },
                     "cwd": "${workspaceFolder:scripts}/../build/debug/linux-gcc"
                 },
                 "osx": {
                     "program": {
-                        "command": "${workspaceFolder:scripts}/../build/debug/macos-clang/hob_engine"
+                        "command": "${workspaceFolder:scripts}/../build/debug/macos-clang/hob2d"
                     },
                     "cwd": "${workspaceFolder:scripts}/../build/debug/macos-clang"
                 },
                 "windows": {
                     "program": {
-                        "command": "${workspaceFolder:scripts}/../build/debug/windows-msvc/Debug/hob_engine.exe"
+                        "command": "${workspaceFolder:scripts}/../build/debug/windows-msvc/Debug/hob2d.exe"
                     },
                     "cwd": "${workspaceFolder:scripts}/../build/debug/windows-msvc/Debug"
                 }
