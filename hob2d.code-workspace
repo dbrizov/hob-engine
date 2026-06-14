@@ -52,13 +52,13 @@
                     "program": {
                         "command": "${workspaceFolder:scripts}/../build/debug/linux-gcc/Debug/hob2d"
                     },
-                    "cwd": "${workspaceFolder:scripts}/../build/debug/linux-gcc"
+                    "cwd": "${workspaceFolder:scripts}/../build/debug/linux-gcc/Debug"
                 },
                 "osx": {
                     "program": {
                         "command": "${workspaceFolder:scripts}/../build/debug/macos-clang/Debug/hob2d"
                     },
-                    "cwd": "${workspaceFolder:scripts}/../build/debug/macos-clang"
+                    "cwd": "${workspaceFolder:scripts}/../build/debug/macos-clang/Debug"
                 },
                 "windows": {
                     "program": {
