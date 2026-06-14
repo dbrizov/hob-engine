@@ -21,6 +21,8 @@ namespace hob {
             return center == right.center && std::abs(radius - right.radius) < EPSILON;
         }
 
-        bool operator!=(const Circle& right) const { return !operator==(right); }
+        bool operator!=(const Circle& right) const {
+            return !operator==(right);
+        }
     };
-}
+} // namespace hob

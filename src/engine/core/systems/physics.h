@@ -64,11 +64,21 @@ namespace hob {
                                             float distance,
                                             uint64_t layer_mask = ~0ull) const;
 
-        static Vector2 b2Vec2_to_vec2(const b2Vec2& vec) { return Vector2(vec.x, vec.y); }
-        static b2Vec2 vec2_to_b2Vec2(const Vector2& vec) { return b2Vec2{vec.x, vec.y}; }
+        static Vector2 b2Vec2_to_vec2(const b2Vec2& vec) {
+            return Vector2(vec.x, vec.y);
+        }
 
-        static float b2Rot_to_radians(const b2Rot& rot) { return std::atan2(rot.s, rot.c); }
-        static b2Rot radians_to_b2Rot(float radians) { return b2MakeRot(radians); }
+        static b2Vec2 vec2_to_b2Vec2(const Vector2& vec) {
+            return b2Vec2{vec.x, vec.y};
+        }
+
+        static float b2Rot_to_radians(const b2Rot& rot) {
+            return std::atan2(rot.s, rot.c);
+        }
+
+        static b2Rot radians_to_b2Rot(float radians) {
+            return b2MakeRot(radians);
+        }
 
         static b2Capsule capsule_to_b2Capsule(const Capsule& capsule) {
             const Vector2 center_a = capsule.center_a;
@@ -98,4 +108,4 @@ namespace hob {
 
         void register_cvars(Console& console);
     };
-}
+} // namespace hob

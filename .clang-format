@@ -8,7 +8,7 @@ AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
 AllowShortEnumsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortLambdasOnASingleLine: None
 BinPackArguments: false
 BinPackParameters: false
@@ -34,7 +34,7 @@ BreakConstructorInitializers: BeforeComma
 BreakStringLiterals: false
 BreakTemplateDeclarations: Yes
 ColumnLimit: 120
-FixNamespaceComments: false
+FixNamespaceComments: true
 IncludeCategories:
   - Regex: '^<.*'
     Priority: 1

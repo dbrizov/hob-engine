@@ -77,4 +77,4 @@ namespace hob {
 
         return AABB(center, extents);
     }
-}
+} // namespace hob

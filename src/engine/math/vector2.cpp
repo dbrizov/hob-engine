@@ -15,4 +15,4 @@ namespace hob {
 
         return rotated_point;
     }
-}
+} // namespace hob

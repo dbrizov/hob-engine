@@ -250,4 +250,4 @@ namespace hob {
         m_sprites.clear();
         m_simulated_rigidbodies.clear();
     }
-}
+} // namespace hob

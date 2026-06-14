@@ -297,4 +297,4 @@ namespace hob {
         }
     }
 #endif
-}
+} // namespace hob

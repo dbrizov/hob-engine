@@ -52,4 +52,4 @@ namespace hob {
 
         schemas.add_schema(std::move(info));
     }
-}
+} // namespace hob

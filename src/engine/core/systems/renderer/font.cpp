@@ -23,7 +23,7 @@ namespace hob {
             int max_y;
             int advance;
         };
-    }
+    } // namespace
 
     Font::~Font() {
         shutdown();
@@ -195,4 +195,4 @@ namespace hob {
         }
         return nullptr;
     }
-}
+} // namespace hob

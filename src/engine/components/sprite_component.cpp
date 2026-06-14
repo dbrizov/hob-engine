@@ -114,4 +114,4 @@ namespace hob {
         m_pixels_per_meter = value;
         m_render_dirty = true;
     }
-}
+} // namespace hob

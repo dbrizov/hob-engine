@@ -27,4 +27,4 @@ namespace hob {
     const std::string& Texture::get_path() const {
         return m_path;
     }
-}
+} // namespace hob

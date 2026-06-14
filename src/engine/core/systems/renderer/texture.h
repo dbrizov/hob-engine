@@ -35,4 +35,4 @@ namespace hob {
         uint32_t get_height() const;
         const std::string& get_path() const;
     };
-}
+} // namespace hob

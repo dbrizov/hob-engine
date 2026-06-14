@@ -17,4 +17,4 @@ namespace hob {
     };
 
     using AnimationClipRef = std::shared_ptr<AnimationClip>;
-}
+} // namespace hob

@@ -84,4 +84,4 @@ namespace hob {
         bool is_ancestor_of(const TransformComponent* node) const;
         void detach_from_hierarchy();
     };
-}
+} // namespace hob

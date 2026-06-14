@@ -18,4 +18,4 @@ namespace hob {
         sol::protected_function on_trigger_enter;
         sol::protected_function on_trigger_exit;
     };
-}
+} // namespace hob

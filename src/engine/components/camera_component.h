@@ -32,4 +32,4 @@ namespace hob {
         Vector2 screen_to_world(const Vector2& screen_position) const;
         Vector2 screen_to_world(const Vector2& screen_position, const Vector2& camera_position) const;
     };
-}
+} // namespace hob

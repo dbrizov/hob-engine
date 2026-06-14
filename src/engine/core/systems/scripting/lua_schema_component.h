@@ -85,4 +85,4 @@ namespace hob {
         schemas.add_schema(
             key, existing_method, existing_method, std::vector<LuaComponentSchemaField>(fields.begin(), fields.end()));
     }
-}
+} // namespace hob

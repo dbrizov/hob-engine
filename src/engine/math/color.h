@@ -20,6 +20,7 @@ namespace hob {
 
         std::string to_string() const;
 
+        // clang-format off
         static constexpr Color black() { return Color(0.0f, 0.0f, 0.0f); }
         static constexpr Color white() { return Color(1.0f, 1.0f, 1.0f); }
         static constexpr Color gray() { return Color(0.5f, 0.5f, 0.5f); }
@@ -30,5 +31,6 @@ namespace hob {
         static constexpr Color magenta() { return Color(1.0f, 0.0f, 1.0f); }
         static constexpr Color cyan() { return Color(0.0f, 1.0f, 1.0f); }
         static constexpr Color orange() { return Color(1.0f, 0.647f, 0.0f); }
+        // clang-format on
     };
-}
+} // namespace hob

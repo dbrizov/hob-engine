@@ -15,11 +15,24 @@ namespace hob {
 
         std::string to_string() const;
 
-        bool operator==(const AABB& right) const { return center == right.center && extents == right.extents; }
-        bool operator!=(const AABB& right) const { return !operator==(right); }
+        bool operator==(const AABB& right) const {
+            return center == right.center && extents == right.extents;
+        }
 
-        Vector2 min() const { return center - extents; }
-        Vector2 max() const { return center + extents; }
-        Vector2 size() const { return extents * 2.0f; }
+        bool operator!=(const AABB& right) const {
+            return !operator==(right);
+        }
+
+        Vector2 min() const {
+            return center - extents;
+        }
+
+        Vector2 max() const {
+            return center + extents;
+        }
+
+        Vector2 size() const {
+            return extents * 2.0f;
+        }
     };
-}
+} // namespace hob

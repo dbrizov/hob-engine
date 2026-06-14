@@ -277,4 +277,4 @@ namespace hob {
             child->set_parent(nullptr, false);
         }
     }
-}
+} // namespace hob

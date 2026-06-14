@@ -75,7 +75,7 @@ namespace hob {
 
             return shader;
         }
-    }
+    } // namespace
 
     ShaderId Renderer::get_or_build_sprite_shader(const std::string& path) {
         if (path.empty()) {
@@ -554,4 +554,4 @@ namespace hob {
 
         return pipeline;
     }
-}
+} // namespace hob

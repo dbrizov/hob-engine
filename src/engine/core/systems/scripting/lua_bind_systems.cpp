@@ -360,7 +360,7 @@ namespace hob {
                       },
                       {"multiplier"});
         }
-    }
+    } // namespace
 
     void LuaScriptSystem::bind_systems() {
         sol::state& lua = m_impl->lua;
@@ -384,4 +384,4 @@ namespace hob {
             });
         bind_camera(lua, meta, m_engine);
     }
-}
+} // namespace hob

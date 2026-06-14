@@ -323,4 +323,4 @@ namespace hob {
         void debug_texture_refs();
         void debug_sprite_queue();
     };
-}
+} // namespace hob

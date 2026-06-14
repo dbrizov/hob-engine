@@ -24,4 +24,4 @@ namespace hob::math {
 
         return normalized;
     }
-}
+} // namespace hob::math

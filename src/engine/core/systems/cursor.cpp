@@ -123,4 +123,4 @@ namespace hob {
 
         m_renderer.draw_overlay_sprite(m_texture, screen_pos, size, pivot, rotation_rad, m_material);
     }
-}
+} // namespace hob

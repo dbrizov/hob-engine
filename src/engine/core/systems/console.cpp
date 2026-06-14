@@ -109,7 +109,7 @@ namespace hob {
 
             return std::nullopt;
         }
-    }
+    } // namespace
 
     // Console Command
     std::string ConsoleCommand::to_string(uint32_t indent) const {
@@ -745,4 +745,4 @@ namespace hob {
 
         return 0;
     }
-}
+} // namespace hob

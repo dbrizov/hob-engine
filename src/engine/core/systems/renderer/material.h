@@ -14,4 +14,4 @@ namespace hob {
         float outline_width = 0.0f;
         float alpha_threshold = 0.1f;
     };
-}
+} // namespace hob

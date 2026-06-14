@@ -74,4 +74,4 @@ namespace hob {
 
         return Circle(center, radius);
     }
-}
+} // namespace hob

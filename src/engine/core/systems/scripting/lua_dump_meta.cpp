@@ -73,7 +73,7 @@ namespace hob {
             f.write(str.data(), static_cast<std::streamsize>(str.size()));
             return f.good();
         }
-    }
+    } // namespace
 
     void LuaScriptSystem::dump_bindings_meta() {
         const std::filesystem::path out_path =
@@ -254,4 +254,4 @@ namespace hob {
             debug::log_error("LuaScriptSystem::dump_component_registry_meta: failed to write '{}'", out_path.string());
         }
     }
-}
+} // namespace hob

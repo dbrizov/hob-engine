@@ -59,4 +59,4 @@ namespace hob {
         void dump_entity_registry_meta();
         void dump_component_registry_meta();
     };
-}
+} // namespace hob

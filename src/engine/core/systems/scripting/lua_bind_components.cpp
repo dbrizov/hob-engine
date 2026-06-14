@@ -466,4 +466,4 @@ namespace hob {
                 {"screen_pixels_per_meter", "get_screen_pixels_per_meter", "set_screen_pixels_per_meter"},
             });
     }
-}
+} // namespace hob

@@ -79,4 +79,4 @@ namespace hob {
         // owns a sol::table tied to the Lua state) are destroyed while those subsystems are still alive.
         void clear();
     };
-}
+} // namespace hob

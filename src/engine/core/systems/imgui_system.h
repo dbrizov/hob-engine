@@ -43,4 +43,4 @@ namespace hob {
         // to record_draw_data_pass — exactly one of the two must run per new_frame.
         void discard_frame();
     };
-}
+} // namespace hob

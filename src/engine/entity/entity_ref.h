@@ -15,6 +15,8 @@ namespace hob {
 
         Entity* resolve() const;
         bool is_valid() const;
-        EntityId get_id() const { return m_id; }
+        EntityId get_id() const {
+            return m_id;
+        }
     };
-}
+} // namespace hob

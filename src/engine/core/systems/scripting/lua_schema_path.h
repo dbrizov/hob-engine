@@ -29,4 +29,4 @@ namespace hob {
                                  const char* type_label) {
         schemas.add_schema({define_name, registry_name, type_label});
     }
-}
+} // namespace hob

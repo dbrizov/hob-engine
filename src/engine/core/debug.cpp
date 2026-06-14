@@ -51,7 +51,7 @@ namespace hob::debug {
                 prev_point = point;
             }
         }
-    }
+    } // namespace
 
     void flush_draws_to_renderer(Renderer& renderer,
                                  const CameraComponent* camera,
@@ -112,5 +112,5 @@ namespace hob::debug {
 
             messages.emplace_back(std::move(text), color, duration);
         }
-    }
-}
+    } // namespace detail
+} // namespace hob::debug

@@ -37,4 +37,4 @@ namespace hob {
     std::string Component::to_string() const {
         return std::format("Component(entity_id = {})", m_entity.get_id());
     }
-}
+} // namespace hob

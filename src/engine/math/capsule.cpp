@@ -7,4 +7,4 @@ namespace hob {
         return std::format(
             "Capsule(center_a={}, center_b={}, radius={:.2f})", center_a.to_string(), center_b.to_string(), radius);
     }
-}
+} // namespace hob

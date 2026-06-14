@@ -61,4 +61,4 @@ namespace hob {
 
         static bool plane_result_callback(b2ShapeId other_shape_id, const b2PlaneResult* plane_result, void* context);
     };
-}
+} // namespace hob

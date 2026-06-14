@@ -92,4 +92,4 @@ namespace hob {
             .method("cyan", &Color::cyan)
             .method("orange", &Color::orange);
     }
-}
+} // namespace hob

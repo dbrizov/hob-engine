@@ -10,7 +10,7 @@ namespace hob {
     namespace component_priority {
         constexpr int CP_INPUT = -100;
         constexpr int CP_DEFAULT = 0;
-    }
+    } // namespace component_priority
 
     class Component {
         Entity& m_entity;
@@ -40,4 +40,4 @@ namespace hob {
 
         virtual std::string to_string() const;
     };
-}
+} // namespace hob

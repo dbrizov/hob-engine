@@ -146,4 +146,4 @@ namespace hob {
             entry.handler(event);
         }
     }
-}
+} // namespace hob

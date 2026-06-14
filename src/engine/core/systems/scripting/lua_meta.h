@@ -187,7 +187,7 @@ namespace hob {
                 return "nil";
             }
         }
-    }
+    } // namespace meta_detail
 
     // ---------------------------------------------------------------------
     // Registry data model.
@@ -257,11 +257,21 @@ namespace hob {
         std::vector<LuaFieldInfo> m_global_fields; // fields in _G
 
     public:
-        std::vector<LuaMethodInfo>& global_funcs() { return m_global_funcs; }
-        const std::vector<LuaMethodInfo>& global_funcs() const { return m_global_funcs; }
+        std::vector<LuaMethodInfo>& global_funcs() {
+            return m_global_funcs;
+        }
 
-        std::vector<LuaFieldInfo>& global_fields() { return m_global_fields; }
-        const std::vector<LuaFieldInfo>& global_fields() const { return m_global_fields; }
+        const std::vector<LuaMethodInfo>& global_funcs() const {
+            return m_global_funcs;
+        }
+
+        std::vector<LuaFieldInfo>& global_fields() {
+            return m_global_fields;
+        }
+
+        const std::vector<LuaFieldInfo>& global_fields() const {
+            return m_global_fields;
+        }
 
         LuaUsertypeInfo& add_usertype(std::string name, std::string base = {}) {
             LuaUsertypeInfo info;
@@ -468,7 +478,9 @@ namespace hob {
         }
 
         // Direct sol2 access for things outside this wrapper's API.
-        sol::usertype<T>& sol() { return m_usertype; }
+        sol::usertype<T>& sol() {
+            return m_usertype;
+        }
 
     private:
         // sol::function can't be constructed directly from a raw lambda; sol2 needs the
@@ -720,4 +732,4 @@ namespace hob {
             info.values.push_back({v.first, static_cast<int>(v.second)});
         }
     }
-}
+} // namespace hob

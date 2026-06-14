@@ -154,4 +154,4 @@ namespace hob {
                 return e ? e->to_string() : std::format("Entity(invalid, id = {})", r.get_id());
             });
     }
-}
+} // namespace hob

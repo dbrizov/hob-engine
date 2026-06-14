@@ -8,11 +8,18 @@ namespace hob {
     struct Matrix4x4 {
         std::array<float, 16> m{};
 
-        const float* data() const { return m.data(); }
-        float* data() { return m.data(); }
+        const float* data() const {
+            return m.data();
+        }
+
+        float* data() {
+            return m.data();
+        }
 
         // Size of the matrix in bytes — handy for GPU uniform pushes.
-        static constexpr uint32_t byte_size() { return static_cast<uint32_t>(16 * sizeof(float)); }
+        static constexpr uint32_t byte_size() {
+            return static_cast<uint32_t>(16 * sizeof(float));
+        }
 
         static Matrix4x4 identity() {
             Matrix4x4 out;
@@ -43,4 +50,4 @@ namespace hob {
     inline Matrix4x4 operator*(const Matrix4x4& a, const Matrix4x4& b) {
         return Matrix4x4::multiply(a, b);
     }
-}
+} // namespace hob

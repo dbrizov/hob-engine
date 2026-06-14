@@ -30,4 +30,4 @@ namespace hob {
         EngineConfig() = default;
         explicit EngineConfig(const std::filesystem::path& json_path);
     };
-}
+} // namespace hob

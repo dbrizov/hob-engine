@@ -168,4 +168,4 @@ namespace hob {
         bind_assets();
         bind_debug();
     }
-}
+} // namespace hob

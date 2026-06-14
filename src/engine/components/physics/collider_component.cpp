@@ -188,4 +188,4 @@ namespace hob {
         b2Shape_EnableSensorEvents(m_shape_id, true);
         b2Shape_EnableContactEvents(m_shape_id, !m_is_trigger); // enable contact events if it's NOT a sensor (trigger)
     }
-}
+} // namespace hob

@@ -74,4 +74,4 @@ namespace hob {
         void poll_script_hot_reload(float delta_time);
 #endif
     };
-}
+} // namespace hob

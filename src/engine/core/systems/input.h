@@ -71,4 +71,4 @@ namespace hob {
 
         void dispatch_event(const InputEvent& event) const;
     };
-}
+} // namespace hob

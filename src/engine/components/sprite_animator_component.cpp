@@ -132,4 +132,4 @@ namespace hob {
     bool SpriteAnimatorComponent::is_playing() const {
         return m_playing;
     }
-}
+} // namespace hob

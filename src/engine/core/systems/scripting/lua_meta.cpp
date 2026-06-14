@@ -270,7 +270,7 @@ namespace hob {
                 emit_method(out, t.name, m);
             }
         }
-    }
+    } // namespace
 
     bool LuaMetaRegistry::write_to_file(const std::filesystem::path& path) const {
         std::ostringstream out;
@@ -316,4 +316,4 @@ namespace hob {
 
         return f.good();
     }
-}
+} // namespace hob

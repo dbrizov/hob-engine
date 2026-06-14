@@ -60,4 +60,4 @@ namespace hob {
 
         void draw();
     };
-}
+} // namespace hob

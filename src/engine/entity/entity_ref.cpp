@@ -14,4 +14,4 @@ namespace hob {
     bool EntityRef::is_valid() const {
         return resolve() != nullptr;
     }
-}
+} // namespace hob

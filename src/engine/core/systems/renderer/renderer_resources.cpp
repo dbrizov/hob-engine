@@ -187,4 +187,4 @@ namespace hob {
         SDL_ReleaseGPUTransferBuffer(m_gpu_device, tb);
         return true;
     }
-}
+} // namespace hob

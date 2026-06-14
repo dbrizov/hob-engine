@@ -148,4 +148,4 @@ namespace hob {
         static int text_edit_callback_stub(ImGuiInputTextCallbackData* data);
         int text_edit_callback(ImGuiInputTextCallbackData* data);
     };
-}
+} // namespace hob

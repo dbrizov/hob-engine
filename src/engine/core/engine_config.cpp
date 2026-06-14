@@ -40,4 +40,4 @@ namespace hob {
                 p.value("interpolation_enabled", physics_config.interpolation_enabled);
         }
     }
-}
+} // namespace hob

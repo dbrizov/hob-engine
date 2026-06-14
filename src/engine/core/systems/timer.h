@@ -37,4 +37,4 @@ namespace hob {
         void frame_start();
         void frame_end();
     };
-}
+} // namespace hob

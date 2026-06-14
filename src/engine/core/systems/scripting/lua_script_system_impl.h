@@ -15,4 +15,4 @@ namespace hob {
         LuaFactorySchemaRegistry factory_schemas;
         LuaPathSchemaRegistry path_schemas;
     };
-}
+} // namespace hob

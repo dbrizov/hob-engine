@@ -62,4 +62,4 @@ namespace hob {
     private:
         void build_shape();
     };
-}
+} // namespace hob

@@ -150,4 +150,4 @@ namespace hob {
             return a->get_priority() < b->get_priority();
         });
     }
-}
+} // namespace hob

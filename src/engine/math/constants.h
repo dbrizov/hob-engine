@@ -19,4 +19,4 @@ namespace hob {
     constexpr float MAX_FLOAT = std::numeric_limits<float>::max();
     constexpr double MIN_DOUBLE = std::numeric_limits<double>::lowest();
     constexpr double MAX_DOUBLE = std::numeric_limits<double>::max();
-}
+} // namespace hob

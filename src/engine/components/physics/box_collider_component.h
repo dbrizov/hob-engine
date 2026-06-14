@@ -28,4 +28,4 @@ namespace hob {
     private:
         static AABB scale_aabb(const AABB& local, const Vector2& scale);
     };
-}
+} // namespace hob

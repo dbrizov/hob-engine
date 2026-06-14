@@ -367,4 +367,4 @@ namespace hob {
         return static_cast<int>(
             std::round(static_cast<float>(m_debug_font.get_line_height()) * m_debug_font_baked_inverse_pixel_density));
     }
-}
+} // namespace hob

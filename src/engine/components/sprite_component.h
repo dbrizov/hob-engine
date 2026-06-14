@@ -67,4 +67,4 @@ namespace hob {
         float get_pixels_per_meter_f() const;
         void set_pixels_per_meter(int value);
     };
-}
+} // namespace hob

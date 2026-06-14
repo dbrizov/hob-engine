@@ -17,7 +17,7 @@ namespace hob {
             debug::log_error("Box2D assertion: {} ({}:{})", condition, file_name, line_number);
             return 1;
         }
-    }
+    } // namespace
 
     PhysicsWorld::PhysicsWorld(const Vector2& gravity)
         : m_id(b2_nullWorldId) {
@@ -318,4 +318,4 @@ namespace hob {
                                   cvar_debug_draw = cvar.bool_value();
                               });
     }
-}
+} // namespace hob

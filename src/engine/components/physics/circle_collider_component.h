@@ -28,4 +28,4 @@ namespace hob {
     private:
         static Circle scale_circle(const Circle& local, const Vector2& scale);
     };
-}
+} // namespace hob

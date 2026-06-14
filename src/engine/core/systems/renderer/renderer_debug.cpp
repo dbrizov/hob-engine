@@ -195,4 +195,4 @@ namespace hob {
             ImGui::End();
         }
     }
-}
+} // namespace hob

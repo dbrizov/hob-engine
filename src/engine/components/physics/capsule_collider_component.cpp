@@ -91,4 +91,4 @@ namespace hob {
 
         return Capsule(center_a, center_b, radius);
     }
-}
+} // namespace hob

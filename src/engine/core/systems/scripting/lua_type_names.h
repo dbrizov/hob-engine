@@ -60,4 +60,4 @@ namespace hob {
     HOB_LUA_TYPE(InputEventType, "InputEventType")
     HOB_LUA_TYPE(CursorMode, "CursorMode")
     // clang-format on
-}
+} // namespace hob

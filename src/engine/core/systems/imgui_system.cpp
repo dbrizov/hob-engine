@@ -121,4 +121,4 @@ namespace hob {
     void ImGuiSystem::discard_frame() {
         ImGui::EndFrame();
     }
-}
+} // namespace hob

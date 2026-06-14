@@ -94,4 +94,4 @@ namespace hob {
 
         return f.good();
     }
-}
+} // namespace hob

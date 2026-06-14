@@ -41,7 +41,7 @@ namespace hob {
                 debug::log_error("Lua error in {}: {}", method, err.what());
             }
         }
-    }
+    } // namespace
 
     LuaScriptComponent::LuaScriptComponent(Entity& entity, std::string class_name)
         : Component(entity)
@@ -179,4 +179,4 @@ namespace hob {
     std::string LuaScriptComponent::to_string() const {
         return std::format("LuaScriptComponent(entity_id = {}, class = {})", get_entity().get_id(), get_class_name());
     }
-}
+} // namespace hob

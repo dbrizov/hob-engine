@@ -27,4 +27,4 @@ namespace hob {
 
         std::vector<SDL_Scancode> relevant_keys() const;
     };
-}
+} // namespace hob

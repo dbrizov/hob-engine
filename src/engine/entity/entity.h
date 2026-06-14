@@ -125,4 +125,4 @@ namespace hob {
 
         return result;
     }
-}
+} // namespace hob

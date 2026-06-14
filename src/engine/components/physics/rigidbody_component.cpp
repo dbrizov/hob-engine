@@ -145,4 +145,4 @@ namespace hob {
         const b2Rot b2_rotation = Physics::radians_to_b2Rot(radians);
         b2Body_SetTransform(m_body_id, b2_position, b2_rotation);
     }
-}
+} // namespace hob

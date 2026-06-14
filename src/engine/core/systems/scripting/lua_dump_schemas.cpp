@@ -33,4 +33,4 @@ namespace hob {
             debug::log_error("LuaScriptSystem::dump_factory_schemas: failed to write '{}'", out_path.string());
         }
     }
-}
+} // namespace hob

@@ -28,4 +28,4 @@ namespace hob {
     private:
         static Capsule scale_capsule(const Capsule& local, const Vector2& scale);
     };
-}
+} // namespace hob

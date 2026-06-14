@@ -89,4 +89,4 @@ namespace hob {
                 },
                 "(center: Vector2, radius: number, color: Color?, duration: number?, thickness: number?, segments: integer?)");
     }
-}
+} // namespace hob

@@ -31,4 +31,4 @@ namespace hob {
         Vector2 get_window_size() const;
         float get_pixel_density() const;
     };
-}
+} // namespace hob

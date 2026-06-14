@@ -49,4 +49,4 @@ namespace hob {
     private:
         void on_input_event(const InputEvent& event);
     };
-}
+} // namespace hob

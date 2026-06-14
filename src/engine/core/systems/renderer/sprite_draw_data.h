@@ -18,4 +18,4 @@ namespace hob {
         float rotation = 0.0f; // world rotation, radians (y-up CCW)
         int z_index = 0;
     };
-}
+} // namespace hob

@@ -91,7 +91,7 @@ namespace hob {
                 log("{}", text);
                 add_on_screen_debug_message(std::move(text), color, duration);
             }
-        }
+        } // namespace detail
 
         template<typename... Args>
         void print(std::format_string<Args...> fmt, Args&&... args) {
@@ -102,5 +102,5 @@ namespace hob {
         void print(const Color& color, float duration, std::format_string<Args...> fmt, Args&&... args) {
             detail::print_dispatch(color, duration, fmt, std::forward<Args>(args)...);
         }
-    }
-}
+    } // namespace debug
+} // namespace hob

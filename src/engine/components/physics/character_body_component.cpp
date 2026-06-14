@@ -191,4 +191,4 @@ namespace hob {
 
         return true; // keep searching
     }
-}
+} // namespace hob

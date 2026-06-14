@@ -119,4 +119,4 @@ namespace hob {
 
         return world_position;
     }
-}
+} // namespace hob

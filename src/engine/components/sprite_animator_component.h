@@ -47,4 +47,4 @@ namespace hob {
 
         bool is_playing() const;
     };
-}
+} // namespace hob

@@ -54,4 +54,4 @@ namespace hob {
         float get_rotation() const;
         void set_rotation(float radians);
     };
-}
+} // namespace hob

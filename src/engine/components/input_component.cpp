@@ -149,4 +149,4 @@ namespace hob {
                 break;
         }
     }
-}
+} // namespace hob

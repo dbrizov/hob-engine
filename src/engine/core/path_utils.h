@@ -10,4 +10,4 @@ namespace hob {
         static std::filesystem::path get_engine_config_path();
         static std::filesystem::path get_input_config_path();
     };
-}
+} // namespace hob

@@ -137,4 +137,4 @@ namespace hob {
         const float density = SDL_GetWindowPixelDensity(m_window);
         return (density > 0.0f) ? density : 1.0f;
     }
-}
+} // namespace hob

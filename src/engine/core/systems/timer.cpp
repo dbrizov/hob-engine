@@ -94,4 +94,4 @@ namespace hob {
             }
         }
     }
-}
+} // namespace hob

@@ -24,8 +24,12 @@ namespace hob {
                    std::abs(radius - right.radius) < EPSILON;
         }
 
-        bool operator!=(const Capsule& right) const { return !operator==(right); }
+        bool operator!=(const Capsule& right) const {
+            return !operator==(right);
+        }
 
-        float get_height() const { return Vector2::distance(center_a, center_b) + (radius * 2.0f); }
+        float get_height() const {
+            return Vector2::distance(center_a, center_b) + (radius * 2.0f);
+        }
     };
-}
+} // namespace hob

@@ -40,7 +40,7 @@ namespace hob {
         };
 
         static_assert(sizeof(SpriteFSUniforms) == 64);
-    }
+    } // namespace
 
     void Renderer::render_world_pass() {
         SDL_GPUCommandBuffer* cmd = m_command_buffer;
@@ -405,4 +405,4 @@ namespace hob {
         fsu.time = m_frame_time;
         SDL_PushGPUFragmentUniformData(m_command_buffer, 0, &fsu, sizeof(fsu));
     }
-}
+} // namespace hob

@@ -38,4 +38,4 @@ namespace hob {
         std::filesystem::path input_config_path = root_path / "config" / "input_config.json";
         return input_config_path;
     }
-}
+} // namespace hob

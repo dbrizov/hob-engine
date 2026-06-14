@@ -40,4 +40,4 @@ namespace hob {
 
         std::string to_string() const override;
     };
-}
+} // namespace hob
