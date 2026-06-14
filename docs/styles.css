@@ -338,7 +338,6 @@ code {
 
 figure {
     margin: 0;
-    min-width: 0;
 }
 
 /* ---- Tech pills ---- */
@@ -420,6 +419,10 @@ figure {
 
     .code-grid {
         grid-template-columns: 1fr;
+    }
+
+    .code-grid figure {
+        min-width: 0;
     }
 
     .nav {
