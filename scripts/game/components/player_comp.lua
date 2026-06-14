@@ -8,8 +8,12 @@ function Player:init()
     self.speed = 7.0
     self.camera_follow_speed = 10.0
     self.movement_input = Vector2.zero()
+    self.aim_input = Vector2.zero()
     self.x_axis_id = nil
     self.y_axis_id = nil
+    self.aim_x_axis_id = nil
+    self.aim_y_axis_id = nil
+    self.fire_action_id = nil
     self.slow_motion_action_id = nil
 
     self.camera_zoom_time = 0.0
@@ -28,6 +32,18 @@ function Player:enter_play()
         self.movement_input.y = axis
     end)
 
+    self.aim_x_axis_id = input:bind_axis("aim_x", function(axis)
+        self.aim_input.x = axis
+    end)
+
+    self.aim_y_axis_id = input:bind_axis("aim_y", function(axis)
+        self.aim_input.y = axis
+    end)
+
+    self.fire_action_id = input:bind_action("fire", InputEventType.Pressed, function()
+        Debug.print("fire")
+    end)
+
     self.slow_motion_action_id = input:bind_action("slow_motion", InputEventType.Pressed, function()
         local new_scale = Timer.get_time_scale() < 1.0 and 1.0 or 0.2
         Timer.set_time_scale(new_scale)
@@ -38,6 +54,9 @@ function Player:exit_play()
     local input = self.entity:get_input()
     input:unbind_axis("horizontal", self.x_axis_id)
     input:unbind_axis("vertical", self.y_axis_id)
+    input:unbind_axis("aim_x", self.aim_x_axis_id)
+    input:unbind_axis("aim_y", self.aim_y_axis_id)
+    input:unbind_action("fire", self.fire_action_id)
     input:unbind_action("slow_motion", self.slow_motion_action_id)
 end
 
@@ -97,10 +116,19 @@ function Player:update_camera_position(target_position, delta_time)
 end
 
 function Player:update_rotation(delta_time)
+    local character_body = self.entity:get_character_body()
+
+    -- Twin-stick aiming: the right stick rotates the character toward its direction.
+    -- It already passes through the engine deadzone, so any non-zero value means it's in use.
+    if self.aim_input:length_sqr() > 0.0 then
+        local radians = math.atan(self.aim_input.y, self.aim_input.x)
+        character_body:set_rotation(radians)
+        return
+    end
+
+    -- Fall back to aiming at the mouse cursor.
     local mouse_screen = Input.get_mouse_screen_position()
     local mouse_world = Camera.screen_to_world(mouse_screen)
-
-    local character_body = self.entity:get_character_body()
     local player_pos = character_body:get_position()
     local direction = mouse_world - player_pos
 

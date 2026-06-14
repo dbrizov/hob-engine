@@ -7,7 +7,7 @@
 
 namespace hob {
     SdlContext::SdlContext(const GraphicsConfig& graphics_config) {
-        if (!SDL_Init(SDL_INIT_VIDEO)) {
+        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
             debug::log_error("SDL_Init Error: {}", SDL_GetError());
             return;
         }

@@ -128,9 +128,14 @@ namespace hob {
         }
 
         void bind_input(sol::state& lua, LuaMetaRegistry& meta, Input& input) {
-            bind_table(lua, meta, "Input").func("get_mouse_screen_position", [&input]() {
-                return input.get_mouse_screen_position();
-            });
+            bind_table(lua, meta, "Input")
+                .func("get_mouse_screen_position",
+                      [&input]() {
+                          return input.get_mouse_screen_position();
+                      })
+                .func("is_gamepad_connected", [&input]() {
+                    return input.is_gamepad_connected();
+                });
         }
 
         void bind_physics(sol::state& lua, LuaMetaRegistry& meta, Physics& physics) {

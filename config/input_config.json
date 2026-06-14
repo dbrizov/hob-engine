@@ -1,29 +1,47 @@
 {
+  "gamepad": {
+    "stick_deadzone": 0.2,
+    "trigger_deadzone": 0.1,
+    "trigger_button_threshold": 0.5
+  },
   "action_mappings": {
     "left": [
       "Left",
-      "A"
+      "A",
+      "Gamepad DpadLeft"
     ],
     "right": [
       "Right",
-      "D"
+      "D",
+      "Gamepad DpadRight"
     ],
     "up": [
       "Up",
-      "W"
+      "W",
+      "Gamepad DpadUp"
     ],
     "down": [
       "Down",
-      "S"
+      "S",
+      "Gamepad DpadDown"
     ],
     "submit": [
-      "Return"
+      "Return",
+      "Gamepad A"
     ],
     "cancel": [
-      "Escape"
+      "Escape",
+      "Gamepad B"
     ],
     "slow_motion": [
       "Tab"
+    ],
+    "fire": [
+      "Mouse Left",
+      "Gamepad RightTrigger"
+    ],
+    "pause": [
+      "Gamepad Start"
     ]
   },
   "axis_mappings": {
@@ -37,6 +55,12 @@
       "negative": [
         "Left",
         "A"
+      ],
+      "analog": [
+        {
+          "source": "Gamepad LeftX",
+          "scale": 1
+        }
       ]
     },
     "vertical": {
@@ -49,6 +73,28 @@
       "negative": [
         "Down",
         "S"
+      ],
+      "analog": [
+        {
+          "source": "Gamepad LeftY",
+          "scale": -1
+        }
+      ]
+    },
+    "aim_x": {
+      "analog": [
+        {
+          "source": "Gamepad RightX",
+          "scale": 1
+        }
+      ]
+    },
+    "aim_y": {
+      "analog": [
+        {
+          "source": "Gamepad RightY",
+          "scale": -1
+        }
       ]
     }
   }

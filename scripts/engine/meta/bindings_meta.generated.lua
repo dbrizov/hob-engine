@@ -59,6 +59,9 @@ Input = {}
 ---@return Vector2
 function Input.get_mouse_screen_position() end
 
+---@return boolean
+function Input.is_gamepad_connected() end
+
 -- Physics
 ---@class Physics
 Physics = {}

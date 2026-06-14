@@ -40,6 +40,7 @@ namespace hob {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
                 m_imgui_system.process_event(event);
+                m_input.process_event(event);
 
                 if (event.type == SDL_EVENT_QUIT) {
                     is_running = false;

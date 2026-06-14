@@ -1,19 +1,134 @@
 #include "input_config.h"
 
+#include <SDL3/SDL_gamepad.h>
+#include <SDL3/SDL_keyboard.h>
 #include <algorithm>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <optional>
 
 #include "engine/core/debug.h"
 
 namespace hob {
-    static SDL_Scancode scancode_from_name(const std::string& name) {
+    static std::optional<InputSource> parse_keyboard(const std::string& name) {
         const SDL_Scancode scancode = SDL_GetScancodeFromName(name.c_str());
         if (scancode == SDL_SCANCODE_UNKNOWN) {
-            debug::log_error("Unknown key: {}", name);
+            return std::nullopt;
         }
 
-        return scancode;
+        return InputSource{InputDevice::Keyboard, static_cast<int>(scancode), false};
+    }
+
+    static std::optional<InputSource> parse_mouse(const std::string& token) {
+        // token is the part after the "Mouse " prefix.
+        struct Entry {
+            const char* name;
+            MouseCode code;
+            bool is_analog;
+        };
+
+        static const Entry table[] = {
+            {"Left", MouseCode::ButtonLeft, false},
+            {"Right", MouseCode::ButtonRight, false},
+            {"Middle", MouseCode::ButtonMiddle, false},
+            {"WheelUp", MouseCode::WheelUp, false},
+            {"WheelDown", MouseCode::WheelDown, false},
+            {"X", MouseCode::AxisX, true},
+            {"Y", MouseCode::AxisY, true},
+            {"Wheel", MouseCode::AxisWheel, true},
+        };
+
+        for (const Entry& entry : table) {
+            if (token == entry.name) {
+                return InputSource{InputDevice::Mouse, static_cast<int>(entry.code), entry.is_analog};
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    static std::optional<InputSource> parse_gamepad(const std::string& token) {
+        // token is the part after the "Gamepad " prefix. We use friendly PascalCase names
+        // for config consistency (e.g. "Start", "DpadUp", "LeftX") and translate them to
+        // SDL's own canonical tokens, which are then resolved via SDL's string lookups.
+        static const std::unordered_map<std::string, const char*> button_names = {
+            {"A", "a"},
+            {"B", "b"},
+            {"X", "x"},
+            {"Y", "y"},
+            {"Back", "back"},
+            {"Guide", "guide"},
+            {"Start", "start"},
+            {"LeftStick", "leftstick"},
+            {"RightStick", "rightstick"},
+            {"LeftShoulder", "leftshoulder"},
+            {"RightShoulder", "rightshoulder"},
+            {"DpadUp", "dpup"},
+            {"DpadDown", "dpdown"},
+            {"DpadLeft", "dpleft"},
+            {"DpadRight", "dpright"},
+        };
+
+        static const std::unordered_map<std::string, const char*> axis_names = {
+            {"LeftX", "leftx"},
+            {"LeftY", "lefty"},
+            {"RightX", "rightx"},
+            {"RightY", "righty"},
+            {"LeftTrigger", "lefttrigger"},
+            {"RightTrigger", "righttrigger"},
+        };
+
+        if (const auto it = button_names.find(token); it != button_names.end()) {
+            const SDL_GamepadButton button = SDL_GetGamepadButtonFromString(it->second);
+            if (button != SDL_GAMEPAD_BUTTON_INVALID) {
+                return InputSource{InputDevice::Gamepad, static_cast<int>(button), false};
+            }
+        }
+
+        if (const auto it = axis_names.find(token); it != axis_names.end()) {
+            const SDL_GamepadAxis axis = SDL_GetGamepadAxisFromString(it->second);
+            if (axis != SDL_GAMEPAD_AXIS_INVALID) {
+                return InputSource{InputDevice::Gamepad, static_cast<int>(axis), true};
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    static std::optional<InputSource> parse_source(const std::string& name) {
+        constexpr const char* MOUSE_PREFIX = "Mouse ";
+        constexpr const char* GAMEPAD_PREFIX = "Gamepad ";
+
+        std::optional<InputSource> source;
+        if (name.rfind(MOUSE_PREFIX, 0) == 0) {
+            source = parse_mouse(name.substr(std::char_traits<char>::length(MOUSE_PREFIX)));
+        }
+        else if (name.rfind(GAMEPAD_PREFIX, 0) == 0) {
+            source = parse_gamepad(name.substr(std::char_traits<char>::length(GAMEPAD_PREFIX)));
+        }
+        else {
+            source = parse_keyboard(name);
+        }
+
+        if (!source.has_value()) {
+            debug::log_error("Unknown input source: {}", name);
+        }
+
+        return source;
+    }
+
+    // Parse a list of digital source names into `out`, skipping unknown entries. Analog
+    // sources (e.g. a gamepad trigger) are allowed: Input treats them as "down" once they
+    // cross a press threshold.
+    static void parse_digital_list(const nlohmann::json& list, std::vector<InputSource>& out) {
+        for (const auto& item : list) {
+            const std::optional<InputSource> source = parse_source(item.get<std::string>());
+            if (!source.has_value()) {
+                continue;
+            }
+
+            out.push_back(*source);
+        }
     }
 
     InputConfig::InputConfig(const std::filesystem::path& json_path) {
@@ -25,69 +140,90 @@ namespace hob {
 
         nlohmann::json json = nlohmann::json::parse(file);
 
-        // Actions
-        for (auto& [action_name, keys] : json["action_mappings"].items()) {
-            ActionConfig action_config;
-            for (auto& key : keys) {
-                const SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-                if (scancode != SDL_SCANCODE_UNKNOWN) {
-                    action_config.keys.push_back(scancode);
-                }
-            }
+        // Gamepad tuning (optional block).
+        if (json.contains("gamepad")) {
+            const auto& cfg = json["gamepad"];
+            gamepad.stick_deadzone = cfg.value("stick_deadzone", gamepad.stick_deadzone);
+            gamepad.trigger_deadzone = cfg.value("trigger_deadzone", gamepad.trigger_deadzone);
+            gamepad.trigger_button_threshold =
+                cfg.value("trigger_button_threshold", gamepad.trigger_button_threshold);
+        }
 
-            actions[action_name] = action_config;
+        // Actions
+        for (auto& [action_name, sources] : json["action_mappings"].items()) {
+            ActionConfig action_config;
+            parse_digital_list(sources, action_config.sources);
+            actions[action_name] = std::move(action_config);
         }
 
         // Axes
         for (auto& [axis_name, cfg] : json["axis_mappings"].items()) {
             AxisConfig axis_config;
-            axis_config.acceleration = cfg["acceleration"].get<float>();
-            axis_config.deceleration = cfg["deceleration"].get<float>();
+            axis_config.acceleration = cfg.value("acceleration", 0.0f);
+            axis_config.deceleration = cfg.value("deceleration", 0.0f);
 
-            for (auto& key : cfg["positive"]) {
-                const SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-                if (scancode != SDL_SCANCODE_UNKNOWN) {
-                    axis_config.positive_keys.push_back(scancode);
+            if (cfg.contains("positive")) {
+                parse_digital_list(cfg["positive"], axis_config.positive_sources);
+            }
+
+            if (cfg.contains("negative")) {
+                parse_digital_list(cfg["negative"], axis_config.negative_sources);
+            }
+
+            if (cfg.contains("analog")) {
+                for (const auto& entry : cfg["analog"]) {
+                    const std::optional<InputSource> source = parse_source(entry.at("source").get<std::string>());
+                    if (!source.has_value()) {
+                        continue;
+                    }
+
+                    if (!source->is_analog) {
+                        debug::log_error("Digital source '{}' used as an analog binding; ignored",
+                                         entry.at("source").get<std::string>());
+                        continue;
+                    }
+
+                    AnalogBinding binding;
+                    binding.source = *source;
+                    binding.scale = entry.value("scale", 1.0f);
+                    axis_config.analog.push_back(binding);
                 }
             }
 
-            for (auto& key : cfg["negative"]) {
-                const SDL_Scancode scancode = scancode_from_name(key.get<std::string>());
-                if (scancode != SDL_SCANCODE_UNKNOWN) {
-                    axis_config.negative_keys.push_back(scancode);
-                }
-            }
-
-            axes[axis_name] = axis_config;
+            axes[axis_name] = std::move(axis_config);
         }
     }
 
-    std::vector<SDL_Scancode> InputConfig::relevant_keys() const {
-        std::vector<SDL_Scancode> keys;
-        keys.reserve(32);
+    std::vector<InputSource> InputConfig::relevant_sources() const {
+        std::vector<InputSource> sources;
+        sources.reserve(32);
 
-        auto add_key = [&keys](SDL_Scancode key) {
-            if (std::find(keys.begin(), keys.end(), key) == keys.end()) {
-                keys.push_back(key);
+        auto add_source = [&sources](const InputSource& source) {
+            const auto same = [&source](const InputSource& s) {
+                return s.device == source.device && s.code == source.code;
+            };
+
+            if (std::find_if(sources.begin(), sources.end(), same) == sources.end()) {
+                sources.push_back(source);
             }
         };
 
         for (const auto& pair : actions) {
-            for (auto key : pair.second.keys) {
-                add_key(key);
+            for (const auto& source : pair.second.sources) {
+                add_source(source);
             }
         }
 
         for (const auto& pair : axes) {
-            for (auto key : pair.second.positive_keys) {
-                add_key(key);
+            for (const auto& source : pair.second.positive_sources) {
+                add_source(source);
             }
 
-            for (auto key : pair.second.negative_keys) {
-                add_key(key);
+            for (const auto& source : pair.second.negative_sources) {
+                add_source(source);
             }
         }
 
-        return keys;
+        return sources;
     }
 } // namespace hob
