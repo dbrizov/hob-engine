@@ -1,5 +1,5 @@
 # hob-engine
-A hobby 2D game engine written in C++.
+A 2D game engine written in C++.
 
 # Requirements
 Project dependencies are downloaded and linked automatically via `vcpkg` and `CMake`.<br>
