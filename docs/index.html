@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hob Engine — A 2D game engine written in C++</title>
+    <meta name="description" content="Hob is a 2D game engine with SDL3 + SDL_GPU rendering, Box2D physics, and all gameplay scripted in Lua.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hob Engine — A 2D game engine written in C++">
+    <meta property="og:description" content="SDL3 + SDL_GPU rendering · Box2D physics · all gameplay in Lua.">
+    <meta property="og:url" content="https://hobengine.com/">
+    <meta name="twitter:card" content="summary">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="/">
+                <img src="favicon.svg" alt="Hob Engine logo">
+                Hob Engine
+            </a>
+            <nav class="nav">
+                <a href="#features">Features</a>
+                <a href="get-started.html">Get Started</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/dbrizov/hob-engine">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <h1>A 2D game engine<br>written in <span class="accent">C++</span></h1>
+                <p>A fast, lightweight engine for building 2D games — with a C++ core and gameplay scripted in Lua.</p>
+                <div class="hero-cta">
+                    <a class="btn btn-primary" href="get-started.html">Get Started</a>
+                    <a class="btn btn-ghost" href="https://github.com/dbrizov/hob-engine">View on GitHub</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section id="features">
+            <div class="container">
+                <h2 class="section-title">Features</h2>
+                <p class="section-lead">A focused toolkit for building 2D games — fast rendering, real
+                    physics, and a scripting workflow that keeps you in the flow.</p>
+
+                <!-- Rendering -->
+                <div class="feature-group">
+                    <h3><span class="dot"></span>Rendering</h3>
+                    <p class="group-lead">A modern, GPU-accelerated 2D pipeline.</p>
+                    <div class="cards">
+                        <div class="card">
+                            <h4>SDL3 + SDL_GPU</h4>
+                            <p>Sprites render at a fixed logical resolution into an offscreen target, then
+                                upscale cleanly to any window size.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Materials &amp; HLSL shaders</h4>
+                            <p>Per-material custom sprite shaders, authored in HLSL and cross-compiled at
+                                runtime — no offline build step.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Sprite animation</h4>
+                            <p>Define animation clips and play them per entity with a simple sprite animator.</p>
+                        </div>
+                        <div class="card">
+                            <h4>World-space camera</h4>
+                            <p>Pan and zoom a world camera with optional physics interpolation for smooth motion.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Physics -->
+                <div class="feature-group">
+                    <h3><span class="dot"></span>Physics</h3>
+                    <p class="group-lead">Real 2D physics built on Box2D.</p>
+                    <div class="cards">
+                        <div class="card">
+                            <h4>Box2D simulation</h4>
+                            <p>Rigid bodies and colliders driven by a fixed-timestep loop with configurable
+                                sub-steps.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Raycasting &amp; queries</h4>
+                            <p>Cast rays into the world for line-of-sight, ground checks, and gameplay queries.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Collision &amp; trigger events</h4>
+                            <p>Components receive <code>on_collision_enter/exit</code> and
+                                <code>on_trigger_enter/exit</code> callbacks automatically.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entity & Components -->
+                <div class="feature-group">
+                    <h3><span class="dot"></span>Entity &amp; Components</h3>
+                    <p class="group-lead">A straightforward composition model: each entity owns a list of
+                        components.</p>
+                    <div class="cards">
+                        <div class="card">
+                            <h4>Lifecycle hooks</h4>
+                            <p>Components hook into <code>init</code>, <code>enter_play</code>,
+                                <code>exit_play</code>, <code>tick</code>, <code>physics_tick</code>, and more.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Composition over inheritance</h4>
+                            <p>Build behaviour by attaching components — mix and match without deep class trees.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Priority ordering</h4>
+                            <p>Control the order components tick so input runs before gameplay logic.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lua Scripting -->
+                <div class="feature-group">
+                    <h3><span class="dot"></span>Lua Scripting</h3>
+                    <p class="group-lead">All gameplay code is written in Lua, with hot reload while the
+                        game runs.</p>
+                    <div class="cards">
+                        <div class="card">
+                            <h4>Component inheritance</h4>
+                            <p>Share behaviour across components with single inheritance.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Data-driven prefabs</h4>
+                            <p>Compose entities from component blocks as declarative data — no boilerplate
+                                constructor code.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Hot reload</h4>
+                            <p>Edit scripts, assets, and config and see changes without restarting the engine.</p>
+                        </div>
+                    </div>
+                    <div class="code-grid" style="margin-top: 22px;">
+                        <figure>
+                            <figcaption>A component with lifecycle hooks</figcaption>
+<pre><span class="cls">DefineComponent</span>.Player = {
+    <span class="prop">speed</span> = <span class="num">7.0</span>,
+}
+<span class="cmt">---@class Player : LuaComponent</span>
+<span class="kw">local</span> <span class="cls">Player</span> = <span class="cls">Player</span>
+
+<span class="kw">function</span> <span class="cls">Player</span>:<span class="fn">init</span>() <span class="kw">end</span>
+<span class="kw">function</span> <span class="cls">Player</span>:<span class="fn">enter_play</span>() <span class="kw">end</span>
+<span class="kw">function</span> <span class="cls">Player</span>:<span class="fn">exit_play</span>() <span class="kw">end</span>
+
+<span class="kw">function</span> <span class="cls">Player</span>:<span class="fn">tick</span>(delta_time)
+    <span class="cmt">-- per-frame game logic</span>
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="cls">Player</span>:<span class="fn">physics_tick</span>(fixed_delta_time)
+    <span class="cmt">-- fixed-timestep movement</span>
+<span class="kw">end</span></pre>
+                        </figure>
+                        <figure>
+                            <figcaption>A data-driven prefab</figcaption>
+<pre><span class="cls">DefineEntity</span>.Player = {
+    <span class="prop">ticking</span> = <span class="kw">true</span>,
+    <span class="prop">input</span> = {},
+    <span class="prop">character_body</span> = {
+        <span class="prop">collision_layer</span> = <span class="cls">Collision</span>.Kinematic,
+        <span class="prop">collision_mask</span> = <span class="cls">Collision</span>.Static | <span class="cls">Collision</span>.Dynamic,
+        <span class="prop">solver_ignore_mask</span> = <span class="cls">Collision</span>.Trigger,
+        <span class="prop">capsule</span> = <span class="cls">Capsule</span>(<span class="cls">Vector2</span>.<span class="fn">zero</span>(), <span class="cls">Vector2</span>.<span class="fn">zero</span>(), <span class="num">1.2</span>),
+    },
+    <span class="prop">sprite</span> = {
+        <span class="prop">texture</span> = <span class="cls">Textures</span>.PlayerIdle01,
+        <span class="prop">material</span> = <span class="cls">Materials</span>.WhiteOutline,
+        <span class="prop">z_index</span> = <span class="num">1</span>,
+    },
+    <span class="cmt">-- attach the Player component</span>
+    <span class="prop">lua_components</span> = { <span class="cls">Components</span>.Player },
+}</pre>
+                        </figure>
+                    </div>
+
+                    <figure style="margin-top: 18px;">
+                        <figcaption>Spawn it at runtime</figcaption>
+<pre><span class="cmt">-- spawn the prefab at a world position</span>
+<span class="cls">EntitySpawner</span>.<span class="fn">spawn_entity</span>(<span class="cls">Entities</span>.Player, <span class="cls">Vector2</span>(<span class="num">0.0</span>, <span class="num">0.0</span>))</pre>
+                    </figure>
+                </div>
+
+                <!-- Input -->
+                <div class="feature-group">
+                    <h3><span class="dot"></span>Input Mapping</h3>
+                    <p class="group-lead">Bind keys to named actions and axes in JSON — no rebuild to
+                        remap controls.</p>
+                    <div class="cards">
+                        <div class="card">
+                            <h4>Named actions</h4>
+                            <p>Map multiple keys to a single action so gameplay code never references raw
+                                key codes.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Smoothed axes</h4>
+                            <p>Axis mappings blend opposing keys with configurable acceleration and
+                                deceleration.</p>
+                        </div>
+                    </div>
+                    <div class="code-grid" style="margin-top: 22px;">
+                        <figure>
+                            <figcaption>config/input_config.json</figcaption>
+<pre>{
+  <span class="prop">"action_mappings"</span>: {
+    <span class="prop">"jump"</span>:     [<span class="str">"Space"</span>, <span class="str">"W"</span>],
+    <span class="prop">"interact"</span>: [<span class="str">"E"</span>],
+    <span class="prop">"cancel"</span>:   [<span class="str">"Escape"</span>]
+  },
+  <span class="prop">"axis_mappings"</span>: {
+    <span class="prop">"horizontal"</span>: {
+      <span class="prop">"acceleration"</span>: <span class="num">10</span>,
+      <span class="prop">"deceleration"</span>: <span class="num">10</span>,
+      <span class="prop">"positive"</span>: [<span class="str">"Right"</span>, <span class="str">"D"</span>],
+      <span class="prop">"negative"</span>: [<span class="str">"Left"</span>, <span class="str">"A"</span>]
+    }
+  }
+}</pre>
+                        </figure>
+                        <figure>
+                            <figcaption>Bind it in Lua</figcaption>
+<pre><span class="kw">function</span> <span class="cls">Player</span>:<span class="fn">enter_play</span>()
+    <span class="kw">local</span> input = <span class="kw">self</span>.entity:<span class="fn">get_input</span>()
+
+    <span class="cmt">-- react to a smoothed axis</span>
+    input:<span class="fn">bind_axis</span>(<span class="str">"horizontal"</span>, <span class="kw">function</span>(axis)
+        <span class="kw">self</span>.movement.x = axis
+    <span class="kw">end</span>)
+
+    <span class="cmt">-- react to a named action</span>
+    input:<span class="fn">bind_action</span>(<span class="str">"jump"</span>, <span class="cls">InputEventType</span>.Pressed, <span class="kw">function</span>()
+        <span class="cmt">-- ...</span>
+    <span class="kw">end</span>)
+<span class="kw">end</span></pre>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Dev Tooling -->
+                <div class="feature-group">
+                    <h3><span class="dot"></span>Dev Tooling</h3>
+                    <p class="group-lead">A debug-first workflow baked into the engine.</p>
+                    <div class="cards">
+                        <div class="card">
+                            <h4>ImGui dev console</h4>
+                            <p>A drop-down developer console, toggled with the backtick key, for commands
+                                and live tweaking.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Typed CVars</h4>
+                            <p>Bool / Int / Float / String console variables with Archive, ReadOnly, and
+                                Cheat flags.</p>
+                        </div>
+                        <div class="card">
+                            <h4>Debug drawing</h4>
+                            <p>Draw world-space lines, circles, and text that stay crisp across DPI and
+                                resolution.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cross-Platform -->
+                <div class="feature-group">
+                    <h3><span class="dot"></span>Cross-Platform</h3>
+                    <p class="group-lead">One codebase, three desktop platforms.</p>
+                    <div class="pills">
+                        <span class="pill">Windows</span>
+                        <span class="pill">Linux</span>
+                        <span class="pill">macOS</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <span>MIT Licensed · © 2026 Denis Rizov</span>
+            <a href="https://github.com/dbrizov/hob-engine">github.com/dbrizov/hob-engine</a>
+        </div>
+    </footer>
+</body>
+</html>

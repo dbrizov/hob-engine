@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started — Hob Engine</title>
+    <meta name="description" content="Set up, build, and run the Hob 2D game engine on Windows, Linux, or macOS.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">
+                <img src="favicon.svg" alt="Hob Engine logo">
+                Hob Engine
+            </a>
+            <nav class="nav">
+                <a href="index.html#features">Features</a>
+                <a href="get-started.html">Get Started</a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/dbrizov/hob-engine">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="doc">
+            <div class="container">
+                <h1 class="section-title">Get Started</h1>
+                <p class="section-lead">Hob's dependencies are fetched and linked automatically through
+                    vcpkg and CMake. Set up the toolchain for your platform, then configure, build, and run.</p>
+
+                <h2>Requirements</h2>
+                <ul>
+                    <li><strong>vcpkg</strong> and <strong>CMake</strong> (used to fetch and link dependencies).</li>
+                    <li>A C/C++ compiler with <strong>C++20</strong> support — MSVC, GCC, or Clang.</li>
+                </ul>
+
+                <h2>Windows</h2>
+                <h3>vcpkg</h3>
+                <p>Clone vcpkg and run its bootstrap script:</p>
+<pre>git clone https://github.com/microsoft/vcpkg.git vcpkg
+cd vcpkg
+.\bootstrap-vcpkg.bat</pre>
+                <p>Set the <code>VCPKG_ROOT</code> environment variable and add it to <code>PATH</code>:</p>
+<pre>$env:VCPKG_ROOT = "C:\path\to\vcpkg"
+$env:PATH = "$env:VCPKG_ROOT;$env:PATH"</pre>
+                <div class="callout">
+                    Setting environment variables this way only affects the current terminal session. To make
+                    them permanent, set them through the Windows System Environment Variables panel.
+                </div>
+                <p>Open a new terminal and verify:</p>
+<pre>vcpkg --version</pre>
+                <h3>CMake</h3>
+                <p>Download the <code>x86-x64</code> Windows installer from
+                    <a href="https://cmake.org/">cmake.org</a>. The CMake environment variable is configured
+                    automatically.</p>
+
+                <h2>Linux</h2>
+                <p>Install the prerequisites:</p>
+<pre>sudo apt update
+sudo apt install build-essential cmake ninja-build pkgconf curl zip unzip tar</pre>
+                <p>SDL3 is built from source and needs additional desktop-stack dependencies:</p>
+<pre>sudo apt install python3 python3-venv python3-pip
+sudo apt install autoconf autoconf-archive automake libtool
+sudo apt install libibus-1.0-dev
+sudo apt install libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev \
+    libxi-dev libxfixes-dev libxrender-dev libxss-dev libxxf86vm-dev libxtst-dev
+sudo apt install libwayland-dev wayland-protocols libxkbcommon-dev libegl1-mesa-dev libdecor-0-dev
+sudo apt install libasound2-dev libpulse-dev libpipewire-0.3-dev libjack-jackd2-dev</pre>
+                <p>Clone and bootstrap vcpkg, then set <code>VCPKG_ROOT</code>:</p>
+<pre>git clone https://github.com/microsoft/vcpkg.git ~/.vcpkg
+cd ~/.vcpkg
+./bootstrap-vcpkg.sh
+
+echo 'export VCPKG_ROOT="$HOME/.vcpkg"' >> ~/.bashrc
+echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.bashrc
+source ~/.bashrc
+vcpkg --version</pre>
+
+                <h2>macOS</h2>
+                <p>Install the prerequisites:</p>
+<pre>xcode-select --install
+brew install cmake ninja pkgconf</pre>
+                <p>Clone and bootstrap vcpkg, then set <code>VCPKG_ROOT</code>:</p>
+<pre>git clone https://github.com/microsoft/vcpkg.git ~/.vcpkg
+cd ~/.vcpkg
+./bootstrap-vcpkg.sh
+
+echo 'export VCPKG_ROOT="$HOME/.vcpkg"' >> ~/.zshrc
+echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.zshrc
+source ~/.zshrc
+vcpkg --version</pre>
+
+                <h2>Build &amp; Run</h2>
+                <p>Configure with the preset for your toolchain, build, then run the executable:</p>
+<pre><span class="cmt"># Configure (pick one preset)</span>
+cmake --preset debug-msvc      <span class="cmt"># Windows / MSVC</span>
+cmake --preset debug-gcc       <span class="cmt"># Linux / GCC</span>
+cmake --preset debug-clang     <span class="cmt"># macOS / Clang</span>
+
+<span class="cmt"># Build</span>
+cmake --build --preset windows-debug-msvc-x64
+
+<span class="cmt"># Run</span>
+./build/debug/windows-msvc/hob_engine.exe</pre>
+
+                <div class="callout">
+                    Looking for the latest setup details? See the
+                    <a href="https://github.com/dbrizov/hob-engine#readme">README on GitHub</a>.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <span>MIT Licensed · © 2026 Denis Rizov</span>
+            <a href="https://github.com/dbrizov/hob-engine">github.com/dbrizov/hob-engine</a>
+        </div>
+    </footer>
+</body>
+</html>

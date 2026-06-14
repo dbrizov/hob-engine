@@ -96,3 +96,18 @@ echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.zshrc
 source ~/.zshrc
 vcpkg --version
 ```
+
+# Build & Run
+Configure with the preset for your toolchain, build, then run the executable.
+```
+# Configure (pick one preset)
+cmake --preset debug-msvc      # Windows / MSVC
+cmake --preset debug-gcc       # Linux / GCC
+cmake --preset debug-clang     # macOS / Clang
+
+# Build
+cmake --build --preset windows-debug-msvc-x64
+
+# Run
+./build/debug/windows-msvc/hob_engine.exe
+```
