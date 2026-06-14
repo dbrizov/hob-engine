@@ -23,6 +23,9 @@ add_executable(${PROJECT_NAME} ${CPP_FILES} ${HEADER_FILES})
 # Since the headers are also in /src we are adding it as an include directory.
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
+# Place the executable and its synced files in a per-config subfolder, ready to distribute.
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
+
 # Sync the assets/ folder next to the executable after every build.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
