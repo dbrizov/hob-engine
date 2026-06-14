@@ -4,7 +4,6 @@ build/
 [Cc]MakeFiles/
 CMakeScripts/
 cmake_install.cmake
-*.cmake
 Makefile
 CTestTestfile.cmake
 install_manifest.txt
