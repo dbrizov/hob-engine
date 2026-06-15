@@ -30,17 +30,13 @@ namespace hob {
     //   Keyboard -> SDL_Scancode
     //   Mouse    -> MouseCode
     //   Gamepad  -> SDL_GamepadButton (digital) or SDL_GamepadAxis (analog)
+    // `scale` only applies to analog axis sources: it handles inversion (-1) and sensitivity
+    // (e.g. 0.05 for mouse motion). It is read from config, never encoded in the source name,
+    // and is ignored for digital sources.
     struct InputSource {
         InputDevice device = InputDevice::Keyboard;
         int code = 0;
         bool is_analog = false;
-    };
-
-    // An analog source feeding an axis. `scale` handles inversion (-1) and
-    // sensitivity (e.g. 0.05 for mouse motion); it is read from config, never
-    // encoded in the source name.
-    struct AnalogBinding {
-        InputSource source;
         float scale = 1.0f;
     };
 
@@ -53,14 +49,14 @@ namespace hob {
         float deceleration = 0.0f;
         std::vector<InputSource> positive_sources;
         std::vector<InputSource> negative_sources;
-        std::vector<AnalogBinding> analog;
+        std::vector<InputSource> analog;
     };
 
     struct GamepadTuning {
         float stick_deadzone = 0.2f;
         float trigger_deadzone = 0.1f;
         // Deadzoned analog magnitude at which a trigger (or other analog source) bound to a
-        // digital action counts as pressed.
+        // digital action counts as a pressed button.
         float trigger_button_threshold = 0.5f;
     };
 
@@ -72,8 +68,9 @@ namespace hob {
         InputConfig() = default;
         explicit InputConfig(const std::filesystem::path& json_path);
 
-        // Digital sources referenced anywhere in the config, deduplicated. Used by
-        // Input to know which sources to sample for edge (press/release) detection.
-        std::vector<InputSource> relevant_sources() const;
+        // Sources used in digital/button positions (actions, axis positive/negative),
+        // deduplicated. Used by Input to know which sources to sample for edge
+        // (press/release) detection. Excludes the analog axis lists.
+        std::vector<InputSource> digital_sources() const;
     };
 } // namespace hob

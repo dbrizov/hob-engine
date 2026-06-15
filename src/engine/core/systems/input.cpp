@@ -23,13 +23,13 @@ namespace hob {
         : m_sdl_context(sdl_context)
         , m_renderer(renderer) {
         m_input_config = InputConfig(PathUtils::get_input_config_path());
-        m_relevant_sources = m_input_config.relevant_sources();
+        m_digital_sources = m_input_config.digital_sources();
 
         for (const auto& [axis, _] : m_input_config.axes) {
             m_axis_values[axis] = 0.0f;
         }
 
-        for (const InputSource& source : m_relevant_sources) {
+        for (const InputSource& source : m_digital_sources) {
             const uint32_t id = pack_source(source);
             m_down_this_frame[id] = false;
             m_down_last_frame[id] = false;
@@ -69,12 +69,15 @@ namespace hob {
 
     void Input::tick(float delta_time) {
         update_mouse_state();
-        update_pressed_sources();
+        update_down_states();
 
         dispatch_actions();
         dispatch_axes(delta_time);
+    }
 
-        // Wheel input is momentary: it lives for exactly one frame.
+    void Input::end_frame() {
+        // Wheel input is momentary: it lives for exactly one frame. Reset it every frame (even
+        // when tick is skipped, e.g. while the console is open) so it can't leak into a later frame.
         m_wheel_delta = 0.0f;
     }
 
@@ -102,17 +105,21 @@ namespace hob {
         m_mouse_delta = Vector2(dx, dy);
     }
 
-    void Input::update_pressed_sources() {
-        for (const InputSource& source : m_relevant_sources) {
+    void Input::update_down_states() {
+        for (const InputSource& source : m_digital_sources) {
             const uint32_t id = pack_source(source);
             m_down_last_frame[id] = m_down_this_frame[id];
             m_down_this_frame[id] = is_source_down(source);
         }
     }
 
+    void Input::dispatch_event(const InputEvent& event) const {
+        for (const auto& entry : m_handlers) {
+            entry.handler(event);
+        }
+    }
+
     void Input::dispatch_actions() {
-        // An action is "down" if ANY of its sources is down, so keyboard and gamepad
-        // are interchangeable. Edges are detected on the aggregate.
         for (const auto& [action, mapping] : m_input_config.actions) {
             bool down_now = false;
             bool down_before = false;
@@ -163,17 +170,26 @@ namespace hob {
                 ramped = std::max(ramped - mapping.acceleration * delta_time, -1.0f);
             }
 
-            // Analog sources feed their raw (deadzoned, scaled) value directly. The
-            // strongest analog source wins, then the larger-magnitude of analog vs ramp.
+            // Analog sources feed their raw (deadzoned, scaled) value directly; the strongest
+            // analog source wins. It is summed with the digital ramp so opposing digital and
+            // analog inputs cancel.
             float analog = 0.0f;
-            for (const AnalogBinding& binding : mapping.analog) {
-                const float value = read_analog_source(binding.source) * binding.scale;
+            for (const InputSource& source : mapping.analog) {
+                const float value = read_analog_source(source) * source.scale;
                 if (std::fabs(value) > std::fabs(analog)) {
                     analog = value;
                 }
             }
 
-            const float result = (std::fabs(analog) > std::fabs(ramped)) ? analog : ramped;
+            // Only clamp axes that mix a digital ramp with analog (e.g. movement), where the sum
+            // can exceed the [-1, 1] range. Pure-analog axes (e.g. mouse-look / aim sensitivity)
+            // keep their raw scaled magnitude.
+            const bool has_digital = !mapping.positive_sources.empty() || !mapping.negative_sources.empty();
+            float result = ramped + analog;
+            if (has_digital) {
+                result = std::clamp(result, -1.0f, 1.0f);
+            }
+
             dispatch_event(InputEvent(axis.c_str(), InputEventType::Axis, result));
         }
     }
@@ -345,12 +361,6 @@ namespace hob {
 
     bool Input::is_gamepad_connected() const {
         return m_gamepad != nullptr;
-    }
-
-    void Input::dispatch_event(const InputEvent& event) const {
-        for (const auto& entry : m_handlers) {
-            entry.handler(event);
-        }
     }
 
     uint32_t Input::pack_source(const InputSource& source) {

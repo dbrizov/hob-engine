@@ -54,7 +54,7 @@ namespace hob {
         std::unordered_map<std::string, float> m_axis_values;
 
         // Digital source edge tracking. Keyed by a packed (device, code) id.
-        std::vector<InputSource> m_relevant_sources;
+        std::vector<InputSource> m_digital_sources;
         std::unordered_map<uint32_t, bool> m_down_this_frame;
         std::unordered_map<uint32_t, bool> m_down_last_frame;
 
@@ -74,6 +74,7 @@ namespace hob {
 
         void process_event(const SDL_Event& event);
         void tick(float delta_time);
+        void end_frame();
 
         InputEventHandlerId add_input_event_handler(InputEventHandler handler);
         bool remove_input_event_handler(InputEventHandlerId id);
@@ -83,7 +84,9 @@ namespace hob {
 
     private:
         void update_mouse_state();
-        void update_pressed_sources();
+        void update_down_states();
+
+        void dispatch_event(const InputEvent& event) const;
         void dispatch_actions();
         void dispatch_axes(float delta_time);
 
@@ -93,8 +96,6 @@ namespace hob {
         void open_gamepad(uint32_t gamepad_id);
         void close_gamepad();
         void adopt_any_gamepad();
-
-        void dispatch_event(const InputEvent& event) const;
 
         static uint32_t pack_source(const InputSource& source);
     };

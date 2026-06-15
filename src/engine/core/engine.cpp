@@ -118,6 +118,7 @@ namespace hob {
                 m_renderer.cancel_command_buffer();
             }
 
+            m_input.end_frame();
             m_timer.frame_end();
         }
     }

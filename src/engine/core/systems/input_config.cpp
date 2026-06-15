@@ -100,10 +100,10 @@ namespace hob {
         constexpr const char* GAMEPAD_PREFIX = "Gamepad ";
 
         std::optional<InputSource> source;
-        if (name.rfind(MOUSE_PREFIX, 0) == 0) {
+        if (name.starts_with(MOUSE_PREFIX)) {
             source = parse_mouse(name.substr(std::char_traits<char>::length(MOUSE_PREFIX)));
         }
-        else if (name.rfind(GAMEPAD_PREFIX, 0) == 0) {
+        else if (name.starts_with(GAMEPAD_PREFIX)) {
             source = parse_gamepad(name.substr(std::char_traits<char>::length(GAMEPAD_PREFIX)));
         }
         else {
@@ -117,10 +117,7 @@ namespace hob {
         return source;
     }
 
-    // Parse a list of digital source names into `out`, skipping unknown entries. Analog
-    // sources (e.g. a gamepad trigger) are allowed: Input treats them as "down" once they
-    // cross a press threshold.
-    static void parse_digital_list(const nlohmann::json& list, std::vector<InputSource>& out) {
+    static void parse_source_list(const nlohmann::json& list, std::vector<InputSource>& out) {
         for (const auto& item : list) {
             const std::optional<InputSource> source = parse_source(item.get<std::string>());
             if (!source.has_value()) {
@@ -147,12 +144,18 @@ namespace hob {
             gamepad.trigger_deadzone = cfg.value("trigger_deadzone", gamepad.trigger_deadzone);
             gamepad.trigger_button_threshold =
                 cfg.value("trigger_button_threshold", gamepad.trigger_button_threshold);
+
+            // Deadzones feed a 1/(1 - deadzone) rescale, so keep them strictly below 1 to avoid
+            // a divide-by-zero; clamp the button threshold to the normalized [0, 1] range.
+            gamepad.stick_deadzone = std::clamp(gamepad.stick_deadzone, 0.0f, 0.99f);
+            gamepad.trigger_deadzone = std::clamp(gamepad.trigger_deadzone, 0.0f, 0.99f);
+            gamepad.trigger_button_threshold = std::clamp(gamepad.trigger_button_threshold, 0.0f, 1.0f);
         }
 
         // Actions
         for (auto& [action_name, sources] : json["action_mappings"].items()) {
             ActionConfig action_config;
-            parse_digital_list(sources, action_config.sources);
+            parse_source_list(sources, action_config.sources);
             actions[action_name] = std::move(action_config);
         }
 
@@ -163,30 +166,35 @@ namespace hob {
             axis_config.deceleration = cfg.value("deceleration", 0.0f);
 
             if (cfg.contains("positive")) {
-                parse_digital_list(cfg["positive"], axis_config.positive_sources);
+                parse_source_list(cfg["positive"], axis_config.positive_sources);
             }
 
             if (cfg.contains("negative")) {
-                parse_digital_list(cfg["negative"], axis_config.negative_sources);
+                parse_source_list(cfg["negative"], axis_config.negative_sources);
             }
 
             if (cfg.contains("analog")) {
                 for (const auto& entry : cfg["analog"]) {
-                    const std::optional<InputSource> source = parse_source(entry.at("source").get<std::string>());
+                    if (!entry.is_object() || !entry.contains("source")) {
+                        debug::log_error("Analog entry in axis '{}' must be an object with a 'source'; ignored",
+                                         axis_name);
+                        continue;
+                    }
+
+                    const std::string source_name = entry.at("source").get<std::string>();
+                    const std::optional<InputSource> source = parse_source(source_name);
                     if (!source.has_value()) {
                         continue;
                     }
 
                     if (!source->is_analog) {
-                        debug::log_error("Digital source '{}' used as an analog binding; ignored",
-                                         entry.at("source").get<std::string>());
+                        debug::log_error("Digital source '{}' used as an analog binding; ignored", source_name);
                         continue;
                     }
 
-                    AnalogBinding binding;
-                    binding.source = *source;
-                    binding.scale = entry.value("scale", 1.0f);
-                    axis_config.analog.push_back(binding);
+                    InputSource analog_source = *source;
+                    analog_source.scale = entry.value("scale", 1.0f);
+                    axis_config.analog.push_back(analog_source);
                 }
             }
 
@@ -194,7 +202,7 @@ namespace hob {
         }
     }
 
-    std::vector<InputSource> InputConfig::relevant_sources() const {
+    std::vector<InputSource> InputConfig::digital_sources() const {
         std::vector<InputSource> sources;
         sources.reserve(32);
 
